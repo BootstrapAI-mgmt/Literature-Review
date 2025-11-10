@@ -52,7 +52,8 @@ API_CONFIG = {
     "RETRY_ATTEMPTS": 3,
     "RETRY_DELAY": 5,
     "API_CALLS_PER_MINUTE": 60,
-    "MATCH_CONFIDENCE_THRESHOLD": 0.8 # Match must be 80% similar
+    "MATCH_CONFIDENCE_THRESHOLD": 0.8, # Match must be 80% similar
+    "CLAIM_BATCH_SIZE": 10  # Process claims in batches to handle large datasets
 }
 
 # (Setup code, Logging, and UTF8Formatter are identical)
@@ -543,6 +544,17 @@ def validate_judge_response(response: Any) -> Optional[Dict]:
         return None
     return response
 
+def process_claims_in_batches(claims: List[Dict], batch_size: int) -> List[List[Dict]]:
+    """
+    Split claims into batches for processing.
+    This helps manage memory and API timeouts when processing large datasets.
+    """
+    batches = []
+    for i in range(0, len(claims), batch_size):
+        batch = claims[i:i + batch_size]
+        batches.append(batch)
+    return batches
+
 # --- MAIN EXECUTION ---
 def main():
     start_time = time.time()
@@ -592,65 +604,79 @@ def main():
     logger.info(f"Found {len(claims_to_judge)} total claims pending judgment.")
     safe_print(f"⚖️ Found {len(claims_to_judge)} total claims pending judgment. The court is in session.")
 
-    # --- PHASE 1: Initial Judgment ---
-    logger.info("\n--- PHASE 1: Initial Judgment ---")
-    safe_print("\n--- PHASE 1: Initial Judgment ---")
+    # --- PHASE 1: Initial Judgment (WITH BATCHING) ---
+    logger.info("\n--- PHASE 1: Initial Judgment (Batched Processing) ---")
+    safe_print("\n--- PHASE 1: Initial Judgment (Batched Processing) ---")
 
     init_approved_count = 0
     init_rejected_count = 0
     claims_for_dra_appeal = []
     all_judged_claims = []  # Track all claims for updating history
+    
+    # Split claims into batches
+    claim_batches = process_claims_in_batches(claims_to_judge, API_CONFIG['CLAIM_BATCH_SIZE'])
+    logger.info(f"Processing {len(claims_to_judge)} claims in {len(claim_batches)} batches of {API_CONFIG['CLAIM_BATCH_SIZE']}")
+    safe_print(f"Processing {len(claims_to_judge)} claims in {len(claim_batches)} batches")
 
-    for i, claim in enumerate(claims_to_judge, 1):
-        filename = claim.get('_source_filename', 'N/A')
-        claim_id_short = f"{filename[:15]}... ({claim['claim_id'][:6]})"
-        logger.info(f"\n--- Judging Claim {i}/{len(claims_to_judge)}: {claim_id_short} ---")
-        safe_print(f"\n--- Judging Claim {i}/{len(claims_to_judge)}: {claim_id_short} ---")
+    for batch_num, claim_batch in enumerate(claim_batches, 1):
+        logger.info(f"\n=== Processing Batch {batch_num}/{len(claim_batches)} ({len(claim_batch)} claims) ===")
+        safe_print(f"\n=== Processing Batch {batch_num}/{len(claim_batches)} ({len(claim_batch)} claims) ===")
+        
+        for i, claim in enumerate(claim_batch, 1):
+            overall_index = (batch_num - 1) * API_CONFIG['CLAIM_BATCH_SIZE'] + i
+            filename = claim.get('_source_filename', 'N/A')
+            claim_id_short = f"{filename[:15]}... ({claim['claim_id'][:6]})"
+            logger.info(f"\n--- Judging Claim {overall_index}/{len(claims_to_judge)}: {claim_id_short} ---")
+            safe_print(f"\n--- Judging Claim {overall_index}/{len(claims_to_judge)}: {claim_id_short} ---")
 
-        try:
-            sub_req_key = claim.get('sub_requirement') or claim.get('sub_requirement_key', 'N/A')
-            pillar_key = claim.get('pillar', 'N/A')
-            definition_text = find_robust_sub_requirement_text(sub_req_key)
+            try:
+                sub_req_key = claim.get('sub_requirement') or claim.get('sub_requirement_key', 'N/A')
+                pillar_key = claim.get('pillar', 'N/A')
+                definition_text = find_robust_sub_requirement_text(sub_req_key)
 
-            if not definition_text:
-                logger.error(f"  Could not find definition for claim. Rejecting.")
-                safe_print(f"  ❌ Could not find definition for '{sub_req_key}'. Rejecting.")
-                ruling = {"verdict": "rejected", "judge_notes": f"Rejected. Could not find sub-requirement definition for '{sub_req_key}' in pillar file."}
-            else:
-                prompt = build_judge_prompt(claim, definition_text)
-                logger.info(f"  Submitting claim to Judge AI...")
-                safe_print(f"  Submitting claim to Judge AI...")
-                response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
-                ruling = validate_judge_response(response)
-
-            if ruling:
-                canonical_pillar = find_robust_pillar_key(pillar_key)
-                canonical_sub_req = definition_text
-                if canonical_pillar: claim['pillar'] = canonical_pillar
-                if canonical_sub_req:
-                    claim['sub_requirement'] = canonical_sub_req
-                    claim.pop('sub_requirement_key', None)
-
-                claim['status'] = ruling['verdict']
-                claim['judge_notes'] = ruling['judge_notes']
-                claim['judge_timestamp'] = datetime.now().isoformat()
-                all_judged_claims.append(claim)
-
-                if ruling['verdict'] == 'approved':
-                    logger.info(f"  VERDICT: APPROVED")
-                    safe_print(f"  ✅ VERDICT: APPROVED")
-                    init_approved_count += 1
+                if not definition_text:
+                    logger.error(f"  Could not find definition for claim. Rejecting.")
+                    safe_print(f"  ❌ Could not find definition for '{sub_req_key}'. Rejecting.")
+                    ruling = {"verdict": "rejected", "judge_notes": f"Rejected. Could not find sub-requirement definition for '{sub_req_key}' in pillar file."}
                 else:
-                    logger.info(f"  VERDICT: REJECTED (Pending DRA)")
-                    safe_print(f"  ❌ VERDICT: REJECTED (Sending to DRA for appeal)")
-                    init_rejected_count += 1
-                    claims_for_dra_appeal.append(claim)
-            else:
-                logger.error(f"  Judge AI returned invalid response. Claim will be re-judged next run.")
-                safe_print(f"  ⚠️ Judge AI returned invalid response. Skipping for next run.")
-        except Exception as e:
-            logger.critical(f"  CRITICAL UNHANDLED ERROR on claim {claim['claim_id']}: {e}")
-            safe_print(f"  ❌ CRITICAL ERROR on claim. See log. Skipping.")
+                    prompt = build_judge_prompt(claim, definition_text)
+                    logger.info(f"  Submitting claim to Judge AI...")
+                    safe_print(f"  Submitting claim to Judge AI...")
+                    response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+                    ruling = validate_judge_response(response)
+
+                if ruling:
+                    canonical_pillar = find_robust_pillar_key(pillar_key)
+                    canonical_sub_req = definition_text
+                    if canonical_pillar: claim['pillar'] = canonical_pillar
+                    if canonical_sub_req:
+                        claim['sub_requirement'] = canonical_sub_req
+                        claim.pop('sub_requirement_key', None)
+
+                    claim['status'] = ruling['verdict']
+                    claim['judge_notes'] = ruling['judge_notes']
+                    claim['judge_timestamp'] = datetime.now().isoformat()
+                    all_judged_claims.append(claim)
+
+                    if ruling['verdict'] == 'approved':
+                        logger.info(f"  VERDICT: APPROVED")
+                        safe_print(f"  ✅ VERDICT: APPROVED")
+                        init_approved_count += 1
+                    else:
+                        logger.info(f"  VERDICT: REJECTED (Pending DRA)")
+                        safe_print(f"  ❌ VERDICT: REJECTED (Sending to DRA for appeal)")
+                        init_rejected_count += 1
+                        claims_for_dra_appeal.append(claim)
+                else:
+                    logger.error(f"  Judge AI returned invalid response. Claim will be re-judged next run.")
+                    safe_print(f"  ⚠️ Judge AI returned invalid response. Skipping for next run.")
+            except Exception as e:
+                logger.critical(f"  CRITICAL UNHANDLED ERROR on claim {claim['claim_id']}: {e}")
+                safe_print(f"  ❌ CRITICAL ERROR on claim. See log. Skipping.")
+        
+        # Log progress after each batch
+        logger.info(f"\nBatch {batch_num} complete. Progress: {init_approved_count} approved, {init_rejected_count} rejected")
+        safe_print(f"Batch {batch_num} complete. Progress: {init_approved_count} approved, {init_rejected_count} rejected")
 
     # --- PHASE 2: DRA Appeal Process ---
     logger.info("\n--- PHASE 2: DRA Appeal Process ---")
@@ -675,9 +701,9 @@ def main():
             claim['_source_filename'] = claim.get('filename')
             claim['_source_type'] = 'dra_appeal'
 
-    # --- PHASE 3: Final Judgment (on Appeals) ---
-    logger.info("\n--- PHASE 3: Final Judgment (on Appeals) ---")
-    safe_print("\n--- PHASE 3: Final Judgment (on Appeals) ---")
+    # --- PHASE 3: Final Judgment (on Appeals) (WITH BATCHING) ---
+    logger.info("\n--- PHASE 3: Final Judgment (on Appeals) (Batched Processing) ---")
+    safe_print("\n--- PHASE 3: Final Judgment (on Appeals) (Batched Processing) ---")
 
     dra_approved_count = 0
     dra_rejected_count = 0
@@ -689,50 +715,63 @@ def main():
         logger.info(f"DRA re-submitted {len(new_claims_for_rejudgment)} new claims. Starting final judgment...")
         safe_print(f"⚖️ DRA re-submitted {len(new_claims_for_rejudgment)} new claims. Starting final judgment...")
 
-        for i, new_claim in enumerate(new_claims_for_rejudgment, 1):
-            filename = new_claim.get('filename', 'N/A')
-            claim_id_short = f"{filename[:15]}... ({new_claim['claim_id'][:6]})"
-            logger.info(f"\n--- Re-Judging Claim {i}/{len(new_claims_for_rejudgment)}: {claim_id_short} ---")
-            safe_print(f"\n--- Re-Judging Claim {i}/{len(new_claims_for_rejudgment)}: {claim_id_short} ---")
+        # Split DRA claims into batches
+        dra_claim_batches = process_claims_in_batches(new_claims_for_rejudgment, API_CONFIG['CLAIM_BATCH_SIZE'])
+        logger.info(f"Processing {len(new_claims_for_rejudgment)} DRA claims in {len(dra_claim_batches)} batches")
+        
+        for batch_num, claim_batch in enumerate(dra_claim_batches, 1):
+            logger.info(f"\n=== Processing DRA Batch {batch_num}/{len(dra_claim_batches)} ({len(claim_batch)} claims) ===")
+            safe_print(f"\n=== Processing DRA Batch {batch_num}/{len(dra_claim_batches)} ({len(claim_batch)} claims) ===")
+            
+            for i, new_claim in enumerate(claim_batch, 1):
+                overall_index = (batch_num - 1) * API_CONFIG['CLAIM_BATCH_SIZE'] + i
+                filename = new_claim.get('filename', 'N/A')
+                claim_id_short = f"{filename[:15]}... ({new_claim['claim_id'][:6]})"
+                logger.info(f"\n--- Re-Judging Claim {overall_index}/{len(new_claims_for_rejudgment)}: {claim_id_short} ---")
+                safe_print(f"\n--- Re-Judging Claim {overall_index}/{len(new_claims_for_rejudgment)}: {claim_id_short} ---")
 
-            try:
-                sub_req_key = new_claim.get('sub_requirement', 'N/A')
-                pillar_key = new_claim.get('pillar', 'N/A')
-                definition_text = find_robust_sub_requirement_text(sub_req_key)
+                try:
+                    sub_req_key = new_claim.get('sub_requirement', 'N/A')
+                    pillar_key = new_claim.get('pillar', 'N/A')
+                    definition_text = find_robust_sub_requirement_text(sub_req_key)
 
-                if not definition_text:
-                    logger.error(f"  Could not find definition for DRA claim. Rejecting.")
-                    safe_print(f"  ❌ Could not find definition for '{sub_req_key}'. Rejecting.")
-                    ruling = {"verdict": "rejected", "judge_notes": f"Rejected. (DRA Appeal) Could not find sub-requirement definition for '{sub_req_key}'."}
-                else:
-                    prompt = build_judge_prompt(new_claim, definition_text)
-                    logger.info(f"  Submitting DRA claim to Judge AI...")
-                    safe_print(f"  Submitting DRA claim to Judge AI...")
-                    response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
-                    ruling = validate_judge_response(response)
-
-                if ruling:
-                    new_claim['status'] = ruling['verdict']
-                    new_claim['judge_notes'] = ruling['judge_notes']
-                    new_claim['judge_timestamp'] = datetime.now().isoformat()
-
-                    if ruling['verdict'] == 'approved':
-                        logger.info(f"  VERDICT (Appeal): APPROVED")
-                        safe_print(f"  ✅ VERDICT (Appeal): APPROVED")
-                        dra_approved_count += 1
+                    if not definition_text:
+                        logger.error(f"  Could not find definition for DRA claim. Rejecting.")
+                        safe_print(f"  ❌ Could not find definition for '{sub_req_key}'. Rejecting.")
+                        ruling = {"verdict": "rejected", "judge_notes": f"Rejected. (DRA Appeal) Could not find sub-requirement definition for '{sub_req_key}'."}
                     else:
-                        logger.info(f"  VERDICT (Appeal): REJECTED")
-                        safe_print(f"  ❌ VERDICT (Appeal): REJECTED")
-                        dra_rejected_count += 1
+                        prompt = build_judge_prompt(new_claim, definition_text)
+                        logger.info(f"  Submitting DRA claim to Judge AI...")
+                        safe_print(f"  Submitting DRA claim to Judge AI...")
+                        response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+                        ruling = validate_judge_response(response)
 
-                    all_judged_claims.append(new_claim)
-                else:
-                    logger.error(f"  Judge AI returned invalid response for DRA claim. Claim is lost.")
-                    safe_print(f"  ⚠️ Judge AI returned invalid response for DRA claim. Skipping.")
+                    if ruling:
+                        new_claim['status'] = ruling['verdict']
+                        new_claim['judge_notes'] = ruling['judge_notes']
+                        new_claim['judge_timestamp'] = datetime.now().isoformat()
 
-            except Exception as e:
-                logger.critical(f"  CRITICAL UNHANDLED ERROR on DRA claim {new_claim['claim_id']}: {e}")
-                safe_print(f"  ❌ CRITICAL ERROR on DRA claim. See log. Skipping.")
+                        if ruling['verdict'] == 'approved':
+                            logger.info(f"  VERDICT (Appeal): APPROVED")
+                            safe_print(f"  ✅ VERDICT (Appeal): APPROVED")
+                            dra_approved_count += 1
+                        else:
+                            logger.info(f"  VERDICT (Appeal): REJECTED")
+                            safe_print(f"  ❌ VERDICT (Appeal): REJECTED")
+                            dra_rejected_count += 1
+
+                        all_judged_claims.append(new_claim)
+                    else:
+                        logger.error(f"  Judge AI returned invalid response for DRA claim. Claim is lost.")
+                        safe_print(f"  ⚠️ Judge AI returned invalid response for DRA claim. Skipping.")
+
+                except Exception as e:
+                    logger.critical(f"  CRITICAL UNHANDLED ERROR on DRA claim {new_claim['claim_id']}: {e}")
+                    safe_print(f"  ❌ CRITICAL ERROR on DRA claim. See log. Skipping.")
+            
+            # Log progress after each DRA batch
+            logger.info(f"\nDRA Batch {batch_num} complete. Progress: {dra_approved_count} approved, {dra_rejected_count} rejected")
+            safe_print(f"DRA Batch {batch_num} complete. Progress: {dra_approved_count} approved, {dra_rejected_count} rejected")
 
     # --- PHASE 4: Save All Results to Version History ---
     logger.info("\n--- PHASE 4: Saving Results to Version History ---")
