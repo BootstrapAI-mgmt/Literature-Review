@@ -1,17 +1,17 @@
 """
 Judge
-Version: 1.6 (Fixes APIManager bug for DRA calls)
-Date: 2025-11-09
+Version: 2.0 (Task Card #4: Migrated to Version History)
+Date: 2025-11-10
 
 This script acts as an impartial "Judge" for claims from all databases.
 It orchestrates a multi-step judgment process:
-1.  PHASE 1: Judge all 'pending' claims.
+1.  PHASE 1: Judge all 'pending' claims from version history.
 2.  PHASE 2: Pass all rejected claims to the DeepRequirementsAnalyzer (DRA).
 3.  PHASE 3: Judge the *new* claims re-submitted by the DRA.
-4.  PHASE 4: Save all final verdicts.
+4.  PHASE 4: Save all final verdicts back to version history.
 
-This version fixes a TypeError in APIManager.cached_api_call
-by correctly implementing the 'is_json' argument.
+This version migrates from deep_coverage_database.json to review_version_history.json
+as the single source of truth for all claims.
 """
 
 import os
@@ -42,7 +42,9 @@ load_dotenv()
 DEFINITIONS_FILE = 'pillar_definitions_enhanced.json'
 
 # 2. Input/Output Files
-DEEP_COVERAGE_DB_FILE = 'deep_coverage_database.json'
+# DEPRECATED: DEEP_COVERAGE_DB_FILE = 'deep_coverage_database.json'
+# Now using version history as single source of truth (Task Card #4)
+VERSION_HISTORY_FILE = 'review_version_history.json'
 RESEARCH_DB_FILE = 'neuromorphic-research_database.csv'
 
 # 3. Path/API Config
@@ -291,28 +293,37 @@ def find_robust_pillar_key(claim_pillar: str) -> Optional[str]:
 # --- END Lookup Logic ---
 
 
-# --- DATA LOADING FUNCTIONS (Unchanged) ---
-def load_deep_coverage_db(filepath: str) -> List[Dict]:
+# --- DATA LOADING FUNCTIONS ---
+def load_version_history(filepath: str) -> Dict:
+    """
+    Loads the review version history (source of truth).
+    Returns a dict keyed by filename.
+    """
     if not os.path.exists(filepath):
-        logger.info(f"Deep coverage file not found: {filepath}. Proceeding.")
-        return []
+        logger.warning(f"Version history file not found: {filepath}. Creating new one.")
+        return {}
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            history = json.load(f)
+        logger.info(f"Loaded version history for {len(history)} files from {filepath}")
+        return history
     except json.JSONDecodeError:
-        logger.warning(f"Error decoding {filepath}. Starting with empty list.")
-        return []
+        logger.warning(f"Error decoding {filepath}. Starting with empty history.")
+        return {}
     except Exception as e:
-        logger.error(f"Error loading deep coverage DB: {e}")
-        return []
+        logger.error(f"Error loading version history: {e}")
+        return {}
 
-def save_deep_coverage_db(filepath: str, db: List[Dict]):
+
+def save_version_history(filepath: str, history: Dict):
+    """Saves the updated version history."""
     try:
         with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(db, f, indent=2, ensure_ascii=False)
-        logger.info(f"Saved {len(db)} judged claims to {filepath}")
+            json.dump(history, f, indent=2, ensure_ascii=False)
+        logger.info(f"Saved version history for {len(history)} files to {filepath}")
     except Exception as e:
-        logger.error(f"Error saving deep coverage DB: {e}")
+        logger.error(f"Error saving version history: {e}")
+
 
 def load_pillar_definitions(filepath: str) -> Dict:
     if not os.path.exists(filepath):
@@ -438,33 +449,33 @@ def main():
     logger.info("\n=== LOADING DATABASES ===")
     safe_print("\n=== LOADING DATABASES ===")
 
-    db_json_data = load_deep_coverage_db(DEEP_COVERAGE_DB_FILE)
-    db_csv_data = load_research_db(RESEARCH_DB_FILE)
+    version_history = load_version_history(VERSION_HISTORY_FILE)
     pillar_definitions = load_pillar_definitions(DEFINITIONS_FILE)
 
     if not pillar_definitions:
         logger.critical("Missing pillar definitions. Exiting.")
         safe_print("❌ Missing pillar definitions. Exiting.")
         return
-    if not db_json_data and not db_csv_data:
-        logger.critical("Missing all data sources. Exiting.")
-        safe_print("❌ Missing all data sources. Exiting.")
+    if not version_history:
+        logger.critical("Missing version history. Exiting.")
+        safe_print("❌ Missing version history. Exiting.")
         return
 
-    # --- Build the unified "docket" ---
+    # --- Build the unified "docket" from version history ---
     claims_to_judge = []
-    for claim in db_json_data:
-        if claim.get("status") == "pending_judge_review":
-            claim['_origin'] = 'json_db'
-            claims_to_judge.append(claim)
-    for row in db_csv_data:
-        requirements_list = row.get("Requirement(s)", [])
-        if not requirements_list: continue
-        for claim in list(requirements_list):
+    for filename, versions in version_history.items():
+        if not versions:
+            continue
+        # Get latest version
+        latest_version = versions[-1]
+        review = latest_version.get('review', {})
+        requirements_list = review.get('Requirement(s)', [])
+        
+        for claim in requirements_list:
             if claim.get("status") == "pending_judge_review":
-                claim['_origin'] = 'csv_db'
-                claim['_origin_list'] = requirements_list
-                claim['_filename'] = row.get('FILENAME', 'N/A')
+                claim['_origin'] = 'version_history'
+                claim['_filename'] = filename
+                claim['_requirements_list'] = requirements_list  # Keep reference for update
                 claims_to_judge.append(claim)
     if not claims_to_judge:
         logger.info("No pending claims found in any database.")
@@ -619,14 +630,14 @@ def main():
     # --- PHASE 4: Save All Results ---
     logger.info("\n--- PHASE 4: Saving All Results ---")
 
-    # We now save the data, which includes:
+    # We now save the version history, which includes:
     # 1. Claims from Phase 1 that were 'approved'
     # 2. Claims from Phase 1 that were 'rejected' (and not successfully appealed)
     # 3. New claims from Phase 3 that were 'approved'
     # 4. New claims from Phase 3 that were 'rejected'
+    # All claims are already updated in-place in version_history
 
-    save_deep_coverage_db(DEEP_COVERAGE_DB_FILE, db_json_data)
-    save_research_db(RESEARCH_DB_FILE, db_csv_data)
+    save_version_history(VERSION_HISTORY_FILE, version_history)
 
     logger.info("\n" + "=" * 80)
     logger.info("JUDGMENT COMPLETE")
@@ -640,9 +651,9 @@ def main():
     safe_print(f"  Total Claims Re-Submitted by DRA: {len(new_claims_for_rejudgment)}")
     safe_print(f"  ✅ DRA Appeal Approved: {dra_approved_count}")
     safe_print(f"  ❌ DRA Appeal Rejected: {dra_rejected_count}")
-    safe_print("\n  Databases updated:")
-    safe_print(f"    - {DEEP_COVERAGE_DB_FILE}")
-    safe_print(f"    - {RESEARCH_DB_FILE}")
+    safe_print("\n  Database updated:")
+    safe_print(f"    - {VERSION_HISTORY_FILE}")
+    safe_print(f"  Note: Run sync_history_to_db.py to update the CSV database.")
 
     end_time = time.time()
     logger.info(f"Total time taken: {end_time - start_time:.2f} seconds.")

@@ -53,7 +53,9 @@ def safe_print(message):
 # 1. Inputs from other scripts
 RESEARCH_DB_FILE = 'neuromorphic-research_database.csv'
 DEFINITIONS_FILE = 'pillar_definitions_enhanced.json'
-DEEP_COVERAGE_DB_FILE = 'deep_coverage_database.json'
+# DEPRECATED: DEEP_COVERAGE_DB_FILE = 'deep_coverage_database.json'
+# Now using version history as single source of truth (Task Card #4)
+VERSION_HISTORY_FILE = 'review_version_history.json'
 
 # 2. This script's state / outputs
 OUTPUT_FOLDER = 'gap_analysis_output'
@@ -757,7 +759,7 @@ def save_orchestrator_state(state_file: str, previous_results: Dict, score_histo
         "last_run_state": {
             "file_states": {
                 RESEARCH_DB_FILE: Path(RESEARCH_DB_FILE).stat().st_mtime if os.path.exists(RESEARCH_DB_FILE) else 0,
-                DEEP_COVERAGE_DB_FILE: Path(DEEP_COVERAGE_DB_FILE).stat().st_mtime if os.path.exists(DEEP_COVERAGE_DB_FILE) else 0,
+                VERSION_HISTORY_FILE: Path(VERSION_HISTORY_FILE).stat().st_mtime if os.path.exists(VERSION_HISTORY_FILE) else 0,
             }
         },
         "previous_results": previous_results,
@@ -781,11 +783,11 @@ def check_for_new_data(last_run_state: Dict) -> bool:
         logger.info(f"New data detected in {RESEARCH_DB_FILE}.")
         return True
 
-    # Check Deep Coverage DB
-    last_deep_mtime = last_states.get(DEEP_COVERAGE_DB_FILE, 0)
-    current_deep_mtime = Path(DEEP_COVERAGE_DB_FILE).stat().st_mtime if os.path.exists(DEEP_COVERAGE_DB_FILE) else 0
-    if current_deep_mtime > last_deep_mtime:
-        logger.info(f"New data detected in {DEEP_COVERAGE_DB_FILE}.")
+    # Check Version History
+    last_version_mtime = last_states.get(VERSION_HISTORY_FILE, 0)
+    current_version_mtime = Path(VERSION_HISTORY_FILE).stat().st_mtime if os.path.exists(VERSION_HISTORY_FILE) else 0
+    if current_version_mtime > last_version_mtime:
+        logger.info(f"New data detected in {VERSION_HISTORY_FILE}.")
         return True
 
     logger.info("No new file data detected since last run.")
@@ -902,19 +904,36 @@ def load_research_db_records(filepath: str) -> List[Dict]:
         logger.error(f"Could not load or parse research DB {filepath}: {e}")
         return []
 
-def load_approved_deep_claims(filepath: str) -> List[Dict]:
-    """Loads the deep coverage DB and filters for 'approved' claims."""
+def load_approved_claims_from_version_history(filepath: str) -> List[Dict]:
+    """Loads the version history and filters for 'approved' claims."""
     if not os.path.exists(filepath):
-        logger.info("No deep coverage database found.")
+        logger.info("No version history file found.")
         return []
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
-            all_claims = json.load(f)
+            version_history = json.load(f)
+        
+        # Extract all claims from version history
+        all_claims = []
+        for filename, versions in version_history.items():
+            if not versions:
+                continue
+            # Get latest version
+            latest_version = versions[-1]
+            review = latest_version.get('review', {})
+            requirements_list = review.get('Requirement(s)', [])
+            
+            for claim in requirements_list:
+                # Add filename for context
+                claim_with_file = claim.copy()
+                claim_with_file['filename'] = filename
+                all_claims.append(claim_with_file)
+        
         approved_claims = [c for c in all_claims if c.get("status") == "approved"]
         logger.info(f"Loaded {len(all_claims)} total claims, {len(approved_claims)} are 'approved'.")
         return approved_claims
     except Exception as e:
-        logger.error(f"Error loading deep coverage DB: {e}")
+        logger.error(f"Error loading version history: {e}")
         return []
 
 def write_deep_review_directions(filepath: str, directions: Dict):
@@ -1094,9 +1113,9 @@ def main():
             safe_print("❌ No data in Research DB. Exiting.")
             return
 
-        # Load the *full* parsed CSV records and *approved* JSON claims
+        # Load the *full* parsed CSV records and *approved* claims from version history
         all_db_records = load_research_db_records(RESEARCH_DB_FILE)
-        approved_deep_claims = load_approved_deep_claims(DEEP_COVERAGE_DB_FILE)
+        approved_deep_claims = load_approved_claims_from_version_history(VERSION_HISTORY_FILE)
 
         # Initialize analyzer with fresh data
         analyzer = PillarAnalyzer(
