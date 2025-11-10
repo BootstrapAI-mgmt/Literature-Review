@@ -1,17 +1,17 @@
 """
 Judge
-Version: 1.6 (Fixes APIManager bug for DRA calls)
-Date: 2025-11-09
+Version: 2.0 (Uses Version History as Single Source of Truth)
+Date: 2025-11-10
 
-This script acts as an impartial "Judge" for claims from all databases.
+This script acts as an impartial "Judge" for claims from version history.
 It orchestrates a multi-step judgment process:
-1.  PHASE 1: Judge all 'pending' claims.
+1.  PHASE 1: Judge all 'pending_judge_review' claims from version history.
 2.  PHASE 2: Pass all rejected claims to the DeepRequirementsAnalyzer (DRA).
 3.  PHASE 3: Judge the *new* claims re-submitted by the DRA.
-4.  PHASE 4: Save all final verdicts.
+4.  PHASE 4: Save all final verdicts to version history ONLY.
 
-This version fixes a TypeError in APIManager.cached_api_call
-by correctly implementing the 'is_json' argument.
+This version refactors to use review_version_history.json as the single
+source of truth, eliminating direct writes to CSV and deep_coverage_database.json.
 """
 
 import os
@@ -31,6 +31,7 @@ import logging
 import warnings
 import re               # For normalization
 import difflib          # For fuzzy matching
+from collections import defaultdict  # For grouping claims by file
 
 # --- NEW: Import the Deep Requirements Analyzer ---
 import DeepRequirementsAnalyzer as dra
@@ -391,6 +392,134 @@ def save_research_db(filepath: str, data: List[Dict]):
 # --- END DATA LOADING ---
 
 
+# --- VERSION HISTORY I/O FUNCTIONS ---
+VERSION_HISTORY_FILE = 'review_version_history.json'
+
+def load_version_history(filepath: str = VERSION_HISTORY_FILE) -> Dict:
+    """Loads the review version history (source of truth)."""
+    if not os.path.exists(filepath):
+        logger.warning(f"Version history file not found: {filepath}. Starting fresh.")
+        return {}
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            history = json.load(f)
+        logger.info(f"Loaded history for {len(history)} files from {filepath}")
+        return history
+    except Exception as e:
+        logger.error(f"Failed to load version history from {filepath}: {e}")
+        return {}
+
+def save_version_history(filepath: str, history: Dict):
+    """Saves updated review version history."""
+    try:
+        with open(filepath, 'w', encoding='utf-8') as f:
+            json.dump(history, f, indent=2, ensure_ascii=False)
+        logger.info(f"Successfully saved version history to {filepath}")
+    except Exception as e:
+        logger.error(f"Error saving version history to {filepath}: {e}")
+        safe_print(f"❌ CRITICAL: Failed to save version history: {e}")
+
+def extract_pending_claims_from_history(history: Dict) -> List[Dict]:
+    """Extracts all pending claims from version history."""
+    claims = []
+    for filename, versions in history.items():
+        if not versions:
+            continue
+        latest = versions[-1].get('review', {})
+        for claim in latest.get('Requirement(s)', []):
+            if claim.get('status') == 'pending_judge_review':
+                # Add metadata for tracking
+                claim['_source_filename'] = filename
+                claim['_source_type'] = 'version_history'
+                claims.append(claim)
+    logger.info(f"Extracted {len(claims)} pending claims from version history")
+    return claims
+
+def update_claims_in_history(history: Dict, updated_claims: List[Dict]) -> Dict:
+    """Updates claim statuses in version history and creates new version entries."""
+    # Create lookup by claim_id
+    claims_by_id = {c['claim_id']: c for c in updated_claims}
+    
+    timestamp = datetime.now().isoformat()
+    updated_files = []
+    
+    for filename, versions in history.items():
+        if not versions:
+            continue
+        
+        latest = versions[-1]
+        requirements = latest.get('review', {}).get('Requirement(s)', [])
+        
+        # Track if any claims were updated for this file
+        file_updated = False
+        updated_claim_ids = []
+        
+        for claim in requirements:
+            if claim['claim_id'] in claims_by_id:
+                updated = claims_by_id[claim['claim_id']]
+                claim['status'] = updated['status']
+                claim['judge_notes'] = updated['judge_notes']
+                claim['judge_timestamp'] = updated['judge_timestamp']
+                file_updated = True
+                updated_claim_ids.append(claim['claim_id'])
+        
+        # Add new version entry if file was updated
+        if file_updated:
+            new_version = {
+                'timestamp': timestamp,
+                'review': latest['review'],  # Copy of entire review with updated claims
+                'changes': {
+                    'status': 'judge_update',
+                    'updated_claims': len(updated_claim_ids),
+                    'claim_ids': updated_claim_ids
+                }
+            }
+            versions.append(new_version)
+            updated_files.append(filename)
+    
+    logger.info(f"Updated {len(updated_files)} files in version history")
+    return history
+
+def add_new_claims_to_history(history: Dict, new_claims: List[Dict]) -> Dict:
+    """Adds new claims (from DRA) to version history."""
+    timestamp = datetime.now().isoformat()
+    claims_by_file = defaultdict(list)
+    
+    # Group claims by filename
+    for claim in new_claims:
+        filename = claim.get('_source_filename') or claim.get('filename')
+        if filename:
+            claims_by_file[filename].append(claim)
+    
+    for filename, claims in claims_by_file.items():
+        if filename not in history:
+            logger.warning(f"File {filename} not in history. Skipping new claims.")
+            continue
+        
+        versions = history[filename]
+        if not versions:
+            continue
+        
+        latest = versions[-1]
+        latest['review']['Requirement(s)'].extend(claims)
+        
+        # Add new version entry
+        new_version = {
+            'timestamp': timestamp,
+            'review': latest['review'],
+            'changes': {
+                'status': 'dra_appeal',
+                'new_claims': len(claims),
+                'claim_ids': [c['claim_id'] for c in claims]
+            }
+        }
+        versions.append(new_version)
+    
+    logger.info(f"Added {len(new_claims)} new claims to version history")
+    return history
+# --- END VERSION HISTORY I/O FUNCTIONS ---
+
+
 # --- CORE LOGIC FUNCTIONS (Unchanged) ---
 
 def build_judge_prompt(claim: Dict, sub_requirement_definition: str) -> str:
@@ -426,17 +555,17 @@ def process_claims_in_batches(claims: List[Dict], batch_size: int) -> List[List[
         batches.append(batch)
     return batches
 
-# --- MAIN EXECUTION (Unchanged) ---
+# --- MAIN EXECUTION ---
 def main():
     start_time = time.time()
     logger.info("\n" + "=" * 80)
-    logger.info("JUDGE PIPELINE v1.6 (Fixes APIManager bug for DRA calls)")
+    logger.info("JUDGE PIPELINE v2.0 (Uses Version History as Source of Truth)")
     logger.info("=" * 80)
 
     logger.info("\n=== INITIALIZING COMPONENTS ===")
     safe_print("\n=== INITIALIZING COMPONENTS ===")
     try:
-        api_manager = APIManager() # This will now be the *corrected* version
+        api_manager = APIManager()
     except Exception as init_e:
         logger.critical(f"Failed to initialize core components: {init_e}")
         safe_print(f"❌ Failed to initialize core components: {init_e}")
@@ -447,42 +576,32 @@ def main():
         logger.error("Could not find PAPERS_FOLDER. DRA will fail.")
         safe_print("❌ Could not find PAPERS_FOLDER. DRA will be skipped.")
 
-    logger.info("\n=== LOADING DATABASES ===")
-    safe_print("\n=== LOADING DATABASES ===")
+    logger.info("\n=== LOADING DATA ===")
+    safe_print("\n=== LOADING DATA ===")
 
-    db_json_data = load_deep_coverage_db(DEEP_COVERAGE_DB_FILE)
-    db_csv_data = load_research_db(RESEARCH_DB_FILE)
+    # NEW: Load ONLY from version history
+    version_history = load_version_history(VERSION_HISTORY_FILE)
     pillar_definitions = load_pillar_definitions(DEFINITIONS_FILE)
 
     if not pillar_definitions:
         logger.critical("Missing pillar definitions. Exiting.")
         safe_print("❌ Missing pillar definitions. Exiting.")
         return
-    if not db_json_data and not db_csv_data:
-        logger.critical("Missing all data sources. Exiting.")
-        safe_print("❌ Missing all data sources. Exiting.")
+    
+    if not version_history:
+        logger.info("No version history found. Nothing to judge.")
+        safe_print("⚖️ No version history found. All work is done.")
         return
 
-    # --- Build the unified "docket" ---
-    claims_to_judge = []
-    for claim in db_json_data:
-        if claim.get("status") == "pending_judge_review":
-            claim['_origin'] = 'json_db'
-            claims_to_judge.append(claim)
-    for row in db_csv_data:
-        requirements_list = row.get("Requirement(s)", [])
-        if not requirements_list: continue
-        for claim in list(requirements_list):
-            if claim.get("status") == "pending_judge_review":
-                claim['_origin'] = 'csv_db'
-                claim['_origin_list'] = requirements_list
-                claim['_filename'] = row.get('FILENAME', 'N/A')
-                claims_to_judge.append(claim)
+    # Extract pending claims
+    claims_to_judge = extract_pending_claims_from_history(version_history)
+    
     if not claims_to_judge:
-        logger.info("No pending claims found in any database.")
+        logger.info("No pending claims found in version history.")
         safe_print("⚖️ No pending claims found. All work is done.")
         return
-    logger.info(f"Found {len(claims_to_judge)} total claims pending judgment from all sources.")
+    
+    logger.info(f"Found {len(claims_to_judge)} total claims pending judgment.")
     safe_print(f"⚖️ Found {len(claims_to_judge)} total claims pending judgment. The court is in session.")
 
     # --- PHASE 1: Initial Judgment (WITH BATCHING) ---
@@ -492,6 +611,7 @@ def main():
     init_approved_count = 0
     init_rejected_count = 0
     claims_for_dra_appeal = []
+    all_judged_claims = []  # Track all claims for updating history
     
     # Split claims into batches
     claim_batches = process_claims_in_batches(claims_to_judge, API_CONFIG['CLAIM_BATCH_SIZE'])
@@ -504,7 +624,7 @@ def main():
         
         for i, claim in enumerate(claim_batch, 1):
             overall_index = (batch_num - 1) * API_CONFIG['CLAIM_BATCH_SIZE'] + i
-            filename = claim.get('filename') or claim.get('_filename', 'N/A')
+            filename = claim.get('_source_filename', 'N/A')
             claim_id_short = f"{filename[:15]}... ({claim['claim_id'][:6]})"
             logger.info(f"\n--- Judging Claim {overall_index}/{len(claims_to_judge)}: {claim_id_short} ---")
             safe_print(f"\n--- Judging Claim {overall_index}/{len(claims_to_judge)}: {claim_id_short} ---")
@@ -522,7 +642,7 @@ def main():
                     prompt = build_judge_prompt(claim, definition_text)
                     logger.info(f"  Submitting claim to Judge AI...")
                     safe_print(f"  Submitting claim to Judge AI...")
-                    response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True) # is_json=True is now valid
+                    response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
                     ruling = validate_judge_response(response)
 
                 if ruling:
@@ -536,6 +656,7 @@ def main():
                     claim['status'] = ruling['verdict']
                     claim['judge_notes'] = ruling['judge_notes']
                     claim['judge_timestamp'] = datetime.now().isoformat()
+                    all_judged_claims.append(claim)
 
                     if ruling['verdict'] == 'approved':
                         logger.info(f"  VERDICT: APPROVED")
@@ -546,8 +667,6 @@ def main():
                         safe_print(f"  ❌ VERDICT: REJECTED (Sending to DRA for appeal)")
                         init_rejected_count += 1
                         claims_for_dra_appeal.append(claim)
-
-                    logger.info(f"  Note: {ruling['judge_notes']}")
                 else:
                     logger.error(f"  Judge AI returned invalid response. Claim will be re-judged next run.")
                     safe_print(f"  ⚠️ Judge AI returned invalid response. Skipping for next run.")
@@ -577,6 +696,10 @@ def main():
             api_manager,
             papers_folder_path
         )
+        # Add source metadata
+        for claim in new_claims_for_rejudgment:
+            claim['_source_filename'] = claim.get('filename')
+            claim['_source_type'] = 'dra_appeal'
 
     # --- PHASE 3: Final Judgment (on Appeals) (WITH BATCHING) ---
     logger.info("\n--- PHASE 3: Final Judgment (on Appeals) (Batched Processing) ---")
@@ -620,7 +743,7 @@ def main():
                         prompt = build_judge_prompt(new_claim, definition_text)
                         logger.info(f"  Submitting DRA claim to Judge AI...")
                         safe_print(f"  Submitting DRA claim to Judge AI...")
-                        response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True) # is_json=True is now valid
+                        response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
                         ruling = validate_judge_response(response)
 
                     if ruling:
@@ -637,11 +760,7 @@ def main():
                             safe_print(f"  ❌ VERDICT (Appeal): REJECTED")
                             dra_rejected_count += 1
 
-                        if new_claim.get('_origin') == 'csv_db':
-                            new_claim['_origin_list'].append(new_claim)
-                        else:
-                            db_json_data.append(new_claim)
-
+                        all_judged_claims.append(new_claim)
                     else:
                         logger.error(f"  Judge AI returned invalid response for DRA claim. Claim is lost.")
                         safe_print(f"  ⚠️ Judge AI returned invalid response for DRA claim. Skipping.")
@@ -654,18 +773,19 @@ def main():
             logger.info(f"\nDRA Batch {batch_num} complete. Progress: {dra_approved_count} approved, {dra_rejected_count} rejected")
             safe_print(f"DRA Batch {batch_num} complete. Progress: {dra_approved_count} approved, {dra_rejected_count} rejected")
 
+    # --- PHASE 4: Save All Results to Version History ---
+    logger.info("\n--- PHASE 4: Saving Results to Version History ---")
+    safe_print("\n--- PHASE 4: Saving Results to Version History ---")
 
-    # --- PHASE 4: Save All Results ---
-    logger.info("\n--- PHASE 4: Saving All Results ---")
+    # Update existing claims
+    version_history = update_claims_in_history(version_history, all_judged_claims)
+    
+    # Add new DRA claims
+    if new_claims_for_rejudgment:
+        version_history = add_new_claims_to_history(version_history, new_claims_for_rejudgment)
 
-    # We now save the data, which includes:
-    # 1. Claims from Phase 1 that were 'approved'
-    # 2. Claims from Phase 1 that were 'rejected' (and not successfully appealed)
-    # 3. New claims from Phase 3 that were 'approved'
-    # 4. New claims from Phase 3 that were 'rejected'
-
-    save_deep_coverage_db(DEEP_COVERAGE_DB_FILE, db_json_data)
-    save_research_db(RESEARCH_DB_FILE, db_csv_data)
+    # Save to version history ONLY
+    save_version_history(VERSION_HISTORY_FILE, version_history)
 
     logger.info("\n" + "=" * 80)
     logger.info("JUDGMENT COMPLETE")
@@ -679,9 +799,9 @@ def main():
     safe_print(f"  Total Claims Re-Submitted by DRA: {len(new_claims_for_rejudgment)}")
     safe_print(f"  ✅ DRA Appeal Approved: {dra_approved_count}")
     safe_print(f"  ❌ DRA Appeal Rejected: {dra_rejected_count}")
-    safe_print("\n  Databases updated:")
-    safe_print(f"    - {DEEP_COVERAGE_DB_FILE}")
-    safe_print(f"    - {RESEARCH_DB_FILE}")
+    safe_print("\n  📝 Version history updated:")
+    safe_print(f"    - {VERSION_HISTORY_FILE}")
+    safe_print("\n  ⚠️  Run sync_history_to_db.py to update CSV database.")
 
     end_time = time.time()
     logger.info(f"Total time taken: {end_time - start_time:.2f} seconds.")
