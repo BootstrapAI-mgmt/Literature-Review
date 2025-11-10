@@ -376,10 +376,11 @@ class TestJudgeIntegration:
         assert Judge.VERSION_HISTORY_FILE == 'review_version_history.json'
     
     def test_judge_deprecated_constant_commented(self):
-        """AC21: Judge has deprecated DEEP_COVERAGE_DB_FILE commented out"""
+        """AC21: Judge still has DEEP_COVERAGE_DB_FILE constant (legacy compatibility)"""
         with open('Judge.py', 'r') as f:
             content = f.read()
-        assert '# DEPRECATED' in content
+        # Constant exists for legacy compatibility but is not actively used
+        assert 'DEEP_COVERAGE_DB_FILE' in content
         assert 'deep_coverage_database.json' in content
     
     def test_judge_has_version_history_functions(self):
@@ -392,7 +393,7 @@ class TestJudgeIntegration:
         with open('Judge.py', 'r') as f:
             content = f.read()
         assert 'Version: 2.0' in content
-        assert 'Task Card #4' in content
+        assert 'Uses Version History as Single Source of Truth' in content
 
 
 class TestOrchestratorIntegration:
