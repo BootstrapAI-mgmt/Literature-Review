@@ -2,7 +2,7 @@
 Enhanced Research Gap Analysis Orchestrator
 Runs Judge on new data *before* baseline analysis.
 Implements iterative deep-review loop, convergence checking, and score history.
-Version: 3.6 (Pre-Analysis Judge Run)
+Version: 3.7 (Task Card #4: Version History Integration)
 """
 
 import pandas as pd
