@@ -1,0 +1,9 @@
+{
+  "DEPRECATED": true,
+  "deprecation_date": "2025-11-10T21:47:36.174030",
+  "migration_status": "completed",
+  "message": "This file is DEPRECATED as of 2025-11-10. All deep coverage claims are now stored in review_version_history.json. This file is kept for historical reference only. See migrate_deep_coverage.py for migration details.",
+  "new_location": "review_version_history.json",
+  "task_card": "Task Card #4: Design Decision - Deep Coverage Database",
+  "decision": "Option A: Merge into Version History"
+}
