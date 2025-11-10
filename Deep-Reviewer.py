@@ -1,12 +1,12 @@
 """
 Deep Reviewer
-Version: 1.0
-Date: 2025-11-08
+Version: 2.0 (Task Card #4: Migrated to Version History)
+Date: 2025-11-10
 
 This script reads the gap analysis from the Orchestrator and the main
 neuromorphic database. It re-analyzes promising papers to find specific
 text chunks ("Deep Coverage") that address identified research gaps.
-These claims are outputted for review by the 'Judge' script.
+These claims are now stored in review_version_history.json (source of truth).
 """
 
 import os
@@ -26,7 +26,6 @@ from google.genai import types
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import logging
-from dataclasses import dataclass, asdict
 import pickle
 from sentence_transformers import SentenceTransformer
 import warnings
@@ -44,7 +43,9 @@ GAP_REPORT_FILE = 'gap_analysis_output/gap_analysis_report.json'
 DEEP_REVIEW_DIRECTIONS_FILE = 'gap_analysis_output/deep_review_directions.json'
 
 # 2. Input/Output File (This script's state)
-DEEP_COVERAGE_DB_FILE = 'deep_coverage_database.json'
+# DEPRECATED: DEEP_COVERAGE_DB_FILE = 'deep_coverage_database.json'
+# Now using version history as single source of truth (Task Card #4)
+VERSION_HISTORY_FILE = 'review_version_history.json'
 
 # 3. Path/API Config (Copied from Journal-Reviewer)
 ALTERNATIVE_PATHS = [
@@ -120,24 +121,9 @@ def safe_print(message):
 os.makedirs(CACHE_DIR, exist_ok=True)
 
 
-# --- Data Class for Deep Coverage ---
-@dataclass
-class DeepCoverageEntry:
-    claim_id: str  # Unique hash of (filename + sub_req + chunk)
-    filename: str
-    pillar: str
-    requirement_key: str
-    sub_requirement_key: str
-    claim_summary: str  # AI's summary of how this chunk fills the gap
-    evidence_chunk: str  # The actual text chunk from the paper
-    page_number: int  # Estimated page number
-    status: str  # 'pending_judge_review', 'approved', 'rejected'
-    reviewer_confidence: float  # AI's confidence (0-1)
-    judge_notes: str  # To be filled by Judge
-    review_timestamp: str
-
-    def to_dict(self):
-        return asdict(self)
+# --- DEPRECATED: DeepCoverageEntry dataclass ---
+# This has been replaced with direct dictionary format for version history
+# See create_requirement_entry() function for the new format
 
 
 # --- APIManager CLASS (Copied from Journal-Reviewer v3.1) ---
@@ -428,30 +414,58 @@ def load_research_db(filepath: str) -> Optional[pd.DataFrame]:
         return None
 
 
-def load_deep_coverage_db(filepath: str) -> List[Dict]:
-    """Loads the existing deep coverage claims."""
+def load_version_history(filepath: str) -> Dict:
+    """
+    Loads the review version history (source of truth).
+    Returns a dict keyed by filename.
+    """
     if not os.path.exists(filepath):
-        logger.info("No existing deep coverage file found. Creating new one.")
-        return []
+        logger.warning(f"Version history file not found: {filepath}. Creating new one.")
+        return {}
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
-            return json.load(f)
+            history = json.load(f)
+        logger.info(f"Loaded version history for {len(history)} files from {filepath}")
+        return history
     except json.JSONDecodeError:
-        logger.warning(f"Error decoding {filepath}. Starting with empty DB.")
-        return []
+        logger.warning(f"Error decoding {filepath}. Starting with empty history.")
+        return {}
     except Exception as e:
-        logger.error(f"Error loading deep coverage DB: {e}")
-        return []
+        logger.error(f"Error loading version history: {e}")
+        return {}
 
 
-def save_deep_coverage_db(filepath: str, db: List[Dict]):
-    """Saves the updated deep coverage claims."""
+def save_version_history(filepath: str, history: Dict):
+    """Saves the updated version history."""
     try:
         with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(db, f, indent=2, ensure_ascii=False)
-        logger.info(f"Saved {len(db)} deep coverage claims to {filepath}")
+            json.dump(history, f, indent=2, ensure_ascii=False)
+        logger.info(f"Saved version history for {len(history)} files to {filepath}")
     except Exception as e:
-        logger.error(f"Error saving deep coverage DB: {e}")
+        logger.error(f"Error saving version history: {e}")
+
+
+def get_all_claims_from_history(version_history: Dict) -> List[Dict]:
+    """
+    Extract all claims from version history into a flat list for comparison.
+    Returns a list of claims with 'filename' field added.
+    """
+    all_claims = []
+    for filename, versions in version_history.items():
+        if not versions:
+            continue
+        # Get latest version
+        latest_version = versions[-1]
+        review = latest_version.get('review', {})
+        requirements = review.get('Requirement(s)', [])
+        
+        for req in requirements:
+            # Add filename to claim for context
+            claim_with_file = req.copy()
+            claim_with_file['filename'] = filename
+            all_claims.append(claim_with_file)
+    
+    return all_claims
 
 
 def load_directions(filepath: str) -> Dict:
@@ -535,12 +549,17 @@ def find_gaps_to_review(gap_report: Dict, directions: Dict) -> List[Dict]:
 def find_promising_papers(
         gap: Dict,
         research_db: pd.DataFrame,
-        deep_coverage_db: List[Dict]
+        all_claims: List[Dict]
 ) -> List[Dict]:
     """
     Finds papers that are likely to fill the gap.
     Starts with 'contributing_papers' from the gap report.
     Filters out papers that already have an 'approved' claim for this gap.
+    
+    Args:
+        gap: Gap information dict
+        research_db: Main research database
+        all_claims: List of all claims from version history
     """
     paper_filenames = gap.get("contributing_papers", [])
     if not paper_filenames:
@@ -553,16 +572,16 @@ def find_promising_papers(
 
     # Get set of papers that already have an 'approved' claim for this sub-req
     approved_papers = {
-        entry['filename'] for entry in deep_coverage_db
-        if entry['sub_requirement_key'] == gap['sub_requirement_key']
-           and entry['status'] == 'approved'
+        entry['filename'] for entry in all_claims
+        if entry.get('sub_requirement') == gap['sub_requirement_key']
+           and entry.get('status') == 'approved'
     }
 
     # Get set of papers that have a 'pending' claim (to avoid duplicates)
     pending_papers = {
-        entry['filename'] for entry in deep_coverage_db
-        if entry['sub_requirement_key'] == gap['sub_requirement_key']
-           and entry['status'] == 'pending_judge_review'
+        entry['filename'] for entry in all_claims
+        if entry.get('sub_requirement') == gap['sub_requirement_key']
+           and entry.get('status') == 'pending_judge_review'
     }
 
     promising_paper_info = []
@@ -660,12 +679,15 @@ Example:
 """
 
 
-def create_deep_coverage_entry(
+def create_requirement_entry(
         claim_data: Dict,
         paper_info: Dict,
         gap: Dict
 ) -> Dict:
-    """Creates a new DeepCoverageEntry object from AI output."""
+    """
+    Creates a new requirement entry for version history from AI output.
+    Uses the version history Requirement(s) format with extended fields.
+    """
     filename = paper_info.get('FILENAME', 'N/A')
     sub_req = gap.get('sub_requirement_key', 'N/A')
     chunk = claim_data.get('evidence_chunk', '')
@@ -673,20 +695,62 @@ def create_deep_coverage_entry(
     # Create a unique, repeatable ID
     claim_hash = hashlib.md5(f"{filename}{sub_req}{chunk}".encode('utf-8')).hexdigest()
 
-    return DeepCoverageEntry(
-        claim_id=claim_hash,
-        filename=filename,
-        pillar=gap.get('pillar', 'N/A'),
-        requirement_key=gap.get('requirement_key', 'N/A'),
-        sub_requirement_key=sub_req,
-        claim_summary=claim_data.get('claim_summary', 'No summary provided.'),
-        evidence_chunk=chunk,
-        page_number=claim_data.get('page_number', 0),
-        status='pending_judge_review',
-        reviewer_confidence=claim_data.get('reviewer_confidence', 0.5),
-        judge_notes="",
-        review_timestamp=datetime.now().isoformat()
-    ).to_dict()
+    return {
+        "claim_id": claim_hash,
+        "pillar": gap.get('pillar', 'N/A'),
+        "sub_requirement": sub_req,
+        "evidence_chunk": chunk,
+        "claim_summary": claim_data.get('claim_summary', 'No summary provided.'),
+        "status": 'pending_judge_review',
+        # Extended fields from Deep Reviewer
+        "requirement_key": gap.get('requirement_key', 'N/A'),
+        "page_number": claim_data.get('page_number', 0),
+        "reviewer_confidence": claim_data.get('reviewer_confidence', 0.5),
+        "judge_notes": "",
+        "review_timestamp": datetime.now().isoformat(),
+        "source": "deep_reviewer"
+    }
+
+
+def add_claim_to_version_history(
+        version_history: Dict,
+        filename: str,
+        claim: Dict
+) -> None:
+    """
+    Add a claim to the version history for a specific file.
+    Creates a new version entry or updates the latest one.
+    """
+    timestamp = datetime.now().isoformat()
+    
+    # Ensure file exists in version history
+    if filename not in version_history:
+        logger.info(f"Creating new version history entry for {filename}")
+        version_history[filename] = []
+    
+    # Get or create latest version
+    if not version_history[filename]:
+        # Create new version
+        version_history[filename].append({
+            "timestamp": timestamp,
+            "review": {
+                "FILENAME": filename,
+                "Requirement(s)": []
+            },
+            "changes": {
+                "status": "deep_reviewer_claims"
+            }
+        })
+    
+    latest_version = version_history[filename][-1]
+    
+    # Ensure Requirement(s) field exists
+    if "Requirement(s)" not in latest_version["review"]:
+        latest_version["review"]["Requirement(s)"] = []
+    
+    # Add the claim
+    latest_version["review"]["Requirement(s)"].append(claim)
+    logger.debug(f"Added claim {claim['claim_id']} to {filename}")
 
 
 # --- MAIN EXECUTION ---
@@ -715,7 +779,7 @@ def main():
     safe_print("\n=== LOADING DATABASES ===")
     gap_report = load_gap_report(GAP_REPORT_FILE)
     research_db = load_research_db(RESEARCH_DB_FILE)
-    deep_coverage_db = load_deep_coverage_db(DEEP_COVERAGE_DB_FILE)
+    version_history = load_version_history(VERSION_HISTORY_FILE)
     directions = load_directions(DEEP_REVIEW_DIRECTIONS_FILE)
 
     if not gap_report or research_db is None:
@@ -736,15 +800,19 @@ def main():
     logger.info(f"Found {len(gaps_to_review)} sub-requirement gaps to analyze.")
     safe_print(f"Found {len(gaps_to_review)} sub-requirement gaps to analyze.")
 
+    # Extract all claims from version history for comparison
+    all_claims = get_all_claims_from_history(version_history)
+    logger.info(f"Found {len(all_claims)} existing claims in version history")
+    
     new_claims_found = 0
-    existing_claim_ids = {entry.get('claim_id') for entry in deep_coverage_db}
+    existing_claim_ids = {claim.get('claim_id') for claim in all_claims}
 
     for i, gap in enumerate(gaps_to_review, 1):
         gap_id = f"{gap['pillar'].split(':')[0]} / {gap['sub_requirement_key'].split(':')[0]}"
         logger.info(f"\n--- Processing Gap {i}/{len(gaps_to_review)}: {gap_id} ---")
         safe_print(f"\n--- Processing Gap {i}/{len(gaps_to_review)}: {gap_id} ---")
 
-        promising_papers = find_promising_papers(gap, research_db, deep_coverage_db)
+        promising_papers = find_promising_papers(gap, research_db, all_claims)
 
         if not promising_papers:
             logger.info(f"No promising papers found for this gap (all may be 'approved' or 'pending').")
@@ -775,9 +843,9 @@ def main():
 
                 # Find all existing claims for this specific paper+gap
                 existing_claims_for_paper = [
-                    entry for entry in deep_coverage_db
-                    if entry['filename'] == filename
-                       and entry['sub_requirement_key'] == gap['sub_requirement_key']
+                    claim for claim in all_claims
+                    if claim.get('filename') == filename
+                       and claim.get('sub_requirement') == gap['sub_requirement_key']
                 ]
 
                 prompt = build_deep_review_prompt(gap, paper_info, pages_text, existing_claims_for_paper)
@@ -794,15 +862,16 @@ def main():
                         continue
 
                     for claim_data in new_claims_data:
-                        new_entry_dict = create_deep_coverage_entry(claim_data, paper_info, gap)
+                        new_requirement = create_requirement_entry(claim_data, paper_info, gap)
 
-                        if new_entry_dict['claim_id'] not in existing_claim_ids:
-                            deep_coverage_db.append(new_entry_dict)
-                            existing_claim_ids.add(new_entry_dict['claim_id'])
+                        if new_requirement['claim_id'] not in existing_claim_ids:
+                            # Add claim to version history
+                            add_claim_to_version_history(version_history, filename, new_requirement)
+                            existing_claim_ids.add(new_requirement['claim_id'])
                             new_claims_found += 1
                             logger.info(f"    ✅ Found new claim in {filename}!")
                             safe_print(
-                                f"    ✅ Found new claim! (Confidence: {new_entry_dict['reviewer_confidence']:.1f})")
+                                f"    ✅ Found new claim! (Confidence: {new_requirement['reviewer_confidence']:.1f})")
                         else:
                             logger.warning(f"    Duplicate claim ID detected. Skipping.")
 
@@ -818,10 +887,11 @@ def main():
     logger.info("DEEP REVIEW COMPLETE")
 
     if new_claims_found > 0:
-        save_deep_coverage_db(DEEP_COVERAGE_DB_FILE, deep_coverage_db)
+        save_version_history(VERSION_HISTORY_FILE, version_history)
         logger.info(f"Found and saved {new_claims_found} new claims.")
-        safe_print(f"✅ Found and saved {new_claims_found} new claims to `{DEEP_COVERAGE_DB_FILE}`")
+        safe_print(f"✅ Found and saved {new_claims_found} new claims to `{VERSION_HISTORY_FILE}`")
         safe_print("  Ready for 'Judge' script review.")
+        safe_print(f"  Note: Run sync_history_to_db.py to update the CSV database.")
     else:
         logger.info("No new claims were found in this run.")
         safe_print("✅ No new claims were found in this run.")
