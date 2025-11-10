@@ -60,6 +60,9 @@ API_CONFIG = {
     "RETRY_DELAY": 5,
     "API_CALLS_PER_MINUTE": 60,
 }
+REVIEW_CONFIG = {
+    "DEEP_REVIEWER_CHUNK_SIZE": 75000,  # Chunk size for Deep Reviewer text processing
+}
 SUPPORTED_EXTENSIONS = ('.pdf', '.html', '.txt', '.HTML', '.PDF', '.TXT')
 MIN_TEXT_LENGTH = 500  # For TextExtractor
 
@@ -494,6 +497,78 @@ def clear_directions_file(filepath: str):
         logger.error(f"Error clearing directions file: {e}")
 
 
+# --- CHUNKING FUNCTIONS ---
+
+def chunk_pages_with_tracking(pages_text: List[str], chunk_size: int = 75000) -> List[Tuple[List[str], str]]:
+    """
+    Split large page list into chunks while tracking page ranges.
+    Returns list of tuples: (pages_in_chunk, page_range_str)
+    """
+    total_text = "".join(pages_text)
+    
+    if len(total_text) <= chunk_size:
+        # Calculate page range
+        page_range = f"Pages 1-{len(pages_text)}" if len(pages_text) > 1 else "Page 1"
+        return [(pages_text, page_range)]
+    
+    # Split pages into chunks based on cumulative character count
+    chunks = []
+    current_chunk = []
+    current_size = 0
+    chunk_start_page = 1
+    
+    for i, page_text in enumerate(pages_text, 1):
+        page_length = len(page_text)
+        
+        # If adding this page exceeds chunk size and we have some pages, start new chunk
+        if current_size + page_length > chunk_size and current_chunk:
+            # Save current chunk
+            page_range = f"Pages {chunk_start_page}-{i-1}" if i-1 > chunk_start_page else f"Page {chunk_start_page}"
+            chunks.append((current_chunk, page_range))
+            
+            # Start new chunk
+            current_chunk = [page_text]
+            current_size = page_length
+            chunk_start_page = i
+        else:
+            current_chunk.append(page_text)
+            current_size += page_length
+    
+    # Add the last chunk
+    if current_chunk:
+        last_page = len(pages_text)
+        page_range = f"Pages {chunk_start_page}-{last_page}" if last_page > chunk_start_page else f"Page {chunk_start_page}"
+        chunks.append((current_chunk, page_range))
+    
+    logger.info(f"Deep Reviewer: Split {len(pages_text)} pages ({len(total_text)} chars) into {len(chunks)} chunks")
+    return chunks
+
+
+def aggregate_deep_review_results(chunk_results: List[Dict]) -> List[Dict]:
+    """
+    Aggregate results from multiple chunks, removing duplicates.
+    Each chunk_result should have a 'new_claims' key.
+    """
+    all_claims = []
+    seen_evidence = set()
+    
+    for chunk_result in chunk_results:
+        new_claims = chunk_result.get('new_claims', [])
+        for claim in new_claims:
+            # Use evidence_chunk as deduplication key
+            evidence = claim.get('evidence_chunk', '')
+            # Simple deduplication: if we've seen similar evidence, skip
+            if evidence and evidence not in seen_evidence:
+                all_claims.append(claim)
+                seen_evidence.add(evidence)
+    
+    logger.info(f"Deep Reviewer: Aggregated {len(all_claims)} unique claims from {len(chunk_results)} chunks")
+    return all_claims
+
+
+# --- END CHUNKING FUNCTIONS ---
+
+
 # --- CORE LOGIC FUNCTIONS ---
 
 def find_gaps_to_review(gap_report: Dict, directions: Dict) -> List[Dict]:
@@ -607,9 +682,10 @@ def build_deep_review_prompt(
         gap: Dict,
         paper_info: Dict,
         paper_pages_text: List[str],
-        existing_claims: List[Dict]
+        existing_claims: List[Dict],
+        page_range: str = "Full Document"
 ) -> str:
-    """Builds the comprehensive prompt for the AI Deep Reviewer."""
+    """Builds the comprehensive prompt for the AI Deep Reviewer. Now includes page_range for chunked documents."""
 
     existing_claims_str = "None."
     if existing_claims:
@@ -624,6 +700,8 @@ def build_deep_review_prompt(
 
     return f"""
 You are a "Deep Reviewer" AI agent. Your task is to re-read a paper's full text to find specific, new evidence for a known research gap.
+
+**NOTE:** You are analyzing {page_range} of this document. Focus on evidence within this section.
 
 --- CORE RESEARCH CONTEXT ---
 Our core research topic is: "The mapping of human brain functions to machine learning frameworks, specifically in the areas of skill acquisition, memory consolidation, and stimulus-response, with emphasis on neuromorphic computing architectures."
@@ -644,7 +722,7 @@ You (or another reviewer) have already made the following claims about this pape
 {existing_claims_str}
 
 --- YOUR TASK ---
-Scan the *entire* full text of the paper provided below. Find up to 3 *new* and *distinct* text chunks (1-5 sentences) that *directly* contribute to fulfilling the **Sub-Requirement (Target)**.
+Scan the text provided below ({page_range}). Find up to 3 *new* and *distinct* text chunks (1-5 sentences) that *directly* contribute to fulfilling the **Sub-Requirement (Target)**.
 
 For each chunk you find:
 1.  **Extract the text:** Quote the text *exactly* as it appears.
@@ -848,12 +926,55 @@ def main():
                        and claim.get('sub_requirement') == gap['sub_requirement_key']
                 ]
 
-                prompt = build_deep_review_prompt(gap, paper_info, pages_text, existing_claims_for_paper)
+                # Check if document needs chunking
+                total_text_length = len(full_text)
+                if total_text_length > REVIEW_CONFIG['DEEP_REVIEWER_CHUNK_SIZE']:
+                    logger.info(f"    Deep Reviewer: Document is large ({total_text_length} chars). Chunking at {REVIEW_CONFIG['DEEP_REVIEWER_CHUNK_SIZE']} chars.")
+                    safe_print(f"    Large document detected. Processing in chunks...")
+                    
+                    # Chunk the pages with page tracking
+                    page_chunks = chunk_pages_with_tracking(pages_text, REVIEW_CONFIG['DEEP_REVIEWER_CHUNK_SIZE'])
+                    chunk_results = []
+                    
+                    # Process each chunk
+                    for chunk_num, (chunk_pages, page_range) in enumerate(page_chunks, 1):
+                        logger.info(f"    Deep Reviewer: Processing chunk {chunk_num}/{len(page_chunks)} ({page_range})")
+                        safe_print(f"    Processing chunk {chunk_num}/{len(page_chunks)} ({page_range})")
+                        
+                        # Build prompt for this chunk
+                        prompt = build_deep_review_prompt(gap, paper_info, chunk_pages, existing_claims_for_paper, page_range)
+                        
+                        try:
+                            # Call API for this chunk
+                            chunk_response = api_manager.cached_api_call(prompt, use_cache=False)
+                            
+                            if chunk_response and "new_claims" in chunk_response:
+                                chunk_results.append(chunk_response)
+                                logger.info(f"    Deep Reviewer: Chunk {chunk_num} returned {len(chunk_response.get('new_claims', []))} potential claims")
+                            else:
+                                logger.warning(f"    Deep Reviewer: Chunk {chunk_num} returned invalid response")
+                                
+                        except Exception as e:
+                            logger.error(f"    Deep Reviewer: Error processing chunk {chunk_num}: {e}")
+                    
+                    # Aggregate results from all chunks
+                    if chunk_results:
+                        aggregated_claims = aggregate_deep_review_results(chunk_results)
+                        # Create a synthetic response with aggregated claims
+                        ai_response = {"new_claims": aggregated_claims}
+                        logger.info(f"    Deep Reviewer: Aggregated {len(aggregated_claims)} unique claims from {len(chunk_results)} chunks")
+                    else:
+                        ai_response = {"new_claims": []}
+                        logger.warning(f"    Deep Reviewer: No valid chunk results for {filename}")
+                else:
+                    # Document is small enough, process normally
+                    prompt = build_deep_review_prompt(gap, paper_info, pages_text, existing_claims_for_paper, "Full Document")
 
-                # Use cache=False to ensure we re-analyze for *new* claims
-                # if the context (e.g., existing claims) has changed.
-                ai_response = api_manager.cached_api_call(prompt, use_cache=False)
+                    # Use cache=False to ensure we re-analyze for *new* claims
+                    # if the context (e.g., existing claims) has changed.
+                    ai_response = api_manager.cached_api_call(prompt, use_cache=False)
 
+                # Process the response (same for chunked and non-chunked)
                 if ai_response and "new_claims" in ai_response:
                     new_claims_data = ai_response["new_claims"]
                     if not new_claims_data:

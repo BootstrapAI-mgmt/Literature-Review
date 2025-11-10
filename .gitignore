@@ -20,10 +20,17 @@ wheels/
 .installed.cfg
 *.egg
 
+# Log files
+*.log
+judge.log
+db_sync.log
+
 # Virtual environments
+.env
+.venv
+env/
 venv/
 ENV/
-env/
 
 # IDEs
 .vscode/
@@ -32,10 +39,25 @@ env/
 *.swo
 *~
 
+# Logs and databases
+*.sqlite
+*.db
+
+# Test files
+test_*.py
+
 # Cache directories
+cache/
 judge_cache/
+deep_reviewer_cache/
 *.cache
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Temporary/working files (keep EXAMPLE files)
+review_version_history.json
+neuromorphic-research_database.csv
+deep_coverage_database.json
+non-journal_database.csv
