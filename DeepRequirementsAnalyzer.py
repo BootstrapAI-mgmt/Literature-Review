@@ -38,6 +38,7 @@ ALTERNATIVE_PATHS = [
 ]
 REVIEW_CONFIG = {
     "MIN_TEXT_LENGTH": 500,
+    "DRA_CHUNK_SIZE": 50000,  # Chunk size for DRA text processing
 }
 
 # --- Logging ---
@@ -191,12 +192,84 @@ def find_paper_filepath(filename: str, papers_folder: str) -> Optional[str]:
 # --- END Path Functions ---
 
 
+# --- CHUNKING FUNCTIONS ---
+
+def chunk_text_with_page_tracking(full_text: str, chunk_size: int = 50000) -> List[Tuple[str, str]]:
+    """
+    Split large text into chunks while tracking page ranges.
+    Returns list of tuples: (chunk_text, page_range_str)
+    """
+    if len(full_text) <= chunk_size:
+        # Extract page range from the text
+        page_range = extract_page_range(full_text)
+        return [(full_text, page_range)]
+    
+    # Add 10% overlap for context preservation
+    overlap = int(chunk_size * 0.1)
+    chunks = []
+    
+    for i in range(0, len(full_text), chunk_size - overlap):
+        chunk_text = full_text[i:i + chunk_size]
+        page_range = extract_page_range(chunk_text)
+        chunks.append((chunk_text, page_range))
+    
+    logger.info(f"DRA: Split text ({len(full_text)} chars) into {len(chunks)} chunks")
+    return chunks
+
+
+def extract_page_range(text: str) -> str:
+    """
+    Extract page range from text that contains page markers like '--- Page N ---'.
+    Returns a string like "Pages 1-5" or "Page 1" or "N/A".
+    """
+    import re
+    
+    # Find all page markers in the format "--- Page N ---"
+    page_markers = re.findall(r'---\s*Page\s+(\d+)\s*---', text)
+    
+    if not page_markers:
+        return "N/A"
+    
+    page_numbers = sorted([int(p) for p in page_markers])
+    
+    if len(page_numbers) == 1:
+        return f"Page {page_numbers[0]}"
+    else:
+        return f"Pages {page_numbers[0]}-{page_numbers[-1]}"
+
+
+def aggregate_chunk_results(chunk_results: List[Dict]) -> List[Dict]:
+    """
+    Aggregate results from multiple chunks, removing duplicates.
+    Each chunk_result should have a 'new_claims_to_rejudge' key.
+    """
+    all_claims = []
+    seen_evidence = set()
+    
+    for chunk_result in chunk_results:
+        new_claims = chunk_result.get('new_claims_to_rejudge', [])
+        for claim in new_claims:
+            # Use evidence_chunk as deduplication key
+            evidence = claim.get('evidence_chunk', '')
+            # Simple deduplication: if we've seen similar evidence, skip
+            if evidence and evidence not in seen_evidence:
+                all_claims.append(claim)
+                seen_evidence.add(evidence)
+    
+    logger.info(f"DRA: Aggregated {len(all_claims)} unique claims from {len(chunk_results)} chunks")
+    return all_claims
+
+
+# --- END CHUNKING FUNCTIONS ---
+
+
 # --- CORE LOGIC (MODIFIED) ---
 
-def build_dra_prompt(claims_for_document: List[Dict], full_paper_text: str) -> str:
+def build_dra_prompt(claims_for_document: List[Dict], full_paper_text: str, page_range: str = "N/A") -> str:
     """
     Builds the prompt for the Deep Requirements Analyzer AI.
     This prompt includes *all* rejected claims for a single document.
+    Now includes page_range for chunked documents.
     """
 
     rejection_list_str = ""
@@ -211,6 +284,8 @@ Original Evidence: "{claim.get('evidence_chunk', 'N/A')}"
 
     return f"""
 You are an expert "Deep Requirements Analyzer." Your task is to re-evaluate a list of claims that were rejected by an impartial Judge. You will find *better* evidence for *all* of them from the full text of the single paper provided.
+
+**NOTE:** You are analyzing {page_range} of this document. Focus on evidence within this section.
 
 --- LIST OF REJECTED CLAIMS ---
 {rejection_list_str}
@@ -306,13 +381,58 @@ def run_analysis(
             logger.error(f"DRA: Could not extract text from {filename}. Skipping all {len(claims_for_doc)} claims.")
             continue
 
-        # 2. Build the new prompt (with ALL claims for this doc)
-        prompt = build_dra_prompt(claims_for_doc, full_text)
+        # 2. Check if text needs chunking
+        if len(full_text) > REVIEW_CONFIG['DRA_CHUNK_SIZE']:
+            logger.info(f"DRA: Document is large ({len(full_text)} chars). Chunking at {REVIEW_CONFIG['DRA_CHUNK_SIZE']} chars.")
+            safe_print(f"    DRA: Large document detected. Processing in chunks...")
+            
+            # Chunk the text with page tracking
+            text_chunks = chunk_text_with_page_tracking(full_text, REVIEW_CONFIG['DRA_CHUNK_SIZE'])
+            chunk_results = []
+            
+            # Process each chunk
+            for chunk_num, (chunk_text, page_range) in enumerate(text_chunks, 1):
+                logger.info(f"DRA: Processing chunk {chunk_num}/{len(text_chunks)} ({page_range})")
+                safe_print(f"    DRA: Processing chunk {chunk_num}/{len(text_chunks)} ({page_range})")
+                
+                # Build prompt for this chunk
+                prompt = build_dra_prompt(claims_for_doc, chunk_text, page_range)
+                
+                try:
+                    # Call API for this chunk
+                    chunk_response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+                    
+                    if chunk_response and "new_claims_to_rejudge" in chunk_response:
+                        chunk_results.append(chunk_response)
+                        logger.info(f"DRA: Chunk {chunk_num} returned {len(chunk_response.get('new_claims_to_rejudge', []))} potential claims")
+                    else:
+                        logger.warning(f"DRA: Chunk {chunk_num} returned invalid response")
+                        
+                except Exception as e:
+                    logger.error(f"DRA: Error processing chunk {chunk_num}: {e}")
+            
+            # Aggregate results from all chunks
+            if chunk_results:
+                aggregated_claims = aggregate_chunk_results(chunk_results)
+                # Create a synthetic response with aggregated claims
+                ai_response = {"new_claims_to_rejudge": aggregated_claims}
+                logger.info(f"DRA: Aggregated {len(aggregated_claims)} unique claims from {len(chunk_results)} chunks")
+            else:
+                ai_response = {"new_claims_to_rejudge": []}
+                logger.warning(f"DRA: No valid chunk results for {filename}")
+        else:
+            # Document is small enough, process normally
+            prompt = build_dra_prompt(claims_for_doc, full_text, "Full Document")
 
-        # 3. Call API (no cache, always re-analyze)
+            # 3. Call API (no cache, always re-analyze)
+            try:
+                ai_response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+            except Exception as e:
+                logger.error(f"DRA: Error calling API for {filename}: {e}")
+                ai_response = None
+
+        # 4. Process the response (same for chunked and non-chunked)
         try:
-            ai_response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
-
             if not ai_response or "new_claims_to_rejudge" not in ai_response:
                 logger.error(f"DRA: AI response was invalid for {filename}.")
                 continue
@@ -327,7 +447,7 @@ def run_analysis(
             # Create a quick lookup for the original claim data
             original_claim_lookup = {c['claim_id']: c for c in claims_for_doc}
 
-            # 4. Format the new claim(s)
+            # 5. Format the new claim(s)
             for new_claim_data in new_claims_list:
                 original_claim_id = new_claim_data.get("original_claim_id")
                 original_claim = original_claim_lookup.get(original_claim_id)
