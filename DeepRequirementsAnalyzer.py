@@ -43,6 +43,9 @@ REVIEW_CONFIG = {
 # --- Logging ---
 logger = logging.getLogger(__name__)
 
+# --- DEFINITIONS FILE ---
+DEFINITIONS_FILE = 'pillar_definitions_enhanced.json'
+
 
 def safe_print(message):
     """Print message safely handling Unicode on Windows"""
@@ -50,6 +53,31 @@ def safe_print(message):
         print(message)
     except UnicodeEncodeError:
         print(str(message).encode(sys.stdout.encoding or 'utf-8', 'replace').decode(sys.stdout.encoding or 'utf-8'))
+
+
+def load_pillar_definitions(filepath: str) -> Dict:
+    """Load pillar definitions for DRA analysis."""
+    if not os.path.exists(filepath):
+        logger.error(f"Pillar definitions file not found: {filepath}")
+        return {}
+    try:
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        logger.error(f"Error loading pillar definitions: {e}")
+        return {}
+
+
+def find_sub_requirement_definition(definitions: Dict, pillar_key: str, 
+                                     sub_req_key: str) -> Optional[str]:
+    """Extract the full definition text for a sub-requirement."""
+    for pillar_name, pillar_data in definitions.items():
+        if pillar_name == pillar_key or pillar_name.startswith(pillar_key):
+            for req_key, sub_req_list in pillar_data.get('requirements', {}).items():
+                for sub_req_text in sub_req_list:
+                    if sub_req_text == sub_req_key or sub_req_text.startswith(sub_req_key):
+                        return sub_req_text
+    return None
 
 
 # --- TextExtractor CLASS (Unchanged) ---
@@ -193,7 +221,8 @@ def find_paper_filepath(filename: str, papers_folder: str) -> Optional[str]:
 
 # --- CORE LOGIC (MODIFIED) ---
 
-def build_dra_prompt(claims_for_document: List[Dict], full_paper_text: str) -> str:
+def build_dra_prompt(claims_for_document: List[Dict], full_paper_text: str,
+                     pillar_definitions: Dict) -> str:
     """
     Builds the prompt for the Deep Requirements Analyzer AI.
     This prompt includes *all* rejected claims for a single document.
@@ -201,27 +230,48 @@ def build_dra_prompt(claims_for_document: List[Dict], full_paper_text: str) -> s
 
     rejection_list_str = ""
     for i, claim in enumerate(claims_for_document, 1):
+        # NEW: Get the canonical definition
+        pillar_key = claim.get('pillar', 'N/A')
+        sub_req_key = claim.get('sub_requirement', 'N/A')
+        definition_text = find_sub_requirement_definition(
+            pillar_definitions, pillar_key, sub_req_key
+        )
+        
         rejection_list_str += f"""
 --- REJECTED CLAIM #{i} ---
-Requirement ("The Law"): "{claim.get('sub_requirement', 'N/A')}"
-Judge's Reason: "{claim.get('judge_notes', 'N/A')}"
-Original Evidence: "{claim.get('evidence_chunk', 'N/A')}"
+Pillar: {pillar_key}
+Sub-Requirement Key: {sub_req_key}
+FULL REQUIREMENT DEFINITION ("THE LAW"):
+"{definition_text if definition_text else 'NOT FOUND - Cannot satisfy this claim!'}"
+
+Judge's Rejection Reason: "{claim.get('judge_notes', 'N/A')}"
+Original Evidence Provided: "{claim.get('evidence_chunk', 'N/A')}"
 (Internal Claim ID: {claim.get('claim_id')})
 """
 
     return f"""
 You are an expert "Deep Requirements Analyzer." Your task is to re-evaluate a list of claims that were rejected by an impartial Judge. You will find *better* evidence for *all* of them from the full text of the single paper provided.
 
+--- CRITICAL INSTRUCTIONS ---
+1. The "FULL REQUIREMENT DEFINITION" shown for each rejected claim is the EXACT text that the Judge will validate against.
+2. Your evidence MUST DIRECTLY and EXPLICITLY satisfy that FULL definition, NOT just the sub-requirement key.
+3. The Judge rejected the original attempt for specific reasons. Your new evidence must ADDRESS those reasons.
+4. Quote text EXACTLY from the paper. The Judge will verify your quotes.
+5. If you cannot find text that CLEARLY satisfies the FULL definition, DO NOT submit a claim for that requirement.
+
 --- LIST OF REJECTED CLAIMS ---
 {rejection_list_str}
 --- END OF LIST ---
 
 --- YOUR TASK ---
-1.  **Analyze Rejections:** For *each* rejected claim, understand *why* the Judge rejected it (e.g., "too weak," "tangential").
-2.  **Scan the FULL TEXT:** Read the entire document provided below.
-3.  **Find Better Evidence:** For *each* rejected claim, locate one or more sections of text that *directly* and *strongly* satisfy its specific requirement, addressing the Judge's rejection.
-4.  **"More is Better":** Be prepared to pull multiple paragraphs from different sections if needed to build a strong, undeniable case. Combine them into a single `evidence_chunk`.
-5.  **Self-Correction:** If you cannot find any text with high confidence that *truly* satisfies a requirement and overcomes the rejection, you MUST NOT return an entry for it.
+1.  **Understand "THE LAW":** For each rejected claim, carefully read the FULL REQUIREMENT DEFINITION.
+2.  **Understand the Rejection:** Read why the Judge rejected the original evidence.
+3.  **Scan the FULL TEXT:** Read the entire document provided below.
+4.  **Find Direct Evidence:** For each rejected claim, locate text that:
+    - DIRECTLY addresses the FULL REQUIREMENT DEFINITION
+    - Overcomes the Judge's specific rejection reason
+    - Is EXPLICIT, not implied or tangential
+5.  **Be Selective:** Only submit claims where you have HIGH confidence (>0.9) that the new evidence will satisfy the Judge.
 
 --- Output Format ---
 Return ONLY a JSON object with a single key, "new_claims_to_rejudge", which is a list.
@@ -231,16 +281,10 @@ Example:
 {{
   "new_claims_to_rejudge": [
     {{
-      "original_claim_id": "(String) The 'Internal Claim ID' of the rejected claim this new evidence is for.",
-      "claim_summary": "(String) Your *new* 1-sentence argument for why this *new, larger* evidence is sufficient.",
-      "evidence_chunk": "(String) The full, comprehensive text (potentially multiple paragraphs) that you extracted.",
+      "original_claim_id": "(String) The 'Internal Claim ID' of the rejected claim.",
+      "claim_summary": "(String) A 1-sentence argument for why this evidence NOW satisfies the FULL definition AND addresses the rejection.",
+      "evidence_chunk": "(String) EXACT quote from paper. Can be multiple paragraphs if needed for completeness.",
       "reviewer_confidence": 0.95
-    }},
-    {{
-      "original_claim_id": "(String) The 'Internal Claim ID' for the *second* rejected claim.",
-      "claim_summary": "(String) This new evidence from the methods section clearly defines the model.",
-      "evidence_chunk": "(String) As seen in Figure 4 and the surrounding text, the model architecture consists of...",
-      "reviewer_confidence": 0.90
     }}
   ]
 }}
@@ -270,6 +314,12 @@ def run_analysis(
 
     if not papers_folder_path:
         logger.error("DRA: Cannot run analysis, papers folder path is not set.")
+        return []
+
+    # NEW: Load pillar definitions
+    pillar_definitions = load_pillar_definitions(DEFINITIONS_FILE)
+    if not pillar_definitions:
+        logger.error("DRA: Cannot proceed without pillar definitions.")
         return []
 
     text_extractor = TextExtractor()
@@ -306,8 +356,8 @@ def run_analysis(
             logger.error(f"DRA: Could not extract text from {filename}. Skipping all {len(claims_for_doc)} claims.")
             continue
 
-        # 2. Build the new prompt (with ALL claims for this doc)
-        prompt = build_dra_prompt(claims_for_doc, full_text)
+        # 2. Build the new prompt (with ALL claims for this doc + definitions)
+        prompt = build_dra_prompt(claims_for_doc, full_text, pillar_definitions)  # MODIFIED
 
         # 3. Call API (no cache, always re-analyze)
         try:
