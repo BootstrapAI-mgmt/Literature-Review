@@ -1,0 +1,25 @@
+FILENAME,DOCUMENT_TYPE,DETECTED_TOPICS,KEY_CONCEPTS,POTENTIAL_SEARCH_KEYWORDS,SUMMARY_NOTES,EXTRACTION_METHOD,EXTRACTION_QUALITY,REVIEW_TIMESTAMP,SUMMARIZED_FROM_CHUNKS
+EBSCO-FullText-11_02_2025 (25).pdf,Notes,"[""Neuromorphic Computing"", ""Deep Brain Stimulation (DBS)"", ""Neurophysiology"", ""Sensory Processing"", ""Neural Excitability""]","[""Microstimulation"", ""Chronaxie Time"", ""Thalamus (Vc)"", ""Medial Lemniscus"", ""Globus Pallidus Interna (GPi)"", ""Paresthesia"", ""Axonal Excitation"", ""Cell Soma Stimulation"", ""Somatosensory Thalamus"", ""Parkinsonian Tremor""]","[""neuromorphic computing chronaxie time"", ""deep brain stimulation neural excitability"", ""thalamic microstimulation sensory mapping"", ""axon vs cell body stimulation chronaxie"", ""neuromorphic architectures skill acquisition DBS"", ""stimulus-response mechanisms neuromorphic systems"", ""brain-inspired AI sensory processing"", ""memory consolidation neuromorphic models"", ""functional mapping deep brain stimulation"", ""neuromorphic computing motor control""]","This document details research on microstimulation and macrostimulation in human brain regions (thalamus, GPi) during DBS surgery, focusing on chronaxie time measurements to differentiate neural elements (axons vs. cell bodies) and map sensory/motor responses. It provides fundamental neurophysiological insights into stimulus-response mechanisms and neural excitability, which are crucial for designing neuromorphic computing architectures that mimic biological skill acquisition, memory, and sensory processing.",pdfplumber,0.6,2025-11-08T22:02:00.603319,TRUE
+EBSCO-FullText-11_02_2025 (12).pdf,Journal Article,"[""Visual Neuroscience"", ""Cortical Circuitry"", ""Neural Coding"", ""Spike Generation"", ""Receptive Fields""]","[""Simple and Complex Cells"", ""Hubel and Wiesel"", ""Spike Threshold"", ""Membrane Potential Modulation Ratio (V1/V0)"", ""Firing Rate Modulation Ratio (R1/R0)"", ""Neuromorphic Computing Architectures"", ""Spatial Segregation of ON and OFF Responses"", ""Power-law nonlinearity"", ""Mechler and Ringach model"", ""Cat Primary Visual Cortex (Area 17)""]","[""simple complex cells visual cortex"", ""spike threshold nonlinearity neural coding"", ""membrane potential firing rate transformation"", ""neuromorphic computing visual cortex models"", ""skill acquisition memory consolidation stimulus-response brain machine learning"", ""cortical connectivity simple complex cells"", ""receptive field mapping spike membrane potential"", ""neural plasticity visual cortex"", ""computational models visual cortex"", ""neuromorphic architectures bio-inspired vision""]","This document investigates the distinction between simple and complex cells in the cat primary visual cortex, proposing that the bimodal distribution of spiking responses (R1/R0) arises from the nonlinear properties of spike threshold acting on a unimodal, skewed distribution of membrane potential responses (V1/V0). It suggests that the dichotomy of these cell types, crucial for understanding visual processing, is enhanced by spike generation mechanisms rather than solely by distinct synaptic input patterns, which is highly relevant to understanding how biological neural functions are mapped to machine learning frameworks and neuromorphic computing.",pdfplumber,0.7,2025-11-08T22:10:41.438404,FALSE
+EBSCO-FullText-11_03_2025 (10).pdf,Notes,"[""Multisensory Integration"", ""Self-Motion Perception"", ""Parietal Cortex Function"", ""Brain-Inspired AI"", ""Neuromorphic Computing Inspiration""]","[""Area VIP (Ventral Intraparietal area)"", ""Optic Flow"", ""Vestibular Stimulation"", ""Population Coding"", ""Retinotopic Organization"", ""Head-centered coordinates"", ""Inferior parietal cortex lesions"", ""fMRI studies""]","[""neuromorphic multisensory integration self-motion"", ""brain-inspired AI optic flow processing"", ""parietal cortex VIP neuromorphic architectures"", ""stimulus-response mapping self-motion perception"", ""human VIP fMRI neuromorphic"", ""population coding heading direction brain-inspired"", ""vestibular visual integration neuromorphic computing""]","This document details the neural mechanisms of multisensory integration for self-motion perception, primarily focusing on the posterior parietal cortex (Area VIP) in primates and humans. It describes how visual (optic flow), vestibular, tactile, and auditory signals are integrated and processed, providing strong biological inspiration for stimulus-response mapping and real-time processing in neuromorphic computing architectures, particularly for skill acquisition related to navigation and motor control.",pdfplumber,0.6,2025-11-08T22:15:46.605614,TRUE
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
+,,,,,,,,,
