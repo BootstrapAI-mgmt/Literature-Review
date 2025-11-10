@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Log files
+*.log
+judge.log
+db_sync.log
+
+# Environment
+.env
+.venv
+env/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test files
+test_*.py
+
+# Cache directories
+judge_cache/
+
+# Temporary/working files (keep EXAMPLE files)
+review_version_history.json
+neuromorphic-research_database.csv
+deep_coverage_database.json
+non-journal_database.csv
