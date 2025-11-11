@@ -7,9 +7,24 @@ Integration tests verify interactions between multiple components.
 import pytest
 import os
 import sys
+from pathlib import Path
 
 # Ensure parent directory is in path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+
+
+@pytest.fixture(scope="function")
+def temp_workspace(temp_dir):
+    """
+    Create a workspace for integration tests.
+    
+    Args:
+        temp_dir: Temporary directory from parent conftest
+        
+    Returns:
+        Path object to workspace
+    """
+    return Path(temp_dir)
 
 
 @pytest.fixture(scope="function")
