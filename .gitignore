@@ -67,3 +67,7 @@ review_version_history.json
 neuromorphic-research_database.csv
 deep_coverage_database.json
 non-journal_database.csv
+
+# Pipeline checkpoint files
+pipeline_checkpoint.json
+*.checkpoint.json
