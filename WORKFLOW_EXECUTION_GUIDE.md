@@ -329,11 +329,42 @@ Reports generated in gap_analysis_output/
 
 ---
 
-### Method 2: **Automated End-to-End** (Advanced)
+### Method 2: **Automated End-to-End** (Using Pipeline Orchestrator)
 
-**⚠️ Note:** No single script currently orchestrates all stages automatically. This is intentional to allow checkpoints and API quota management.
+**✅ NEW:** The `pipeline_orchestrator.py` script now automates all 5 stages in a single command.
 
-**Future Enhancement:** Create `run_full_pipeline.sh` or use Orchestrator enhancements.
+**Basic Usage:**
+```bash
+python pipeline_orchestrator.py
+```
+
+**With Logging:**
+```bash
+python pipeline_orchestrator.py --log-file pipeline.log
+```
+
+**With Configuration:**
+```bash
+python pipeline_orchestrator.py --config pipeline_config.json
+```
+
+**What it does:**
+- Runs all 5 stages sequentially
+- Conditionally executes DRA only if rejections are detected
+- Logs progress with timestamps to console and optional file
+- Halts pipeline on any stage failure with clear error messages
+- Provides total execution time summary
+
+**Configuration File (`pipeline_config.json`):**
+```json
+{
+  "version_history_path": "review_version_history.json",
+  "stage_timeout": 7200,
+  "log_level": "INFO"
+}
+```
+
+**Note:** The orchestrator requires that all Python scripts (Journal-Reviewer.py, Judge.py, etc.) are in the same directory and can run non-interactively.
 
 ---
 
@@ -600,13 +631,26 @@ Judge and DRA use prompt caching automatically. To maximize cache hits:
 - Process similar papers together
 - Avoid changing pillar definitions mid-batch
 
-### Tip 2: Parallel Processing (Future)
+### Tip 2: Use Pipeline Orchestrator
+
+For batch processing, use the `pipeline_orchestrator.py` to automate all stages:
+```bash
+python pipeline_orchestrator.py --log-file pipeline.log
+```
+
+Benefits:
+- No manual intervention between stages
+- Automatic DRA triggering when needed
+- Complete execution log for auditing
+- Error handling and graceful failure
+
+### Tip 3: Parallel Processing (Future)
 
 Currently, stages run sequentially. Future enhancement:
 - Run Judge on multiple papers in parallel (separate processes)
 - Requires careful version history locking
 
-### Tip 3: Incremental Syncing
+### Tip 4: Incremental Syncing
 
 Sync script is fast (<10s) but can be optimized:
 - Only sync changed papers (track timestamps)
