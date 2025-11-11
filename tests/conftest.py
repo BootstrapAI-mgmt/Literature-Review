@@ -36,6 +36,20 @@ def temp_dir():
 
 
 @pytest.fixture(scope="function")
+def temp_workspace(temp_dir):
+    """
+    Create a workspace directory for tests (alias for temp_dir).
+    
+    Yields:
+        Path object to temporary directory
+    
+    Cleanup:
+        Removes directory and all contents after test
+    """
+    yield Path(temp_dir)
+
+
+@pytest.fixture(scope="function")
 def test_data_generator():
     """
     Provide a TestDataGenerator instance.

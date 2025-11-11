@@ -55,6 +55,67 @@ class TestDataGenerator:
             "Edge AI"
         ]
     
+    def create_version_history_entry_with_statuses(
+        self,
+        filename: str,
+        claim_statuses: List[str],
+        title: Optional[str] = None,
+        version_num: int = 1
+    ) -> Dict[str, Any]:
+        """
+        Create a version history entry with specific claim statuses.
+        
+        Args:
+            filename: PDF filename
+            claim_statuses: List of statuses for each claim
+            title: Paper title (random if None)
+            version_num: Version number for this entry
+            
+        Returns:
+            Version history entry dict
+        """
+        title = title or random.choice(self.sample_titles)
+        
+        # Generate claims with specific statuses
+        claims = []
+        for i, status in enumerate(claim_statuses):
+            pillar = random.choice(self.sample_pillars)
+            sub_req = f"SR {random.randint(1, 4)}.{random.randint(1, 9)}"
+            
+            claim = {
+                "claim_id": f"claim_{i+1}_{hashlib.md5(f'{filename}_{i}'.encode()).hexdigest()[:8]}",
+                "pillar": pillar,
+                "sub_requirement": sub_req,
+                "claim": f"Sample claim {i+1} for {pillar}",
+                "evidence": f"Page {random.randint(1, 20)}: Sample evidence text...",
+                "page_number": random.randint(1, 20),
+                "status": status,
+                "reasoning": f"Sample reasoning for {status} status"
+            }
+            
+            if status == "rejected":
+                claim["rejection_reason"] = f"Insufficient evidence for claim {i+1}"
+            elif status == "approved":
+                claim["judge_notes"] = f"Approved. Evidence supports the requirement."
+                claim["judge_timestamp"] = (datetime.now() - timedelta(hours=version_num)).isoformat()
+            
+            claims.append(claim)
+        
+        # Create version entry
+        timestamp = (datetime.now() - timedelta(days=version_num)).isoformat()
+        
+        return {
+            "version": version_num,
+            "timestamp": timestamp,
+            "review": {
+                "FILENAME": filename,
+                "TITLE": title,
+                "CORE_DOMAIN": random.choice(self.sample_domains),
+                "PUBLICATION_YEAR": random.randint(2018, 2024),
+                "Requirement(s)": claims
+            }
+        }
+    
     def create_version_history_entry(
         self,
         filename: str,
@@ -152,36 +213,38 @@ class TestDataGenerator:
         Returns:
             Complete version history dict
         """
+        # Handle backward compatibility
+        if num_versions_per_file != 1 and num_versions == 1:
+            num_versions = num_versions_per_file
+        
+        # Handle single filename or list
+        if filename is not None and filenames is None:
+            filenames = [filename]
+        elif filenames is None and filename is None:
+            filenames = ["test_paper.pdf"]
+        
         history = {}
         
         # Support both single filename and list of filenames
-        if filename:
-            # Single file mode
+        for fname in filenames:
             versions = []
-            num_versions_to_create = num_versions
-            for v in range(1, num_versions_to_create + 1):
-                entry = self.create_version_history_entry(
-                    filename=filename,
-                    num_claims=len(claim_statuses) if claim_statuses else random.randint(3, 8),
-                    approved_ratio=approved_ratio,
-                    version_num=v,
-                    claim_statuses=claim_statuses
-                )
-                versions.append(entry)
-            history[filename] = versions
-        elif filenames:
-            # Multi-file mode
-            for fname in filenames:
-                versions = []
-                for v in range(1, num_versions_per_file + 1):
+            for v in range(1, num_versions + 1):
+                if claim_statuses:
+                    # Create claims with specific statuses
+                    entry = self.create_version_history_entry_with_statuses(
+                        filename=fname,
+                        claim_statuses=claim_statuses,
+                        version_num=v
+                    )
+                else:
                     entry = self.create_version_history_entry(
                         filename=fname,
                         num_claims=random.randint(3, 8),
                         approved_ratio=approved_ratio,
                         version_num=v
                     )
-                    versions.append(entry)
-                history[fname] = versions
+                versions.append(entry)
+            history[fname] = versions
         
         return history
     
