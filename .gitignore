@@ -53,6 +53,11 @@ judge_cache/
 deep_reviewer_cache/
 *.cache
 
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
+
 # OS
 .DS_Store
 Thumbs.db
