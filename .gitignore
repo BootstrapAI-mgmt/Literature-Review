@@ -43,14 +43,20 @@ ENV/
 *.sqlite
 *.db
 
-# Test files
-test_*.py
+# Test files (but not in tests/ directory)
+# Note: tests/ directory should contain test_*.py files
+# test_*.py
 
 # Cache directories
 cache/
 judge_cache/
 deep_reviewer_cache/
 *.cache
+
+# Coverage reports
+.coverage
+.coverage.*
+htmlcov/
 
 # OS
 .DS_Store
