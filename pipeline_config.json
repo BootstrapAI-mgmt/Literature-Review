@@ -1,0 +1,5 @@
+{
+  "version_history_path": "review_version_history.json",
+  "stage_timeout": 7200,
+  "log_level": "INFO"
+}
