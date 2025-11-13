@@ -12,14 +12,14 @@ from unittest.mock import Mock, patch, mock_open, MagicMock
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-import Judge
-from Judge import (
+from literature_review.analysis import judge
+from literature_review.analysis.judge import (
     load_pillar_definitions,
     find_robust_sub_requirement_text,
     find_robust_pillar_key,
-    _build_lookup_map,
-    APIManager
+    _build_lookup_map
 )
+from literature_review.utils.api_manager import APIManager
 
 
 @pytest.fixture
@@ -108,8 +108,8 @@ class TestBuildLookupMap:
         _build_lookup_map(mock_pillar_definitions)
         
         # Check global maps were populated
-        assert len(Judge.DEFINITIONS_LOOKUP_MAP) > 0
-        assert len(Judge.CANONICAL_PILLAR_MAP) > 0
+        assert len(judge.DEFINITIONS_LOOKUP_MAP) > 0
+        assert len(judge.CANONICAL_PILLAR_MAP) > 0
     
     @pytest.mark.component
     def test_normalizes_sub_requirements(self, mock_pillar_definitions):
@@ -117,7 +117,7 @@ class TestBuildLookupMap:
         _build_lookup_map(mock_pillar_definitions)
         
         # Check that normalized keys exist
-        normalized_keys = Judge.DEFINITIONS_LOOKUP_MAP.keys()
+        normalized_keys = judge.DEFINITIONS_LOOKUP_MAP.keys()
         
         # All keys should be lowercase and normalized
         for key in normalized_keys:
@@ -130,7 +130,7 @@ class TestBuildLookupMap:
         """Test creation of canonical pillar map."""
         _build_lookup_map(mock_pillar_definitions)
         
-        pillar_map = Judge.CANONICAL_PILLAR_MAP
+        pillar_map = judge.CANONICAL_PILLAR_MAP
         
         # Should have normalized pillar keys
         assert "pillar 1" in pillar_map
@@ -227,9 +227,10 @@ class TestAPIManagerMocked:
     """Test suite for APIManager with mocked Gemini API."""
     
     @pytest.mark.component
-    @patch('Judge.genai.Client')
-    @patch('Judge.load_dotenv')
-    def test_api_manager_initialization(self, mock_dotenv, mock_client):
+    @patch('literature_review.utils.api_manager.os.getenv', return_value='mock_api_key')
+    @patch('literature_review.utils.api_manager.genai.GenerativeModel')
+    @patch('literature_review.utils.api_manager.load_dotenv')
+    def test_api_manager_initialization(self, mock_dotenv, mock_client, mock_getenv):
         """Test APIManager initializes with mocked API."""
         mock_client_instance = MagicMock()
         mock_client.return_value = mock_client_instance
@@ -241,9 +242,10 @@ class TestAPIManagerMocked:
         assert len(manager.cache) == 0
     
     @pytest.mark.component
-    @patch('Judge.genai.Client')
-    @patch('Judge.load_dotenv')
-    def test_cached_api_call_caching_behavior(self, mock_dotenv, mock_client):
+    @patch('literature_review.utils.api_manager.os.getenv', return_value='mock_api_key')
+    @patch('literature_review.utils.api_manager.genai.GenerativeModel')
+    @patch('literature_review.utils.api_manager.load_dotenv')
+    def test_cached_api_call_caching_behavior(self, mock_dotenv, mock_client, mock_getenv):
         """Test that cache prevents duplicate API calls."""
         # Setup mock
         mock_client_instance = MagicMock()
@@ -267,9 +269,10 @@ class TestAPIManagerMocked:
         assert result1 == result2
     
     @pytest.mark.component
-    @patch('Judge.genai.Client')
-    @patch('Judge.load_dotenv')
-    def test_cache_bypass_when_disabled(self, mock_dotenv, mock_client):
+    @patch('literature_review.utils.api_manager.os.getenv', return_value='mock_api_key')
+    @patch('literature_review.utils.api_manager.genai.GenerativeModel')
+    @patch('literature_review.utils.api_manager.load_dotenv')
+    def test_cache_bypass_when_disabled(self, mock_dotenv, mock_client, mock_getenv):
         """Test that cache can be bypassed."""
         mock_client_instance = MagicMock()
         mock_response = MagicMock()
@@ -287,9 +290,10 @@ class TestAPIManagerMocked:
         assert mock_client_instance.models.generate_content.call_count == 2
     
     @pytest.mark.component
-    @patch('Judge.genai.Client')
-    @patch('Judge.load_dotenv')
-    def test_json_parsing_in_api_call(self, mock_dotenv, mock_client):
+    @patch('literature_review.utils.api_manager.os.getenv', return_value='mock_api_key')
+    @patch('literature_review.utils.api_manager.genai.GenerativeModel')
+    @patch('literature_review.utils.api_manager.load_dotenv')
+    def test_json_parsing_in_api_call(self, mock_dotenv, mock_client, mock_getenv):
         """Test JSON parsing in API call."""
         mock_client_instance = MagicMock()
         mock_response = MagicMock()
@@ -313,7 +317,7 @@ class TestFileIOOperations:
     @pytest.mark.component
     def test_safe_print_handles_unicode(self):
         """Test safe_print handles unicode characters."""
-        from Judge import safe_print
+        from literature_review.analysis.judge import safe_print
         
         # Should not raise exception
         safe_print("Test with emoji: ✅ ❌ 🎫")

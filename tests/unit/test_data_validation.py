@@ -12,7 +12,7 @@ import os
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from Judge import detect_circular_refs
+from literature_review.utils.data_helpers import detect_circular_refs
 
 
 class TestVersionHistorySchema:
@@ -21,12 +21,12 @@ class TestVersionHistorySchema:
     @pytest.mark.unit
     def test_example_version_history_exists(self):
         """Test that example version history file exists."""
-        assert os.path.exists("review_version_history_EXAMPLE.json")
+        assert os.path.exists("data/examples/review_version_history_EXAMPLE.json")
     
     @pytest.mark.unit
     def test_version_history_top_level_structure(self):
         """Test top-level structure of version history."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         # Should be a dict
@@ -38,7 +38,7 @@ class TestVersionHistorySchema:
     @pytest.mark.unit
     def test_version_history_file_entries(self):
         """Test structure of file entries in version history."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         for filename, versions in history.items():
@@ -53,7 +53,7 @@ class TestVersionHistorySchema:
     @pytest.mark.unit
     def test_version_history_version_structure(self):
         """Test structure of version entries."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         for filename, versions in history.items():
@@ -66,7 +66,7 @@ class TestVersionHistorySchema:
     @pytest.mark.unit
     def test_version_history_review_required_fields(self):
         """Test required fields in review section."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         required_fields = ["TITLE", "FILENAME", "CORE_DOMAIN", "Requirement(s)"]
@@ -81,7 +81,7 @@ class TestVersionHistorySchema:
     @pytest.mark.unit
     def test_version_history_requirements_structure(self):
         """Test structure of Requirements list."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         for filename, versions in history.items():
@@ -104,7 +104,7 @@ class TestVersionHistorySchema:
     @pytest.mark.unit
     def test_version_history_no_circular_references(self):
         """Test that version history has no circular references."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         # Should not raise exception
@@ -117,12 +117,12 @@ class TestCSVDatabaseSchema:
     @pytest.mark.unit
     def test_example_csv_exists(self):
         """Test that example CSV file exists."""
-        assert os.path.exists("neuromorphic-research_database_EXAMPLE.csv")
+        assert os.path.exists("data/examples/neuromorphic-research_database_EXAMPLE.csv")
     
     @pytest.mark.unit
     def test_csv_required_columns(self):
         """Test required columns exist in CSV."""
-        df = pd.read_csv("neuromorphic-research_database_EXAMPLE.csv")
+        df = pd.read_csv("data/examples/neuromorphic-research_database_EXAMPLE.csv")
         
         required_cols = [
             "FILENAME",
@@ -139,7 +139,7 @@ class TestCSVDatabaseSchema:
     @pytest.mark.unit
     def test_csv_filename_uniqueness(self):
         """Test that FILENAME values are unique."""
-        df = pd.read_csv("neuromorphic-research_database_EXAMPLE.csv")
+        df = pd.read_csv("data/examples/neuromorphic-research_database_EXAMPLE.csv")
         
         duplicates = df[df.duplicated(subset=['FILENAME'], keep=False)]
         
@@ -148,7 +148,7 @@ class TestCSVDatabaseSchema:
     @pytest.mark.unit
     def test_csv_requirements_valid_json(self):
         """Test that Requirement(s) column contains valid JSON."""
-        df = pd.read_csv("neuromorphic-research_database_EXAMPLE.csv")
+        df = pd.read_csv("data/examples/neuromorphic-research_database_EXAMPLE.csv")
         
         for idx, row in df.iterrows():
             reqs_str = row["Requirement(s)"]
@@ -165,7 +165,7 @@ class TestCSVDatabaseSchema:
     @pytest.mark.unit
     def test_csv_publication_year_valid(self):
         """Test that PUBLICATION_YEAR is numeric and reasonable."""
-        df = pd.read_csv("neuromorphic-research_database_EXAMPLE.csv")
+        df = pd.read_csv("data/examples/neuromorphic-research_database_EXAMPLE.csv")
         
         # Should be numeric
         assert pd.api.types.is_numeric_dtype(df["PUBLICATION_YEAR"])
@@ -177,7 +177,7 @@ class TestCSVDatabaseSchema:
     @pytest.mark.unit
     def test_csv_no_null_critical_fields(self):
         """Test that critical fields have no null values."""
-        df = pd.read_csv("neuromorphic-research_database_EXAMPLE.csv")
+        df = pd.read_csv("data/examples/neuromorphic-research_database_EXAMPLE.csv")
         
         critical_fields = ["FILENAME", "TITLE", "CORE_DOMAIN"]
         
@@ -192,7 +192,7 @@ class TestClaimStructureConsistency:
     @pytest.mark.unit
     def test_claims_have_required_fields(self):
         """Test that all claims have required fields."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         required_fields = ["claim_id", "pillar", "sub_requirement", "status"]
@@ -207,7 +207,7 @@ class TestClaimStructureConsistency:
     @pytest.mark.unit
     def test_claim_ids_are_unique_per_file(self):
         """Test that claim IDs are unique within each file."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         for filename, versions in history.items():
@@ -223,7 +223,7 @@ class TestClaimStructureConsistency:
     @pytest.mark.unit
     def test_claim_status_values_valid(self):
         """Test that claim status values are valid."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         valid_statuses = {
@@ -244,7 +244,7 @@ class TestClaimStructureConsistency:
     @pytest.mark.unit
     def test_approved_claims_have_judge_notes(self):
         """Test that approved/rejected claims have judge_notes."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
         for filename, versions in history.items():
@@ -267,12 +267,12 @@ class TestPillarDefinitionsSchema:
     @pytest.mark.unit
     def test_pillar_definitions_exists(self):
         """Test that pillar definitions file exists."""
-        assert os.path.exists("pillar_definitions_enhanced.json")
+        assert os.path.exists("pillar_definitions.json")
     
     @pytest.mark.unit
     def test_pillar_definitions_structure(self):
         """Test basic structure of pillar definitions."""
-        with open("pillar_definitions_enhanced.json") as f:
+        with open("pillar_definitions.json") as f:
             definitions = json.load(f)
         
         # Should be a dict
@@ -285,7 +285,7 @@ class TestPillarDefinitionsSchema:
     @pytest.mark.unit
     def test_pillar_definitions_requirements_structure(self):
         """Test structure of requirements in pillars."""
-        with open("pillar_definitions_enhanced.json") as f:
+        with open("pillar_definitions.json") as f:
             definitions = json.load(f)
         
         for pillar_key, pillar_data in definitions.items():
@@ -309,7 +309,7 @@ class TestPillarDefinitionsSchema:
     @pytest.mark.unit
     def test_pillar_definitions_no_circular_refs(self):
         """Test that pillar definitions have no circular references."""
-        with open("pillar_definitions_enhanced.json") as f:
+        with open("pillar_definitions.json") as f:
             definitions = json.load(f)
         
         # Should not raise exception
@@ -322,10 +322,10 @@ class TestDataConsistency:
     @pytest.mark.unit
     def test_filenames_match_between_sources(self):
         """Test that filenames in version history match CSV."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
-        df = pd.read_csv("neuromorphic-research_database_EXAMPLE.csv")
+        df = pd.read_csv("data/examples/neuromorphic-research_database_EXAMPLE.csv")
         
         history_files = set(history.keys())
         csv_files = set(df["FILENAME"].tolist())
@@ -341,10 +341,10 @@ class TestDataConsistency:
     @pytest.mark.unit
     def test_claim_counts_consistency(self):
         """Test that claim counts are consistent (informational)."""
-        with open("review_version_history_EXAMPLE.json") as f:
+        with open("data/examples/review_version_history_EXAMPLE.json") as f:
             history = json.load(f)
         
-        df = pd.read_csv("neuromorphic-research_database_EXAMPLE.csv")
+        df = pd.read_csv("data/examples/neuromorphic-research_database_EXAMPLE.csv")
         
         for filename in history.keys():
             if filename in df["FILENAME"].values:

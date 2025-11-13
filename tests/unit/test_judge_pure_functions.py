@@ -11,12 +11,12 @@ import os
 # Add parent directory to path to import Judge
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
-from Judge import (
+from literature_review.analysis.judge import (
     _normalize_string,
-    detect_circular_refs,
     build_judge_prompt,
     validate_judge_response
 )
+from literature_review.utils.data_helpers import detect_circular_refs
 
 
 class TestNormalizeString:
