@@ -5,6 +5,7 @@ import json
 import csv
 import os
 import pandas as pd
+from pathlib import Path
 from typing import Dict, List
 
 # Import sync functionality (if refactored) or test script execution
@@ -240,3 +241,150 @@ class TestVersionHistorySync:
         assert claim['source'] == 'deep_coverage'
         assert 'judge_notes' in claim
         assert 'judge_timestamp' in claim
+    
+    @pytest.mark.integration
+    def test_sync_excludes_rejected_and_pending_claims(self, temp_workspace):
+        """Test that rejected and pending claims are excluded from sync."""
+        
+        # Setup: Create version history with all three statuses
+        version_history = {
+            "mixed_status_paper.pdf": [
+                {
+                    'timestamp': '2025-11-10T13:00:00',
+                    'review': {
+                        'FILENAME': 'mixed_status_paper.pdf',
+                        'TITLE': 'Mixed Status Paper',
+                        'PUBLICATION_YEAR': 2024,
+                        'Requirement(s)': [
+                            {
+                                'claim_id': 'claim_approved',
+                                'status': 'approved',
+                                'pillar': 'Pillar 1',
+                                'sub_requirement': 'SR 1.1',
+                                'evidence': 'Good evidence',
+                                'page_number': 1
+                            },
+                            {
+                                'claim_id': 'claim_rejected',
+                                'status': 'rejected',
+                                'pillar': 'Pillar 1',
+                                'sub_requirement': 'SR 1.2',
+                                'evidence': 'Weak evidence',
+                                'page_number': 2
+                            },
+                            {
+                                'claim_id': 'claim_pending',
+                                'status': 'pending_judge_review',
+                                'pillar': 'Pillar 1',
+                                'sub_requirement': 'SR 1.3',
+                                'evidence': 'Unreviewed evidence',
+                                'page_number': 3
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        version_history_file = temp_workspace / "review_version_history.json"
+        with open(version_history_file, 'w') as f:
+            json.dump(version_history, f, indent=2)
+        
+        csv_file = temp_workspace / "neuromorphic-research_database.csv"
+        
+        # Execute sync
+        synced_papers = []
+        for filename, versions in version_history.items():
+            latest = versions[-1]['review']
+            approved_claims = [
+                c for c in latest.get('Requirement(s)', [])
+                if c.get('status') == 'approved'
+            ]
+            if approved_claims:
+                paper_entry = {
+                    'FILENAME': latest['FILENAME'],
+                    'TITLE': latest['TITLE'],
+                    'PUBLICATION_YEAR': latest['PUBLICATION_YEAR'],
+                    'Requirement(s)': json.dumps(approved_claims)
+                }
+                synced_papers.append(paper_entry)
+        
+        # Write to CSV
+        if synced_papers:
+            fieldnames = ['FILENAME', 'TITLE', 'PUBLICATION_YEAR', 'Requirement(s)']
+            with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(f, fieldnames=fieldnames, quoting=csv.QUOTE_ALL)
+                writer.writeheader()
+                writer.writerows(synced_papers)
+        
+        # Assert: Verify only approved claim is synced
+        df = pd.read_csv(csv_file)
+        assert len(df) == 1  # One paper synced
+        
+        row = df.iloc[0]
+        claims = json.loads(row['Requirement(s)'])
+        assert len(claims) == 1  # Only one claim
+        assert claims[0]['claim_id'] == 'claim_approved'
+        assert claims[0]['status'] == 'approved'
+    
+    @pytest.mark.integration
+    def test_sync_with_no_approved_claims(self, temp_workspace):
+        """Test sync when a paper has no approved claims."""
+        
+        # Setup: Version history with only rejected/pending claims
+        version_history = {
+            "no_approved_paper.pdf": [
+                {
+                    'timestamp': '2025-11-10T14:00:00',
+                    'review': {
+                        'FILENAME': 'no_approved_paper.pdf',
+                        'TITLE': 'No Approved Claims Paper',
+                        'PUBLICATION_YEAR': 2023,
+                        'Requirement(s)': [
+                            {
+                                'claim_id': 'claim_rejected_1',
+                                'status': 'rejected',
+                                'pillar': 'Pillar 1',
+                                'sub_requirement': 'SR 1.1',
+                                'evidence': 'Weak evidence',
+                                'page_number': 1
+                            },
+                            {
+                                'claim_id': 'claim_pending_1',
+                                'status': 'pending_judge_review',
+                                'pillar': 'Pillar 1',
+                                'sub_requirement': 'SR 1.2',
+                                'evidence': 'Pending evidence',
+                                'page_number': 2
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        version_history_file = temp_workspace / "review_version_history.json"
+        with open(version_history_file, 'w') as f:
+            json.dump(version_history, f, indent=2)
+        
+        csv_file = temp_workspace / "neuromorphic-research_database.csv"
+        
+        # Execute sync
+        synced_papers = []
+        for filename, versions in version_history.items():
+            latest = versions[-1]['review']
+            approved_claims = [
+                c for c in latest.get('Requirement(s)', [])
+                if c.get('status') == 'approved'
+            ]
+            if approved_claims:
+                paper_entry = {
+                    'FILENAME': latest['FILENAME'],
+                    'TITLE': latest['TITLE'],
+                    'PUBLICATION_YEAR': latest['PUBLICATION_YEAR'],
+                    'Requirement(s)': json.dumps(approved_claims)
+                }
+                synced_papers.append(paper_entry)
+        
+        # Assert: No CSV should be created or CSV should be empty
+        assert len(synced_papers) == 0
