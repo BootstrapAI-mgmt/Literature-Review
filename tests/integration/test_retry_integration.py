@@ -67,7 +67,7 @@ class TestRetryIntegration:
         
         assert 'run_id' in data
         assert 'pipeline_version' in data
-        assert data['pipeline_version'] == '1.2.0'
+        assert data['pipeline_version'] == '1.3.0'
         assert 'status' in data
         assert 'stages' in data
     

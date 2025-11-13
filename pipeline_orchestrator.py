@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Pipeline Orchestrator v1.2 - With Error Recovery & Retry Logic
+Pipeline Orchestrator v1.3 - With Error Recovery & Refactored Paths
 
 Runs the full Literature Review pipeline automatically:
 1. Journal-Reviewer → 2. Judge → 3. DRA (conditional) → 4. Sync → 5. Orchestrator
@@ -10,6 +10,7 @@ Features:
 - Automatic retry on transient failures
 - Exponential backoff with jitter
 - Circuit breaker protection
+- Python module execution (refactored structure)
 
 Usage:
     python pipeline_orchestrator.py
@@ -236,7 +237,7 @@ class PipelineOrchestrator:
         # Create new checkpoint
         return {
             "run_id": self.run_id,
-            "pipeline_version": "1.2.0",
+            "pipeline_version": "1.3.0",
             "started_at": datetime.now().isoformat(),
             "last_updated": datetime.now().isoformat(),
             "status": "in_progress",
@@ -356,16 +357,17 @@ class PipelineOrchestrator:
                 f.write(log_message + "\n")
 
     def run_stage(
-        self, stage_name: str, script: str, description: str, required: bool = True
+        self, stage_name: str, script: str, description: str, required: bool = True, use_module: bool = False
     ) -> bool:
         """
         Run a pipeline stage with retry support.
 
         Args:
             stage_name: Unique stage identifier
-            script: Python script to run
+            script: Python script path or module name
             description: Human-readable stage description
             required: If True, exit on failure; if False, continue
+            use_module: If True, use -m flag to run as module; if False, run as script
 
         Returns:
             True if successful, False otherwise
@@ -390,8 +392,14 @@ class PipelineOrchestrator:
             stage_start = datetime.now()
 
             try:
+                # Build command based on execution type
+                if use_module:
+                    cmd = [sys.executable, '-m', script]
+                else:
+                    cmd = [sys.executable, script]
+                
                 result = subprocess.run(
-                    [sys.executable, script],
+                    cmd,
                     capture_output=True,
                     text=True,
                     timeout=self.config.get("stage_timeout", 3600),
@@ -505,21 +513,21 @@ class PipelineOrchestrator:
     def run(self):
         """Execute the full pipeline."""
         self.log("=" * 70, "INFO")
-        self.log("Literature Review Pipeline Orchestrator v1.2", "INFO")
+        self.log("Literature Review Pipeline Orchestrator v1.3", "INFO")
         self.log(f"Run ID: {self.run_id}", "INFO")
         self.log("=" * 70, "INFO")
 
         # Stage 1: Journal Reviewer
-        self.run_stage("journal_reviewer", "Journal-Reviewer.py", "Stage 1: Initial Paper Review")
+        self.run_stage("journal_reviewer", "literature_review.reviewers.journal_reviewer", "Stage 1: Initial Paper Review", use_module=True)
 
         # Stage 2: Judge
-        self.run_stage("judge", "Judge.py", "Stage 2: Judge Claims")
+        self.run_stage("judge", "literature_review.analysis.judge", "Stage 2: Judge Claims", use_module=True)
 
         # Stage 3: DRA (conditional)
         if self.check_for_rejections():
             self.log("Rejections detected, running DRA appeal process", "INFO")
-            self.run_stage("dra", "DeepRequirementsAnalyzer.py", "Stage 3: DRA Appeal")
-            self.run_stage("judge_dra", "Judge.py", "Stage 3b: Re-judge DRA Claims")
+            self.run_stage("dra", "literature_review.analysis.requirements", "Stage 3: DRA Appeal", use_module=True)
+            self.run_stage("judge_dra", "literature_review.analysis.judge", "Stage 3b: Re-judge DRA Claims", use_module=True)
         else:
             self.log("No rejections found, skipping DRA", "INFO")
 
@@ -527,7 +535,7 @@ class PipelineOrchestrator:
         self.run_stage("sync", "sync_history_to_db.py", "Stage 4: Sync to Database")
 
         # Stage 5: Orchestrator
-        self.run_stage("orchestrator", "Orchestrator.py", "Stage 5: Gap Analysis & Convergence")
+        self.run_stage("orchestrator", "literature_review.orchestrator", "Stage 5: Gap Analysis & Convergence", use_module=True)
 
         # Mark pipeline complete
         self.checkpoint_data["status"] = "completed"
