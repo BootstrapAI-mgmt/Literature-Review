@@ -22,6 +22,16 @@ python pipeline_orchestrator.py --log-file pipeline.log
 python pipeline_orchestrator.py --config pipeline_config.json
 ```
 
+**Resume from checkpoint:**
+```bash
+python pipeline_orchestrator.py --resume
+```
+
+**Resume from specific stage:**
+```bash
+python pipeline_orchestrator.py --resume-from judge
+```
+
 ### Manual Execution
 
 For step-by-step control, run each stage individually:
@@ -58,11 +68,77 @@ Create a `pipeline_config.json` file:
 
 ```json
 {
+  "version": "1.2.0",
   "version_history_path": "review_version_history.json",
   "stage_timeout": 7200,
-  "log_level": "INFO"
+  "log_level": "INFO",
+  "retry_policy": {
+    "enabled": true,
+    "default_max_attempts": 3,
+    "default_backoff_base": 2,
+    "default_backoff_max": 60,
+    "circuit_breaker_threshold": 3,
+    "per_stage": {
+      "journal_reviewer": {
+        "max_attempts": 5,
+        "backoff_base": 2,
+        "backoff_max": 120,
+        "retryable_patterns": ["timeout", "rate limit", "connection error"]
+      }
+    }
+  }
 }
 ```
+
+### Retry Configuration
+
+The pipeline automatically retries transient failures like network timeouts and rate limits:
+
+**Enable retry (default):**
+```json
+{
+  "retry_policy": {
+    "enabled": true,
+    "default_max_attempts": 3
+  }
+}
+```
+
+**Disable retry:**
+```json
+{
+  "retry_policy": {
+    "enabled": false
+  }
+}
+```
+
+**Custom retry per stage:**
+```json
+{
+  "retry_policy": {
+    "per_stage": {
+      "journal_reviewer": {
+        "max_attempts": 5,
+        "backoff_base": 2,
+        "backoff_max": 120
+      }
+    }
+  }
+}
+```
+
+**Retryable errors:**
+- Network timeouts and connection errors
+- Rate limiting (429, "too many requests")
+- Service unavailable (503, 502, 504)
+- Temporary failures
+
+**Non-retryable errors:**
+- Syntax errors, import errors
+- File not found
+- Permission denied (401, 403)
+- Invalid configuration
 
 ## Requirements
 
@@ -88,35 +164,46 @@ GEMINI_API_KEY=your_api_key_here
 - ✅ **Progress Logging**: Timestamps and status for each stage
 - ✅ **Error Handling**: Halts on failure with clear error messages
 - ✅ **Configurable**: Customizable timeouts and paths
-- ✅ **Checkpoint/Resume**: Resume from interruptions automatically
+- ✅ **Checkpoint/Resume**: Resume from interruption points
+- ✅ **Automatic Retry**: Retry transient failures with exponential backoff
+- ✅ **Circuit Breaker**: Prevents infinite retry loops
+- ✅ **Retry History**: Track all retry attempts in checkpoint file
 
-### Resume After Failure
+### Checkpoint & Resume
 
-If the pipeline is interrupted, resume from the last checkpoint:
+The pipeline creates a `pipeline_checkpoint.json` file to track progress. If a pipeline fails, you can resume from the last successful stage:
 
 ```bash
+# Resume from last checkpoint
 python pipeline_orchestrator.py --resume
-```
 
-Resume from a specific stage:
-
-```bash
+# Resume from specific stage
 python pipeline_orchestrator.py --resume-from sync
 ```
 
-Use a custom checkpoint file:
-
+**View checkpoint status:**
 ```bash
-python pipeline_orchestrator.py --checkpoint-file my_checkpoint.json
+cat pipeline_checkpoint.json | jq '.stages'
 ```
 
-The checkpoint file (`pipeline_checkpoint.json`) tracks pipeline progress and allows resumption after:
-- Network failures or API errors
-- Manual interruption (Ctrl+C)
-- System crashes or restarts
-- Process timeouts
+**View retry history:**
+```bash
+cat pipeline_checkpoint.json | jq '.stages.journal_reviewer.retry_history'
+```
 
-Completed stages are automatically skipped when resuming, saving time and API quota.
+### Error Recovery
+
+The pipeline automatically retries transient failures:
+
+1. **Network Timeout** → Retry with exponential backoff
+2. **Rate Limit** → Wait and retry with increasing delays
+3. **Syntax Error** → Fail immediately (no retry)
+4. **Circuit Breaker** → Stop after 3 consecutive failures
+
+**Example retry flow:**
+- Attempt 1: Fails with "Connection timeout" → Wait 2s, retry
+- Attempt 2: Fails with "Rate limit" → Wait 4s, retry
+- Attempt 3: Succeeds → Continue to next stage
 
 ## Testing
 

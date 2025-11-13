@@ -1,5 +1,31 @@
 {
+  "version": "1.2.0",
   "version_history_path": "review_version_history.json",
   "stage_timeout": 7200,
-  "log_level": "INFO"
+  "log_level": "INFO",
+  "retry_policy": {
+    "enabled": true,
+    "default_max_attempts": 3,
+    "default_backoff_base": 2,
+    "default_backoff_max": 60,
+    "circuit_breaker_threshold": 3,
+    "per_stage": {
+      "journal_reviewer": {
+        "max_attempts": 5,
+        "backoff_base": 2,
+        "backoff_max": 120,
+        "retryable_patterns": [
+          "timeout",
+          "rate limit",
+          "connection error",
+          "temporary failure"
+        ]
+      },
+      "sync": {
+        "max_attempts": 3,
+        "backoff_base": 1.5,
+        "backoff_max": 30
+      }
+    }
+  }
 }

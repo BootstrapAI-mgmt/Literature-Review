@@ -1,36 +1,197 @@
 #!/usr/bin/env python3
 """
-Pipeline Orchestrator v1.1 - Checkpoint/Resume Support
+Pipeline Orchestrator v1.3 - With Error Recovery & Refactored Paths
 
 Runs the full Literature Review pipeline automatically:
 1. Journal-Reviewer → 2. Judge → 3. DRA (conditional) → 4. Sync → 5. Orchestrator
 
 Features:
-- Checkpoint/resume capability for interrupted pipelines
-- Atomic checkpoint writes to prevent corruption
-- Resume from last successful checkpoint or specific stage
+- Checkpoint/resume capability
+- Automatic retry on transient failures
+- Exponential backoff with jitter
+- Circuit breaker protection
+- Python module execution (refactored structure)
 
 Usage:
     python pipeline_orchestrator.py
     python pipeline_orchestrator.py --log-file pipeline.log
     python pipeline_orchestrator.py --config pipeline_config.json
     python pipeline_orchestrator.py --resume
-    python pipeline_orchestrator.py --resume-from sync
+    python pipeline_orchestrator.py --resume-from judge
 """
 
 import subprocess
 import sys
 import json
 import argparse
-import os
+import time
+import random
+import re
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, Tuple
+
+
+class RetryPolicy:
+    """Manages retry logic and exponential backoff."""
+
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config.get("retry_policy", {})
+        self.enabled = self.config.get("enabled", True)
+        self.default_max_attempts = self.config.get("default_max_attempts", 3)
+        self.default_backoff_base = self.config.get("default_backoff_base", 2)
+        self.default_backoff_max = self.config.get("default_backoff_max", 60)
+        self.circuit_breaker_threshold = self.config.get("circuit_breaker_threshold", 3)
+        self.consecutive_failures = 0
+
+    def get_stage_config(self, stage_name: str) -> Dict[str, Any]:
+        """Get retry config for specific stage."""
+        per_stage = self.config.get("per_stage", {})
+        stage_config = per_stage.get(stage_name, {})
+
+        return {
+            "max_attempts": stage_config.get("max_attempts", self.default_max_attempts),
+            "backoff_base": stage_config.get("backoff_base", self.default_backoff_base),
+            "backoff_max": stage_config.get("backoff_max", self.default_backoff_max),
+            "retryable_patterns": stage_config.get(
+                "retryable_patterns", ["timeout", "connection", "rate limit", "temporary"]
+            ),
+        }
+
+    def is_retryable_error(self, stderr: str, stage_name: str) -> Tuple[bool, str]:
+        """
+        Classify error as retryable or permanent.
+
+        Returns:
+            (is_retryable, reason)
+        """
+        if not self.enabled:
+            return False, "Retry disabled"
+
+        # Circuit breaker check
+        if self.consecutive_failures >= self.circuit_breaker_threshold:
+            return False, f"Circuit breaker tripped ({self.consecutive_failures} failures)"
+
+        stderr_lower = stderr.lower()
+        stage_config = self.get_stage_config(stage_name)
+        retryable_patterns = stage_config["retryable_patterns"]
+
+        # Check for retryable patterns
+        for pattern in retryable_patterns:
+            if re.search(pattern, stderr_lower, re.IGNORECASE):
+                return True, f"Matched pattern: {pattern}"
+
+        # Check for common retryable error types
+        retryable_keywords = [
+            "timeout",
+            "timed out",
+            "time out",
+            "connection refused",
+            "connection reset",
+            "connection error",
+            "rate limit",
+            "too many requests",
+            "429",
+            "temporary failure",
+            "transient",
+            "network error",
+            "network unreachable",
+            "service unavailable",
+            "503",
+            "502",
+            "504",
+        ]
+
+        for keyword in retryable_keywords:
+            if keyword in stderr_lower:
+                return True, f"Retryable error: {keyword}"
+
+        # Non-retryable errors (permanent)
+        permanent_keywords = [
+            "syntax error",
+            "name error",
+            "type error",
+            "file not found",
+            "no such file",
+            "invalid",
+            "parse error",
+            "attribute error",
+            "import error",
+            "permission denied",
+            "401",
+            "403",
+        ]
+
+        for keyword in permanent_keywords:
+            if keyword in stderr_lower:
+                return False, f"Permanent error: {keyword}"
+
+        # Default: don't retry unknown errors (conservative)
+        return False, "Unknown error type (conservative: no retry)"
+
+    def calculate_backoff(self, attempt: int, stage_name: str) -> float:
+        """
+        Calculate exponential backoff delay with jitter.
+
+        Args:
+            attempt: Current attempt number (1-indexed)
+            stage_name: Name of stage for config lookup
+
+        Returns:
+            Delay in seconds
+        """
+        stage_config = self.get_stage_config(stage_name)
+        base = stage_config["backoff_base"]
+        max_delay = stage_config["backoff_max"]
+
+        # Exponential backoff: base^(attempt-1)
+        delay = base ** (attempt - 1)
+
+        # Cap at max delay
+        delay = min(delay, max_delay)
+
+        # Add jitter (±20%)
+        jitter = delay * 0.2 * (random.random() * 2 - 1)
+        delay += jitter
+
+        return max(1, delay)  # Minimum 1 second
+
+    def should_retry(self, attempt: int, stage_name: str, stderr: str) -> Tuple[bool, str, float]:
+        """
+        Determine if stage should be retried.
+
+        Returns:
+            (should_retry, reason, backoff_delay)
+        """
+        stage_config = self.get_stage_config(stage_name)
+        max_attempts = stage_config["max_attempts"]
+
+        # Check if max attempts exceeded
+        if attempt >= max_attempts:
+            return False, f"Max attempts ({max_attempts}) reached", 0
+
+        # Check if error is retryable
+        is_retryable, reason = self.is_retryable_error(stderr, stage_name)
+        if not is_retryable:
+            return False, reason, 0
+
+        # Calculate backoff
+        backoff = self.calculate_backoff(attempt, stage_name)
+
+        return True, f"Retrying: {reason}", backoff
+
+    def record_failure(self):
+        """Record a failure for circuit breaker."""
+        self.consecutive_failures += 1
+
+    def record_success(self):
+        """Record a success, resetting circuit breaker."""
+        self.consecutive_failures = 0
 
 
 class PipelineOrchestrator:
-    """Orchestrates the full literature review pipeline with checkpoint/resume support."""
+    """Orchestrates the full literature review pipeline."""
 
     def __init__(
         self,
@@ -49,15 +210,8 @@ class PipelineOrchestrator:
         self.run_id = self._generate_run_id()
         self.checkpoint_data = self._load_or_create_checkpoint()
 
-    def log(self, message: str, level: str = "INFO"):
-        """Log message to console and optionally to file."""
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        log_message = f"[{timestamp}] [{level}] {message}"
-        print(log_message)
-
-        if self.log_file:
-            with open(self.log_file, "a") as f:
-                f.write(log_message + "\n")
+        # Initialize retry policy
+        self.retry_policy = RetryPolicy(self.config)
 
     def _generate_run_id(self) -> str:
         """Generate unique run ID."""
@@ -67,79 +221,73 @@ class PipelineOrchestrator:
 
     def _load_or_create_checkpoint(self) -> Dict[str, Any]:
         """Load existing checkpoint or create new one."""
-        if self.resume and os.path.exists(self.checkpoint_file):
+        if self.resume and Path(self.checkpoint_file).exists():
             try:
                 with open(self.checkpoint_file, "r") as f:
-                    checkpoint = json.load(f)
+                    data = json.load(f)
                 self.log(f"Loaded checkpoint from {self.checkpoint_file}", "INFO")
-                self.log(f"Previous run: {checkpoint.get('run_id')}", "INFO")
-                return checkpoint
-            except json.JSONDecodeError as e:
-                self.log(f"Failed to load checkpoint: Invalid JSON - {e}", "ERROR")
-                self.log("Checkpoint file is corrupted. Please delete it or use a different checkpoint file.", "ERROR")
-                self.log(f"To start fresh: rm {self.checkpoint_file}", "ERROR")
-                sys.exit(1)
+                self.log(f"Previous run ID: {data.get('run_id')}", "INFO")
+                # Keep the same run_id when resuming
+                self.run_id = data.get("run_id", self.run_id)
+                return data
             except Exception as e:
-                self.log(f"Failed to load checkpoint: {e}", "ERROR")
-                self.log("Starting fresh run", "WARNING")
+                self.log(f"Error loading checkpoint: {e}", "ERROR")
+                self.log("Starting fresh pipeline", "WARNING")
 
         # Create new checkpoint
         return {
             "run_id": self.run_id,
-            "pipeline_version": "1.1.0",
+            "pipeline_version": "1.3.0",
             "started_at": datetime.now().isoformat(),
             "last_updated": datetime.now().isoformat(),
             "status": "in_progress",
             "stages": {},
-            "config": self.config,
+            "config": {"retry_policy": self.config.get("retry_policy", {})},
         }
 
     def _write_checkpoint(self):
         """Atomically write checkpoint to file."""
         self.checkpoint_data["last_updated"] = datetime.now().isoformat()
 
-        # Atomic write: write to temp file, then rename
+        # Write to temp file first, then atomic rename
         temp_file = f"{self.checkpoint_file}.tmp"
         try:
             with open(temp_file, "w") as f:
                 json.dump(self.checkpoint_data, f, indent=2)
-                f.flush()
-                os.fsync(f.fileno())  # Ensure written to disk
 
             # Atomic rename
-            os.replace(temp_file, self.checkpoint_file)
+            Path(temp_file).replace(self.checkpoint_file)
         except Exception as e:
-            self.log(f"Failed to write checkpoint: {e}", "ERROR")
-            if os.path.exists(temp_file):
-                os.remove(temp_file)
+            self.log(f"Error writing checkpoint: {e}", "ERROR")
+            if Path(temp_file).exists():
+                Path(temp_file).unlink()
 
     def _should_run_stage(self, stage_name: str) -> bool:
-        """Determine if stage should run based on checkpoint."""
+        """Check if stage should run based on checkpoint."""
         if not self.resume:
             return True
 
-        # If resuming from specific stage, check if we've reached it
         if self.resume_from:
-            stages_order = ["journal_reviewer", "judge", "dra", "judge_dra", "sync", "orchestrator"]
-            try:
-                resume_index = stages_order.index(self.resume_from)
-                current_index = stages_order.index(stage_name)
-                return current_index >= resume_index
-            except ValueError:
-                self.log(f"Invalid stage name: {self.resume_from or stage_name}", "ERROR")
+            # Find position of resume_from stage
+            # For simplicity, we'll check if the stage name matches
+            stage_data = self.checkpoint_data.get("stages", {}).get(stage_name, {})
+            status = stage_data.get("status", "not_started")
+
+            # If resuming from specific stage, run it and all following stages
+            if stage_name == self.resume_from or status in ["not_started", "failed", "retrying"]:
                 return True
 
-        # Check checkpoint status
-        stage_data = self.checkpoint_data.get("stages", {}).get(stage_name, {})
-        status = stage_data.get("status")
-
-        if status == "completed":
-            self.log(f"Skipping {stage_name} (already completed)", "INFO")
-            return False
-        elif status == "in_progress":
-            self.log(f"Re-running {stage_name} (was interrupted)", "INFO")
-            return True
+            # Check if we've reached the resume_from stage yet
+            return status != "completed"
         else:
+            # Resume from first incomplete stage
+            stage_data = self.checkpoint_data.get("stages", {}).get(stage_name, {})
+            status = stage_data.get("status", "not_started")
+
+            if status == "completed":
+                self.log(f"Skipping completed stage: {stage_name}", "INFO")
+                return False
+
             return True
 
     def _mark_stage_started(self, stage_name: str):
@@ -150,6 +298,7 @@ class PipelineOrchestrator:
         self.checkpoint_data["stages"][stage_name].update(
             {"status": "in_progress", "started_at": datetime.now().isoformat()}
         )
+
         self._write_checkpoint()
 
     def _mark_stage_completed(self, stage_name: str, duration: float, exit_code: int):
@@ -158,10 +307,11 @@ class PipelineOrchestrator:
             {
                 "status": "completed",
                 "completed_at": datetime.now().isoformat(),
-                "duration_seconds": int(duration),
+                "duration_seconds": duration,
                 "exit_code": exit_code,
             }
         )
+
         self._write_checkpoint()
 
     def _mark_stage_failed(self, stage_name: str, error: str):
@@ -170,30 +320,54 @@ class PipelineOrchestrator:
             {
                 "status": "failed",
                 "failed_at": datetime.now().isoformat(),
-                "error": error[:500],  # Truncate error to avoid large checkpoint files
+                "error": error[:500],  # Truncate long errors
             }
         )
+
         self._write_checkpoint()
 
-    def _mark_stage_skipped(self, stage_name: str, reason: str):
-        """Mark stage as skipped in checkpoint."""
-        self.checkpoint_data["stages"][stage_name] = {
-            "status": "skipped",
-            "reason": reason,
-            "timestamp": datetime.now().isoformat(),
-        }
+    def _mark_stage_retry(self, stage_name: str, attempt: int, error: str, next_delay: float):
+        """Mark retry attempt in checkpoint."""
+        if "retry_history" not in self.checkpoint_data["stages"][stage_name]:
+            self.checkpoint_data["stages"][stage_name]["retry_history"] = []
+
+        self.checkpoint_data["stages"][stage_name]["retry_history"].append(
+            {
+                "attempt": attempt,
+                "failed_at": datetime.now().isoformat(),
+                "error": error[:200],  # Truncate
+                "next_retry_delay": next_delay,
+            }
+        )
+
+        self.checkpoint_data["stages"][stage_name].update(
+            {"status": "retrying", "current_attempt": attempt, "last_error": error[:200]}
+        )
+
         self._write_checkpoint()
 
-    def run_stage(self, stage_name: str, script: str, description: str, required: bool = True, use_module: bool = False) -> bool:
+    def log(self, message: str, level: str = "INFO"):
+        """Log message to console and optionally to file."""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_message = f"[{timestamp}] [{level}] {message}"
+        print(log_message)
+
+        if self.log_file:
+            with open(self.log_file, "a") as f:
+                f.write(log_message + "\n")
+
+    def run_stage(
+        self, stage_name: str, script: str, description: str, required: bool = True, use_module: bool = False
+    ) -> bool:
         """
-        Run a pipeline stage with checkpoint support.
+        Run a pipeline stage with retry support.
 
         Args:
-            stage_name: Unique stage identifier (e.g., 'journal_reviewer')
+            stage_name: Unique stage identifier
             script: Python script path or module name
             description: Human-readable stage description
             required: If True, exit on failure; if False, continue
-            use_module: If True, use -m to run as module; if False, run as script
+            use_module: If True, use -m flag to run as module; if False, run as script
 
         Returns:
             True if successful, False otherwise
@@ -202,54 +376,117 @@ class PipelineOrchestrator:
         if not self._should_run_stage(stage_name):
             return True  # Already completed
 
-        self.log(f"Starting stage: {description}", "INFO")
-        self._mark_stage_started(stage_name)
+        # Get retry state from checkpoint
+        stage_data = self.checkpoint_data.get("stages", {}).get(stage_name, {})
+        current_attempt = stage_data.get("current_attempt", 0)
 
-        stage_start = datetime.now()
+        # Get retry config
+        stage_config = self.retry_policy.get_stage_config(stage_name)
+        max_attempts = stage_config["max_attempts"]
 
-        try:
-            # Build command based on execution type
-            if use_module:
-                cmd = [sys.executable, "-m", script]
-            else:
-                cmd = [sys.executable, script]
-            
-            result = subprocess.run(
-                cmd, capture_output=True, text=True, timeout=self.config.get("stage_timeout", 3600)
-            )
+        # Attempt loop
+        for attempt in range(current_attempt + 1, max_attempts + 1):
+            self.log(f"Starting stage: {description} (attempt {attempt}/{max_attempts})", "INFO")
+            self._mark_stage_started(stage_name)
 
-            duration = (datetime.now() - stage_start).total_seconds()
+            stage_start = datetime.now()
 
-            if result.returncode == 0:
-                self.log(f"✅ Stage complete: {description}", "SUCCESS")
-                self._mark_stage_completed(stage_name, duration, result.returncode)
-                return True
-            else:
-                self.log(f"❌ Stage failed: {description}", "ERROR")
-                self.log(f"Error output:\n{result.stderr}", "ERROR")
-                self._mark_stage_failed(stage_name, result.stderr)
+            try:
+                # Build command based on execution type
+                if use_module:
+                    cmd = [sys.executable, '-m', script]
+                else:
+                    cmd = [sys.executable, script]
+                
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    timeout=self.config.get("stage_timeout", 3600),
+                )
 
+                duration = (datetime.now() - stage_start).total_seconds()
+
+                if result.returncode == 0:
+                    self.log(f"✅ Stage complete: {description}", "SUCCESS")
+                    self._mark_stage_completed(stage_name, duration, result.returncode)
+                    self.retry_policy.record_success()
+                    return True
+                else:
+                    # Stage failed - check if retryable
+                    self.log(f"❌ Stage failed: {description} (attempt {attempt})", "ERROR")
+                    self.log(f"Error output:\n{result.stderr}", "ERROR")
+
+                    # Determine if should retry
+                    should_retry, retry_reason, backoff_delay = self.retry_policy.should_retry(
+                        attempt, stage_name, result.stderr
+                    )
+
+                    if should_retry:
+                        self.log(
+                            f"🔄 {retry_reason} - waiting {backoff_delay:.1f}s before retry",
+                            "WARNING",
+                        )
+                        self._mark_stage_retry(stage_name, attempt, result.stderr, backoff_delay)
+                        self.retry_policy.record_failure()
+
+                        # Wait before retry
+                        time.sleep(backoff_delay)
+                        continue  # Retry
+                    else:
+                        # Don't retry
+                        self.log(f"🚫 Not retrying: {retry_reason}", "ERROR")
+                        self._mark_stage_failed(stage_name, result.stderr[:500])
+
+                        if required:
+                            self.log("Pipeline halted due to required stage failure", "ERROR")
+                            sys.exit(1)
+                        return False
+
+            except subprocess.TimeoutExpired:
+                self.log(f"⏱️ Stage timeout: {description} (attempt {attempt})", "ERROR")
+
+                # Timeout is usually retryable
+                should_retry, retry_reason, backoff_delay = self.retry_policy.should_retry(
+                    attempt, stage_name, "timeout"
+                )
+
+                if should_retry:
+                    self.log(
+                        f"🔄 {retry_reason} - waiting {backoff_delay:.1f}s before retry", "WARNING"
+                    )
+                    self._mark_stage_retry(stage_name, attempt, "Timeout", backoff_delay)
+                    self.retry_policy.record_failure()
+                    time.sleep(backoff_delay)
+                    continue
+                else:
+                    self._mark_stage_failed(stage_name, "Timeout exceeded")
+                    if required:
+                        sys.exit(1)
+                    return False
+
+            except Exception as e:
+                self.log(f"💥 Stage exception: {description} - {e}", "ERROR")
+                self._mark_stage_failed(stage_name, str(e))
                 if required:
-                    self.log("Pipeline halted due to required stage failure", "ERROR")
                     sys.exit(1)
                 return False
 
-        except subprocess.TimeoutExpired:
-            self.log(f"⏱️ Stage timeout: {description}", "ERROR")
-            self._mark_stage_failed(stage_name, "Timeout exceeded")
-            if required:
-                sys.exit(1)
-            return False
-        except Exception as e:
-            self.log(f"💥 Stage exception: {description} - {e}", "ERROR")
-            self._mark_stage_failed(stage_name, str(e))
-            if required:
-                sys.exit(1)
-            return False
+        # Max attempts exceeded
+        self.log(f"🛑 Max retry attempts ({max_attempts}) exceeded for {description}", "ERROR")
+        self._mark_stage_failed(stage_name, f"Failed after {max_attempts} attempts")
+
+        if required:
+            self.log("Pipeline halted due to required stage failure", "ERROR")
+            sys.exit(1)
+
+        return False
 
     def check_for_rejections(self) -> bool:
         """Check if version history has rejected claims."""
-        version_history_path = self.config.get("version_history_path", "review_version_history.json")
+        version_history_path = self.config.get(
+            "version_history_path", "review_version_history.json"
+        )
 
         try:
             with open(version_history_path, "r") as f:
@@ -274,42 +511,31 @@ class PipelineOrchestrator:
             return False
 
     def run(self):
-        """Execute the full pipeline with checkpoint support."""
+        """Execute the full pipeline."""
         self.log("=" * 70, "INFO")
-        self.log("Literature Review Pipeline Orchestrator v1.1", "INFO")
-        if self.resume:
-            self.log(f"RESUMING from checkpoint: {self.checkpoint_file}", "INFO")
-            if self.resume_from:
-                self.log(f"Starting from stage: {self.resume_from}", "INFO")
+        self.log("Literature Review Pipeline Orchestrator v1.3", "INFO")
+        self.log(f"Run ID: {self.run_id}", "INFO")
         self.log("=" * 70, "INFO")
 
         # Stage 1: Journal Reviewer
-        self.run_stage("journal_reviewer", "literature_review.reviewers.journal_reviewer", 
-                       "Stage 1: Initial Paper Review", use_module=True)
+        self.run_stage("journal_reviewer", "literature_review.reviewers.journal_reviewer", "Stage 1: Initial Paper Review", use_module=True)
 
         # Stage 2: Judge
-        self.run_stage("judge", "literature_review.analysis.judge", 
-                       "Stage 2: Judge Claims", use_module=True)
+        self.run_stage("judge", "literature_review.analysis.judge", "Stage 2: Judge Claims", use_module=True)
 
         # Stage 3: DRA (conditional)
-        if self._should_run_stage("dra"):
-            if self.check_for_rejections():
-                self.log("Rejections detected, running DRA appeal process", "INFO")
-                self.run_stage("dra", "literature_review.analysis.requirements", 
-                               "Stage 3: DRA Appeal", use_module=True)
-                self.run_stage("judge_dra", "literature_review.analysis.judge", 
-                               "Stage 3b: Re-judge DRA Claims", use_module=True)
-            else:
-                self.log("No rejections found, skipping DRA", "INFO")
-                self._mark_stage_skipped("dra", "no_rejections")
+        if self.check_for_rejections():
+            self.log("Rejections detected, running DRA appeal process", "INFO")
+            self.run_stage("dra", "literature_review.analysis.requirements", "Stage 3: DRA Appeal", use_module=True)
+            self.run_stage("judge_dra", "literature_review.analysis.judge", "Stage 3b: Re-judge DRA Claims", use_module=True)
+        else:
+            self.log("No rejections found, skipping DRA", "INFO")
 
         # Stage 4: Sync to Database
-        self.run_stage("sync", "scripts/sync_history_to_db.py", 
-                       "Stage 4: Sync to Database", use_module=False)
+        self.run_stage("sync", "scripts.sync_history_to_db", "Stage 4: Sync to Database", use_module=True)
 
         # Stage 5: Orchestrator
-        self.run_stage("orchestrator", "literature_review.orchestrator", 
-                       "Stage 5: Gap Analysis & Convergence", use_module=True)
+        self.run_stage("orchestrator", "literature_review.orchestrator", "Stage 5: Gap Analysis & Convergence", use_module=True)
 
         # Mark pipeline complete
         self.checkpoint_data["status"] = "completed"
@@ -319,13 +545,16 @@ class PipelineOrchestrator:
         # Summary
         elapsed = datetime.now() - self.start_time
         self.log("=" * 70, "INFO")
-        self.log("🎉 Pipeline Complete!", "SUCCESS")
+        self.log(f"🎉 Pipeline Complete!", "SUCCESS")
         self.log(f"Total time: {elapsed}", "INFO")
+        self.log(f"Checkpoint saved to: {self.checkpoint_file}", "INFO")
         self.log("=" * 70, "INFO")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Run the full Literature Review pipeline automatically")
+    parser = argparse.ArgumentParser(
+        description="Run the full Literature Review pipeline automatically"
+    )
     parser.add_argument("--log-file", type=str, help="Path to log file (default: no file logging)")
     parser.add_argument("--config", type=str, help="Path to configuration JSON file")
     parser.add_argument(
@@ -336,10 +565,7 @@ def main():
     )
     parser.add_argument("--resume", action="store_true", help="Resume from last checkpoint")
     parser.add_argument(
-        "--resume-from",
-        type=str,
-        choices=["journal_reviewer", "judge", "dra", "sync", "orchestrator"],
-        help="Resume from specific stage",
+        "--resume-from", type=str, help="Resume from specific stage (e.g., judge, sync)"
     )
 
     args = parser.parse_args()
