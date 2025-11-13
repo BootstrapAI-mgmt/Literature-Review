@@ -346,6 +346,15 @@ class PipelineOrchestrator:
 
         self._write_checkpoint()
 
+    def _mark_stage_skipped(self, stage_name: str, reason: str):
+        """Mark stage as skipped in checkpoint."""
+        self.checkpoint_data["stages"][stage_name] = {
+            "status": "skipped",
+            "reason": reason,
+            "timestamp": datetime.now().isoformat(),
+        }
+        self._write_checkpoint()
+
     def log(self, message: str, level: str = "INFO"):
         """Log message to console and optionally to file."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -530,6 +539,7 @@ class PipelineOrchestrator:
             self.run_stage("judge_dra", "literature_review.analysis.judge", "Stage 3b: Re-judge DRA Claims", use_module=True)
         else:
             self.log("No rejections found, skipping DRA", "INFO")
+            self._mark_stage_skipped("dra", "no_rejections")
 
         # Stage 4: Sync to Database
         self.run_stage("sync", "scripts.sync_history_to_db", "Stage 4: Sync to Database", use_module=True)

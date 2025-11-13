@@ -32,7 +32,7 @@ class TestCheckpointCreation:
         assert "run_id" in orch.checkpoint_data
         assert "stages" in orch.checkpoint_data
         assert "pipeline_version" in orch.checkpoint_data
-        assert orch.checkpoint_data["pipeline_version"] == "1.1.0"
+        assert orch.checkpoint_data["pipeline_version"] == "1.3.0"
         assert orch.checkpoint_data["status"] == "in_progress"
 
     def test_checkpoint_has_required_fields(self, tmp_path):
@@ -159,11 +159,12 @@ class TestCheckpointLoading:
         with open(checkpoint_path, "w") as f:
             f.write("invalid json content {")
 
-        # Should exit with error
-        with pytest.raises(SystemExit) as exc_info:
-            orch = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), resume=True)
-
-        assert exc_info.value.code == 1
+        # v1.3.0 handles corrupted checkpoints gracefully - logs error and starts fresh
+        orch = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), resume=True)
+        
+        # Should create fresh checkpoint despite corruption
+        assert orch.checkpoint_data is not None
+        assert "run_id" in orch.checkpoint_data
 
     def test_missing_checkpoint_without_resume(self, tmp_path):
         """Test that missing checkpoint creates new one when not resuming."""
@@ -200,7 +201,7 @@ class TestStageTracking:
 
         stage_data = orch.checkpoint_data["stages"]["test_stage"]
         assert stage_data["status"] == "completed"
-        assert stage_data["duration_seconds"] == 123
+        assert stage_data["duration_seconds"] == 123.45  # v1.3.0 stores full float
         assert stage_data["exit_code"] == 0
         assert "completed_at" in stage_data
 
@@ -287,13 +288,29 @@ class TestResumeLogic:
         """Test resuming from a specific stage."""
         checkpoint_path = tmp_path / "test_checkpoint.json"
 
+        # Create checkpoint with earlier stages completed
+        checkpoint_data = {
+            "run_id": "test_run",
+            "pipeline_version": "1.3.0",
+            "started_at": "2025-11-13T10:00:00",
+            "last_updated": "2025-11-13T10:05:00",
+            "status": "in_progress",
+            "stages": {
+                "journal_reviewer": {"status": "completed"},
+                "judge": {"status": "completed"}
+            },
+            "config": {}
+        }
+        with open(checkpoint_path, "w") as f:
+            json.dump(checkpoint_data, f)
+
         orch = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), resume=True, resume_from="sync")
 
-        # Should skip stages before sync
+        # Should skip completed stages before sync
         assert orch._should_run_stage("journal_reviewer") is False
         assert orch._should_run_stage("judge") is False
 
-        # Should run sync and later stages
+        # Should run sync and later stages (not started)
         assert orch._should_run_stage("sync") is True
         assert orch._should_run_stage("orchestrator") is True
 
