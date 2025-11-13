@@ -25,19 +25,16 @@ import logging
 import pickle
 from sentence_transformers import SentenceTransformer
 import warnings
+from literature_review.utils.api_manager import APIManager
+
+from literature_review.utils.api_manager import APIManager
 
 # --- CONFIGURATION & SETUP ---
-load_dotenv()
-
-# Suppress warnings
-warnings.filterwarnings("ignore", category=UserWarning, module="huggingface_hub.file_download")
-os.environ['HF_HUB_DISABLE_SYMLINKS_WARNING'] = '1'
-
 # File paths
-GAP_REPORT_FILE = 'gap_analysis_output/gap_analysis_report.json'
-RESEARCH_DB_FILE = 'neuromorphic-research_database.csv'
+GAP_REPORT_FILE = 'gap_analysis_report.json'
+RESEARCH_DB_FILE = 'data/processed/neuromorphic-research_database.csv'
 OUTPUT_FILE = 'suggested_searches.md'
-CACHE_DIR = 'recommender_cache'  # Separate cache for this script
+CACHE_DIR = os.path.join(os.path.dirname(__file__), 'recommender_cache')
 
 # Analysis configuration
 ANALYSIS_CONFIG = {
@@ -68,130 +65,6 @@ def safe_print(message):
 
 
 os.makedirs(CACHE_DIR, exist_ok=True)
-
-
-# --- APIMANAGER CLASS (Copied from Reviewer v3.1) ---
-
-class APIManager:
-    """Manages API calls with rate limiting, caching, and retry logic"""
-
-    def __init__(self):
-        self.cache = {}
-        self.last_call_time = 0
-        self.calls_this_minute = 0
-        self.minute_start = time.time()
-
-        try:
-            self.client = genai.Client()
-
-            thinking_config = types.ThinkingConfig(thinking_budget=0)
-
-            # Config for JSON responses
-            self.json_generation_config = types.GenerateContentConfig(
-                temperature=0.2,
-                top_p=1.0,
-                top_k=1,
-                max_output_tokens=16384,
-                response_mime_type="application/json",
-                thinking_config=thinking_config
-            )
-
-            # Config for TEXT responses (for summarization)
-            self.text_generation_config = types.GenerateContentConfig(
-                temperature=0.2,
-                top_p=1.0,
-                top_k=1,
-                max_output_tokens=16384,
-                thinking_config=thinking_config
-            )
-
-            logger.info(f"[SUCCESS] Gemini Client (google-ai SDK) initialized (Thinking Disabled).")
-            safe_print(f"✅ Gemini Client initialized successfully (Thinking Disabled).")
-        except Exception as e:
-            logger.critical(f"[ERROR] Critical Error initializing Gemini Client: {e}")
-            safe_print(f"❌ Critical Error initializing Gemini Client: {e}")
-            raise
-
-        try:
-            self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
-            logger.info("[SUCCESS] Sentence Transformer initialized.")
-            safe_print("✅ Sentence Transformer initialized.")
-        except Exception as e:
-            logger.warning(f"[WARNING] Could not initialize Sentence Transformer: {e}")
-            safe_print(f"⚠️ Could not initialize Sentence Transformer: {e}")
-            self.embedder = None
-
-    def rate_limit(self):
-        """Implement rate limiting"""
-        current_time = time.time()
-        if current_time - self.minute_start >= 60:
-            self.calls_this_minute = 0
-            self.minute_start = current_time
-
-        if self.calls_this_minute >= ANALYSIS_CONFIG['API_CALLS_PER_MINUTE']:
-            sleep_time = 60.1 - (current_time - self.minute_start)
-            if sleep_time > 0:
-                logger.info(
-                    f"Rate limit ({ANALYSIS_CONFIG['API_CALLS_PER_MINUTE']}/min) reached. Sleeping for {sleep_time:.1f} seconds...")
-                safe_print(f"⏳ Rate limit reached. Sleeping for {sleep_time:.1f} seconds...")
-                time.sleep(sleep_time)
-                self.calls_this_minute = 0
-                self.minute_start = time.time()
-        self.calls_this_minute += 1
-
-    def cached_api_call(self, prompt: str, use_cache: bool = True, is_json: bool = True) -> Optional[Any]:
-        """Make API call with caching and retry logic"""
-        prompt_hash = hashlib.md5(prompt.encode('utf-8')).hexdigest()
-
-        if use_cache and prompt_hash in self.cache:
-            logger.debug(f"Cache hit for hash: {prompt_hash}")
-            safe_print("📦 Using cached response")
-            return self.cache[prompt_hash]
-
-        logger.debug(f"Cache miss for hash: {prompt_hash}. Calling API...")
-        self.rate_limit()
-
-        response_text = ""  # Initialize to avoid UnboundLocalError
-        for attempt in range(ANALYSIS_CONFIG['RETRY_ATTEMPTS']):
-            try:
-                current_config_object = self.json_generation_config if is_json else self.text_generation_config
-
-                response = self.client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=prompt,
-                    config=current_config_object
-                )
-
-                response_text = response.text
-                if is_json:
-                    result = json.loads(response_text)
-                else:
-                    result = response_text
-                self.cache[prompt_hash] = result
-                return result
-            except json.JSONDecodeError as e:
-                logger.error(
-                    f"JSON decode error on attempt {attempt + 1}: {e}. Response text: '{response_text[:500]}...'")
-                if attempt < ANALYSIS_CONFIG['RETRY_ATTEMPTS'] - 1:
-                    time.sleep(ANALYSIS_CONFIG['RETRY_DELAY'])
-                else:
-                    logger.error("Max retries reached for JSON decode error.")
-            except Exception as e:
-                if "DeadlineExceeded" in str(e) or "Timeout" in str(e):
-                    logger.error(f"API call timed out on attempt {attempt + 1}")
-                else:
-                    logger.error(f"API error on attempt {attempt + 1}: {type(e).__name__} - {e}")
-
-                if "429" in str(e):
-                    logger.warning("Rate limit error detected by API, increasing sleep time.")
-                    time.sleep(ANALYSIS_CONFIG['RETRY_DELAY'] * (attempt + 2))
-                elif attempt < ANALYSIS_CONFIG['RETRY_ATTEMPTS'] - 1:
-                    time.sleep(ANALYSIS_CONFIG['RETRY_DELAY'])
-                else:
-                    logger.error("Max retries reached for API error.")
-
-        logger.error(f"API call failed after {ANALYSIS_CONFIG['RETRY_ATTEMPTS']} attempts.")
-        return None
 
 
 # --- END APIManager CLASS ---

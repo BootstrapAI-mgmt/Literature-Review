@@ -354,6 +354,7 @@ python pipeline_orchestrator.py --config pipeline_config.json
 - Logs progress with timestamps to console and optional file
 - Halts pipeline on any stage failure with clear error messages
 - Provides total execution time summary
+- **Creates checkpoint file for resume capability**
 
 **Configuration File (`pipeline_config.json`):**
 ```json
@@ -365,6 +366,113 @@ python pipeline_orchestrator.py --config pipeline_config.json
 ```
 
 **Note:** The orchestrator requires that all Python scripts (Journal-Reviewer.py, Judge.py, etc.) are in the same directory and can run non-interactively.
+
+---
+
+### Method 3: **Resume After Interruption** (Checkpoint/Resume)
+
+**✅ NEW in v1.1:** Resume pipeline execution after failures or interruptions.
+
+The pipeline orchestrator automatically creates a checkpoint file (`pipeline_checkpoint.json`) that tracks the progress of each stage. If the pipeline is interrupted, you can resume from where it left off.
+
+**Resume from Last Checkpoint:**
+```bash
+python pipeline_orchestrator.py --resume
+```
+
+This will:
+- Load the checkpoint file
+- Skip stages that have already completed successfully
+- Re-run any stage that was in progress when interrupted
+- Continue with remaining stages
+
+**Resume from a Specific Stage:**
+```bash
+# Resume from sync stage onwards (skip earlier stages)
+python pipeline_orchestrator.py --resume-from sync
+```
+
+Available stages for `--resume-from`:
+- `journal_reviewer` - Stage 1: Initial Paper Review
+- `judge` - Stage 2: Judge Claims
+- `dra` - Stage 3: DRA Appeal (if rejections detected)
+- `sync` - Stage 4: Sync to Database
+- `orchestrator` - Stage 5: Gap Analysis & Convergence
+
+**Custom Checkpoint File:**
+```bash
+# Use a different checkpoint file
+python pipeline_orchestrator.py --checkpoint-file batch_001_checkpoint.json
+
+# Resume from custom checkpoint
+python pipeline_orchestrator.py --resume --checkpoint-file batch_001_checkpoint.json
+```
+
+**Use Cases:**
+- **Network Failure:** Resume after connection timeout during sync
+- **Manual Interruption:** Resume after Ctrl+C
+- **System Crash:** Resume after unexpected shutdown
+- **Iterative Development:** Re-run only modified stages
+- **Batch Processing:** Separate checkpoints for different batches
+
+**Checkpoint File Structure:**
+
+The checkpoint file is human-readable JSON:
+
+```json
+{
+  "run_id": "2025-11-11T14:30:00_abc123",
+  "pipeline_version": "1.1.0",
+  "started_at": "2025-11-11T14:30:00",
+  "last_updated": "2025-11-11T14:45:30",
+  "status": "in_progress",
+  "stages": {
+    "journal_reviewer": {
+      "status": "completed",
+      "started_at": "2025-11-11T14:30:05",
+      "completed_at": "2025-11-11T14:35:12",
+      "duration_seconds": 307,
+      "exit_code": 0
+    },
+    "judge": {
+      "status": "completed",
+      "started_at": "2025-11-11T14:35:15",
+      "completed_at": "2025-11-11T14:40:22",
+      "duration_seconds": 307,
+      "exit_code": 0
+    },
+    "sync": {
+      "status": "failed",
+      "started_at": "2025-11-11T14:40:25",
+      "failed_at": "2025-11-11T14:42:10",
+      "error": "Connection timeout"
+    }
+  }
+}
+```
+
+**Safety Features:**
+- **Atomic writes** prevent checkpoint corruption
+- **Corrupted checkpoint detection** with clear error messages
+- **No sensitive data** stored in checkpoint (no API keys)
+- **Works across system restarts**
+
+**Example Workflow:**
+
+```bash
+# Start pipeline
+python pipeline_orchestrator.py --log-file run1.log
+
+# [Pipeline runs Stage 1 and 2, then network fails at Stage 3]
+# Checkpoint shows: journal_reviewer=completed, judge=completed, sync=failed
+
+# Resume after fixing network
+python pipeline_orchestrator.py --resume --log-file run1_resumed.log
+# Output: Skipping journal_reviewer (already completed)
+#         Skipping judge (already completed)
+#         Re-running sync (was interrupted)
+#         Running orchestrator
+```
 
 ---
 

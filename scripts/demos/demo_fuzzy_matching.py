@@ -14,9 +14,9 @@ import sys
 import os
 
 # Add parent directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from Judge import (
+from literature_review.analysis.judge import (
     _normalize_string,
     load_pillar_definitions,
     _build_lookup_map,
@@ -62,7 +62,7 @@ def demo_fuzzy_matching():
     
     # Load actual pillar definitions
     print("\nLoading pillar definitions...")
-    definitions = load_pillar_definitions("pillar_definitions_enhanced.json")
+    definitions = load_pillar_definitions("pillar_definitions.json")
     
     if not definitions:
         print("❌ Could not load pillar definitions")
@@ -136,7 +136,7 @@ def demo_pillar_matching():
     print_section("PILLAR KEY MATCHING DEMO")
     
     # Load definitions
-    definitions = load_pillar_definitions("pillar_definitions_enhanced.json")
+    definitions = load_pillar_definitions("pillar_definitions.json")
     if not definitions:
         print("❌ Could not load pillar definitions")
         return
@@ -168,7 +168,7 @@ def demo_statistics():
     """Show statistics about pillar definitions."""
     print_section("PILLAR DEFINITIONS STATISTICS")
     
-    definitions = load_pillar_definitions("pillar_definitions_enhanced.json")
+    definitions = load_pillar_definitions("pillar_definitions.json")
     if not definitions:
         print("❌ Could not load pillar definitions")
         return
@@ -192,7 +192,7 @@ def demo_statistics():
     # Build lookup and show map size
     _build_lookup_map(definitions)
     
-    from Judge import DEFINITIONS_LOOKUP_MAP, CANONICAL_PILLAR_MAP
+    from literature_review.analysis.judge import DEFINITIONS_LOOKUP_MAP, CANONICAL_PILLAR_MAP
     
     print("Lookup Maps:")
     print(f"  Sub-requirement entries: {len(DEFINITIONS_LOOKUP_MAP)}")

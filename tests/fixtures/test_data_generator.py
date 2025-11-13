@@ -61,7 +61,8 @@ class TestDataGenerator:
         title: Optional[str] = None,
         num_claims: int = 5,
         approved_ratio: float = 0.8,
-        version_num: int = 1
+        version_num: int = 1,
+        claim_statuses: Optional[List[str]] = None
     ) -> Dict[str, Any]:
         """
         Create a single version history entry.
@@ -72,6 +73,7 @@ class TestDataGenerator:
             num_claims: Number of claims to generate
             approved_ratio: Ratio of approved to total claims
             version_num: Version number for this entry
+            claim_statuses: Optional list of explicit statuses for each claim
             
         Returns:
             Version history entry dict
@@ -80,16 +82,29 @@ class TestDataGenerator:
         
         # Generate claims
         claims = []
+        
+        # If explicit statuses provided, use them
+        if claim_statuses:
+            num_claims = len(claim_statuses)
+        
         num_approved = int(num_claims * approved_ratio)
         
         for i in range(num_claims):
             pillar = random.choice(self.sample_pillars)
-            status = "approved" if i < num_approved else "rejected"
+            
+            # Use explicit status if provided, otherwise use approved_ratio
+            if claim_statuses and i < len(claim_statuses):
+                status = claim_statuses[i]
+            else:
+                status = "approved" if i < num_approved else "rejected"
             
             claim = {
+                "claim_id": f"claim_{filename}_{i+1}",
                 "pillar": pillar,
+                "sub_requirement": f"SR {random.randint(1, 4)}.{random.randint(1, 5)}",
                 "claim": f"Sample claim {i+1} for {pillar}",
                 "evidence": f"Page {random.randint(1, 20)}: Sample evidence text...",
+                "page_number": random.randint(1, 20),
                 "status": status,
                 "reasoning": f"Sample {'approval' if status == 'approved' else 'rejection'} reasoning"
             }
@@ -116,35 +131,57 @@ class TestDataGenerator:
     
     def create_version_history(
         self,
-        filenames: List[str],
+        filename: Optional[str] = None,
+        filenames: Optional[List[str]] = None,
+        num_versions: int = 1,
         num_versions_per_file: int = 1,
-        approved_ratio: float = 0.8
+        approved_ratio: float = 0.8,
+        claim_statuses: Optional[List[str]] = None
     ) -> Dict[str, List[Dict[str, Any]]]:
         """
         Create a complete version history structure.
         
         Args:
-            filenames: List of PDF filenames
-            num_versions_per_file: Number of versions for each file
+            filename: Single PDF filename (alternative to filenames list)
+            filenames: List of PDF filenames (alternative to filename)
+            num_versions: Number of versions for single file mode
+            num_versions_per_file: Number of versions for each file in multi-file mode
             approved_ratio: Ratio of approved claims
+            claim_statuses: Optional list of explicit statuses for claims (single file mode)
             
         Returns:
             Complete version history dict
         """
         history = {}
         
-        for filename in filenames:
+        # Support both single filename and list of filenames
+        if filename:
+            # Single file mode
             versions = []
-            for v in range(1, num_versions_per_file + 1):
+            num_versions_to_create = num_versions
+            for v in range(1, num_versions_to_create + 1):
                 entry = self.create_version_history_entry(
                     filename=filename,
-                    num_claims=random.randint(3, 8),
+                    num_claims=len(claim_statuses) if claim_statuses else random.randint(3, 8),
                     approved_ratio=approved_ratio,
-                    version_num=v
+                    version_num=v,
+                    claim_statuses=claim_statuses
                 )
                 versions.append(entry)
-            
             history[filename] = versions
+        elif filenames:
+            # Multi-file mode
+            for fname in filenames:
+                versions = []
+                for v in range(1, num_versions_per_file + 1):
+                    entry = self.create_version_history_entry(
+                        filename=fname,
+                        num_claims=random.randint(3, 8),
+                        approved_ratio=approved_ratio,
+                        version_num=v
+                    )
+                    versions.append(entry)
+                history[fname] = versions
         
         return history
     

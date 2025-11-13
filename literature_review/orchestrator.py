@@ -13,10 +13,10 @@ import time
 import numpy as np
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-from google import genai
-from google.genai import types
+import google.generativeai as genai
+from google.generativeai import types
 from dotenv import load_dotenv
-import ReviewPlotter as plotter
+from literature_review.utils import plotter
 import networkx as nx
 import logging
 from collections import defaultdict
@@ -24,8 +24,10 @@ import pickle
 import csv
 import hashlib
 from sentence_transformers import SentenceTransformer
-import subprocess  # To run external scripts
+# import subprocess  # To run external scripts
 from pathlib import Path  # For file state checking
+from literature_review.reviewers import deep_reviewer
+from literature_review.analysis import judge
 
 # --- CONFIGURATION & SETUP ---
 load_dotenv()
@@ -66,8 +68,8 @@ ORCHESTRATOR_STATE_FILE = 'orchestrator_state.json'
 DEEP_REVIEW_DIRECTIONS_FILE = os.path.join(OUTPUT_FOLDER, 'deep_review_directions.json')
 
 # 3. External Scripts to call
-DEEP_REVIEWER_SCRIPT = 'Deep-Reviewer.py'
-JUDGE_SCRIPT = 'Judge.py'
+# DEEP_REVIEWER_SCRIPT = 'Deep-Reviewer.py'
+# JUDGE_SCRIPT = 'Judge.py'
 
 # Create directories
 os.makedirs(OUTPUT_FOLDER, exist_ok=True)
@@ -1078,7 +1080,7 @@ def main():
 
     # --- NEW: Initial Judge Run ---
     if run_initial_judge:
-        if not run_script(JUDGE_SCRIPT):
+        if not judge.main():
             logger.critical("Initial Judge run failed. Halting.")
             safe_print("❌ Initial Judge run failed. Halting.")
             return
@@ -1180,10 +1182,10 @@ def main():
             safe_print("\nConvergence not met. Running new Deep Review loop...")
             write_deep_review_directions(DEEP_REVIEW_DIRECTIONS_FILE, directions)
 
-            if not run_script(DEEP_REVIEWER_SCRIPT):
+            if not deep_reviewer.main():
                 safe_print("❌ Deep Reviewer failed. Halting loop.")
                 break
-            if not run_script(JUDGE_SCRIPT):
+            if not judge.main():
                 safe_print("❌ Judge failed. Halting loop.")
                 break
 

@@ -14,9 +14,9 @@ import sys
 import os
 
 # Add parent directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from Judge import detect_circular_refs
+from literature_review.utils.data_helpers import detect_circular_refs
 
 
 def print_section(title):
@@ -30,7 +30,7 @@ def validate_version_history():
     """Validate review_version_history_EXAMPLE.json structure."""
     print_section("Validating Version History")
     
-    filepath = "review_version_history_EXAMPLE.json"
+    filepath = "data/examples/review_version_history_EXAMPLE.json"
     
     if not os.path.exists(filepath):
         print(f"❌ File not found: {filepath}")
@@ -113,7 +113,7 @@ def validate_csv_database():
     """Validate neuromorphic-research_database_EXAMPLE.csv structure."""
     print_section("Validating CSV Database")
     
-    filepath = "neuromorphic-research_database_EXAMPLE.csv"
+    filepath = "data/examples/neuromorphic-research_database_EXAMPLE.csv"
     
     if not os.path.exists(filepath):
         print(f"❌ File not found: {filepath}")
@@ -186,7 +186,7 @@ def validate_pillar_definitions():
     """Validate pillar_definitions_enhanced.json structure."""
     print_section("Validating Pillar Definitions")
     
-    filepath = "pillar_definitions_enhanced.json"
+    filepath = "pillar_definitions.json"
     
     if not os.path.exists(filepath):
         print(f"❌ File not found: {filepath}")

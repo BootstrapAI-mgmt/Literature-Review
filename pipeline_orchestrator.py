@@ -532,7 +532,7 @@ class PipelineOrchestrator:
             self.log("No rejections found, skipping DRA", "INFO")
 
         # Stage 4: Sync to Database
-        self.run_stage("sync", "sync_history_to_db.py", "Stage 4: Sync to Database")
+        self.run_stage("sync", "scripts.sync_history_to_db", "Stage 4: Sync to Database", use_module=True)
 
         # Stage 5: Orchestrator
         self.run_stage("orchestrator", "literature_review.orchestrator", "Stage 5: Gap Analysis & Convergence", use_module=True)
