@@ -18,10 +18,14 @@ from typing import Dict, List
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from DeepRequirementsAnalyzer import (
+from literature_review.analysis.requirements import (
+    run_analysis as run_dra_analysis,
+    TextExtractor,
     load_pillar_definitions,
     find_sub_requirement_definition,
     build_dra_prompt,
+    chunk_text_with_page_tracking,
+    aggregate_chunk_results,
     DEFINITIONS_FILE
 )
 

@@ -21,8 +21,8 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-from google import genai
-from google.genai import types
+import google.generativeai as genai
+from google.generativeai import types
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import logging
@@ -36,7 +36,7 @@ load_dotenv()
 
 # 1. Input Files
 # From Journal Reviewer
-PAPERS_FOLDER = r'C:\Users\jpcol\OneDrive\Documents\Doctorate\Research\Literature-Review'
+PAPERS_FOLDER = 'data/raw'
 RESEARCH_DB_FILE = 'neuromorphic-research_database.csv'
 # From Orchestrator
 GAP_REPORT_FILE = 'gap_analysis_output/gap_analysis_report.json'
@@ -48,12 +48,6 @@ DEEP_REVIEW_DIRECTIONS_FILE = 'gap_analysis_output/deep_review_directions.json'
 VERSION_HISTORY_FILE = 'review_version_history.json'
 
 # 3. Path/API Config (Copied from Journal-Reviewer)
-ALTERNATIVE_PATHS = [
-    r'C:\Users\jpcol\Documents\Doctorate\Research\Literature-Review',
-    r'C:\Users\jpcol\OneDrive\Documents\Research\Literature-Review',
-    r'.\Literature-Review',
-    r'..\Literature-Review',
-]
 CACHE_DIR = 'deep_reviewer_cache'
 API_CONFIG = {
     "RETRY_ATTEMPTS": 3,
@@ -346,48 +340,27 @@ class TextExtractor:
         return full_text, pages_text
 
 
-# --- Path Diagnostic Functions (Copied from Journal-Reviewer v3.1) ---
-# Needed to find the PAPERS_FOLDER
-def find_papers_folder():
-    """Find the papers folder by checking multiple locations"""
-    if os.path.exists(PAPERS_FOLDER) and os.path.isdir(PAPERS_FOLDER):
-        logger.info(f"Using primary PAPERS_FOLDER: {PAPERS_FOLDER}")
-        return PAPERS_FOLDER
-
-    for alt_path in ALTERNATIVE_PATHS:
-        abs_path = os.path.abspath(alt_path)
-        if os.path.exists(abs_path) and os.path.isdir(abs_path):
-            logger.info(f"Found papers folder at alternative location: {abs_path}")
-            return abs_path
-
-    try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-    except NameError:
-        script_dir = os.path.abspath('.')
-
-    possible_paths = [
-        os.path.join(script_dir, 'Literature-Review'),
-        os.path.join(script_dir, '..', 'Literature-Review'),
-        os.path.join(script_dir, 'Research', 'Literature-Review'),
-    ]
-
-    for path in possible_paths:
-        abs_path = os.path.abspath(path)
-        if os.path.exists(abs_path) and os.path.isdir(abs_path):
-            logger.info(f"Found papers folder relative to script: {abs_path}")
-            return abs_path
-
-    logger.error("Could not find papers folder in any specified location.")
-    return None
-
 
 def find_paper_filepath(filename: str, papers_folder: str) -> Optional[str]:
     """Find the full file path for a given filename."""
+    # The papers_folder is now relative to the root, so we walk it directly.
+    # We also need to check inside the 'Research-Papers' subdirectory that was moved.
+    search_path = os.path.join(papers_folder, 'Research-Papers')
+    if not os.path.isdir(search_path):
+        search_path = papers_folder # Fallback to the base data/raw folder
+
+    for root, dirs, files in os.walk(search_path):
+        if filename in files:
+            return os.path.join(root, filename)
+            
+    # If not found, check the parent `papers_folder` as well
     for root, dirs, files in os.walk(papers_folder):
         if filename in files:
             return os.path.join(root, filename)
+
     logger.warning(f"Could not find file: {filename} in {papers_folder}")
     return None
+
 
 
 # --- DATA LOADING FUNCTIONS ---
@@ -835,12 +808,11 @@ def add_claim_to_version_history(
 def main():
     start_time = time.time()
     logger.info("\n" + "=" * 80)
-    logger.info("DEEP REVIEWER PIPELINE v1.0")
+    logger.info("DEEP REVIEWER PIPELINE v2.0")
     logger.info("=" * 80)
 
-    papers_folder_path = find_papers_folder()
-    if not papers_folder_path:
-        safe_print("❌ Could not find PAPERS_FOLDER. Exiting.")
+    if not os.path.isdir(PAPERS_FOLDER):
+        safe_print(f"❌ Papers folder not found at '{PAPERS_FOLDER}'. Exiting.")
         return
 
     logger.info("\n=== INITIALIZING COMPONENTS ===")
@@ -905,7 +877,7 @@ def main():
             safe_print(f"  Scanning paper: {filename}")
 
             try:
-                filepath = find_paper_filepath(filename, papers_folder_path)
+                filepath = find_paper_filepath(filename, PAPERS_FOLDER)
                 if not filepath:
                     logger.warning(f"    Could not find file {filename}. Skipping.")
                     safe_print(f"    ❌ Could not find file {filename}. Skipping.")

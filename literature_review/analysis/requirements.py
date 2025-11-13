@@ -21,21 +21,13 @@ import hashlib
 import numpy as np
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-from google import genai
-from google.genai import types
+import google.generativeai as genai
+from google.generativeai import types
 from bs4 import BeautifulSoup
 import logging
 from collections import defaultdict # <-- NEW: For grouping claims
 
-# --- CONFIGURATION (Copied from Journal-Reviewer) ---
-# This is needed to find the source documents
-PAPERS_FOLDER = r'C:\Users\jpcol\OneDrive\Documents\Doctorate\Research\Literature-Review'
-ALTERNATIVE_PATHS = [
-    r'C:\Users\jpcol\Documents\Doctorate\Research\Literature-Review',
-    r'C:\Users\jpcol\OneDrive\Documents\Research\Literature-Review',
-    r'.\Literature-Review',
-    r'..\Literature-Review',
-]
+# --- CONFIGURATION ---
 REVIEW_CONFIG = {
     "MIN_TEXT_LENGTH": 500,
     "DRA_CHUNK_SIZE": 50000,  # Chunk size for DRA text processing
@@ -45,7 +37,7 @@ REVIEW_CONFIG = {
 logger = logging.getLogger(__name__)
 
 # --- DEFINITIONS FILE ---
-DEFINITIONS_FILE = 'pillar_definitions_enhanced.json'
+DEFINITIONS_FILE = 'pillar_definitions.json'
 
 
 def safe_print(message):
@@ -194,30 +186,6 @@ class TextExtractor:
             logger.warning(f"Unsupported file type: {filepath}")
         return text, method, quality
 # --- END TextExtractor CLASS ---
-
-
-# --- Path Diagnostic Functions (Unchanged) ---
-# ... (Full functions omitted for brevity) ...
-def find_papers_folder():
-    if os.path.exists(PAPERS_FOLDER) and os.path.isdir(PAPERS_FOLDER):
-        logger.info(f"Using primary PAPERS_FOLDER: {PAPERS_FOLDER}")
-        return PAPERS_FOLDER
-    for alt_path in ALTERNATIVE_PATHS:
-        abs_path = os.path.abspath(alt_path)
-        if os.path.exists(abs_path) and os.path.isdir(abs_path):
-            logger.info(f"Found papers folder at alternative location: {abs_path}")
-            return abs_path
-    # ... (rest of fallback logic) ...
-    logger.error("Could not find papers folder in any specified location.")
-    return None
-
-def find_paper_filepath(filename: str, papers_folder: str) -> Optional[str]:
-    for root, dirs, files in os.walk(papers_folder):
-        if filename in files:
-            return os.path.join(root, filename)
-    logger.warning(f"Could not find file: {filename} in {papers_folder}")
-    return None
-# --- END Path Functions ---
 
 
 # --- CHUNKING FUNCTIONS ---
@@ -377,8 +345,7 @@ If no new, high-quality evidence is found for *any* of the rejected claims, retu
 
 def run_analysis(
         rejected_claims: List[Dict],
-        api_manager: Any,
-        papers_folder_path: str
+        api_manager: Any
 ) -> List[Dict]:
     """
     Main entry point for the DRA.
@@ -386,12 +353,7 @@ def run_analysis(
     re-scans each source file *once*, and returns a list of new,
     improved claims for re-judgment.
     """
-
-    if not papers_folder_path:
-        logger.error("DRA: Cannot run analysis, papers folder path is not set.")
-        return []
-
-    # NEW: Load pillar definitions
+    # Load pillar definitions from the root
     pillar_definitions = load_pillar_definitions(DEFINITIONS_FILE)
     if not pillar_definitions:
         logger.error("DRA: Cannot proceed without pillar definitions.")
@@ -421,9 +383,10 @@ def run_analysis(
             continue
 
         # 1. Find and read the full paper text (ONCE per document)
-        filepath = find_paper_filepath(filename, papers_folder_path)
-        if not filepath:
-            logger.error(f"DRA: Could not find source file {filename}. Skipping all {len(claims_for_doc)} claims for this doc.")
+        # The filename now includes the relative path from the data/raw directory
+        filepath = os.path.join('data', 'raw', filename)
+        if not os.path.exists(filepath):
+            logger.error(f"DRA: Could not find source file {filepath}. Skipping all {len(claims_for_doc)} claims for this doc.")
             continue
 
         full_text, _, _ = text_extractor.robust_text_extraction(filepath)

@@ -67,3 +67,8 @@ review_version_history.json
 neuromorphic-research_database.csv
 deep_coverage_database.json
 non-journal_database.csv
+
+# API and model caches
+api_cache/
+mock_api_key/
+.locks/

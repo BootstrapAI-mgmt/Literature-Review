@@ -23,8 +23,8 @@ import hashlib
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-from google import genai
-from google.genai import types
+import google.generativeai as genai
+from google.generativeai import types
 from dotenv import load_dotenv
 import numpy as np
 import logging
@@ -34,17 +34,17 @@ import difflib          # For fuzzy matching
 from collections import defaultdict  # For grouping claims by file
 
 # --- NEW: Import the Deep Requirements Analyzer ---
-import DeepRequirementsAnalyzer as dra
+from . import requirements as dra
 
 # --- CONFIGURATION ---
 load_dotenv()
 
 # 1. Input Files
-DEFINITIONS_FILE = 'pillar_definitions_enhanced.json'
+DEFINITIONS_FILE = 'pillar_definitions.json'
 
 # 2. Input/Output Files
-DEEP_COVERAGE_DB_FILE = 'deep_coverage_database.json'
-RESEARCH_DB_FILE = 'neuromorphic-research_database.csv'
+# DEPRECATED: DEEP_COVERAGE_DB_FILE = 'deep_coverage_database.json'
+# DEPRECATED: RESEARCH_DB_FILE = 'neuromorphic-research_database.csv'
 
 # 3. Path/API Config
 CACHE_DIR = 'judge_cache'
@@ -293,29 +293,7 @@ def find_robust_pillar_key(claim_pillar: str) -> Optional[str]:
 # --- END Lookup Logic ---
 
 
-# --- DATA LOADING FUNCTIONS (Unchanged) ---
-def load_deep_coverage_db(filepath: str) -> List[Dict]:
-    if not os.path.exists(filepath):
-        logger.info(f"Deep coverage file not found: {filepath}. Proceeding.")
-        return []
-    try:
-        with open(filepath, 'r', encoding='utf-8') as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        logger.warning(f"Error decoding {filepath}. Starting with empty list.")
-        return []
-    except Exception as e:
-        logger.error(f"Error loading deep coverage DB: {e}")
-        return []
-
-def save_deep_coverage_db(filepath: str, db: List[Dict]):
-    try:
-        with open(filepath, 'w', encoding='utf-8') as f:
-            json.dump(db, f, indent=2, ensure_ascii=False)
-        logger.info(f"Saved {len(db)} judged claims to {filepath}")
-    except Exception as e:
-        logger.error(f"Error saving deep coverage DB: {e}")
-
+# --- DATA LOADING FUNCTIONS (MODIFIED) ---
 def load_pillar_definitions(filepath: str) -> Dict:
     if not os.path.exists(filepath):
         logger.error(f"Pillar definitions file not found: {filepath}. Cannot judge.")
@@ -329,66 +307,6 @@ def load_pillar_definitions(filepath: str) -> Dict:
         logger.error(f"Error loading pillar definitions: {e}")
         return {}
 
-def load_research_db(filepath: str) -> List[Dict]:
-    if not os.path.exists(filepath):
-        logger.error(f"Research DB file not found: {filepath}. Cannot judge CSV claims.")
-        return []
-    try:
-        df = pd.read_csv(filepath, encoding='utf-8')
-        df = df.replace({pd.NA: None, np.nan: None})
-        records = df.to_dict('records')
-        parsed_records = []
-        for row in records:
-            req_data = row.get("Requirement(s)")
-            if req_data and isinstance(req_data, str):
-                try:
-                    row["Requirement(s)"] = json.loads(req_data)
-                except json.JSONDecodeError:
-                    logger.warning(f"Failed to parse 'Requirement(s)' for {row.get('FILENAME')}. Treating as empty.")
-                    row["Requirement(s)"] = []
-            elif not req_data or not isinstance(req_data, list):
-                row["Requirement(s)"] = []
-            parsed_records.append(row)
-        logger.info(f"Loaded and parsed {len(parsed_records)} records from {filepath}")
-        return parsed_records
-    except pd.errors.EmptyDataError:
-        logger.warning(f"CSV file is empty: {filepath}")
-        return []
-    except Exception as e:
-        logger.error(f"Could not load or parse research DB {filepath}: {e}")
-        return []
-
-def save_research_db(filepath: str, data: List[Dict]):
-    if not data:
-        logger.warning("No data to save to research DB.")
-        return
-    try:
-        fieldnames = PaperAnalyzer.DATABASE_COLUMN_ORDER.copy()
-        all_data_keys = set().union(*(d.keys() for d in data))
-        extra_keys = sorted(list(all_data_keys - set(fieldnames)))
-        final_fieldnames = fieldnames + extra_keys
-        if extra_keys:
-            logger.warning(f"Found {len(extra_keys)} keys in data not in standard column order. Appending to end: {extra_keys}")
-
-        with open(filepath, 'w', newline='', encoding='utf-8') as f:
-            writer = csv.DictWriter(f, fieldnames=final_fieldnames, restval='', extrasaction='ignore', quoting=csv.QUOTE_ALL)
-            writer.writeheader()
-            for row in data:
-                row_to_write = row.copy()
-                if "Requirement(s)" in row_to_write:
-                    req_list = row_to_write["Requirement(s)"]
-                    row_to_write["Requirement(s)"] = json.dumps(req_list) if req_list else ""
-                row_to_write.pop('_origin', None)
-                row_to_write.pop('_origin_list', None)
-                row_to_write.pop('_filename', None)
-                writer.writerow(row_to_write)
-        logger.info(f"Successfully saved {len(data)} records back to {filepath} with correct column order.")
-    except PermissionError:
-        logger.error(f"PERMISSION ERROR: Could not write to {filepath}. Is the file open in Excel?")
-        safe_print(f"❌ PERMISSION ERROR: Could not write to {filepath}. Please close it and try again.")
-    except Exception as e:
-        logger.error(f"Failed to save research DB to {filepath}: {e}")
-        safe_print(f"❌ CRITICAL: Failed to save updated CSV. See log.")
 # --- END DATA LOADING ---
 
 
