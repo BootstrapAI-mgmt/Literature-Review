@@ -5,7 +5,7 @@ Reads data from Orchestrator output files and generates visualizations.
 
 import json
 import os
-import ReviewPlotter as plotter # Assumes ReviewPlotter.py is in the same directory
+from literature_review.utils import plotter
 import logging
 
 # --- CONFIGURATION ---

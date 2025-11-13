@@ -54,13 +54,7 @@ if sys.platform == "win32":
 load_dotenv()
 
 # --- CONFIGURATION ---
-PAPERS_FOLDER = r'C:\Users\jpcol\OneDrive\Documents\Doctorate\Research\Literature-Review'
-ALTERNATIVE_PATHS = [
-    r'C:\Users\jpcol\Documents\Doctorate\Research\Literature-Review',
-    r'C:\Users\jpcol\OneDrive\Documents\Research\Literature-Review',
-    r'.\Literature-Review',
-    r'..\Literature-Review',
-]
+PAPERS_FOLDER = 'data/raw'
 REVIEW_LOG_FILE = 'review_log.json'
 OUTPUT_CSV_FILE = 'neuromorphic-research_database.csv'
 NON_JOURNAL_CSV_FILE = 'non-journal_database.csv'
@@ -70,7 +64,7 @@ EMBEDDINGS_CACHE = os.path.join(CACHE_DIR, 'embeddings_cache.pkl')
 VERSION_HISTORY_FILE = 'review_version_history.json'
 
 # --- NEW: Definitions file for cross-referencing ---
-DEFINITIONS_FILE = 'pillar_definitions_enhanced.json'
+DEFINITIONS_FILE = 'pillar_definitions.json'
 
 REVIEW_CONFIG = {
     "BATCH_SIZE": 5,
@@ -153,95 +147,19 @@ class RequirementClaim:
     def to_dict(self):
         return asdict(self)
 
-# --- Path Diagnostic Functions (Unchanged) ---
-def find_papers_folder():
-    """Find the papers folder by checking multiple locations"""
-    if os.path.exists(PAPERS_FOLDER) and os.path.isdir(PAPERS_FOLDER):
-        logger.info(f"Using primary PAPERS_FOLDER: {PAPERS_FOLDER}")
-        return PAPERS_FOLDER
-    for alt_path in ALTERNATIVE_PATHS:
-        abs_path = os.path.abspath(alt_path)
-        if os.path.exists(abs_path) and os.path.isdir(abs_path):
-            logger.info(f"Found papers folder at alternative location: {abs_path}")
-            return abs_path
-    # Fallback to script directory
-    try:
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-    except NameError:  # __file__ is not defined (e.g., in interactive interpreter)
-        script_dir = os.path.abspath('.')
-    possible_paths = [
-        os.path.join(script_dir, 'Literature-Review'),
-        os.path.join(script_dir, '..', 'Literature-Review'),
-        os.path.join(script_dir, 'Research', 'Literature-Review'),
-    ]
-    for path in possible_paths:
-        abs_path = os.path.abspath(path)
-        if os.path.exists(abs_path) and os.path.isdir(abs_path):
-            logger.info(f"Found papers folder relative to script: {abs_path}")
-            return abs_path
-    logger.error("Could not find papers folder in any specified location.")
-    return None
-
-def diagnose_folder_structure(folder_path):
-    """Diagnose and report the folder structure"""
-    logger.info("\n=== FOLDER STRUCTURE DIAGNOSIS ===")
-    safe_print("\n=== FOLDER STRUCTURE DIAGNOSIS ===")
-    if not os.path.exists(folder_path):
-        logger.error(f"Path does not exist: {folder_path}")
-        safe_print(f"❌ Path does not exist: {folder_path}")
-        return False
-    if not os.path.isdir(folder_path):
-        logger.error(f"Path is not a directory: {folder_path}")
-        safe_print(f"❌ Path is not a directory: {folder_path}")
-        return False
-    file_counts = {ext: 0 for ext in SUPPORTED_EXTENSIONS}
-    file_counts['other'] = 0
-    total_files = 0
-    subdirs = []
-    found_supported_file = False
-    for root, dirs, files in os.walk(folder_path):
-        rel_path = os.path.relpath(root, folder_path)
-        if rel_path != '.':
-            subdirs.append(rel_path)
-        for file in files:
-            total_files += 1
-            ext = os.path.splitext(file)[1].lower()
-            if ext in file_counts:
-                file_counts[ext] += 1
-                found_supported_file = True
-            elif ext:
-                file_counts['other'] += 1
-    logger.info(f"Checked folder: {folder_path}")
-    safe_print(f"✅ Checked folder: {folder_path}")
-    logger.info(f"Subdirectories found: {len(subdirs)}")
-    safe_print(f"📁 Subdirectories found: {len(subdirs)}")
-    if subdirs:
-        logger.info("Sample subdirectories:")
-        safe_print("Sample subdirectories:")
-        for subdir in subdirs[:min(len(subdirs), 5)]:
-            logger.info(f"   - {subdir}")
-            safe_print(f"   - {subdir}")
-    logger.info(f"Total files found: {total_files}")
-    safe_print(f"📄 Total files found: {total_files}")
-    logger.info("File types breakdown:")
-    safe_print("File types breakdown:")
-    for ext, count in file_counts.items():
-        if count > 0:
-            logger.info(f"   {ext}: {count} files")
-            safe_print(f"   {ext}: {count} files")
-    if not found_supported_file:
-        logger.warning("No supported files (.pdf, .html, .txt) found in the directory.")
-        safe_print("⚠️ No supported files (.pdf, .html, .txt) found.")
-        return False
-    return True
-
 def collect_papers_to_process(folder_path, reviewed_files):
     """Collect all papers that need processing"""
     files_to_process = []
     skipped_files = []
     logger.info("\n=== COLLECTING PAPERS TO PROCESS ===")
     safe_print("\n=== COLLECTING PAPERS TO PROCESS ===")
-    for root, dirs, files in os.walk(folder_path):
+    
+    # The folder_path is now 'data/raw', which contains 'Research-Papers'
+    search_path = os.path.join(folder_path, 'Research-Papers')
+    if not os.path.isdir(search_path):
+        search_path = folder_path # Fallback to the base data/raw folder
+
+    for root, dirs, files in os.walk(search_path):
         for filename in files:
             filepath = os.path.join(root, filename)
             if not filename.lower().endswith(SUPPORTED_EXTENSIONS):
@@ -257,6 +175,7 @@ def collect_papers_to_process(folder_path, reviewed_files):
                     continue
             files_to_process.append((filepath, filename))
             logger.debug(f"Added to process queue: {filename}")
+            
     logger.info(f"\n📊 Summary:")
     safe_print(f"\n📊 Summary:")
     logger.info(f"   Total supported files found: {len(files_to_process) + len(skipped_files)}")
@@ -1292,43 +1211,41 @@ def process_batch(batch_files: List[Tuple[str, str]], api_manager: APIManager,
                 safe_print(f"⏭️ Skipping {filename} - text too short or extraction failed")
                 continue
 
-            is_valid, indicators = extractor.validate_paper_quality(text)
-            indicators.extraction_quality = (indicators.extraction_quality + quality) / 2.0
+            # is_valid, indicators = extractor.validate_paper_quality(text)
+            # indicators.extraction_quality = (indicators.extraction_quality + quality) / 2.0
 
-            papers_root = find_papers_folder()
-            if papers_root:
-                rel_path = os.path.relpath(os.path.dirname(filepath), papers_root)
-                domain_context = rel_path if rel_path != '.' else 'root'
-            else:
-                domain_context = 'unknown'
-
+            papers_root = PAPERS_FOLDER
+            rel_path = os.path.relpath(os.path.dirname(filepath), papers_root)
+            domain_context = rel_path if rel_path != '.' else 'root'
+            
             metadata = PaperMetadata(
                 filename=filename,
                 filepath=filepath,
                 domain_context=domain_context,
-                extraction_quality=indicators.extraction_quality,
+                extraction_quality=quality, # Using direct quality from extraction
                 extraction_method=method,
                 timestamp=datetime.now().isoformat()
             )
 
-            if is_valid:
+            # The validation logic is now simplified. We trust the extraction more.
+            if quality > 0.1: # If extraction had some success
                 logger.info(
-                    f"Analyzing as Journal Paper (quality: {indicators.extraction_quality:.2f}, method: {method})")
+                    f"Analyzing as Journal Paper (quality: {quality:.2f}, method: {method})")
                 safe_print(
-                    f"🧠 Analyzing as Journal Paper (quality: {indicators.extraction_quality:.2f}, method: {method})")
-
+                    f"🧠 Analyzing as Journal Paper (quality: {quality:.2f}, method: {method})")
+                
                 num_evals = REVIEW_CONFIG['CONSENSUS_EVALUATIONS']
-                if indicators.extraction_quality < 0.6:
+                if quality < 0.6:
                     num_evals = max(num_evals, 2)
                     logger.info(
-                        f"Low quality score ({indicators.extraction_quality:.2f}), using {num_evals} evaluations for consensus.")
+                        f"Low quality score ({quality:.2f}), using {num_evals} evaluations for consensus.")
                     safe_print(f"   Low quality score, using {num_evals} evaluations...")
-
+                
                 # --- MODIFIED: Pass definitions string ---
                 result = PaperAnalyzer.consensus_evaluation(
                     text, metadata, api_manager, pillar_definitions_str, num_evals
                 )
-
+                
                 if not result:
                     logger.error(f"Journal analysis failed for {filename} after all attempts.")
                     safe_print(f"❌ Journal analysis failed for {filename}")
@@ -1365,9 +1282,9 @@ def process_batch(batch_files: List[Tuple[str, str]], api_manager: APIManager,
                 safe_print(f"✅ Successfully analyzed {filename} as Journal Paper.")
 
             else:
-                # --- Non-journal item (unchanged) ---
-                logger.warning(f"File {filename} failed paper validation. Processing as 'Non-Journal' item.")
-                safe_print(f"📙 File {filename} is not a paper. Processing as 'Non-Journal' item.")
+                # --- Non-journal item (simplified condition) ---
+                logger.warning(f"File {filename} has very low extraction quality ({quality:.2f}). Processing as 'Non-Journal' item.")
+                safe_print(f"📙 File {filename} has low quality. Processing as 'Non-Journal' item.")
                 result = PaperAnalyzer.analyze_non_journal_item(text, metadata, api_manager)
                 if not result:
                     logger.error(f"Non-journal analysis failed for {filename} after all attempts.")
@@ -1376,6 +1293,7 @@ def process_batch(batch_files: List[Tuple[str, str]], api_manager: APIManager,
                 batch_non_journal_results.append(result)
                 logger.info(f"Successfully analyzed {filename} as Non-Journal Item.")
                 safe_print(f"✅ Successfully analyzed {filename} as Non-Journal Item.")
+
 
         except Exception as e:
             logger.critical(f"CRITICAL UNHANDLED ERROR on file {filename}: {type(e).__name__} - {e}")
@@ -1395,21 +1313,16 @@ def main():
     """Main execution function with improved path handling"""
     start_time = time.time()
     logger.info("\n" + "=" * 80)
-    logger.info("ENHANCED LITERATURE REVIEW PIPELINE v3.2 (Requirement(s) Claim Extraction)")
+    logger.info("ENHANCED LITERATURE REVIEW PIPELINE v3.3 (Refactored)")
     logger.info("=" * 80)
     safe_print("\n" + "=" * 80)
-    safe_print("ENHANCED LITERATURE REVIEW PIPELINE v3.2 (Requirement(s) Claim Extraction)")
+    safe_print("ENHANCED LITERATURE REVIEW PIPELINE v3.3 (Refactored)")
     safe_print("=" * 80)
 
-    papers_folder = find_papers_folder()
-    if not papers_folder:
-        safe_print("❌ Could not find papers folder!")
-        logger.error(f"Searched primary: {PAPERS_FOLDER}")
-        logger.error(f"Searched alternatives: {ALTERNATIVE_PATHS}")
-        safe_print("Please update PAPERS_FOLDER in the script.")
-        return
-
-    if not diagnose_folder_structure(papers_folder):
+    papers_folder = PAPERS_FOLDER
+    if not os.path.isdir(papers_folder):
+        safe_print(f"❌ Papers folder not found at '{papers_folder}'!")
+        logger.error(f"Please ensure the '{papers_folder}' directory exists.")
         return
 
     # --- NEW: Load Pillar Definitions ---

@@ -26,13 +26,13 @@ class TestTaskCard3AcceptanceCriteria(unittest.TestCase):
         """Read source files for testing"""
         self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
         
-        with open(os.path.join(self.project_root, 'Judge.py'), 'r') as f:
+        with open(os.path.join(self.project_root, 'literature_review', 'analysis', 'judge.py'), 'r') as f:
             self.judge_source = f.read()
         
-        with open(os.path.join(self.project_root, 'DeepRequirementsAnalyzer.py'), 'r') as f:
+        with open(os.path.join(self.project_root, 'literature_review', 'analysis', 'requirements.py'), 'r') as f:
             self.dra_source = f.read()
         
-        with open(os.path.join(self.project_root, 'Deep-Reviewer.py'), 'r') as f:
+        with open(os.path.join(self.project_root, 'literature_review', 'reviewers', 'deep_reviewer.py'), 'r') as f:
             self.dr_source = f.read()
 
     def test_judge_batching_configured(self):
@@ -63,7 +63,7 @@ class TestJudgeBatching(unittest.TestCase):
     def setUp(self):
         """Read Judge source"""
         self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-        with open(os.path.join(self.project_root, 'Judge.py'), 'r') as f:
+        with open(os.path.join(self.project_root, 'literature_review', 'analysis', 'judge.py'), 'r') as f:
             self.judge_source = f.read()
 
     def test_process_claims_in_batches_exists(self):
@@ -96,7 +96,7 @@ class TestDRAChunking(unittest.TestCase):
     def setUp(self):
         """Read DRA source"""
         self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-        with open(os.path.join(self.project_root, 'DeepRequirementsAnalyzer.py'), 'r') as f:
+        with open(os.path.join(self.project_root, 'literature_review', 'analysis', 'requirements.py'), 'r') as f:
             self.dra_source = f.read()
 
     def test_chunk_text_with_page_tracking_exists(self):
@@ -129,7 +129,7 @@ class TestDRAChunking(unittest.TestCase):
     def test_page_range_passed_to_prompt(self):
         """Test that page range is passed to build_dra_prompt"""
         # Check function signature includes page_range parameter
-        self.assertIn('def build_dra_prompt(claims_for_document: List[Dict], full_paper_text: str, page_range: str', self.dra_source)
+        self.assertIn('def build_dra_prompt(claims_for_document: List[Dict], full_paper_text: str,\n                     pillar_definitions: Dict, page_range: str = "N/A")', self.dra_source)
         print("✅ DRA build_dra_prompt() accepts page_range parameter")
 
     def test_deduplication_by_evidence(self):
@@ -146,7 +146,7 @@ class TestDeepReviewerChunking(unittest.TestCase):
     def setUp(self):
         """Read Deep Reviewer source"""
         self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-        with open(os.path.join(self.project_root, 'Deep-Reviewer.py'), 'r') as f:
+        with open(os.path.join(self.project_root, 'literature_review', 'reviewers', 'deep_reviewer.py'), 'r') as f:
             self.dr_source = f.read()
 
     def test_chunk_pages_with_tracking_exists(self):
@@ -199,13 +199,13 @@ class TestChunkingIntegration(unittest.TestCase):
         """Read source files"""
         self.project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
         
-        with open(os.path.join(self.project_root, 'Judge.py'), 'r') as f:
+        with open(os.path.join(self.project_root, 'literature_review', 'analysis', 'judge.py'), 'r') as f:
             self.judge_source = f.read()
         
-        with open(os.path.join(self.project_root, 'DeepRequirementsAnalyzer.py'), 'r') as f:
+        with open(os.path.join(self.project_root, 'literature_review', 'analysis', 'requirements.py'), 'r') as f:
             self.dra_source = f.read()
         
-        with open(os.path.join(self.project_root, 'Deep-Reviewer.py'), 'r') as f:
+        with open(os.path.join(self.project_root, 'literature_review', 'reviewers', 'deep_reviewer.py'), 'r') as f:
             self.dr_source = f.read()
 
     def test_all_modules_have_chunking(self):
@@ -265,7 +265,7 @@ class TestCodeQuality(unittest.TestCase):
     def test_no_syntax_errors_in_judge(self):
         """Verify Judge.py has no syntax errors"""
         import py_compile
-        judge_path = os.path.join(self.project_root, 'Judge.py')
+        judge_path = os.path.join(self.project_root, 'literature_review', 'analysis', 'judge.py')
         try:
             py_compile.compile(judge_path, doraise=True)
             print("✅ Judge.py compiles without syntax errors")
@@ -275,7 +275,7 @@ class TestCodeQuality(unittest.TestCase):
     def test_no_syntax_errors_in_dra(self):
         """Verify DeepRequirementsAnalyzer.py has no syntax errors"""
         import py_compile
-        dra_path = os.path.join(self.project_root, 'DeepRequirementsAnalyzer.py')
+        dra_path = os.path.join(self.project_root, 'literature_review', 'analysis', 'requirements.py')
         try:
             py_compile.compile(dra_path, doraise=True)
             print("✅ DeepRequirementsAnalyzer.py compiles without syntax errors")
@@ -285,7 +285,7 @@ class TestCodeQuality(unittest.TestCase):
     def test_no_syntax_errors_in_deep_reviewer(self):
         """Verify Deep-Reviewer.py has no syntax errors"""
         import py_compile
-        dr_path = os.path.join(self.project_root, 'Deep-Reviewer.py')
+        dr_path = os.path.join(self.project_root, 'literature_review', 'reviewers', 'deep_reviewer.py')
         try:
             py_compile.compile(dr_path, doraise=True)
             print("✅ Deep-Reviewer.py compiles without syntax errors")
@@ -301,9 +301,9 @@ class TestCodeQuality(unittest.TestCase):
     def test_files_modified_as_specified(self):
         """Verify that only the specified files were modified"""
         # Check that the three main files exist and were modified
-        judge_path = os.path.join(self.project_root, 'Judge.py')
-        dra_path = os.path.join(self.project_root, 'DeepRequirementsAnalyzer.py')
-        dr_path = os.path.join(self.project_root, 'Deep-Reviewer.py')
+        judge_path = os.path.join(self.project_root, 'literature_review', 'analysis', 'judge.py')
+        dra_path = os.path.join(self.project_root, 'literature_review', 'analysis', 'requirements.py')
+        dr_path = os.path.join(self.project_root, 'literature_review', 'reviewers', 'deep_reviewer.py')
         
         self.assertTrue(os.path.exists(judge_path))
         self.assertTrue(os.path.exists(dra_path))
