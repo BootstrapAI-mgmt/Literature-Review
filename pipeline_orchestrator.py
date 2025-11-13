@@ -184,15 +184,16 @@ class PipelineOrchestrator:
         }
         self._write_checkpoint()
 
-    def run_stage(self, stage_name: str, script: str, description: str, required: bool = True) -> bool:
+    def run_stage(self, stage_name: str, script: str, description: str, required: bool = True, use_module: bool = False) -> bool:
         """
         Run a pipeline stage with checkpoint support.
 
         Args:
             stage_name: Unique stage identifier (e.g., 'journal_reviewer')
-            script: Python script to run
+            script: Python script path or module name
             description: Human-readable stage description
             required: If True, exit on failure; if False, continue
+            use_module: If True, use -m to run as module; if False, run as script
 
         Returns:
             True if successful, False otherwise
@@ -207,8 +208,14 @@ class PipelineOrchestrator:
         stage_start = datetime.now()
 
         try:
+            # Build command based on execution type
+            if use_module:
+                cmd = [sys.executable, "-m", script]
+            else:
+                cmd = [sys.executable, script]
+            
             result = subprocess.run(
-                [sys.executable, script], capture_output=True, text=True, timeout=self.config.get("stage_timeout", 3600)
+                cmd, capture_output=True, text=True, timeout=self.config.get("stage_timeout", 3600)
             )
 
             duration = (datetime.now() - stage_start).total_seconds()
@@ -277,26 +284,32 @@ class PipelineOrchestrator:
         self.log("=" * 70, "INFO")
 
         # Stage 1: Journal Reviewer
-        self.run_stage("journal_reviewer", "Journal-Reviewer.py", "Stage 1: Initial Paper Review")
+        self.run_stage("journal_reviewer", "literature_review.reviewers.journal_reviewer", 
+                       "Stage 1: Initial Paper Review", use_module=True)
 
         # Stage 2: Judge
-        self.run_stage("judge", "Judge.py", "Stage 2: Judge Claims")
+        self.run_stage("judge", "literature_review.analysis.judge", 
+                       "Stage 2: Judge Claims", use_module=True)
 
         # Stage 3: DRA (conditional)
         if self._should_run_stage("dra"):
             if self.check_for_rejections():
                 self.log("Rejections detected, running DRA appeal process", "INFO")
-                self.run_stage("dra", "DeepRequirementsAnalyzer.py", "Stage 3: DRA Appeal")
-                self.run_stage("judge_dra", "Judge.py", "Stage 3b: Re-judge DRA Claims")
+                self.run_stage("dra", "literature_review.analysis.requirements", 
+                               "Stage 3: DRA Appeal", use_module=True)
+                self.run_stage("judge_dra", "literature_review.analysis.judge", 
+                               "Stage 3b: Re-judge DRA Claims", use_module=True)
             else:
                 self.log("No rejections found, skipping DRA", "INFO")
                 self._mark_stage_skipped("dra", "no_rejections")
 
         # Stage 4: Sync to Database
-        self.run_stage("sync", "sync_history_to_db.py", "Stage 4: Sync to Database")
+        self.run_stage("sync", "scripts/sync_history_to_db.py", 
+                       "Stage 4: Sync to Database", use_module=False)
 
         # Stage 5: Orchestrator
-        self.run_stage("orchestrator", "Orchestrator.py", "Stage 5: Gap Analysis & Convergence")
+        self.run_stage("orchestrator", "literature_review.orchestrator", 
+                       "Stage 5: Gap Analysis & Convergence", use_module=True)
 
         # Mark pipeline complete
         self.checkpoint_data["status"] = "completed"
