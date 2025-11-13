@@ -71,3 +71,8 @@ non-journal_database.csv
 # Pipeline checkpoint files
 pipeline_checkpoint.json
 *.checkpoint.json
+
+# API and model caches
+api_cache/
+mock_api_key/
+.locks/

@@ -16,13 +16,13 @@ import os
 from unittest.mock import Mock, patch, MagicMock
 
 # Add parent directory to path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from Judge import (
-    APIManager,
+from literature_review.analysis.judge import (
     build_judge_prompt,
     validate_judge_response
 )
+from literature_review.utils.api_manager import APIManager
 
 
 def print_section(title):
@@ -160,23 +160,25 @@ def demo_mock_api_manager_caching():
     print("\nScenario: Testing cache prevents duplicate API calls")
     print()
     
-    with patch('Judge.genai.Client') as mock_client_class:
+    with patch('literature_review.utils.api_manager.genai.GenerativeModel') as mock_generative_model:
         # Setup mock
-        mock_client_instance = MagicMock()
-        mock_client_class.return_value = mock_client_instance
+        mock_model_instance = MagicMock()
+        mock_generative_model.return_value = mock_model_instance
         
         mock_response = MagicMock()
         mock_response.text = json.dumps({
             "verdict": "approved",
             "judge_notes": "Test response"
         })
-        mock_client_instance.models.generate_content.return_value = mock_response
+        mock_model_instance.generate_content.return_value = mock_response
         
         # Create APIManager (will use mocked client)
         print("Creating APIManager with mocked Gemini client...")
         
-        with patch('Judge.load_dotenv'):
-            manager = APIManager()
+        with patch('literature_review.utils.api_manager.load_dotenv'):
+            # Mock os.getenv for GEMINI_API_KEY
+            with patch('os.getenv', return_value='mock_api_key'):
+                manager = APIManager()
         
         print("✅ APIManager created (no real API connection)")
         print()
@@ -184,7 +186,7 @@ def demo_mock_api_manager_caching():
         # Make first call
         print("First API call (with cache enabled)...")
         result1 = manager.cached_api_call("test prompt", use_cache=True, is_json=True)
-        call_count_1 = mock_client_instance.models.generate_content.call_count
+        call_count_1 = mock_model_instance.generate_content.call_count
         print(f"  Result: {result1}")
         print(f"  API calls made: {call_count_1}")
         print()
@@ -192,7 +194,7 @@ def demo_mock_api_manager_caching():
         # Make second call with same prompt
         print("Second API call (same prompt, cache enabled)...")
         result2 = manager.cached_api_call("test prompt", use_cache=True, is_json=True)
-        call_count_2 = mock_client_instance.models.generate_content.call_count
+        call_count_2 = mock_model_instance.generate_content.call_count
         print(f"  Result: {result2}")
         print(f"  API calls made: {call_count_2}")
         print()
@@ -205,7 +207,7 @@ def demo_mock_api_manager_caching():
         # Make third call with different prompt
         print("Third API call (different prompt)...")
         result3 = manager.cached_api_call("different prompt", use_cache=True, is_json=True)
-        call_count_3 = mock_client_instance.models.generate_content.call_count
+        call_count_3 = mock_model_instance.generate_content.call_count
         print(f"  Result: {result3}")
         print(f"  API calls made: {call_count_3}")
         print()

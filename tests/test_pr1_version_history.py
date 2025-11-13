@@ -23,9 +23,9 @@ import copy
 # Add parent directory to path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from Judge import (
-    load_version_history,
-    save_version_history,
+from literature_review.analysis.judge import (
+    load_version_history as load_review_history,
+    save_version_history as save_review_history,
     extract_pending_claims_from_history,
     update_claims_in_history,
     add_new_claims_to_history,
@@ -42,7 +42,7 @@ class TestTaskCard2AcceptanceCriteria:
     
     def test_no_direct_database_saves_in_judge(self):
         """✅ Verify Judge.py does NOT call save_deep_coverage_db or save_research_db in main()"""
-        with open('/workspaces/Literature-Review/Judge.py', 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '..', 'literature_review', 'analysis', 'judge.py'), 'r') as f:
             judge_code = f.read()
         
         # Find main() function
@@ -60,7 +60,7 @@ class TestTaskCard2AcceptanceCriteria:
     
     def test_no_database_loads_in_main(self):
         """✅ Verify Judge.py does NOT load from databases in main()"""
-        with open('/workspaces/Literature-Review/Judge.py', 'r') as f:
+        with open(os.path.join(os.path.dirname(__file__), '..', 'literature_review', 'analysis', 'judge.py'), 'r') as f:
             judge_code = f.read()
         
         main_start = judge_code.find('def main():')
@@ -140,7 +140,7 @@ class TestVersionHistoryIO:
         # Use EXAMPLE file if available
         example_file = 'review_version_history_EXAMPLE.json'
         if os.path.exists(example_file):
-            history = load_version_history(example_file)
+            history = load_review_history(example_file)
             assert isinstance(history, dict)
             assert len(history) > 0
             
@@ -154,7 +154,7 @@ class TestVersionHistoryIO:
     def test_load_version_history_missing_file(self, tmp_path):
         """Test loading non-existent file returns empty dict"""
         fake_file = tmp_path / "nonexistent.json"
-        history = load_version_history(str(fake_file))
+        history = load_review_history(str(fake_file))
         
         assert history == {}
     
@@ -163,10 +163,10 @@ class TestVersionHistoryIO:
         test_file = tmp_path / "test_history.json"
         
         # Save
-        save_version_history(str(test_file), sample_version_history)
+        save_review_history(str(test_file), sample_version_history)
         
         # Load
-        loaded = load_version_history(str(test_file))
+        loaded = load_review_history(str(test_file))
         
         assert loaded == sample_version_history
         assert len(loaded) == 2
@@ -419,10 +419,10 @@ class TestEndToEnd:
         }
         
         # 2. Save initial history
-        save_version_history(str(test_file), initial_history)
+        save_review_history(str(test_file), initial_history)
         
         # 3. Load history
-        loaded_history = load_version_history(str(test_file))
+        loaded_history = load_review_history(str(test_file))
         assert len(loaded_history) == 1
         
         # 4. Extract pending claims
@@ -441,10 +441,10 @@ class TestEndToEnd:
         updated_history = update_claims_in_history(loaded_history, judged_claims)
         
         # 7. Save updated history
-        save_version_history(str(test_file), updated_history)
+        save_review_history(str(test_file), updated_history)
         
         # 8. Verify final state
-        final_history = load_version_history(str(test_file))
+        final_history = load_review_history(str(test_file))
         
         # Should have 2 versions now
         assert len(final_history["test_paper.pdf"]) == 2
@@ -470,7 +470,7 @@ def test_pr1_acceptance_summary():
     print("="*70)
     
     # Check Judge.py source code
-    with open('/workspaces/Literature-Review/Judge.py', 'r') as f:
+    with open(os.path.join(os.path.dirname(__file__), '..', 'literature_review', 'analysis', 'judge.py'), 'r') as f:
         judge_code = f.read()
     
     main_start = judge_code.find('def main():')
@@ -484,15 +484,15 @@ def test_pr1_acceptance_summary():
         "✅ Judge NEVER writes to neuromorphic-research_database.csv": 
             'save_research_db(' not in main_code,
         
-        "✅ Judge loads claims ONLY from version history":
-            'load_version_history(' in main_code and 
+                        "✅ Judge loads claims ONLY from version history":
+            'load_version_history(' in main_code and
             'load_deep_coverage_db(' not in main_code and
             'load_research_db(' not in main_code,
         
         "✅ Judge saves ONLY to version history":
             'save_version_history(' in main_code,
         
-        "✅ New version history I/O functions exist":
+                "✅ New version history I/O functions exist":
             all(func in judge_code for func in [
                 'def load_version_history',
                 'def save_version_history',
