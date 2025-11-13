@@ -7,9 +7,6 @@ import os
 import pandas as pd
 from typing import Dict, List
 
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
 # Import sync functionality (if refactored) or test script execution
 
 

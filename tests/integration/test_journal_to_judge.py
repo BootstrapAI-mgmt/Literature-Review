@@ -8,11 +8,8 @@ from unittest.mock import Mock, patch
 from typing import Dict, List
 
 # Import modules to test
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
-
-import Judge
-from Judge import load_version_history, save_version_history
+from literature_review.analysis.judge import load_version_history, save_version_history
+from literature_review.utils.api_manager import APIManager
 
 
 class TestJournalToJudgeFlow:
@@ -44,7 +41,7 @@ class TestJournalToJudgeFlow:
             "judge_notes": "Rejected. Evidence does not adequately address the requirement."
         }
         
-        with patch.object(Judge.APIManager, 'cached_api_call') as mock_api:
+        with patch.object(APIManager, 'cached_api_call') as mock_api:
             # Alternate between approved and rejected
             mock_api.side_effect = [mock_approved_response, mock_rejected_response]
             
@@ -149,7 +146,7 @@ class TestJournalToJudgeFlow:
             json.dump(original_history, f, indent=2)
         
         # Execute: Simulate Judge processing
-        with patch.object(Judge.APIManager, 'cached_api_call') as mock_api:
+        with patch.object(APIManager, 'cached_api_call') as mock_api:
             mock_api.return_value = {
                 "verdict": "approved",
                 "judge_notes": "Approved. Test verdict."
