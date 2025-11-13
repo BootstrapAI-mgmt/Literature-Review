@@ -88,6 +88,35 @@ GEMINI_API_KEY=your_api_key_here
 - ✅ **Progress Logging**: Timestamps and status for each stage
 - ✅ **Error Handling**: Halts on failure with clear error messages
 - ✅ **Configurable**: Customizable timeouts and paths
+- ✅ **Checkpoint/Resume**: Resume from interruptions automatically
+
+### Resume After Failure
+
+If the pipeline is interrupted, resume from the last checkpoint:
+
+```bash
+python pipeline_orchestrator.py --resume
+```
+
+Resume from a specific stage:
+
+```bash
+python pipeline_orchestrator.py --resume-from sync
+```
+
+Use a custom checkpoint file:
+
+```bash
+python pipeline_orchestrator.py --checkpoint-file my_checkpoint.json
+```
+
+The checkpoint file (`pipeline_checkpoint.json`) tracks pipeline progress and allows resumption after:
+- Network failures or API errors
+- Manual interruption (Ctrl+C)
+- System crashes or restarts
+- Process timeouts
+
+Completed stages are automatically skipped when resuming, saving time and API quota.
 
 ## Testing
 
