@@ -33,9 +33,9 @@
 
 **Key Metrics:**
 - Total Task Cards: 23 (4 agent cards + 8 testing cards + 6 evidence cards + 5 automation cards)
-- Completed: 8/23 (35%)
-- In Progress: 2/23 (9%)
-- Ready for Implementation: 13/23 (56%)
+- Completed: 10/23 (43%)
+- In Progress: 0/23 (0%)
+- Ready for Implementation: 13/23 (57%)
 
 ---
 
@@ -71,7 +71,7 @@
 | Card # | Name | Priority | Status | Effort |
 |--------|------|----------|--------|--------|
 | #13.1 | Checkpoint/Resume Capability | 🟡 HIGH | ✅ **MERGED** | 4-6h |
-| #13.2 | Error Recovery & Retry Logic | 🟡 HIGH | 📋 Ready | 4-6h |
+| #13.2 | Error Recovery & Retry Logic | 🟡 HIGH | ✅ **MERGED** | 4-6h |
 
 #### Evidence Quality Track
 
@@ -91,9 +91,9 @@
 
 **Completion Status:**
 - ✅ Checkpoint/Resume: Merged to main (PR #11)
+- ✅ Retry Logic: Merged to main (PR #12)
 - ⚠️ Evidence Cards: Updated for refactored architecture, ready to implement
 - 📋 Testing Cards: Updated, ready for parallel development
-- 📋 Retry Logic: Next automation priority
 
 ---
 
@@ -265,12 +265,12 @@
 |--------|------|----------|------|--------|--------------|-----------------|
 | #13 | Basic Pipeline Orchestrator | 🔴 CRITICAL | Wave 1 | ✅ **COMPLETE** | None | N/A (completed) |
 | #13.1 | Checkpoint/Resume Capability | 🟡 HIGH | Wave 2 | ✅ **MERGED** | #13 | ✅ Refactored (PR #11) |
-| #13.2 | Error Recovery & Retry Logic | 🟡 HIGH | Wave 2 | 📋 Ready | #13, #13.1 | ✅ Paths fixed |
+| #13.2 | Error Recovery & Retry Logic | 🟡 HIGH | Wave 2 | ✅ **MERGED** | #13, #13.1 | ✅ Refactored (PR #12) |
 | #14 | Advanced Pipeline Features v2.0 | 🟡 HIGH | Wave 3 | 📋 Planned | #13, #13.1, #13.2 | ✅ Paths fixed |
 | #15 | Web Dashboard | 🟢 MEDIUM | Wave 4 | 📋 Planned | #13, #14 | ✅ Paths fixed |
 
 **Total Effort:** 60-88 hours  
-**Next Priority:** Task Card #13.2 (Retry Logic)
+**Next Priority:** Task Card #16 (Multi-Dimensional Evidence Scoring) or #6 (INT-001 Testing)
 
 ---
 
@@ -279,7 +279,7 @@
 ### 🟢 Unblocked - Ready for Implementation
 
 **Wave 2 Quick Wins:**
-- ✅ Task Card #13.2: Retry Logic (depends on #13.1 ✅ merged)
+- ✅ Task Card #13.2: Retry Logic (MERGED - PR #12)
 - ✅ Task Card #16: Multi-Dimensional Scoring (no blockers)
 - ✅ Task Card #17: Provenance Tracking (no blockers)
 - ✅ Task Card #6: INT-001 Testing (infrastructure ✅ complete)
@@ -326,7 +326,7 @@
 
 **Automation:**
 - [x] Task Card #13.1: Checkpoint/Resume (MERGED PR #11)
-- [ ] Task Card #13.2: Error Recovery & Retry Logic
+- [x] Task Card #13.2: Error Recovery & Retry Logic (MERGED PR #12)
 
 **Evidence Quality:**
 - [ ] Task Card #16: Multi-Dimensional Evidence Scoring
@@ -339,6 +339,7 @@
 **Refactoring:**
 - [x] All Wave 2 task cards updated for new architecture
 - [x] PR #11 refactored post-merge
+- [x] PR #12 merged with retry logic + refactored paths
 
 **Target Completion:** Week 4
 
@@ -393,27 +394,26 @@
 
 ### Immediate Actions (Week 3)
 
-**Priority 1: Deploy Wave 2 Automation**
-1. ✅ ~~Merge PR #11 (Checkpoint/Resume)~~ - COMPLETE
-2. Implement Task Card #13.2 (Retry Logic) - 4-6 hours
-3. Validate retry logic with integration tests
-
-**Priority 2: Begin Wave 2 Evidence Enhancements**
+**Priority 1: Complete Wave 2 Evidence Enhancements**
 1. Implement Task Card #16 (Multi-Dimensional Scoring) - 6-8 hours
 2. Implement Task Card #17 (Provenance Tracking) - 4-6 hours
-3. Can run in parallel with automation work
+3. High-value features that improve research quality immediately
 
-**Priority 3: Parallel Testing Track**
-1. Implement Task Card #6 (INT-001) - 6-8 hours
-2. Implement Task Card #7 (INT-003) - 4-6 hours
+**Priority 2: Complete Wave 2 Testing**
+1. Implement Task Card #6 (INT-001: Journal→Judge) - 6-8 hours
+2. Implement Task Card #7 (INT-003: Version History→CSV) - 4-6 hours
 3. Validate evidence enhancements as they're built
 
-**Priority 4: Address Agent Cards (Optional)**
+**Priority 3: Address Agent Cards (Optional)**
 1. Fix DRA prompting (Task Card #1) - 2-3 hours
 2. Refactor Judge to version history (Task Card #2) - 4-6 hours
 3. These can wait but would improve pipeline quality immediately
 
-**Week 3 Target:** Complete retry logic + start evidence scoring
+**Wave 2 Automation Status:**
+- ✅ Task Card #13.1: Checkpoint/Resume (COMPLETE - PR #11)
+- ✅ Task Card #13.2: Retry Logic (COMPLETE - PR #12)
+
+**Week 3-4 Target:** Complete all Wave 2 deliverables (evidence + testing)
 
 ---
 
@@ -507,9 +507,9 @@
 ### Wave 2 Target Metrics
 
 **Automation:**
-- [ ] Checkpoint/resume operational (✅ merged)
-- [ ] Retry logic prevents >80% of transient failures
-- [ ] Pipeline resilient to network issues
+- [x] Checkpoint/resume operational (✅ merged PR #11)
+- [x] Retry logic prevents >80% of transient failures (✅ merged PR #12)
+- [x] Pipeline resilient to network issues (✅ complete)
 
 **Evidence Quality:**
 - [ ] 100% of claims have multi-dimensional scores
