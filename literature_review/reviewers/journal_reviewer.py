@@ -9,6 +9,7 @@ import os
 import sys
 import json
 import csv
+import re
 import pypdf
 import pdfplumber
 import time
@@ -444,6 +445,152 @@ class TextExtractor:
         else:
             logger.warning(f"Unsupported file type: {filepath}")
         return text, method, quality
+
+
+# --- NEW: Provenance Tracking Functions ---
+
+
+def extract_text_with_provenance(file_path: str) -> List[Dict]:
+    """
+    Extract text with page-level tracking and section detection.
+    
+    Returns:
+        List of dicts with page metadata:
+        [
+            {
+                "page_num": 1,
+                "text": "...",
+                "section": "Introduction",
+                "char_start": 0,
+                "char_end": 1250
+            },
+            ...
+        ]
+    """
+    pages_with_metadata = []
+    cumulative_chars = 0
+    
+    try:
+        with pdfplumber.open(file_path) as pdf:
+            for page_num, page in enumerate(pdf.pages, start=1):
+                text = page.extract_text() or ""
+                
+                # Detect section heading
+                section = detect_section_heading(text)
+                
+                page_metadata = {
+                    "page_num": page_num,
+                    "text": text,
+                    "section": section or "Unknown",
+                    "char_start": cumulative_chars,
+                    "char_end": cumulative_chars + len(text)
+                }
+                
+                pages_with_metadata.append(page_metadata)
+                cumulative_chars += len(text)
+    except Exception as e:
+        logger.error(f"Error extracting text with provenance from {file_path}: {e}")
+        return []
+    
+    return pages_with_metadata
+
+
+def detect_section_heading(text: str) -> Optional[str]:
+    """
+    Detect academic paper section headings.
+    
+    Looks for common patterns in first 200 characters.
+    Prioritizes headings at the start of lines or with numbering.
+    """
+    headings = [
+        "abstract", "introduction", "background", "related work",
+        "methods", "methodology", "approach", "design",
+        "results", "findings", "experiments", "evaluation",
+        "discussion", "analysis", "interpretation",
+        "conclusion", "future work", "limitations",
+        "references", "bibliography", "acknowledgments"
+    ]
+    
+    # Normalize and check first lines
+    first_lines = text[:200].lower().strip()
+    
+    for heading in headings:
+        # Match patterns like "1. Introduction" or "INTRODUCTION" or "1 Introduction"
+        # Prioritize patterns that are more likely to be actual section headings
+        patterns = [
+            f"^\\d+\\.?\\s*{heading}\\b",  # "1. Introduction" at start
+            f"^{heading}\\s*$",              # "Introduction" on its own line at start
+            f"\\n\\s*{heading}\\s*\\n",      # "Introduction" on its own line
+        ]
+        
+        for pattern in patterns:
+            if re.search(pattern, first_lines, re.IGNORECASE | re.MULTILINE):
+                return heading.title()
+    
+    return None
+
+
+def add_provenance_to_claim(
+    claim: Dict,
+    full_text: str,
+    pages_metadata: List[Dict],
+    evidence_text: str
+) -> Dict:
+    """
+    Add provenance metadata to claim.
+    
+    Finds the evidence text in full document and adds:
+    - Page numbers
+    - Section name
+    - Character offsets
+    - Supporting quote
+    - Context before/after
+    """
+    # Find evidence location
+    evidence_start = full_text.find(evidence_text)
+    
+    if evidence_start == -1:
+        # Evidence not found verbatim (might be paraphrased)
+        # Fall back to fuzzy matching or skip provenance
+        return claim
+    
+    evidence_end = evidence_start + len(evidence_text)
+    
+    # Find which page(s) contain this evidence
+    pages_containing_evidence = []
+    for page_meta in pages_metadata:
+        if (evidence_start >= page_meta["char_start"] and 
+            evidence_start < page_meta["char_end"]):
+            pages_containing_evidence.append(page_meta["page_num"])
+        elif (evidence_end > page_meta["char_start"] and 
+              evidence_end <= page_meta["char_end"]):
+            pages_containing_evidence.append(page_meta["page_num"])
+    
+    # Get section name from first page
+    first_page_meta = next(
+        (p for p in pages_metadata if p["page_num"] == pages_containing_evidence[0]),
+        None
+    ) if pages_containing_evidence else None
+    section = first_page_meta["section"] if first_page_meta else "Unknown"
+    
+    # Extract context (100 chars before/after)
+    context_window = 100
+    context_before = full_text[max(0, evidence_start - context_window):evidence_start]
+    context_after = full_text[evidence_end:evidence_end + context_window]
+    
+    # Add provenance
+    claim["provenance"] = {
+        "page_numbers": pages_containing_evidence,
+        "section": section,
+        "char_start": evidence_start,
+        "char_end": evidence_end,
+        "supporting_quote": evidence_text[:500],  # Truncate long quotes
+        "quote_page": pages_containing_evidence[0] if pages_containing_evidence else None,
+        "context_before": context_before.strip(),
+        "context_after": context_after.strip()
+    }
+    
+    return claim
 
 
 # --- 3. Enhanced Analysis (MODIFIED) ---
