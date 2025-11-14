@@ -9,5 +9,8 @@ python-multipart>=0.0.6
 # WebSocket support
 websockets>=12.0
 
+# Testing (optional, for development)
+httpx>=0.28.0
+
 # API documentation (included with FastAPI)
 # pydantic is included with fastapi

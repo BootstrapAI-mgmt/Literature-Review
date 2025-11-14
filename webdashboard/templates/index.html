@@ -373,11 +373,14 @@
         async function showJobDetail(jobId) {
             currentJobId = jobId;
             
+            // Get current API key from input
+            const currentApiKey = document.getElementById('apiKeyInput').value;
+            
             try {
                 // Fetch job details
                 const response = await fetch(`${API_BASE}/api/jobs/${jobId}`, {
                     headers: {
-                        'X-API-KEY': apiKey
+                        'X-API-KEY': currentApiKey
                     }
                 });
                 
@@ -412,7 +415,7 @@
                 // Fetch logs
                 const logsResponse = await fetch(`${API_BASE}/api/logs/${jobId}?tail=100`, {
                     headers: {
-                        'X-API-KEY': apiKey
+                        'X-API-KEY': currentApiKey
                     }
                 });
                 
@@ -488,19 +491,22 @@
         document.getElementById('downloadBtn').addEventListener('click', async () => {
             if (!currentJobId) return;
             
-            window.open(`${API_BASE}/api/download/${currentJobId}?X-API-KEY=${apiKey}`, '_blank');
+            const currentApiKey = document.getElementById('apiKeyInput').value;
+            window.open(`${API_BASE}/api/download/${currentJobId}?X-API-KEY=${currentApiKey}`, '_blank');
         });
         
         // Retry button handler
         document.getElementById('retryBtn').addEventListener('click', async () => {
             if (!currentJobId) return;
             
+            const currentApiKey = document.getElementById('apiKeyInput').value;
+            
             try {
                 const response = await fetch(`${API_BASE}/api/jobs/${currentJobId}/retry`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-API-KEY': apiKey
+                        'X-API-KEY': currentApiKey
                     },
                     body: JSON.stringify({ force: false })
                 });

@@ -4,6 +4,22 @@ Automated pipeline for conducting comprehensive literature reviews in neuromorph
 
 ## Quick Start
 
+### 🌐 Web Dashboard (NEW!)
+
+Launch the web dashboard for a user-friendly interface:
+
+```bash
+./run_dashboard.sh
+```
+
+Then open http://localhost:8000 in your browser to:
+- Upload PDFs
+- Monitor job progress in real-time
+- View logs and download reports
+- Retry failed jobs
+
+See [Dashboard Guide](docs/DASHBOARD_GUIDE.md) for detailed instructions.
+
 ### Automated Pipeline (Recommended)
 
 Run the full 5-stage pipeline with a single command:
@@ -142,13 +158,20 @@ The pipeline automatically retries transient failures like network timeouts and 
 
 ## Requirements
 
+**Pipeline:**
 ```bash
 pip install -r requirements-dev.txt
+```
+
+**Web Dashboard:**
+```bash
+pip install -r requirements-dashboard.txt
 ```
 
 Create a `.env` file with your API key:
 ```
 GEMINI_API_KEY=your_api_key_here
+DASHBOARD_API_KEY=your-secure-api-key  # For dashboard authentication
 ```
 
 ## 📁 Repository Structure
@@ -157,6 +180,7 @@ GEMINI_API_KEY=your_api_key_here
 Literature-Review/
 ├── docs/                          # 📚 All documentation
 │   ├── README.md                  # Documentation guide
+│   ├── DASHBOARD_GUIDE.md         # 🌐 Web dashboard guide
 │   ├── CONSOLIDATED_ROADMAP.md    # ⭐ Master project roadmap
 │   ├── architecture/              # System design & refactoring
 │   ├── guides/                    # Workflow & strategy guides
@@ -179,10 +203,15 @@ Literature-Review/
 │   ├── reviewers/                 # Journal & Deep reviewers
 │   ├── orchestrator.py            # Pipeline coordination
 │   └── utils/                     # Shared utilities
+├── webdashboard/                  # 🌐 Web dashboard
+│   ├── app.py                     # FastAPI application
+│   ├── templates/                 # HTML templates
+│   └── static/                    # CSS, JS, images
 ├── tests/                         # 🧪 Test suite
 │   ├── unit/                      # Unit tests
 │   ├── component/                 # Component tests
 │   ├── integration/               # Integration tests
+│   ├── webui/                     # Dashboard tests
 │   └── e2e/                       # End-to-end tests
 └── scripts/                       # 🔧 Utility scripts
 ```
