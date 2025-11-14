@@ -162,9 +162,7 @@ class TestDataGenerator:
             for v in range(1, num_versions_to_create + 1):
                 entry = self.create_version_history_entry(
                     filename=filename,
-                    num_claims=(
-                        len(claim_statuses) if claim_statuses else random.randint(3, 8)
-                    ),
+                    num_claims=(len(claim_statuses) if claim_statuses else random.randint(3, 8)),
                     approved_ratio=approved_ratio,
                     version_num=v,
                     claim_statuses=claim_statuses,
@@ -263,9 +261,7 @@ class TestDataGenerator:
             "REVIEW_TIMESTAMP": datetime.now().isoformat(),
         }
 
-    def create_mock_paper_metadata(
-        self, filename: str, num_pages: int = 10
-    ) -> Dict[str, Any]:
+    def create_mock_paper_metadata(self, filename: str, num_pages: int = 10) -> Dict[str, Any]:
         """
         Create mock paper metadata.
 
@@ -307,9 +303,7 @@ class TestDataGenerator:
 
         return definitions
 
-    def create_rejected_claims_scenario(
-        self, filename: str, num_rejected: int = 3
-    ) -> Dict[str, List[Dict[str, Any]]]:
+    def create_rejected_claims_scenario(self, filename: str, num_rejected: int = 3) -> Dict[str, List[Dict[str, Any]]]:
         """
         Create a version history with rejected claims for DRA testing.
 
@@ -330,9 +324,7 @@ class TestDataGenerator:
 
         return {filename: [entry]}
 
-    def create_version_history_with_quality_scores(
-        self, filename: str, claims_with_scores: List[Dict]
-    ) -> Dict:
+    def create_version_history_with_quality_scores(self, filename: str, claims_with_scores: List[Dict]) -> Dict:
         """
         Create version history with pre-populated evidence quality scores.
 
@@ -360,18 +352,10 @@ class TestDataGenerator:
                                 "status": claim["status"],
                                 "evidence_quality": claim.get("evidence_quality", {}),
                                 "provenance": claim.get("provenance", {}),
-                                "extracted_claim_text": claim.get(
-                                    "extracted_claim_text", "Sample claim text"
-                                ),
-                                "sub_requirement": claim.get(
-                                    "sub_requirement", "SR 2.1"
-                                ),
-                                "pillar": claim.get(
-                                    "pillar", random.choice(self.sample_pillars)
-                                ),
-                                "evidence": claim.get(
-                                    "evidence", "Sample evidence text"
-                                ),
+                                "extracted_claim_text": claim.get("extracted_claim_text", "Sample claim text"),
+                                "sub_requirement": claim.get("sub_requirement", "SR 2.1"),
+                                "pillar": claim.get("pillar", random.choice(self.sample_pillars)),
+                                "evidence": claim.get("evidence", "Sample evidence text"),
                             }
                         ],
                     },
@@ -380,9 +364,7 @@ class TestDataGenerator:
 
         return history
 
-    def create_version_history_with_provenance(
-        self, filename: str, claims_with_provenance: List[Dict]
-    ) -> Dict:
+    def create_version_history_with_provenance(self, filename: str, claims_with_provenance: List[Dict]) -> Dict:
         """
         Create version history with provenance metadata.
 
@@ -411,9 +393,7 @@ class TestDataGenerator:
 
         return history
 
-    def create_version_history_with_claims(
-        self, filename: str, claims: List[Dict]
-    ) -> Dict:
+    def create_version_history_with_claims(self, filename: str, claims: List[Dict]) -> Dict:
         """
         Create version history with specific claims.
 
@@ -448,7 +428,7 @@ class TestDataGenerator:
     ):
         """
         Create a minimal mock PDF file for testing.
-        
+
         Args:
             filepath: Path where to create the PDF (can be str or Path)
             title: Paper title to embed in content
@@ -456,9 +436,9 @@ class TestDataGenerator:
             content: Main content text
         """
         from pathlib import Path
-        
+
         filepath = Path(filepath)
-        
+
         # Create a minimal PDF structure
         pdf_content = f"""%PDF-1.4
 %âãÏÓ
@@ -534,7 +514,7 @@ startxref
 627
 %%EOF
 """
-        
+
         filepath.write_text(pdf_content)
 
     def cleanup_fixtures(self):
@@ -570,9 +550,7 @@ def create_minimal_version_history() -> Dict[str, List[Dict[str, Any]]]:
 def create_rejected_scenario() -> Dict[str, List[Dict[str, Any]]]:
     """Create a scenario with rejected claims for DRA tests."""
     generator = TestDataGenerator()
-    return generator.create_rejected_claims_scenario(
-        filename="test_paper_rejected.pdf", num_rejected=3
-    )
+    return generator.create_rejected_claims_scenario(filename="test_paper_rejected.pdf", num_rejected=3)
 
 
 def create_multi_version_history() -> Dict[str, List[Dict[str, Any]]]:
