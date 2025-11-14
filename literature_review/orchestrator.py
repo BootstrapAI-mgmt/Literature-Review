@@ -1128,6 +1128,153 @@ def plot_evidence_quality_distribution(db: pd.DataFrame, output_file: str):
 # --- END WEIGHTED GAP ANALYSIS FUNCTIONS ---
 
 
+# --- TEMPORAL COHERENCE ANALYSIS FUNCTIONS (Task Card #19) ---
+
+def classify_maturity(evidence_span: int, total_papers: int, recent_papers: int) -> str:
+    """
+    Classify maturity level of evidence for a sub-requirement.
+    
+    Args:
+        evidence_span: Years between earliest and latest evidence
+        total_papers: Total number of papers
+        recent_papers: Number of papers in last 3 years
+    
+    Returns:
+        Maturity level: "emerging", "growing", "established", or "mature"
+    """
+    if evidence_span < 2 and total_papers < 5:
+        return "emerging"
+    elif evidence_span < 5 and total_papers < 10:
+        return "growing"
+    elif evidence_span >= 5 and total_papers >= 10:
+        if total_papers >= 20 and recent_papers >= 5:
+            return "mature"
+        return "established"
+    else:
+        return "growing"
+
+
+def analyze_evidence_evolution(db: pd.DataFrame, pillar_definitions: Dict) -> Dict:
+    """
+    Analyze how evidence for each sub-requirement has evolved over time.
+    
+    Args:
+        db: Research database DataFrame
+        pillar_definitions: Dictionary of pillar definitions with requirements
+    
+    Returns:
+        Dictionary mapping sub-requirements to temporal analysis:
+        {
+            "Sub-2.1.1": {
+                "earliest_evidence": 2018,
+                "latest_evidence": 2024,
+                "evidence_span_years": 6,
+                "total_papers": 15,
+                "recent_papers": 8,
+                "evidence_count_by_year": {2018: 2, 2020: 5, 2024: 8},
+                "quality_trend": "improving",  # improving|stable|declining|unknown
+                "maturity_level": "established",  # emerging|growing|established|mature
+                "consensus_strength": "strong",  # strong|moderate|weak|none|unknown
+                "recent_activity": True  # 3+ papers in last 3 years
+            },
+            ...
+        }
+    """
+    from datetime import datetime
+    
+    temporal_analysis = {}
+    current_year = datetime.now().year
+    
+    for pillar_name, pillar_data in pillar_definitions.items():
+        # Skip non-pillar entries
+        if not isinstance(pillar_data, dict) or "requirements" not in pillar_data:
+            continue
+            
+        for req_key, req_data in pillar_data.get("requirements", {}).items():
+            for sub_req_list in req_data:
+                # Handle both single sub-reqs and comma-separated lists
+                for sub_req in sub_req_list.split(','):
+                    sub_req = sub_req.strip()
+                    
+                    # Get all claims for this sub-requirement
+                    claims = db[db["Requirement(s)"].str.contains(sub_req, na=False)]
+                    
+                    if claims.empty:
+                        continue
+                    
+                    # Extract publication years
+                    years = claims["PUBLICATION_YEAR"].dropna()
+                    years = years[years > 1900]  # Filter out invalid years
+                    years = years.astype(int)
+                    
+                    if len(years) == 0:
+                        continue
+                    
+                    # Count by year
+                    year_counts = years.value_counts().sort_index().to_dict()
+                    
+                    # Analyze quality trend (if composite scores available)
+                    quality_trend = "unknown"
+                    if "EVIDENCE_COMPOSITE_SCORE" in claims.columns:
+                        # Group by year and calculate mean scores
+                        scores_by_year = claims.groupby("PUBLICATION_YEAR")["EVIDENCE_COMPOSITE_SCORE"].mean()
+                        scores_by_year = scores_by_year[scores_by_year.index > 1900]
+                        
+                        if len(scores_by_year) >= 3:  # Need 3+ years for trend
+                            # Linear regression to detect trend
+                            from scipy.stats import linregress
+                            slope, intercept, r_value, p_value, std_err = linregress(
+                                scores_by_year.index, scores_by_year.values
+                            )
+                            
+                            if p_value < 0.05:  # Statistically significant
+                                if slope > 0.1:
+                                    quality_trend = "improving"
+                                elif slope < -0.1:
+                                    quality_trend = "declining"
+                                else:
+                                    quality_trend = "stable"
+                            else:
+                                quality_trend = "stable"
+                    
+                    # Determine maturity level
+                    evidence_span = int(years.max() - years.min())
+                    total_papers = len(claims)
+                    recent_papers = len(claims[claims["PUBLICATION_YEAR"] >= current_year - 3])
+                    
+                    maturity = classify_maturity(evidence_span, total_papers, recent_papers)
+                    
+                    # Check for consensus (low score variance = consensus)
+                    consensus = "unknown"
+                    if "EVIDENCE_COMPOSITE_SCORE" in claims.columns:
+                        score_std = claims["EVIDENCE_COMPOSITE_SCORE"].std()
+                        if score_std < 0.5:
+                            consensus = "strong"
+                        elif score_std < 1.0:
+                            consensus = "moderate"
+                        elif score_std < 1.5:
+                            consensus = "weak"
+                        else:
+                            consensus = "none"
+                    
+                    temporal_analysis[sub_req] = {
+                        "earliest_evidence": int(years.min()),
+                        "latest_evidence": int(years.max()),
+                        "evidence_span_years": evidence_span,
+                        "total_papers": total_papers,
+                        "recent_papers": recent_papers,
+                        "evidence_count_by_year": year_counts,
+                        "quality_trend": quality_trend,
+                        "maturity_level": maturity,
+                        "consensus_strength": consensus,
+                        "recent_activity": recent_papers >= 3  # Active if 3+ papers in last 3 years
+                    }
+    
+    return temporal_analysis
+
+# --- END TEMPORAL COHERENCE ANALYSIS FUNCTIONS ---
+
+
 # --- MAIN EXECUTION (MODIFIED) ---
 def main():
     logger.info("\n" + "=" * 80)
