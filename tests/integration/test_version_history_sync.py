@@ -388,3 +388,466 @@ class TestVersionHistorySync:
         
         # Assert: No CSV should be created or CSV should be empty
         assert len(synced_papers) == 0
+    
+    @pytest.mark.integration
+    def test_quality_scores_sync_to_csv(self, temp_workspace, test_data_generator):
+        """
+        Test that evidence quality scores sync from version history to CSV.
+        
+        Validates:
+        - Composite scores added to claims
+        - All 6 dimensions synced
+        - Provenance metadata preserved (page numbers, sections)
+        """
+        # Setup: Create version history with quality scores
+        version_history = {
+            "paper_a.pdf": [
+                {
+                    'timestamp': '2025-11-13T10:00:00',
+                    'review': {
+                        'FILENAME': 'paper_a.pdf',
+                        'TITLE': 'High Quality Paper',
+                        'PUBLICATION_YEAR': 2024,
+                        'Requirement(s)': [
+                            {
+                                'claim_id': 'claim_001',
+                                'status': 'approved',
+                                'extracted_claim_text': 'High quality claim',
+                                'sub_requirement': 'Sub-1.1.1',
+                                'evidence_quality': {
+                                    'composite_score': 4.2,
+                                    'strength_score': 4,
+                                    'rigor_score': 5,
+                                    'relevance_score': 4,
+                                    'directness': 3,
+                                    'is_recent': True,
+                                    'reproducibility_score': 4,
+                                    'study_type': 'experimental',
+                                    'confidence_level': 'high'
+                                },
+                                'provenance': {
+                                    'page_numbers': [5, 6],
+                                    'section': 'Results',
+                                    'quote_page': 5
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        version_history_file = temp_workspace / "review_version_history.json"
+        with open(version_history_file, 'w') as f:
+            json.dump(version_history, f, indent=2)
+        
+        # Execute: Sync with quality score extraction
+        csv_file = temp_workspace / "output_database.csv"
+        
+        synced_papers = []
+        for filename, versions in version_history.items():
+            latest = versions[-1]['review']
+            approved_claims = [
+                c for c in latest.get('Requirement(s)', [])
+                if c.get('status') == 'approved'
+            ]
+            
+            if approved_claims:
+                # Extract quality scores for CSV columns
+                for claim in approved_claims:
+                    quality = claim.get('evidence_quality', {})
+                    provenance = claim.get('provenance', {})
+                    
+                    # Add quality score fields to claim
+                    claim['EVIDENCE_COMPOSITE_SCORE'] = quality.get('composite_score')
+                    claim['EVIDENCE_STRENGTH_SCORE'] = quality.get('strength_score')
+                    claim['EVIDENCE_RIGOR_SCORE'] = quality.get('rigor_score')
+                    claim['EVIDENCE_RELEVANCE_SCORE'] = quality.get('relevance_score')
+                    claim['EVIDENCE_DIRECTNESS'] = quality.get('directness')
+                    claim['EVIDENCE_IS_RECENT'] = quality.get('is_recent')
+                    claim['EVIDENCE_REPRODUCIBILITY_SCORE'] = quality.get('reproducibility_score')
+                    claim['STUDY_TYPE'] = quality.get('study_type')
+                    
+                    # Add provenance columns
+                    claim['PROVENANCE_PAGE_NUMBERS'] = json.dumps(provenance.get('page_numbers', [])) if provenance.get('page_numbers') else None
+                    claim['PROVENANCE_SECTION'] = provenance.get('section')
+                    claim['PROVENANCE_QUOTE_PAGE'] = provenance.get('quote_page')
+                
+                paper_entry = {
+                    'FILENAME': latest['FILENAME'],
+                    'TITLE': latest['TITLE'],
+                    'PUBLICATION_YEAR': latest['PUBLICATION_YEAR'],
+                    'Requirement(s)': json.dumps(approved_claims)
+                }
+                synced_papers.append(paper_entry)
+        
+        # Write to CSV
+        if synced_papers:
+            with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(
+                    f,
+                    fieldnames=['FILENAME', 'TITLE', 'PUBLICATION_YEAR', 'Requirement(s)'],
+                    quoting=csv.QUOTE_ALL
+                )
+                writer.writeheader()
+                writer.writerows(synced_papers)
+        
+        # Assert: Check CSV has quality columns embedded in claims
+        df = pd.read_csv(csv_file)
+        
+        row = df.iloc[0]
+        claims = json.loads(row['Requirement(s)'])
+        claim = claims[0]
+        
+        # Validate quality score fields
+        assert 'EVIDENCE_COMPOSITE_SCORE' in claim
+        assert 'EVIDENCE_STRENGTH_SCORE' in claim
+        assert 'EVIDENCE_RIGOR_SCORE' in claim
+        assert 'PROVENANCE_PAGE_NUMBERS' in claim
+        assert 'PROVENANCE_SECTION' in claim
+        
+        # Validate values
+        assert claim['EVIDENCE_COMPOSITE_SCORE'] == 4.2
+        assert claim['EVIDENCE_STRENGTH_SCORE'] == 4
+        assert claim['PROVENANCE_PAGE_NUMBERS'] == '[5, 6]'  # JSON serialized
+        assert claim['PROVENANCE_SECTION'] == 'Results'
+    
+    @pytest.mark.integration
+    def test_backward_compatibility_missing_quality_scores(self, temp_workspace, test_data_generator):
+        """
+        Test that claims without quality scores sync correctly (backward compatibility).
+        
+        Legacy claims should get default scores or null values.
+        """
+        # Setup: Create version history without quality scores (legacy format)
+        legacy_history = {
+            "legacy_paper.pdf": [
+                {
+                    'timestamp': '2025-11-13T10:00:00',
+                    'review': {
+                        'FILENAME': 'legacy_paper.pdf',
+                        'TITLE': 'Legacy Paper',
+                        'PUBLICATION_YEAR': 2020,
+                        'Requirement(s)': [
+                            {
+                                'claim_id': 'legacy_claim',
+                                'status': 'approved',
+                                'pillar': 'Pillar 1',
+                                'sub_requirement': 'SR 1.1',
+                                'evidence': 'Legacy evidence without quality scores'
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        version_history_file = temp_workspace / "review_version_history.json"
+        with open(version_history_file, 'w') as f:
+            json.dump(legacy_history, f, indent=2)
+        
+        # Execute: Sync with backward compatibility
+        csv_file = temp_workspace / "output_database.csv"
+        
+        synced_papers = []
+        for filename, versions in legacy_history.items():
+            latest = versions[-1]['review']
+            approved_claims = [
+                c for c in latest.get('Requirement(s)', [])
+                if c.get('status') == 'approved'
+            ]
+            
+            if approved_claims:
+                # Extract quality scores with defaults for missing data
+                for claim in approved_claims:
+                    quality = claim.get('evidence_quality', {})
+                    
+                    # Use None for missing quality data
+                    claim['EVIDENCE_COMPOSITE_SCORE'] = quality.get('composite_score', None)
+                    claim['EVIDENCE_STRENGTH_SCORE'] = quality.get('strength_score', None)
+                    claim['EVIDENCE_RIGOR_SCORE'] = quality.get('rigor_score', None)
+                
+                paper_entry = {
+                    'FILENAME': latest['FILENAME'],
+                    'TITLE': latest['TITLE'],
+                    'PUBLICATION_YEAR': latest['PUBLICATION_YEAR'],
+                    'Requirement(s)': json.dumps(approved_claims)
+                }
+                synced_papers.append(paper_entry)
+        
+        # Write to CSV
+        if synced_papers:
+            with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(
+                    f,
+                    fieldnames=['FILENAME', 'TITLE', 'PUBLICATION_YEAR', 'Requirement(s)'],
+                    quoting=csv.QUOTE_ALL
+                )
+                writer.writeheader()
+                writer.writerows(synced_papers)
+        
+        # Assert: Check backward compatibility
+        df = pd.read_csv(csv_file)
+        row = df.iloc[0]
+        claims = json.loads(row['Requirement(s)'])
+        claim = claims[0]
+        
+        # Should have quality score fields but with None values
+        assert 'EVIDENCE_COMPOSITE_SCORE' in claim
+        assert claim['EVIDENCE_COMPOSITE_SCORE'] is None  # Legacy claim without score
+    
+    @pytest.mark.integration
+    def test_multiple_papers_with_mixed_quality_scores(self, temp_workspace):
+        """Test sync with multiple papers having mixed quality score availability."""
+        # Setup: Create version history with both legacy and enhanced claims
+        version_history = {
+            "enhanced_paper.pdf": [
+                {
+                    'timestamp': '2025-11-13T11:00:00',
+                    'review': {
+                        'FILENAME': 'enhanced_paper.pdf',
+                        'TITLE': 'Enhanced Paper',
+                        'PUBLICATION_YEAR': 2024,
+                        'Requirement(s)': [
+                            {
+                                'claim_id': 'enhanced_claim',
+                                'status': 'approved',
+                                'sub_requirement': 'Sub-1.1.1',
+                                'evidence_quality': {
+                                    'composite_score': 3.8,
+                                    'strength_score': 4,
+                                    'rigor_score': 4,
+                                    'relevance_score': 3,
+                                    'directness': 3,
+                                    'is_recent': False,
+                                    'reproducibility_score': 4
+                                }
+                            }
+                        ]
+                    }
+                }
+            ],
+            "legacy_paper.pdf": [
+                {
+                    'timestamp': '2025-11-13T11:00:00',
+                    'review': {
+                        'FILENAME': 'legacy_paper.pdf',
+                        'TITLE': 'Legacy Paper',
+                        'PUBLICATION_YEAR': 2022,
+                        'Requirement(s)': [
+                            {
+                                'claim_id': 'legacy_claim',
+                                'status': 'approved',
+                                'sub_requirement': 'Sub-2.1.1',
+                                'evidence': 'Evidence without quality scores'
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        version_history_file = temp_workspace / "review_version_history.json"
+        with open(version_history_file, 'w') as f:
+            json.dump(version_history, f, indent=2)
+        
+        csv_file = temp_workspace / "output_database.csv"
+        
+        # Execute sync
+        synced_papers = []
+        for filename, versions in version_history.items():
+            latest = versions[-1]['review']
+            approved_claims = [
+                c for c in latest.get('Requirement(s)', [])
+                if c.get('status') == 'approved'
+            ]
+            
+            if approved_claims:
+                for claim in approved_claims:
+                    quality = claim.get('evidence_quality', {})
+                    claim['EVIDENCE_COMPOSITE_SCORE'] = quality.get('composite_score', None)
+                    claim['EVIDENCE_STRENGTH_SCORE'] = quality.get('strength_score', None)
+                
+                paper_entry = {
+                    'FILENAME': latest['FILENAME'],
+                    'TITLE': latest['TITLE'],
+                    'PUBLICATION_YEAR': latest['PUBLICATION_YEAR'],
+                    'Requirement(s)': json.dumps(approved_claims)
+                }
+                synced_papers.append(paper_entry)
+        
+        if synced_papers:
+            with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(
+                    f,
+                    fieldnames=['FILENAME', 'TITLE', 'PUBLICATION_YEAR', 'Requirement(s)'],
+                    quoting=csv.QUOTE_ALL
+                )
+                writer.writeheader()
+                writer.writerows(synced_papers)
+        
+        # Assert: Both papers synced with appropriate quality scores
+        df = pd.read_csv(csv_file)
+        assert len(df) == 2
+        
+        # Check enhanced paper has scores
+        enhanced_row = df[df['FILENAME'] == 'enhanced_paper.pdf'].iloc[0]
+        enhanced_claims = json.loads(enhanced_row['Requirement(s)'])
+        assert enhanced_claims[0]['EVIDENCE_COMPOSITE_SCORE'] == 3.8
+        
+        # Check legacy paper has None scores
+        legacy_row = df[df['FILENAME'] == 'legacy_paper.pdf'].iloc[0]
+        legacy_claims = json.loads(legacy_row['Requirement(s)'])
+        assert legacy_claims[0]['EVIDENCE_COMPOSITE_SCORE'] is None
+    
+    @pytest.mark.integration
+    def test_provenance_metadata_array_serialization(self, temp_workspace):
+        """Test that provenance metadata with arrays (page_numbers) serializes correctly."""
+        version_history = {
+            "multi_page_paper.pdf": [
+                {
+                    'timestamp': '2025-11-13T12:00:00',
+                    'review': {
+                        'FILENAME': 'multi_page_paper.pdf',
+                        'TITLE': 'Multi-Page Evidence Paper',
+                        'PUBLICATION_YEAR': 2024,
+                        'Requirement(s)': [
+                            {
+                                'claim_id': 'claim_with_pages',
+                                'status': 'approved',
+                                'sub_requirement': 'Sub-1.2.1',
+                                'provenance': {
+                                    'page_numbers': [3, 5, 7, 8],
+                                    'section': 'Methods and Results',
+                                    'quote_page': 5
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        version_history_file = temp_workspace / "review_version_history.json"
+        with open(version_history_file, 'w') as f:
+            json.dump(version_history, f, indent=2)
+        
+        csv_file = temp_workspace / "output_database.csv"
+        
+        # Execute sync
+        synced_papers = []
+        for filename, versions in version_history.items():
+            latest = versions[-1]['review']
+            approved_claims = [
+                c for c in latest.get('Requirement(s)', [])
+                if c.get('status') == 'approved'
+            ]
+            
+            if approved_claims:
+                for claim in approved_claims:
+                    provenance = claim.get('provenance', {})
+                    # Serialize page_numbers array to JSON string
+                    page_numbers = provenance.get('page_numbers', [])
+                    claim['PROVENANCE_PAGE_NUMBERS'] = json.dumps(page_numbers) if page_numbers else None
+                    claim['PROVENANCE_SECTION'] = provenance.get('section')
+                    claim['PROVENANCE_QUOTE_PAGE'] = provenance.get('quote_page')
+                
+                paper_entry = {
+                    'FILENAME': latest['FILENAME'],
+                    'TITLE': latest['TITLE'],
+                    'PUBLICATION_YEAR': latest['PUBLICATION_YEAR'],
+                    'Requirement(s)': json.dumps(approved_claims)
+                }
+                synced_papers.append(paper_entry)
+        
+        if synced_papers:
+            with open(csv_file, 'w', newline='', encoding='utf-8') as f:
+                writer = csv.DictWriter(
+                    f,
+                    fieldnames=['FILENAME', 'TITLE', 'PUBLICATION_YEAR', 'Requirement(s)'],
+                    quoting=csv.QUOTE_ALL
+                )
+                writer.writeheader()
+                writer.writerows(synced_papers)
+        
+        # Assert: Array is correctly serialized
+        df = pd.read_csv(csv_file)
+        row = df.iloc[0]
+        claims = json.loads(row['Requirement(s)'])
+        claim = claims[0]
+        
+        assert 'PROVENANCE_PAGE_NUMBERS' in claim
+        assert claim['PROVENANCE_PAGE_NUMBERS'] == '[3, 5, 7, 8]'
+        
+        # Verify it can be deserialized back
+        deserialized_pages = json.loads(claim['PROVENANCE_PAGE_NUMBERS'])
+        assert deserialized_pages == [3, 5, 7, 8]
+        assert claim['PROVENANCE_SECTION'] == 'Methods and Results'
+        assert claim['PROVENANCE_QUOTE_PAGE'] == 5
+    
+    @pytest.mark.integration
+    def test_sync_script_with_quality_scores(self, temp_workspace):
+        """Test the actual sync script with quality scores."""
+        import sys
+        import importlib.util
+        
+        # Load sync script as a module
+        script_path = os.path.abspath(os.path.join(
+            os.path.dirname(__file__), '../../scripts/sync_history_to_db.py'
+        ))
+        spec = importlib.util.spec_from_file_location("sync_module", script_path)
+        sync_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(sync_module)
+        
+        # Create test version history with quality scores
+        version_history = {
+            "test_paper.pdf": [
+                {
+                    'timestamp': '2025-11-14T10:00:00',
+                    'review': {
+                        'FILENAME': 'test_paper.pdf',
+                        'TITLE': 'Test Paper with Quality Scores',
+                        'PUBLICATION_YEAR': 2024,
+                        'Requirement(s)': [
+                            {
+                                'claim_id': 'claim_with_quality',
+                                'status': 'approved',
+                                'sub_requirement': 'Sub-1.1.1',
+                                'evidence_quality': {
+                                    'composite_score': 4.5,
+                                    'strength_score': 5,
+                                    'rigor_score': 4,
+                                    'relevance_score': 5,
+                                    'directness': 3,
+                                    'is_recent': True,
+                                    'reproducibility_score': 4
+                                },
+                                'provenance': {
+                                    'page_numbers': [10, 11],
+                                    'section': 'Methods'
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+        
+        version_history_file = temp_workspace / "review_version_history.json"
+        with open(version_history_file, 'w') as f:
+            json.dump(version_history, f, indent=2)
+        
+        # Use the helper function from sync script
+        review = version_history["test_paper.pdf"][0]['review']
+        enriched_review = sync_module.enrich_claims_with_quality_scores(review)
+        
+        # Verify enrichment worked
+        claims = enriched_review['Requirement(s)']
+        assert len(claims) == 1
+        claim = claims[0]
+        
+        assert 'EVIDENCE_COMPOSITE_SCORE' in claim
+        assert claim['EVIDENCE_COMPOSITE_SCORE'] == 4.5
+        assert claim['EVIDENCE_STRENGTH_SCORE'] == 5
+        assert claim['PROVENANCE_PAGE_NUMBERS'] == '[10, 11]'
+        assert claim['PROVENANCE_SECTION'] == 'Methods'

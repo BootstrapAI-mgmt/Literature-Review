@@ -1,13 +1,18 @@
 """
 Database Sync Utility
-Version: 2.1 (Full Cell-by-Cell Sync with Master Column Order)
-Date: 2025-11-09
+Version: 2.2 (Full Cell-by-Cell Sync with Evidence Quality Scores)
+Date: 2025-11-14
 
 This script performs a full synchronization from the 'review_version_history.json'
 (the "source of truth") to the 'neuromorphic-research_database.csv'.
 
 It uses a master column order list to ensure the output CSV's headers
 are in the exact order specified by the "REVIEWER ORDER".
+
+Version 2.2 adds support for evidence quality scores and provenance metadata:
+- Extracts multi-dimensional quality scores (strength, rigor, relevance, etc.)
+- Syncs provenance metadata (page numbers, sections)
+- Maintains backward compatibility with legacy claims without quality scores
 """
 
 import os
@@ -58,6 +63,17 @@ class PaperAnalyzer:
 
     # --- THIS IS THE NEW MASTER COLUMN ORDER ---
     # This list is the new "source of truth" for column order.
+    # 
+    # Note: Evidence quality scores and provenance metadata are embedded within
+    # the 'Requirement(s)' column as JSON. Each claim in the Requirements array
+    # may contain the following additional fields (if available):
+    #   Quality Scores:
+    #     - EVIDENCE_COMPOSITE_SCORE, EVIDENCE_STRENGTH_SCORE, EVIDENCE_RIGOR_SCORE
+    #     - EVIDENCE_RELEVANCE_SCORE, EVIDENCE_DIRECTNESS, EVIDENCE_IS_RECENT
+    #     - EVIDENCE_REPRODUCIBILITY_SCORE, STUDY_TYPE, CONFIDENCE_LEVEL
+    #   Provenance:
+    #     - PROVENANCE_PAGE_NUMBERS (JSON array), PROVENANCE_SECTION, PROVENANCE_QUOTE_PAGE
+    #
     DATABASE_COLUMN_ORDER = [
         "ANALYSIS_GAPS", "APA_REFERENCE", "APPLICABILITY_NOTES", "BIOLOGICAL_FIDELITY",
         "BRAIN_REGIONS", "COMPUTATIONAL_COMPLEXITY", "CORE_CONCEPTS", "CORE_DOMAIN",
@@ -161,6 +177,74 @@ def overwrite_csv_with_master_list(master_list: List[Dict], csv_file=OUTPUT_CSV_
         safe_print(f"❌ Error saving to CSV {csv_file}: {e}")
 
 
+def extract_quality_scores_from_claim(claim: Dict) -> Dict:
+    """
+    Extract evidence quality scores and provenance metadata for CSV columns.
+    
+    This function enriches claims with quality score fields to ensure they
+    are properly synced to the CSV database. It handles backward compatibility
+    by setting None for missing quality data.
+    
+    Args:
+        claim: Claim dictionary with optional evidence_quality and provenance fields
+    
+    Returns:
+        Dictionary with quality score and provenance columns (modifies claim in-place)
+    """
+    quality = claim.get('evidence_quality', {})
+    provenance = claim.get('provenance', {})
+    
+    # Extract quality scores (None if not present for backward compatibility)
+    quality_fields = {
+        'EVIDENCE_COMPOSITE_SCORE': quality.get('composite_score'),
+        'EVIDENCE_STRENGTH_SCORE': quality.get('strength_score'),
+        'EVIDENCE_RIGOR_SCORE': quality.get('rigor_score'),
+        'EVIDENCE_RELEVANCE_SCORE': quality.get('relevance_score'),
+        'EVIDENCE_DIRECTNESS': quality.get('directness'),
+        'EVIDENCE_IS_RECENT': quality.get('is_recent'),
+        'EVIDENCE_REPRODUCIBILITY_SCORE': quality.get('reproducibility_score'),
+        'STUDY_TYPE': quality.get('study_type'),
+        'CONFIDENCE_LEVEL': quality.get('confidence_level')
+    }
+    
+    # Extract provenance metadata
+    page_numbers = provenance.get('page_numbers')
+    provenance_fields = {
+        'PROVENANCE_PAGE_NUMBERS': json.dumps(page_numbers) if page_numbers else None,
+        'PROVENANCE_SECTION': provenance.get('section'),
+        'PROVENANCE_QUOTE_PAGE': provenance.get('quote_page')
+    }
+    
+    # Add fields to claim
+    claim.update(quality_fields)
+    claim.update(provenance_fields)
+    
+    return claim
+
+
+def enrich_claims_with_quality_scores(review: Dict) -> Dict:
+    """
+    Enrich all claims in a review with quality scores and provenance metadata.
+    
+    This ensures that when claims are synced to CSV, they include all quality
+    score dimensions and provenance information needed for gap analysis.
+    
+    Args:
+        review: Review dictionary containing 'Requirement(s)' list
+    
+    Returns:
+        Review dictionary with enriched claims
+    """
+    requirements = review.get('Requirement(s)', [])
+    
+    if isinstance(requirements, list):
+        for claim in requirements:
+            if isinstance(claim, dict):
+                extract_quality_scores_from_claim(claim)
+    
+    return review
+
+
 def load_version_history() -> Optional[Dict]:
     """Loads the complete review history from the JSON file."""
     if not os.path.exists(VERSION_HISTORY_FILE):
@@ -181,7 +265,7 @@ def load_version_history() -> Optional[Dict]:
 def main():
     """Main sync function"""
     logger.info("\n" + "=" * 80)
-    logger.info("DATABASE SYNC UTILITY v2.1 (Full Sync & Column Order)")
+    logger.info("DATABASE SYNC UTILITY v2.2 (Full Sync, Column Order & Quality Scores)")
     logger.info("=" * 80)
 
     # 1. Load the history file (source of truth)
@@ -216,6 +300,9 @@ def main():
 
         # Ensure FILENAME key is set
         latest_review['FILENAME'] = filename
+        
+        # Enrich claims with quality scores and provenance metadata
+        latest_review = enrich_claims_with_quality_scores(latest_review)
 
         if filename not in csv_filenames:
             # File is missing from CSV entirely
