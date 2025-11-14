@@ -277,6 +277,7 @@ class CheckpointManagerV2:
         """
         self.checkpoint_file = checkpoint_file
         self.dry_run = dry_run
+        self.lock = Lock()  # Add lock for thread safety
         self.data: Dict[str, Any] = {
             'run_id': self._generate_run_id(),
             'version': '2.0.0',
@@ -317,26 +318,31 @@ class CheckpointManagerV2:
     
     def save(self):
         """Save checkpoint to file atomically."""
-        if self.dry_run:
-            print(f"[DRY-RUN] Would save checkpoint to {self.checkpoint_file}")
-            return
-        
-        self.data['last_updated'] = datetime.now().isoformat()
-        
-        # Atomic write: write to temp file, then rename
-        tmp_file = Path(self.checkpoint_file).with_suffix('.tmp')
-        try:
-            with tmp_file.open('w', encoding='utf-8') as f:
-                json.dump(self.data, f, indent=2)
-                f.flush()
-                os.fsync(f.fileno())
+        with self.lock:  # Ensure thread-safe writes
+            if self.dry_run:
+                print(f"[DRY-RUN] Would save checkpoint to {self.checkpoint_file}")
+                return
             
-            # Atomic rename
-            tmp_file.replace(self.checkpoint_file)
-        except Exception as e:
-            if tmp_file.exists():
-                tmp_file.unlink()
-            raise e
+            self.data['last_updated'] = datetime.now().isoformat()
+            
+            # Ensure directory exists
+            checkpoint_path = Path(self.checkpoint_file)
+            checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Atomic write: write to temp file, then rename
+            tmp_file = checkpoint_path.with_suffix('.tmp')
+            try:
+                with tmp_file.open('w', encoding='utf-8') as f:
+                    json.dump(self.data, f, indent=2)
+                    f.flush()
+                    os.fsync(f.fileno())
+                
+                # Atomic rename
+                tmp_file.replace(self.checkpoint_file)
+            except Exception as e:
+                if tmp_file.exists():
+                    tmp_file.unlink()
+                raise e
     
     def update_paper_status(
         self,
