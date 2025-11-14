@@ -37,6 +37,9 @@ from collections import defaultdict  # For grouping claims by file
 # --- NEW: Import the Deep Requirements Analyzer ---
 from . import requirements as dra
 
+# --- NEW: Import GRADE Assessment (Task Card #21) ---
+from .grade_assessment import assess_methodological_quality
+
 # --- CONFIGURATION ---
 load_dotenv()
 
@@ -1114,6 +1117,8 @@ def main():
                     claim['judge_timestamp'] = datetime.now().isoformat()
                     # Add evidence quality scores to claim
                     claim['evidence_quality'] = ruling.get('evidence_quality', {})
+                    # Add GRADE assessment (Task Card #21)
+                    claim['grade_assessment'] = assess_methodological_quality(claim, {})
                     # Add consensus metadata if present
                     if 'consensus_metadata' in ruling:
                         claim['consensus_metadata'] = ruling['consensus_metadata']
@@ -1236,6 +1241,8 @@ def main():
                         new_claim['judge_timestamp'] = datetime.now().isoformat()
                         # Add evidence quality scores to claim
                         new_claim['evidence_quality'] = ruling.get('evidence_quality', {})
+                        # Add GRADE assessment (Task Card #21)
+                        new_claim['grade_assessment'] = assess_methodological_quality(new_claim, {})
                         # Add consensus metadata if present
                         if 'consensus_metadata' in ruling:
                             new_claim['consensus_metadata'] = ruling['consensus_metadata']
