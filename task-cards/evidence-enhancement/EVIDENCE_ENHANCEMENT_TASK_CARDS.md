@@ -794,51 +794,42 @@ def test_journal_reviewer_adds_provenance(temp_workspace):
 **Dependencies:** Task Card #16 (Evidence Scoring)  
 **Blocks:** None
 
-*(Full implementation similar to Recommendation #3 in EVIDENCE_EXTRACTION_ENHANCEMENTS.md)*
+#### Problem Statement
 
----
+Current system uses single Judge evaluation per claim. For borderline cases (composite_score 2.5-3.5), a single judgment may not be reliable. This prevents:
+- Confidence assessment for marginal claims
+- Detection of ambiguous evidence
+- Quality control for critical decisions
+- Inter-rater reliability metrics
 
-### TASK CARD #19: Temporal Coherence Validation
+Multi-judge consensus provides statistical validation for borderline cases and identifies claims needing human review.
 
-**Priority:** 🟡 MEDIUM  
-**Estimated Effort:** 8-10 hours  
-**Risk Level:** LOW  
-**Wave:** Wave 3 (Weeks 5-6)  
-**Track:** 🧪 Evidence Quality  
-**Dependencies:** Task Card #16 (Evidence Scoring), Task Card #9 (Orchestrator tests)  
-**Blocks:** None
+#### Acceptance Criteria
 
-*(Full implementation similar to Recommendation #4 in EVIDENCE_EXTRACTION_ENHANCEMENTS.md)*
+**Functional Requirements:**
+- [ ] Judge.py supports multi-judge consensus mode
+- [ ] 3 independent judgments per borderline claim
+- [ ] Agreement rate calculated (67% threshold for strong consensus)
+- [ ] Consensus metadata stored in version history
+- [ ] Fallback to single judge for clear-cut cases (score <2.5 or >3.5)
 
----
+**Consensus Logic:**
+- [ ] Strong consensus: ≥67% agreement (2 out of 3 judges)
+- [ ] Weak consensus: 50-66% agreement (tie-breaker needed)
+- [ ] No consensus: <50% agreement (flag for human review)
+- [ ] Average composite scores across judges
+- [ ] Track score standard deviation
 
-## 🎫 WAVE 4 ENHANCEMENT CARDS
+**Non-Functional Requirements:**
+- [ ] Apply consensus only to borderline claims (cost optimization)
+- [ ] Cache consensus results to avoid re-evaluation
+- [ ] Total latency <3x single judge (parallel API calls if possible)
 
-### TASK CARD #20: Evidence Triangulation
+#### Implementation Guide
 
-**Priority:** 🟢 MEDIUM  
-**Estimated Effort:** 10-12 hours  
-**Risk Level:** MEDIUM  
-**Wave:** Wave 4 (Weeks 7-8)  
-**Track:** 🧪 Evidence Quality  
-**Dependencies:** Task Cards #16, #17 (Scoring + Provenance)  
-**Blocks:** None
+**Files to Modify:**
 
-*(Full implementation similar to Recommendation #5 in EVIDENCE_EXTRACTION_ENHANCEMENTS.md)*
-
----
-
-### TASK CARD #21: Methodological Quality Assessment (GRADE)
-
-**Priority:** 🟢 LOW  
-**Estimated Effort:** 8-10 hours  
-**Risk Level:** LOW  
-**Wave:** Wave 4 (Weeks 7-8)  
-**Track:** 🧪 Evidence Quality  
-**Dependencies:** Task Card #16 (Evidence Scoring)  
-**Blocks:** None
-
-*(Full implementation similar to Recommendation #6 in EVIDENCE_EXTRACTION_ENHANCEMENTS.md)*
+1. **Judge.py** (~120 lines new)
 
 ---
 

@@ -38,7 +38,9 @@ Week 7-8: Production Polish + E2E/CI/CD
 
 ## 📋 Revised Task Card Structure
 
-### New Task Cards (Added for Automation)
+### Task Card Categories
+
+**Automation Track (Task Cards #13-15):**
 
 **Task Card #13: Basic Pipeline Orchestrator (v1.0)**
 - **Priority:** 🔴 CRITICAL
@@ -58,7 +60,7 @@ Week 7-8: Production Polish + E2E/CI/CD
 - **Dependencies:** Task Cards #13, #14
 - **Wave:** Wave 4
 
-### Modified Testing Task Cards
+**Testing Track (Task Cards #5-12):**
 
 **Task Card #5: Test Infrastructure** (UNCHANGED)
 - Can run in parallel with automation
@@ -66,6 +68,18 @@ Week 7-8: Production Polish + E2E/CI/CD
 **Task Card #6-12: Integration/E2E Tests** (MODIFIED PRIORITY)
 - Staged to validate automation as it's built
 - Some tests validate automation itself
+- **See TEST_MODIFICATIONS.md** for evidence enhancement validations
+
+**Evidence Quality Track (Task Cards #16-23):**
+
+**Task Cards #16-21: Core Evidence Enhancements**
+- Multi-dimensional scoring, provenance, consensus, temporal analysis, triangulation, GRADE
+- **See EVIDENCE_ENHANCEMENT_OVERVIEW.md** for complete roadmap
+- **See task-cards/evidence-enhancement/** for individual implementation guides
+
+**Task Cards #22-23: Optional Evidence Enhancements**
+- Publication bias detection, conflict-of-interest analysis
+- Conditional based on project requirements
 
 ---
 
@@ -112,23 +126,30 @@ Week 7-8: Production Polish + E2E/CI/CD
 |-----------|-------|-------|--------|-------------|--------------|
 | **#13.1** | 🚀 Automation | Dev A | 4-6h | Add checkpointing | #13 |
 | **#13.2** | 🚀 Automation | Dev A | 4-6h | Add error recovery | #13 |
+| **#16** | 🧪 Evidence Quality | Dev A | 6-8h | Multi-dimensional scoring | #13, #5 |
+| **#17** | 🧪 Evidence Quality | Dev A | 4-6h | Provenance tracking | #5 |
 | **#6** | ✅ Testing | Dev B | 6-8h | INT-001 tests | #5 |
 | **#7** | ✅ Testing | Dev B | 4-6h | INT-003 tests | #5 |
 
 **Dependencies:** 
 - Automation cards depend on #13
 - Testing cards depend on #5
-- No cross-track dependencies yet
+- Evidence cards #16-17 integrate with automation and tests
+- **See TEST_MODIFICATIONS.md** for how #6-7 validate evidence enhancements
 
 **Week 3 Deliverables:**
 - Pipeline with checkpoint/resume capability
-- Tests for Journal→Judge flow
-- Tests for version history sync
+- Multi-dimensional evidence scoring in Judge.py
+- Provenance tracking in Journal-Reviewer.py
+- Tests for Journal→Judge flow (with quality scores)
+- Tests for version history sync (with provenance)
 
 **Week 4 Deliverables:**
 - Pipeline with retry logic for transient failures
+- Enhanced Judge prompts with 6-dimensional scoring
+- Page-level extraction with section detection
 - Validation that stage integration works correctly
-- Automation tested with integration tests
+- Quality scores and provenance validated in integration tests
 
 **Success Criteria:**
 - [ ] Pipeline can resume from any stage after failure
@@ -150,6 +171,8 @@ Week 7-8: Production Polish + E2E/CI/CD
 | **#14.1** | 🚀 Automation | Dev A | 6-8h | Parallel processing | #6, #7, #13 |
 | **#14.2** | 🚀 Automation | Dev A | 4-6h | Smart retry logic | #8, #13 |
 | **#14.3** | 🚀 Automation | Dev A | 4-6h | API quota mgmt | #13 |
+| **#18** | 🧪 Evidence Quality | Dev A | 6-8h | Inter-rater reliability | #16 |
+| **#19** | 🧪 Evidence Quality | Dev A | 8-10h | Temporal coherence | #16, #9 |
 | **#8** | ✅ Testing | Dev B | 10-12h | INT-002 (DRA flow) | #5, #6 |
 | **#9** | ✅ Testing | Dev B | 8-10h | INT-004/005 | #5, #7 |
 
@@ -157,16 +180,21 @@ Week 7-8: Production Polish + E2E/CI/CD
 - Parallel processing needs INT-001 validation (can't run until tested safe)
 - Smart retry needs INT-002 validation (understand error patterns)
 - INT-002 needs INT-001 foundation
+- **Evidence cards #18-19 depend on scoring (#16)**
 - Cross-track dependencies emerge here
 
 **Week 5 Deliverables:**
 - Parallel paper processing (if tests show safe)
 - Intelligent retry based on error type
-- Tests for Judge→DRA→Re-judge flow
+- Multi-judge consensus for borderline claims
+- Temporal coherence analysis
+- Tests for Judge→DRA→Re-judge flow (with weighted gap analysis)
 
 **Week 6 Deliverables:**
 - API quota management (rate limiting, batching)
-- Tests for Orchestrator→Deep-Reviewer loop
+- Consensus logic with agreement thresholds
+- Evidence evolution tracking and maturity assessment
+- Tests for Orchestrator→Deep-Reviewer loop (with temporal analysis)
 - Performance benchmarks
 
 **Success Criteria:**
@@ -190,6 +218,8 @@ Week 7-8: Production Polish + E2E/CI/CD
 | **#15.1** | 🚀 Automation | Dev A | 16-20h | Web UI core | #13, #14 |
 | **#15.2** | 🚀 Automation | Dev A | 12-16h | Monitoring dashboard | #14 |
 | **#15.3** | 🚀 Automation | Dev A | 8-12h | Report viewer | #14 |
+| **#20** | 🧪 Evidence Quality | Dev A | 10-12h | Evidence triangulation | #16, #17 |
+| **#21** | 🧪 Evidence Quality | Dev A | 8-10h | GRADE quality assessment | #16 |
 | **#10** | ✅ Testing | Dev B | 12-16h | E2E-001 (full pipeline) | #5-9 |
 | **#11** | ✅ Testing | Dev B | 10-12h | E2E-002 (convergence) | #10 |
 | **#12** | ✅ Testing | Dev C | 6-8h | CI/CD setup | #5-11 |
@@ -197,16 +227,21 @@ Week 7-8: Production Polish + E2E/CI/CD
 **Dependencies:**
 - Web UI requires stable automation (#13, #14)
 - E2E tests require all integration tests complete
+- **Evidence cards #20-21 depend on scoring (#16) and provenance (#17)**
 - CI/CD requires full test suite
 
 **Week 7 Deliverables:**
 - Web UI for pipeline monitoring
 - Real-time progress visualization
-- Full pipeline E2E test
+- Evidence triangulation with semantic clustering
+- GRADE methodological quality framework
+- Full pipeline E2E test (with evidence quality workflow)
 
 **Week 8 Deliverables:**
 - Complete web dashboard with reporting
-- Convergence loop E2E validation
+- Cross-paper validation and contradiction detection
+- GRADE summary tables for systematic review
+- Convergence loop E2E validation (with quality metrics)
 - GitHub Actions CI/CD
 
 **Success Criteria:**

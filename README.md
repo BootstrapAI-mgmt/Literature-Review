@@ -151,11 +151,63 @@ Create a `.env` file with your API key:
 GEMINI_API_KEY=your_api_key_here
 ```
 
+## 📁 Repository Structure
+
+```
+Literature-Review/
+├── docs/                          # 📚 All documentation
+│   ├── README.md                  # Documentation guide
+│   ├── CONSOLIDATED_ROADMAP.md    # ⭐ Master project roadmap
+│   ├── architecture/              # System design & refactoring
+│   ├── guides/                    # Workflow & strategy guides
+│   ├── status-reports/            # Progress tracking
+│   └── assessments/               # Technical evaluations
+├── task-cards/                    # 📋 Implementation task cards
+│   ├── README.md                  # Task cards guide
+│   ├── agent/                     # Agent improvement tasks
+│   ├── automation/                # Reliability & error handling
+│   ├── integration/               # Integration test specs
+│   ├── e2e/                       # End-to-end test specs
+│   └── evidence-enhancement/      # Evidence quality features
+├── reviews/                       # 🔍 Review documentation
+│   ├── README.md                  # Reviews guide
+│   ├── pull-requests/             # PR assessments
+│   ├── architecture/              # Design reviews
+│   └── third-party/               # External audits
+├── literature_review/             # 🐍 Main package code
+│   ├── analysis/                  # Judge, DRA, Recommendations
+│   ├── reviewers/                 # Journal & Deep reviewers
+│   ├── orchestrator.py            # Pipeline coordination
+│   └── utils/                     # Shared utilities
+├── tests/                         # 🧪 Test suite
+│   ├── unit/                      # Unit tests
+│   ├── component/                 # Component tests
+│   ├── integration/               # Integration tests
+│   └── e2e/                       # End-to-end tests
+└── scripts/                       # 🔧 Utility scripts
+```
+
 ## Documentation
 
-- **[WORKFLOW_EXECUTION_GUIDE.md](WORKFLOW_EXECUTION_GUIDE.md)**: Detailed workflow documentation
-- **[ARCHITECTURE_ANALYSIS.md](ARCHITECTURE_ANALYSIS.md)**: System architecture
-- **[TESTING_STATUS_SUMMARY.md](TESTING_STATUS_SUMMARY.md)**: Test coverage and status
+### 📖 Quick Links
+
+**Getting Started:**
+- **[docs/guides/WORKFLOW_EXECUTION_GUIDE.md](docs/guides/WORKFLOW_EXECUTION_GUIDE.md)** - How to run the pipeline
+- **[docs/CONSOLIDATED_ROADMAP.md](docs/CONSOLIDATED_ROADMAP.md)** ⭐ - Complete project overview
+
+**Architecture & Design:**
+- **[docs/architecture/ARCHITECTURE_REFACTOR.md](docs/architecture/ARCHITECTURE_REFACTOR.md)** - Current repository structure
+- **[docs/architecture/ARCHITECTURE_ANALYSIS.md](docs/architecture/ARCHITECTURE_ANALYSIS.md)** - System architecture
+
+**Testing & Status:**
+- **[docs/status-reports/TESTING_STATUS_SUMMARY.md](docs/status-reports/TESTING_STATUS_SUMMARY.md)** - Test coverage
+- **[docs/TEST_MODIFICATIONS.md](docs/TEST_MODIFICATIONS.md)** - Enhanced test specifications
+
+**Task Planning:**
+- **[task-cards/README.md](task-cards/README.md)** - All implementation tasks (23 cards)
+- **[task-cards/evidence-enhancement/](task-cards/evidence-enhancement/)** - Evidence quality features
+
+See **[docs/README.md](docs/README.md)** for complete documentation index.
 
 ## Pipeline Orchestrator Features
 
