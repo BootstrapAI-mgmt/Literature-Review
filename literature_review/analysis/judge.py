@@ -60,7 +60,8 @@ API_CONFIG = {
     "AGREEMENT_THRESHOLD": 0.67,  # 67% must agree (2 out of 3)
     "TIE_BREAKER_ENABLED": True,
     "BORDERLINE_SCORE_MIN": 2.5,  # Apply consensus to scores 2.5-3.5
-    "BORDERLINE_SCORE_MAX": 3.5
+    "BORDERLINE_SCORE_MAX": 3.5,
+    "ENABLE_ADAPTIVE_CONSENSUS": True  # Enable multi-judge consensus for borderline claims
 }
 
 # (Setup code, Logging, and UTF8Formatter are identical)
@@ -1088,12 +1089,17 @@ def main():
                         }
                     }
                 else:
-                    # Use enhanced prompt with quality scoring
-                    prompt = build_judge_prompt_enhanced(claim, definition_text)
-                    logger.info(f"  Submitting claim to Judge AI...")
-                    safe_print(f"  Submitting claim to Judge AI...")
-                    response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
-                    ruling = validate_judge_response_enhanced(response)
+                    # Use adaptive consensus if enabled, otherwise use single judge
+                    if API_CONFIG.get("ENABLE_ADAPTIVE_CONSENSUS", False):
+                        # Adaptive consensus: single judge first, then consensus for borderline
+                        ruling = process_claim_with_adaptive_consensus(claim, definition_text, api_manager)
+                    else:
+                        # Original single-judge approach
+                        prompt = build_judge_prompt_enhanced(claim, definition_text)
+                        logger.info(f"  Submitting claim to Judge AI...")
+                        safe_print(f"  Submitting claim to Judge AI...")
+                        response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+                        ruling = validate_judge_response_enhanced(response)
 
                 if ruling:
                     canonical_pillar = find_robust_pillar_key(pillar_key)
@@ -1108,6 +1114,9 @@ def main():
                     claim['judge_timestamp'] = datetime.now().isoformat()
                     # Add evidence quality scores to claim
                     claim['evidence_quality'] = ruling.get('evidence_quality', {})
+                    # Add consensus metadata if present
+                    if 'consensus_metadata' in ruling:
+                        claim['consensus_metadata'] = ruling['consensus_metadata']
                     all_judged_claims.append(claim)
 
                     if ruling['verdict'] == 'approved':
@@ -1209,12 +1218,17 @@ def main():
                             }
                         }
                     else:
-                        # Use enhanced prompt with quality scoring
-                        prompt = build_judge_prompt_enhanced(new_claim, definition_text)
-                        logger.info(f"  Submitting DRA claim to Judge AI...")
-                        safe_print(f"  Submitting DRA claim to Judge AI...")
-                        response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
-                        ruling = validate_judge_response_enhanced(response)
+                        # Use adaptive consensus if enabled, otherwise use single judge
+                        if API_CONFIG.get("ENABLE_ADAPTIVE_CONSENSUS", False):
+                            # Adaptive consensus: single judge first, then consensus for borderline
+                            ruling = process_claim_with_adaptive_consensus(new_claim, definition_text, api_manager)
+                        else:
+                            # Original single-judge approach
+                            prompt = build_judge_prompt_enhanced(new_claim, definition_text)
+                            logger.info(f"  Submitting DRA claim to Judge AI...")
+                            safe_print(f"  Submitting DRA claim to Judge AI...")
+                            response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+                            ruling = validate_judge_response_enhanced(response)
 
                     if ruling:
                         new_claim['status'] = ruling['verdict']
@@ -1222,6 +1236,9 @@ def main():
                         new_claim['judge_timestamp'] = datetime.now().isoformat()
                         # Add evidence quality scores to claim
                         new_claim['evidence_quality'] = ruling.get('evidence_quality', {})
+                        # Add consensus metadata if present
+                        if 'consensus_metadata' in ruling:
+                            new_claim['consensus_metadata'] = ruling['consensus_metadata']
 
                         if ruling['verdict'] == 'approved':
                             logger.info(f"  VERDICT (Appeal): APPROVED (Quality: {ruling.get('evidence_quality', {}).get('composite_score', 'N/A')})")
