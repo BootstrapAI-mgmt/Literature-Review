@@ -685,6 +685,54 @@ def migrate_existing_claims(history: Dict) -> Dict:
 # --- END ENHANCED EVIDENCE SCORING FUNCTIONS ---
 
 
+# --- CONSENSUS REVIEW FUNCTIONS (Task Card #8) ---
+
+def should_trigger_consensus(claim: Dict) -> bool:
+    """
+    Determine if claim requires consensus review.
+    
+    Args:
+        claim: Claim dictionary with evidence_quality field
+    
+    Returns:
+        True if consensus needed (borderline score 2.5-3.5)
+    """
+    quality = claim.get('evidence_quality', {})
+    composite = quality.get('composite_score', 0)
+    
+    # Trigger consensus for borderline claims
+    return 2.5 <= composite <= 3.5
+
+
+def trigger_consensus_review(claim: Dict) -> Dict:
+    """
+    Add consensus review metadata to claim.
+    
+    Args:
+        claim: Claim requiring consensus
+    
+    Returns:
+        Claim with consensus_review metadata
+    """
+    quality = claim.get('evidence_quality', {})
+    composite = quality.get('composite_score', 0)
+    
+    claim['consensus_review'] = {
+        'triggered': True,
+        'reason': 'borderline_composite_score',
+        'composite_score': composite,
+        'consensus_reviewers': ['reviewer_A', 'reviewer_B'],  # Placeholder for actual reviewers
+        'timestamp': datetime.now().isoformat(),
+        'status': 'pending'
+    }
+    
+    logger.info(f"Consensus review triggered for claim {claim.get('claim_id', 'N/A')} (composite: {composite})")
+    
+    return claim
+
+# --- END CONSENSUS REVIEW FUNCTIONS ---
+
+
 # --- MAIN EXECUTION ---
 def main():
     start_time = time.time()

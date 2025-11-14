@@ -411,6 +411,34 @@ class TestDataGenerator:
 
         return history
 
+    def create_version_history_with_claims(
+        self, filename: str, claims: List[Dict]
+    ) -> Dict:
+        """
+        Create version history with specific claims.
+
+        Args:
+            filename: PDF filename
+            claims: List of claims to include
+
+        Returns:
+            Version history dict with specified claims
+        """
+        return {
+            filename: [
+                {
+                    "timestamp": datetime.now().isoformat(),
+                    "review": {
+                        "FILENAME": filename,
+                        "TITLE": random.choice(self.sample_titles),
+                        "CORE_DOMAIN": random.choice(self.sample_domains),
+                        "PUBLICATION_YEAR": random.randint(2018, 2024),
+                        "Requirement(s)": claims,
+                    },
+                }
+            ]
+        }
+
     def cleanup_fixtures(self):
         """Remove all generated fixture files."""
         import shutil
