@@ -1,5 +1,9 @@
 # Literature Review Automation System
 
+[![Integration Tests](https://github.com/BootstrapAI-mgmt/Literature-Review/actions/workflows/integration-tests.yml/badge.svg)](https://github.com/BootstrapAI-mgmt/Literature-Review/actions/workflows/integration-tests.yml)
+[![E2E Tests](https://github.com/BootstrapAI-mgmt/Literature-Review/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/BootstrapAI-mgmt/Literature-Review/actions/workflows/e2e-tests.yml)
+[![codecov](https://codecov.io/gh/BootstrapAI-mgmt/Literature-Review/branch/main/graph/badge.svg)](https://codecov.io/gh/BootstrapAI-mgmt/Literature-Review)
+
 Automated pipeline for conducting comprehensive literature reviews in neuromorphic computing research.
 
 ## Quick Start
