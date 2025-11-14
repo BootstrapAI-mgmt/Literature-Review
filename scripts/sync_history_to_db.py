@@ -63,6 +63,17 @@ class PaperAnalyzer:
 
     # --- THIS IS THE NEW MASTER COLUMN ORDER ---
     # This list is the new "source of truth" for column order.
+    # 
+    # Note: Evidence quality scores and provenance metadata are embedded within
+    # the 'Requirement(s)' column as JSON. Each claim in the Requirements array
+    # may contain the following additional fields (if available):
+    #   Quality Scores:
+    #     - EVIDENCE_COMPOSITE_SCORE, EVIDENCE_STRENGTH_SCORE, EVIDENCE_RIGOR_SCORE
+    #     - EVIDENCE_RELEVANCE_SCORE, EVIDENCE_DIRECTNESS, EVIDENCE_IS_RECENT
+    #     - EVIDENCE_REPRODUCIBILITY_SCORE, STUDY_TYPE, CONFIDENCE_LEVEL
+    #   Provenance:
+    #     - PROVENANCE_PAGE_NUMBERS (JSON array), PROVENANCE_SECTION, PROVENANCE_QUOTE_PAGE
+    #
     DATABASE_COLUMN_ORDER = [
         "ANALYSIS_GAPS", "APA_REFERENCE", "APPLICABILITY_NOTES", "BIOLOGICAL_FIDELITY",
         "BRAIN_REGIONS", "COMPUTATIONAL_COMPLEXITY", "CORE_CONCEPTS", "CORE_DOMAIN",
