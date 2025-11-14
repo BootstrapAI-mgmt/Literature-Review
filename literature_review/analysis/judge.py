@@ -646,6 +646,44 @@ def meets_approval_criteria(quality: Dict) -> bool:
     
     return composite >= 3.0 and strength >= 3 and relevance >= 3
 
+
+def migrate_existing_claims(history: Dict) -> Dict:
+    """
+    Add default scores to claims without evidence_quality for backward compatibility.
+    
+    This ensures existing approved claims have quality scores for analysis.
+    """
+    migrated_count = 0
+    
+    for filename, versions in history.items():
+        for version in versions:
+            claims = version.get('review', {}).get('Requirement(s)', [])
+            for claim in claims:
+                if 'evidence_quality' not in claim and claim.get('status') == 'approved':
+                    # Assign default moderate scores for legacy approved claims
+                    claim['evidence_quality'] = {
+                        "strength_score": 3,
+                        "strength_rationale": "Legacy claim (default score)",
+                        "rigor_score": 3,
+                        "study_type": "unknown",
+                        "relevance_score": 3,
+                        "relevance_notes": "Legacy claim",
+                        "directness": 2,
+                        "is_recent": False,
+                        "reproducibility_score": 3,
+                        "composite_score": 3.0,
+                        "confidence_level": "medium"
+                    }
+                    migrated_count += 1
+    
+    if migrated_count > 0:
+        logger.info(f"Migrated {migrated_count} legacy claims with default quality scores.")
+    
+    return history
+
+# --- END ENHANCED EVIDENCE SCORING FUNCTIONS ---
+
+
 # --- MAIN EXECUTION ---
 def main():
     start_time = time.time()
@@ -678,6 +716,10 @@ def main():
         logger.critical("Missing pillar definitions. Exiting.")
         safe_print("❌ Missing pillar definitions. Exiting.")
         return
+    
+    # Migrate legacy claims to include default quality scores
+    if version_history:
+        version_history = migrate_existing_claims(version_history)
     
     if not version_history:
         logger.info("No version history found. Nothing to judge.")
@@ -728,13 +770,31 @@ def main():
                 if not definition_text:
                     logger.error(f"  Could not find definition for claim. Rejecting.")
                     safe_print(f"  ❌ Could not find definition for '{sub_req_key}'. Rejecting.")
-                    ruling = {"verdict": "rejected", "judge_notes": f"Rejected. Could not find sub-requirement definition for '{sub_req_key}' in pillar file."}
+                    # Create default quality scores for rejected claim
+                    ruling = {
+                        "verdict": "rejected",
+                        "judge_notes": f"Rejected. Could not find sub-requirement definition for '{sub_req_key}' in pillar file.",
+                        "evidence_quality": {
+                            "strength_score": 1,
+                            "strength_rationale": "No definition found",
+                            "rigor_score": 1,
+                            "study_type": "unknown",
+                            "relevance_score": 1,
+                            "relevance_notes": "No definition to match against",
+                            "directness": 1,
+                            "is_recent": False,
+                            "reproducibility_score": 1,
+                            "composite_score": 1.0,
+                            "confidence_level": "low"
+                        }
+                    }
                 else:
-                    prompt = build_judge_prompt(claim, definition_text)
+                    # Use enhanced prompt with quality scoring
+                    prompt = build_judge_prompt_enhanced(claim, definition_text)
                     logger.info(f"  Submitting claim to Judge AI...")
                     safe_print(f"  Submitting claim to Judge AI...")
                     response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
-                    ruling = validate_judge_response(response)
+                    ruling = validate_judge_response_enhanced(response)
 
                 if ruling:
                     canonical_pillar = find_robust_pillar_key(pillar_key)
@@ -747,11 +807,13 @@ def main():
                     claim['status'] = ruling['verdict']
                     claim['judge_notes'] = ruling['judge_notes']
                     claim['judge_timestamp'] = datetime.now().isoformat()
+                    # Add evidence quality scores to claim
+                    claim['evidence_quality'] = ruling.get('evidence_quality', {})
                     all_judged_claims.append(claim)
 
                     if ruling['verdict'] == 'approved':
-                        logger.info(f"  VERDICT: APPROVED")
-                        safe_print(f"  ✅ VERDICT: APPROVED")
+                        logger.info(f"  VERDICT: APPROVED (Quality: {ruling.get('evidence_quality', {}).get('composite_score', 'N/A')})")
+                        safe_print(f"  ✅ VERDICT: APPROVED (Quality: {ruling.get('evidence_quality', {}).get('composite_score', 'N/A')})")
                         init_approved_count += 1
                     else:
                         logger.info(f"  VERDICT: REJECTED (Pending DRA)")
@@ -829,22 +891,42 @@ def main():
                     if not definition_text:
                         logger.error(f"  Could not find definition for DRA claim. Rejecting.")
                         safe_print(f"  ❌ Could not find definition for '{sub_req_key}'. Rejecting.")
-                        ruling = {"verdict": "rejected", "judge_notes": f"Rejected. (DRA Appeal) Could not find sub-requirement definition for '{sub_req_key}'."}
+                        # Create default quality scores for rejected claim
+                        ruling = {
+                            "verdict": "rejected",
+                            "judge_notes": f"Rejected. (DRA Appeal) Could not find sub-requirement definition for '{sub_req_key}'.",
+                            "evidence_quality": {
+                                "strength_score": 1,
+                                "strength_rationale": "No definition found",
+                                "rigor_score": 1,
+                                "study_type": "unknown",
+                                "relevance_score": 1,
+                                "relevance_notes": "No definition to match against",
+                                "directness": 1,
+                                "is_recent": False,
+                                "reproducibility_score": 1,
+                                "composite_score": 1.0,
+                                "confidence_level": "low"
+                            }
+                        }
                     else:
-                        prompt = build_judge_prompt(new_claim, definition_text)
+                        # Use enhanced prompt with quality scoring
+                        prompt = build_judge_prompt_enhanced(new_claim, definition_text)
                         logger.info(f"  Submitting DRA claim to Judge AI...")
                         safe_print(f"  Submitting DRA claim to Judge AI...")
                         response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
-                        ruling = validate_judge_response(response)
+                        ruling = validate_judge_response_enhanced(response)
 
                     if ruling:
                         new_claim['status'] = ruling['verdict']
                         new_claim['judge_notes'] = ruling['judge_notes']
                         new_claim['judge_timestamp'] = datetime.now().isoformat()
+                        # Add evidence quality scores to claim
+                        new_claim['evidence_quality'] = ruling.get('evidence_quality', {})
 
                         if ruling['verdict'] == 'approved':
-                            logger.info(f"  VERDICT (Appeal): APPROVED")
-                            safe_print(f"  ✅ VERDICT (Appeal): APPROVED")
+                            logger.info(f"  VERDICT (Appeal): APPROVED (Quality: {ruling.get('evidence_quality', {}).get('composite_score', 'N/A')})")
+                            safe_print(f"  ✅ VERDICT (Appeal): APPROVED (Quality: {ruling.get('evidence_quality', {}).get('composite_score', 'N/A')})")
                             dra_approved_count += 1
                         else:
                             logger.info(f"  VERDICT (Appeal): REJECTED")
