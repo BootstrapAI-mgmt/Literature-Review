@@ -439,6 +439,104 @@ class TestDataGenerator:
             ]
         }
 
+    def create_dummy_pdf(
+        self,
+        filepath,
+        title: str = "Test Paper",
+        publication_year: Optional[int] = None,
+        content: str = "Sample content for testing.",
+    ):
+        """
+        Create a minimal mock PDF file for testing.
+        
+        Args:
+            filepath: Path where to create the PDF (can be str or Path)
+            title: Paper title to embed in content
+            publication_year: Publication year (optional)
+            content: Main content text
+        """
+        from pathlib import Path
+        
+        filepath = Path(filepath)
+        
+        # Create a minimal PDF structure
+        pdf_content = f"""%PDF-1.4
+%âãÏÓ
+
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/Resources <<
+/Font <<
+/F1 4 0 R
+>>
+>>
+/MediaBox [0 0 612 792]
+/Contents 5 0 R
+>>
+endobj
+
+4 0 obj
+<<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+endobj
+
+5 0 obj
+<<
+/Length 200
+>>
+stream
+BT
+/F1 12 Tf
+50 700 Td
+({title}) Tj
+0 -20 Td
+(Year: {publication_year or 'N/A'}) Tj
+0 -40 Td
+({content}) Tj
+ET
+endstream
+endobj
+
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000074 00000 n 
+0000000131 00000 n 
+0000000290 00000 n 
+0000000371 00000 n 
+trailer
+<<
+/Size 6
+/Root 1 0 R
+>>
+startxref
+627
+%%EOF
+"""
+        
+        filepath.write_text(pdf_content)
+
     def cleanup_fixtures(self):
         """Remove all generated fixture files."""
         import shutil
