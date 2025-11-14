@@ -1,0 +1,428 @@
+"""
+FastAPI Web Dashboard for Literature Review Pipeline
+
+Provides RESTful API and WebSocket endpoints for:
+- Uploading PDFs
+- Monitoring job status
+- Viewing logs
+- Triggering retries
+"""
+
+import asyncio
+import json
+import os
+import shutil
+import time
+import uuid
+from datetime import datetime
+from pathlib import Path
+from typing import Dict, List, Optional
+
+from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect, Header
+from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+
+# Initialize FastAPI app
+app = FastAPI(
+    title="Literature Review Dashboard",
+    description="Web dashboard for monitoring and managing literature review pipeline jobs",
+    version="1.0.0"
+)
+
+# Base paths
+BASE_DIR = Path(__file__).parent.parent
+WORKSPACE_DIR = BASE_DIR / "workspace"
+UPLOADS_DIR = WORKSPACE_DIR / "uploads"
+JOBS_DIR = WORKSPACE_DIR / "jobs"
+STATUS_DIR = WORKSPACE_DIR / "status"
+LOGS_DIR = WORKSPACE_DIR / "logs"
+
+# Create necessary directories
+for directory in [WORKSPACE_DIR, UPLOADS_DIR, JOBS_DIR, STATUS_DIR, LOGS_DIR]:
+    directory.mkdir(exist_ok=True, parents=True)
+
+# Mount static files
+STATIC_DIR = Path(__file__).parent / "static"
+STATIC_DIR.mkdir(exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# API Key for authentication (from environment)
+API_KEY = os.getenv("DASHBOARD_API_KEY", "dev-key-change-in-production")
+
+# WebSocket connections manager
+class ConnectionManager:
+    """Manages WebSocket connections for real-time updates"""
+    
+    def __init__(self):
+        self.active_connections: List[WebSocket] = []
+    
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+    
+    def disconnect(self, websocket: WebSocket):
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+    
+    async def broadcast(self, message: dict):
+        """Send message to all connected clients"""
+        disconnected = []
+        for connection in self.active_connections:
+            try:
+                await connection.send_json(message)
+            except Exception:
+                disconnected.append(connection)
+        
+        # Clean up disconnected clients
+        for conn in disconnected:
+            self.disconnect(conn)
+
+manager = ConnectionManager()
+
+# Pydantic models
+class JobStatus(BaseModel):
+    """Job status information"""
+    id: str
+    status: str  # queued, running, completed, failed
+    filename: str
+    created_at: str
+    started_at: Optional[str] = None
+    completed_at: Optional[str] = None
+    error: Optional[str] = None
+    progress: Optional[Dict] = None
+
+class RetryRequest(BaseModel):
+    """Request to retry a job"""
+    force: bool = False
+
+# Helper functions
+def verify_api_key(x_api_key: Optional[str] = Header(None)):
+    """Verify API key from request header"""
+    if x_api_key != API_KEY:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+    return x_api_key
+
+def get_job_file(job_id: str) -> Path:
+    """Get path to job file"""
+    return JOBS_DIR / f"{job_id}.json"
+
+def get_status_file(job_id: str) -> Path:
+    """Get path to status file"""
+    return STATUS_DIR / f"{job_id}.json"
+
+def get_log_file(job_id: str) -> Path:
+    """Get path to log file"""
+    return LOGS_DIR / f"{job_id}.log"
+
+def load_job(job_id: str) -> Optional[dict]:
+    """Load job data from file"""
+    job_file = get_job_file(job_id)
+    if not job_file.exists():
+        return None
+    
+    try:
+        with open(job_file, 'r') as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+def save_job(job_id: str, job_data: dict):
+    """Save job data to file"""
+    job_file = get_job_file(job_id)
+    with open(job_file, 'w') as f:
+        json.dump(job_data, f, indent=2)
+
+# API Endpoints
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    """Serve the main dashboard page"""
+    template_file = Path(__file__).parent / "templates" / "index.html"
+    if template_file.exists():
+        return template_file.read_text()
+    return "<h1>Literature Review Dashboard</h1><p>Template not found. Please check installation.</p>"
+
+@app.post("/api/upload")
+async def upload_file(
+    file: UploadFile = File(...),
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Upload a PDF file and create a new job
+    
+    Returns:
+        Job ID and status
+    """
+    verify_api_key(api_key)
+    
+    # Validate file type
+    if not file.filename.endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+    
+    # Generate job ID
+    job_id = str(uuid.uuid4())
+    
+    # Save uploaded file
+    target_path = UPLOADS_DIR / f"{job_id}.pdf"
+    try:
+        with open(target_path, 'wb') as out:
+            shutil.copyfileobj(file.file, out)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
+    
+    # Create job record
+    job_data = {
+        "id": job_id,
+        "status": "queued",
+        "filename": file.filename,
+        "file_path": str(target_path),
+        "created_at": datetime.utcnow().isoformat(),
+        "started_at": None,
+        "completed_at": None,
+        "error": None,
+        "progress": {}
+    }
+    
+    save_job(job_id, job_data)
+    
+    # Broadcast update to WebSocket clients
+    await manager.broadcast({
+        "type": "job_created",
+        "job": job_data
+    })
+    
+    return {"job_id": job_id, "status": "queued", "filename": file.filename}
+
+@app.get("/api/jobs")
+async def list_jobs(
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    List all jobs
+    
+    Returns:
+        List of all jobs with their current status
+    """
+    verify_api_key(api_key)
+    
+    jobs = []
+    for job_file in JOBS_DIR.glob("*.json"):
+        try:
+            with open(job_file, 'r') as f:
+                job_data = json.load(f)
+                jobs.append(job_data)
+        except Exception:
+            continue
+    
+    # Sort by created_at (newest first)
+    jobs.sort(key=lambda x: x.get("created_at", ""), reverse=True)
+    
+    return {"jobs": jobs, "count": len(jobs)}
+
+@app.get("/api/jobs/{job_id}")
+async def get_job(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get details for a specific job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        Job details including status and progress
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Try to load latest status update
+    status_file = get_status_file(job_id)
+    if status_file.exists():
+        try:
+            with open(status_file, 'r') as f:
+                status_data = json.load(f)
+                job_data.update(status_data)
+        except Exception:
+            pass
+    
+    return job_data
+
+@app.post("/api/jobs/{job_id}/retry")
+async def retry_job(
+    job_id: str,
+    retry_req: RetryRequest,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Trigger a retry for a failed job
+    
+    Args:
+        job_id: Job identifier
+        retry_req: Retry request parameters
+    
+    Returns:
+        Updated job status
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Update job status to queued for retry
+    job_data["status"] = "queued"
+    job_data["error"] = None
+    job_data["retry_requested_at"] = datetime.utcnow().isoformat()
+    
+    save_job(job_id, job_data)
+    
+    # Clear status file so it doesn't override the retry
+    status_file = get_status_file(job_id)
+    if status_file.exists():
+        status_file.unlink()
+    
+    # Broadcast update
+    await manager.broadcast({
+        "type": "job_retry",
+        "job": job_data
+    })
+    
+    return {"job_id": job_id, "status": "queued", "message": "Retry requested"}
+
+@app.get("/api/logs/{job_id}")
+async def get_job_logs(
+    job_id: str,
+    tail: int = 100,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get logs for a specific job
+    
+    Args:
+        job_id: Job identifier
+        tail: Number of lines to return from end of log
+    
+    Returns:
+        Log content
+    """
+    verify_api_key(api_key)
+    
+    log_file = get_log_file(job_id)
+    if not log_file.exists():
+        return {"job_id": job_id, "logs": "", "message": "No logs available"}
+    
+    try:
+        with open(log_file, 'r') as f:
+            lines = f.readlines()
+            if tail > 0:
+                lines = lines[-tail:]
+            log_content = ''.join(lines)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to read logs: {str(e)}")
+    
+    return {"job_id": job_id, "logs": log_content, "line_count": len(lines)}
+
+@app.get("/api/download/{job_id}")
+async def download_job_file(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Download the uploaded PDF file for a job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        PDF file
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    file_path = Path(job_data.get("file_path", ""))
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    return FileResponse(
+        path=file_path,
+        media_type="application/pdf",
+        filename=job_data.get("filename", f"{job_id}.pdf")
+    )
+
+@app.websocket("/ws/jobs")
+async def websocket_endpoint(websocket: WebSocket):
+    """
+    WebSocket endpoint for real-time job updates
+    
+    Clients connect here to receive live updates about job status changes
+    """
+    await manager.connect(websocket)
+    
+    try:
+        # Send initial state
+        jobs = []
+        for job_file in JOBS_DIR.glob("*.json"):
+            try:
+                with open(job_file, 'r') as f:
+                    jobs.append(json.load(f))
+            except Exception:
+                continue
+        
+        await websocket.send_json({
+            "type": "initial_state",
+            "jobs": jobs
+        })
+        
+        # Keep connection alive and watch for status updates
+        last_check = time.time()
+        status_mtimes = {}
+        
+        while True:
+            await asyncio.sleep(1)
+            
+            # Check for status file updates every second
+            current_time = time.time()
+            if current_time - last_check >= 1:
+                last_check = current_time
+                
+                # Check all status files for updates
+                for status_file in STATUS_DIR.glob("*.json"):
+                    try:
+                        mtime = status_file.stat().st_mtime
+                        if status_file not in status_mtimes or status_mtimes[status_file] < mtime:
+                            status_mtimes[status_file] = mtime
+                            
+                            # Read and broadcast update
+                            with open(status_file, 'r') as f:
+                                status_data = json.load(f)
+                                await websocket.send_json({
+                                    "type": "job_update",
+                                    "job": status_data
+                                })
+                    except Exception:
+                        continue
+    
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception:
+        manager.disconnect(websocket)
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {
+        "status": "healthy",
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

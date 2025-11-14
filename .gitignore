@@ -76,3 +76,6 @@ pipeline_checkpoint.json
 api_cache/
 mock_api_key/
 .locks/
+
+# Web Dashboard workspace
+workspace/
