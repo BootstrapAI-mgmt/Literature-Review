@@ -1,0 +1,41 @@
+name: E2E Tests (Nightly)
+
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Run at 2 AM daily
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      
+      - name: Run E2E tests
+        run: pytest -m e2e -v --timeout=3600 --ignore=tests/webui
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+      
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e-test-results
+          path: |
+            gap_analysis_output/
+            generated_plots/
+            *.log

@@ -57,6 +57,7 @@ deep_reviewer_cache/
 .coverage
 .coverage.*
 htmlcov/
+coverage.xml
 
 # OS
 .DS_Store
