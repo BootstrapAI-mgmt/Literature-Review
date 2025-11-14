@@ -448,11 +448,16 @@ class TextExtractor:
 
 
 # --- NEW: Provenance Tracking Functions ---
+# These functions enable detailed tracking of claim sources for audit trails,
+# citation generation, and human verification of extracted claims.
 
 
 def extract_text_with_provenance(file_path: str) -> List[Dict]:
     """
     Extract text with page-level tracking and section detection.
+    
+    Args:
+        file_path: Path to PDF file to extract text from
     
     Returns:
         List of dicts with page metadata:
@@ -501,6 +506,18 @@ def detect_section_heading(text: str) -> Optional[str]:
     
     Looks for common patterns in first 200 characters.
     Prioritizes headings at the start of lines or with numbering.
+    
+    Args:
+        text: Text to scan for section headings
+    
+    Returns:
+        Section name (title case) if detected, None otherwise
+        
+    Examples:
+        >>> detect_section_heading("1. Introduction\\nThis paper...")
+        'Introduction'
+        >>> detect_section_heading("METHODS\\nWe used...")
+        'Methods'
     """
     headings = [
         "abstract", "introduction", "background", "related work",
@@ -540,11 +557,26 @@ def add_provenance_to_claim(
     Add provenance metadata to claim.
     
     Finds the evidence text in full document and adds:
-    - Page numbers
+    - Page numbers where evidence appears
     - Section name
-    - Character offsets
-    - Supporting quote
-    - Context before/after
+    - Character offsets (for precise location)
+    - Supporting quote (truncated to 500 chars)
+    - Context before/after (100 chars each)
+    
+    Args:
+        claim: Claim dict to enhance with provenance
+        full_text: Full text of the document
+        pages_metadata: List of page metadata from extract_text_with_provenance
+        evidence_text: The evidence text to locate in the document
+    
+    Returns:
+        Enhanced claim with 'provenance' field added, or unchanged claim if
+        evidence not found verbatim
+        
+    Note:
+        If evidence_text is not found verbatim in full_text, the claim is
+        returned unchanged (no provenance added). This handles cases where
+        evidence may have been paraphrased by the AI.
     """
     # Find evidence location
     evidence_start = full_text.find(evidence_text)
