@@ -18,8 +18,9 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-from google import genai
-from google.genai import types
+# Use google.generativeai (legacy API) - note: actual API calls via APIManager
+import google.generativeai as genai
+from google.generativeai import types
 from dotenv import load_dotenv
 import logging
 import pickle

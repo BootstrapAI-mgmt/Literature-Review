@@ -23,8 +23,9 @@ import hashlib
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-import google.generativeai as genai
-from google.generativeai import types
+# Use google.genai (new SDK) for Client() interface
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 import numpy as np
 import logging

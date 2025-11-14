@@ -21,8 +21,9 @@ import numpy as np
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-import google.generativeai as genai
-from google.generativeai import types
+# Use google.genai (new SDK) for Client() interface with thinking mode
+from google import genai
+from google.genai import types
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import logging

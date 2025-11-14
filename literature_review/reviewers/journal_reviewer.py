@@ -17,8 +17,9 @@ import hashlib
 import numpy as np
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-import google.generativeai as genai
-from google.generativeai import types
+# Use google.genai (new SDK) for Client() interface
+from google import genai
+from google.genai import types
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 import logging
