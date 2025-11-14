@@ -338,6 +338,79 @@ class TestDataGenerator:
         
         return {filename: [entry]}
     
+    def create_version_history_with_quality_scores(
+        self,
+        filename: str,
+        claims_with_scores: List[Dict]
+    ) -> Dict:
+        """
+        Create version history with pre-populated evidence quality scores.
+        
+        Args:
+            filename: PDF filename
+            claims_with_scores: List of claims with quality scores
+            
+        Returns:
+            Version history dict with quality scores
+        """
+        history = {filename: []}
+        
+        for claim in claims_with_scores:
+            history[filename].append({
+                "timestamp": datetime.now().isoformat(),
+                "review": {
+                    "FILENAME": filename,
+                    "TITLE": claim.get("title", random.choice(self.sample_titles)),
+                    "CORE_DOMAIN": random.choice(self.sample_domains),
+                    "PUBLICATION_YEAR": random.randint(2018, 2024),
+                    "Requirement(s)": [
+                        {
+                            "claim_id": claim["claim_id"],
+                            "status": claim["status"],
+                            "evidence_quality": claim.get("evidence_quality", {}),
+                            "provenance": claim.get("provenance", {}),
+                            "extracted_claim_text": claim.get("extracted_claim_text", "Sample claim text"),
+                            "sub_requirement": claim.get("sub_requirement", "SR 2.1"),
+                            "pillar": claim.get("pillar", random.choice(self.sample_pillars)),
+                            "evidence": claim.get("evidence", "Sample evidence text")
+                        }
+                    ]
+                }
+            })
+        
+        return history
+    
+    def create_version_history_with_provenance(
+        self,
+        filename: str,
+        claims_with_provenance: List[Dict]
+    ) -> Dict:
+        """
+        Create version history with provenance metadata.
+        
+        Args:
+            filename: PDF filename
+            claims_with_provenance: List of claims with provenance data
+            
+        Returns:
+            Version history dict with provenance
+        """
+        history = {filename: []}
+        
+        for claim in claims_with_provenance:
+            history[filename].append({
+                "timestamp": datetime.now().isoformat(),
+                "review": {
+                    "FILENAME": filename,
+                    "TITLE": claim.get("title", random.choice(self.sample_titles)),
+                    "CORE_DOMAIN": random.choice(self.sample_domains),
+                    "PUBLICATION_YEAR": random.randint(2018, 2024),
+                    "Requirement(s)": [claim]
+                }
+            })
+        
+        return history
+    
     def cleanup_fixtures(self):
         """Remove all generated fixture files."""
         import shutil
