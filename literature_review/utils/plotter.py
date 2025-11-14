@@ -566,6 +566,118 @@ def create_heatmap_matrix(pillar_data: Dict, save_path: str):
     except Exception as e:
         logger.error(f"Failed to create heatmap matrix: {e}")
 
+
+# --- TEMPORAL COHERENCE VISUALIZATION FUNCTIONS (Task Card #19) ---
+
+def plot_evidence_evolution(temporal_analysis: Dict, output_file: str):
+    """
+    Create heatmap showing evidence emergence over time.
+    
+    Args:
+        temporal_analysis: Dictionary from analyze_evidence_evolution
+        output_file: Path to save the output image
+    
+    Rows: Sub-requirements
+    Columns: Years
+    Cell values: Number of papers
+    """
+    import matplotlib.pyplot as plt
+    import seaborn as sns
+    
+    if not temporal_analysis:
+        logger.warning("No temporal analysis data to plot")
+        return
+    
+    try:
+        # Build matrix: rows = sub-requirements, cols = years
+        sub_reqs = list(temporal_analysis.keys())
+        all_years = sorted(set(
+            year 
+            for data in temporal_analysis.values() 
+            for year in data["evidence_count_by_year"].keys()
+        ))
+        
+        if not all_years:
+            logger.warning("No years found in temporal analysis data")
+            return
+        
+        matrix = np.zeros((len(sub_reqs), len(all_years)))
+        
+        for i, sub_req in enumerate(sub_reqs):
+            for j, year in enumerate(all_years):
+                count = temporal_analysis[sub_req]["evidence_count_by_year"].get(year, 0)
+                matrix[i, j] = count
+        
+        # Plot heatmap
+        plt.figure(figsize=(16, 12))
+        sns.heatmap(
+            matrix,
+            xticklabels=all_years,
+            yticklabels=sub_reqs,
+            cmap="YlOrRd",
+            annot=True,
+            fmt=".0f",
+            cbar_kws={"label": "Number of Papers"}
+        )
+        plt.title("Evidence Evolution: Papers per Sub-Requirement by Year")
+        plt.xlabel("Publication Year")
+        plt.ylabel("Sub-Requirement")
+        plt.tight_layout()
+        plt.savefig(output_file, dpi=300)
+        plt.close()
+        logger.info(f"Evidence evolution heatmap saved to {output_file}")
+    except Exception as e:
+        logger.error(f"Failed to create evidence evolution plot: {e}")
+
+
+def plot_maturity_distribution(temporal_analysis: Dict, output_file: str):
+    """
+    Plot distribution of maturity levels across sub-requirements.
+    
+    Args:
+        temporal_analysis: Dictionary from analyze_evidence_evolution
+        output_file: Path to save the output image
+    """
+    import matplotlib.pyplot as plt
+    
+    if not temporal_analysis:
+        logger.warning("No temporal analysis data to plot")
+        return
+    
+    try:
+        maturity_counts = {}
+        for data in temporal_analysis.values():
+            level = data["maturity_level"]
+            maturity_counts[level] = maturity_counts.get(level, 0) + 1
+        
+        levels = ["emerging", "growing", "established", "mature"]
+        counts = [maturity_counts.get(level, 0) for level in levels]
+        colors = ['#ff9999', '#ffcc99', '#99cc99', '#66b2ff']
+        
+        plt.figure(figsize=(10, 6))
+        bars = plt.bar(levels, counts, color=colors)
+        plt.xlabel("Maturity Level")
+        plt.ylabel("Number of Sub-Requirements")
+        plt.title("Evidence Maturity Distribution")
+        
+        # Add value labels on bars
+        for bar in bars:
+            height = bar.get_height()
+            if height > 0:
+                plt.text(bar.get_x() + bar.get_width()/2., height,
+                        f'{int(height)}',
+                        ha='center', va='bottom')
+        
+        plt.tight_layout()
+        plt.savefig(output_file, dpi=300)
+        plt.close()
+        logger.info(f"Maturity distribution plot saved to {output_file}")
+    except Exception as e:
+        logger.error(f"Failed to create maturity distribution plot: {e}")
+
+# --- END TEMPORAL COHERENCE VISUALIZATION FUNCTIONS ---
+
+
 # Export all functions
 __all__ = [
     'create_waterfall_plot',
@@ -573,5 +685,7 @@ __all__ = [
     'create_network_plot',
     'create_trend_plot',
     'create_heatmap_matrix',
-    'get_color_by_score'
+    'get_color_by_score',
+    'plot_evidence_evolution',
+    'plot_maturity_distribution'
 ]
