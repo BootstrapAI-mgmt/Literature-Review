@@ -1,5 +1,5 @@
 {
-  "version": "1.2.0",
+  "version": "2.0.0",
   "version_history_path": "review_version_history.json",
   "stage_timeout": 7200,
   "log_level": "INFO",
@@ -26,6 +26,29 @@
         "backoff_base": 1.5,
         "backoff_max": 30
       }
+    }
+  },
+  "v2_features": {
+    "max_workers": 4,
+    "enable_parallel": false,
+    "checkpoint_file": "pipeline_checkpoint.json",
+    "retry": {
+      "attempts": 3,
+      "base": 0.5,
+      "factor": 2.0,
+      "max_delay": 60.0,
+      "enable_jitter": true
+    },
+    "quota": {
+      "gemini_api": {
+        "rate": 60,
+        "per_seconds": 60
+      }
+    },
+    "feature_flags": {
+      "enable_parallel_processing": false,
+      "enable_quota_management": true,
+      "enable_smart_retry": true
     }
   }
 }
