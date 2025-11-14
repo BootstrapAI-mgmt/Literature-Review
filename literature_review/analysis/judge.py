@@ -473,6 +473,179 @@ def process_claims_in_batches(claims: List[Dict], batch_size: int) -> List[List[
         batches.append(batch)
     return batches
 
+
+# --- ENHANCED EVIDENCE SCORING FUNCTIONS (Task Card #16) ---
+
+def build_judge_prompt_enhanced(claim: Dict, sub_requirement_definition: str) -> str:
+    """
+    Enhanced prompt with multi-dimensional scoring.
+    
+    Returns prompt requesting 6-dimensional evidence quality scores
+    following PRISMA systematic review standards.
+    """
+    sub_req_key = claim.get('sub_requirement') or claim.get('sub_requirement_key', 'N/A')
+    return f"""
+You are an impartial "Judge" AI evaluating scientific evidence quality.
+
+**Claim to Evaluate:**
+{json.dumps(claim, indent=2)}
+
+**Target Requirement:**
+{sub_requirement_definition}
+
+**Your Task:**
+Assess this claim using PRISMA systematic review standards across 6 dimensions:
+
+1. **Strength of Evidence** (1-5):
+   - 5: Strong (Multiple RCTs, meta-analysis, direct experimental proof)
+   - 4: Moderate (Single well-designed study, clear experimental validation)
+   - 3: Weak (Observational study, indirect evidence)
+   - 2: Very Weak (Case reports, anecdotal evidence)
+   - 1: Insufficient (Opinion, speculation, no empirical support)
+
+2. **Methodological Rigor** (1-5):
+   - 5: Gold standard (Randomized controlled trial, peer-reviewed, replicated)
+   - 4: Controlled study (Experimental with controls, proper statistics)
+   - 3: Observational (Real-world data, no controls)
+   - 2: Case study (Single instance, n=1)
+   - 1: Opinion (Expert opinion without empirical basis)
+
+3. **Relevance to Requirement** (1-5):
+   - 5: Perfect match (Directly addresses this exact requirement)
+   - 4: Strong (Clearly related, minor gap)
+   - 3: Moderate (Related but requires inference)
+   - 2: Tangential (Peripherally related)
+   - 1: Weak (Very indirect connection)
+
+4. **Evidence Directness** (1-3):
+   - 3: Direct (Paper explicitly states this finding)
+   - 2: Indirect (Finding can be inferred from results)
+   - 1: Inferred (Requires significant interpretation)
+
+5. **Recency Bonus**:
+   - true if published within last 3 years, false otherwise
+
+6. **Reproducibility** (1-5):
+   - 5: Code + data publicly available
+   - 4: Detailed methods, replicable
+   - 3: Basic methods described
+   - 2: Vague methods
+   - 1: No methodological detail
+
+**Decision Criteria:**
+- APPROVE if composite_score ≥ 3.0 AND strength_score ≥ 3 AND relevance_score ≥ 3
+- REJECT otherwise
+
+**Return Format (JSON only):**
+{{
+  "verdict": "approved|rejected",
+  "evidence_quality": {{
+    "strength_score": <1-5>,
+    "strength_rationale": "<brief justification>",
+    "rigor_score": <1-5>,
+    "study_type": "experimental|observational|theoretical|review|opinion",
+    "relevance_score": <1-5>,
+    "relevance_notes": "<brief explanation>",
+    "directness": <1-3>,
+    "is_recent": <true|false>,
+    "reproducibility_score": <1-5>,
+    "composite_score": <calculated weighted average>,
+    "confidence_level": "high|medium|low"
+  }},
+  "judge_notes": "<1-2 sentence summary>"
+}}
+
+**Composite Score Formula:**
+composite_score = (strength × 0.30) + (rigor × 0.25) + (relevance × 0.25) + (directness/3 × 0.10) + (recency × 0.05) + (reproducibility × 0.05)
+"""
+
+
+def calculate_composite_score(quality: Dict) -> float:
+    """
+    Calculate composite evidence quality score.
+    
+    Formula: (strength × 0.30) + (rigor × 0.25) + (relevance × 0.25) 
+             + (directness/3 × 0.10) + (recency × 0.05) + (reproducibility × 0.05)
+    """
+    weights = {
+        "strength_score": 0.30,
+        "rigor_score": 0.25,
+        "relevance_score": 0.25,
+        "directness": 0.10,  # Normalized to 0-1 range (divide by 3)
+        "is_recent": 0.05,   # Boolean treated as 0 or 1
+        "reproducibility_score": 0.05
+    }
+    
+    score = 0.0
+    score += quality["strength_score"] * weights["strength_score"]
+    score += quality["rigor_score"] * weights["rigor_score"]
+    score += quality["relevance_score"] * weights["relevance_score"]
+    score += (quality["directness"] / 3.0) * weights["directness"]  # Normalize to 0-1
+    score += (1.0 if quality["is_recent"] else 0.0) * weights["is_recent"]
+    score += quality["reproducibility_score"] * weights["reproducibility_score"]
+    
+    return round(score, 2)
+
+
+def validate_judge_response_enhanced(response: Any) -> Optional[Dict]:
+    """Validate enhanced Judge response with quality scores."""
+    if not isinstance(response, dict):
+        return None
+    
+    # Check required fields
+    if "verdict" not in response or "evidence_quality" not in response:
+        return None
+    
+    verdict = response["verdict"]
+    if verdict not in ["approved", "rejected"]:
+        return None
+    
+    quality = response["evidence_quality"]
+    
+    # Validate score ranges
+    required_scores = {
+        "strength_score": (1, 5),
+        "rigor_score": (1, 5),
+        "relevance_score": (1, 5),
+        "directness": (1, 3),
+        "reproducibility_score": (1, 5),
+        "composite_score": (1, 5)
+    }
+    
+    for score_name, (min_val, max_val) in required_scores.items():
+        if score_name not in quality:
+            return None
+        score = quality[score_name]
+        if not isinstance(score, (int, float)) or score < min_val or score > max_val:
+            return None
+    
+    # Validate study type
+    if quality.get("study_type") not in ["experimental", "observational", "theoretical", "review", "opinion"]:
+        return None
+    
+    # Validate confidence level
+    if quality.get("confidence_level") not in ["high", "medium", "low"]:
+        return None
+    
+    # Validate is_recent is boolean
+    if not isinstance(quality.get("is_recent"), bool):
+        return None
+    
+    return response
+
+
+def meets_approval_criteria(quality: Dict) -> bool:
+    """
+    Check if evidence quality meets approval criteria.
+    
+    Criteria: composite_score ≥ 3.0 AND strength_score ≥ 3 AND relevance_score ≥ 3
+    """
+    composite = quality.get("composite_score", 0)
+    strength = quality.get("strength_score", 0)
+    relevance = quality.get("relevance_score", 0)
+    
+    return composite >= 3.0 and strength >= 3 and relevance >= 3
+
 # --- MAIN EXECUTION ---
 def main():
     start_time = time.time()

@@ -1025,7 +1025,106 @@ def update_score_history(score_history: Dict, current_results: Dict, definitions
             score_history["sub_req_scores"][sub_req_key].extend(padding)
 
     return score_history
-# --- END NEW FUNCTIONS ---
+
+
+# --- WEIGHTED GAP ANALYSIS FUNCTIONS (Task Card #16) ---
+
+def calculate_weighted_gap_score(db: pd.DataFrame, pillar_definitions: Dict) -> Dict:
+    """
+    Calculate gap scores weighted by evidence quality.
+    
+    Prioritizes filling gaps where evidence is weak or missing.
+    """
+    gap_scores = {}
+    
+    for pillar_name, pillar_data in pillar_definitions.items():
+        for req_key, req_data in pillar_data.get("requirements", {}).items():
+            for sub_req in req_data:
+                # Get all claims for this sub-requirement
+                claims = db[db["Requirement(s)"].str.contains(sub_req, na=False)]
+                
+                if claims.empty:
+                    # No evidence: highest priority
+                    gap_scores[sub_req] = {
+                        "priority": 1.0,
+                        "reason": "no_evidence",
+                        "avg_quality": 0.0,
+                        "claim_count": 0
+                    }
+                else:
+                    # Extract quality scores
+                    quality_scores = []
+                    for _, row in claims.iterrows():
+                        req_list_str = row.get("Requirement(s)", "[]")
+                        if isinstance(req_list_str, str):
+                            try:
+                                req_list = json.loads(req_list_str)
+                            except json.JSONDecodeError:
+                                continue
+                        else:
+                            req_list = req_list_str if isinstance(req_list_str, list) else []
+                        
+                        for claim in req_list:
+                            if sub_req in claim.get("sub_requirement", ""):
+                                quality = claim.get("evidence_quality", {})
+                                composite = quality.get("composite_score", 3.0)
+                                quality_scores.append(composite)
+                    
+                    avg_quality = np.mean(quality_scores) if quality_scores else 3.0
+                    
+                    # Priority inversely proportional to quality
+                    # Low quality (1.0) = High priority (1.0)
+                    # High quality (5.0) = Low priority (0.2)
+                    priority = 1.0 - ((avg_quality - 1.0) / 4.0)
+                    
+                    gap_scores[sub_req] = {
+                        "priority": priority,
+                        "reason": "low_quality_evidence" if avg_quality < 3.5 else "sufficient_evidence",
+                        "avg_quality": avg_quality,
+                        "claim_count": len(quality_scores)
+                    }
+    
+    return gap_scores
+
+
+def plot_evidence_quality_distribution(db: pd.DataFrame, output_file: str):
+    """Generate histogram of evidence quality scores."""
+    import matplotlib.pyplot as plt
+    
+    quality_scores = []
+    for _, row in db.iterrows():
+        req_list_str = row.get("Requirement(s)", "[]")
+        if isinstance(req_list_str, str):
+            try:
+                req_list = json.loads(req_list_str)
+            except json.JSONDecodeError:
+                continue
+        else:
+            req_list = req_list_str if isinstance(req_list_str, list) else []
+        
+        for claim in req_list:
+            quality = claim.get("evidence_quality", {})
+            score = quality.get("composite_score")
+            if score:
+                quality_scores.append(score)
+    
+    if not quality_scores:
+        logger.warning("No quality scores found to plot.")
+        return
+    
+    plt.figure(figsize=(10, 6))
+    plt.hist(quality_scores, bins=20, edgecolor='black', alpha=0.7)
+    plt.xlabel("Composite Evidence Quality Score")
+    plt.ylabel("Number of Claims")
+    plt.title("Distribution of Evidence Quality Scores")
+    plt.axvline(x=3.0, color='r', linestyle='--', label='Approval Threshold')
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(output_file, dpi=300)
+    plt.close()
+    logger.info(f"Evidence quality distribution plot saved to {output_file}")
+
+# --- END WEIGHTED GAP ANALYSIS FUNCTIONS ---
 
 
 # --- MAIN EXECUTION (MODIFIED) ---
