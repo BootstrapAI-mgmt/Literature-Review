@@ -23,9 +23,9 @@ import hashlib
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-# Use google.genai (new SDK) for Client() interface
-from google import genai
-from google.genai import types
+# Use google.generativeai (SDK v0.8.5+)
+import google.generativeai as genai
+from google.generativeai import types
 from dotenv import load_dotenv
 import numpy as np
 import logging
@@ -54,7 +54,14 @@ API_CONFIG = {
     "RETRY_DELAY": 5,
     "API_CALLS_PER_MINUTE": 60,
     "MATCH_CONFIDENCE_THRESHOLD": 0.8, # Match must be 80% similar
-    "CLAIM_BATCH_SIZE": 10  # Process claims in batches to handle large datasets
+    "CLAIM_BATCH_SIZE": 10,  # Process claims in batches to handle large datasets
+    # Consensus configuration (Task Card #18)
+    "CONSENSUS_JUDGES": 3,  # Number of independent judgments
+    "AGREEMENT_THRESHOLD": 0.67,  # 67% must agree (2 out of 3)
+    "TIE_BREAKER_ENABLED": True,
+    "BORDERLINE_SCORE_MIN": 2.5,  # Apply consensus to scores 2.5-3.5
+    "BORDERLINE_SCORE_MAX": 3.5,
+    "ENABLE_ADAPTIVE_CONSENSUS": True  # Enable multi-judge consensus for borderline claims
 }
 
 # (Setup code, Logging, and UTF8Formatter are identical)
@@ -222,6 +229,81 @@ class APIManager:
                 else:
                     logger.error("Max retries reached for API error.")
 
+        logger.error(f"API call failed after {API_CONFIG['RETRY_ATTEMPTS']} attempts.")
+        return None
+
+    def call_with_temperature(self, prompt: str, temperature: float, cache_key: Optional[str] = None, is_json: bool = True) -> Optional[Any]:
+        """
+        Make API call with custom temperature for consensus judgments.
+        
+        Args:
+            prompt: The prompt to send to the API
+            temperature: Custom temperature value (0.0-1.0)
+            cache_key: Optional custom cache key (for consensus judges)
+            is_json: Whether to expect JSON response
+            
+        Returns:
+            Parsed response or None on failure
+        """
+        # Use custom cache key if provided
+        prompt_hash = hashlib.md5(cache_key.encode('utf-8')).hexdigest() if cache_key else hashlib.md5(prompt.encode('utf-8')).hexdigest()
+        
+        if prompt_hash in self.cache:
+            logger.debug(f"Cache hit for hash: {prompt_hash}")
+            return self.cache[prompt_hash]
+        
+        logger.debug(f"Cache miss for hash: {prompt_hash}. Calling API with temperature={temperature}...")
+        self.rate_limit()
+        
+        response_text = ""
+        for attempt in range(API_CONFIG['RETRY_ATTEMPTS']):
+            try:
+                thinking_config = types.ThinkingConfig(thinking_budget=0)
+                
+                # Create custom config with specified temperature
+                custom_config = types.GenerateContentConfig(
+                    temperature=temperature,
+                    top_p=1.0,
+                    top_k=1,
+                    max_output_tokens=16384,
+                    response_mime_type="application/json" if is_json else None,
+                    thinking_config=thinking_config
+                )
+                
+                response = self.client.models.generate_content(
+                    model="gemini-2.5-flash",
+                    contents=prompt,
+                    config=custom_config
+                )
+                response_text = response.text
+                
+                if is_json:
+                    result = json.loads(response_text)
+                else:
+                    result = response_text
+                
+                self.cache[prompt_hash] = result
+                return result
+                
+            except json.JSONDecodeError as e:
+                logger.error(f"JSON decode error on attempt {attempt + 1}: {e}. Response text: '{response_text[:500]}...'")
+                if attempt < API_CONFIG['RETRY_ATTEMPTS'] - 1:
+                    time.sleep(API_CONFIG['RETRY_DELAY'])
+                else:
+                    logger.error("Max retries reached for JSON decode error.")
+            except Exception as e:
+                if "DeadlineExceeded" in str(e) or "Timeout" in str(e):
+                    logger.error(f"API call timed out on attempt {attempt + 1}")
+                else:
+                    logger.error(f"API error on attempt {attempt + 1}: {type(e).__name__} - {e}")
+                if "429" in str(e):
+                    logger.warning("Rate limit error detected by API, increasing sleep time.")
+                    time.sleep(API_CONFIG['RETRY_DELAY'] * (attempt + 2))
+                elif attempt < API_CONFIG['RETRY_ATTEMPTS'] - 1:
+                    time.sleep(API_CONFIG['RETRY_DELAY'])
+                else:
+                    logger.error("Max retries reached for API error.")
+        
         logger.error(f"API call failed after {API_CONFIG['RETRY_ATTEMPTS']} attempts.")
         return None
 # --- END APIManager MODIFICATION ---
@@ -685,11 +767,13 @@ def migrate_existing_claims(history: Dict) -> Dict:
 # --- END ENHANCED EVIDENCE SCORING FUNCTIONS ---
 
 
-# --- CONSENSUS REVIEW FUNCTIONS (Task Card #8) ---
+# --- MULTI-JUDGE CONSENSUS FUNCTIONS (Task Card #18) ---
 
-def should_trigger_consensus(claim: Dict) -> bool:
+def should_use_consensus(claim: Dict) -> bool:
     """
-    Determine if claim requires consensus review.
+    Determine if claim needs multi-judge consensus.
+    
+    Only apply to borderline claims (composite 2.5-3.5) to control costs.
     
     Args:
         claim: Claim dictionary with evidence_quality field
@@ -698,14 +782,129 @@ def should_trigger_consensus(claim: Dict) -> bool:
         True if consensus needed (borderline score 2.5-3.5)
     """
     quality = claim.get('evidence_quality', {})
-    composite = quality.get('composite_score', 0)
+    composite = quality.get('composite_score')
     
-    # Trigger consensus for borderline claims
-    return 2.5 <= composite <= 3.5
+    if composite is None:
+        return False
+    
+    # Check if borderline
+    return (API_CONFIG["BORDERLINE_SCORE_MIN"] <= composite <= 
+            API_CONFIG["BORDERLINE_SCORE_MAX"])
+
+
+def judge_with_consensus(claim: Dict, sub_req_def: str, api_manager) -> Optional[Dict]:
+    """
+    Get multiple independent judgments and compute consensus.
+    
+    Args:
+        claim: Claim dict to evaluate
+        sub_req_def: Sub-requirement definition
+        api_manager: API manager for Gemini calls
+        
+    Returns:
+        Consensus judgment with aggregated scores and metadata
+    """
+    judgments = []
+    
+    for judge_num in range(API_CONFIG["CONSENSUS_JUDGES"]):
+        # Each judge gets identical prompt but different temperature for diversity
+        prompt = build_judge_prompt_enhanced(claim, sub_req_def)
+        temperature = 0.3 + (judge_num * 0.1)  # 0.3, 0.4, 0.5
+        
+        logger.info(f"  Calling consensus judge {judge_num + 1}/{API_CONFIG['CONSENSUS_JUDGES']} (temp={temperature})")
+        
+        judgment = api_manager.call_with_temperature(
+            prompt,
+            temperature=temperature,
+            cache_key=f"{claim.get('claim_id', 'unknown')}_judge_{judge_num}",
+            is_json=True
+        )
+        
+        validated = validate_judge_response_enhanced(judgment)
+        if validated:
+            judgments.append(validated)
+        else:
+            logger.warning(f"  Judge {judge_num + 1} returned invalid response")
+    
+    # Require all judges to respond
+    if len(judgments) < API_CONFIG["CONSENSUS_JUDGES"]:
+        logger.warning(f"  Only {len(judgments)}/{API_CONFIG['CONSENSUS_JUDGES']} judges responded. Using available judgments.")
+        # Fall back to single judge if consensus fails
+        return judgments[0] if judgments else None
+    
+    # Analyze agreement
+    verdicts = [j["verdict"] for j in judgments]
+    verdict_counts = {
+        "approved": verdicts.count("approved"),
+        "rejected": verdicts.count("rejected")
+    }
+    
+    # Compute agreement
+    majority_verdict = max(verdict_counts, key=verdict_counts.get)
+    agreement_rate = verdict_counts[majority_verdict] / len(verdicts)
+    
+    # Classify consensus strength
+    # Use small epsilon for float comparison to handle cases like 2/3 = 0.6666...
+    # 2/3 judges agreeing should count as strong consensus (67%)
+    if agreement_rate >= (API_CONFIG["AGREEMENT_THRESHOLD"] - 0.01):
+        consensus_status = "strong_consensus"
+    elif agreement_rate >= 0.5:
+        consensus_status = "weak_consensus"
+    else:
+        consensus_status = "no_consensus"
+    
+    # Aggregate scores (average across judges)
+    composite_scores = [
+        j["evidence_quality"]["composite_score"] 
+        for j in judgments
+    ]
+    avg_composite_score = np.mean(composite_scores)
+    score_std_dev = np.std(composite_scores)
+    
+    # Build consensus judgment
+    consensus_judgment = {
+        "verdict": majority_verdict,
+        "consensus_metadata": {
+            "total_judges": len(judgments),
+            "agreement_rate": round(agreement_rate, 2),
+            "consensus_status": consensus_status,
+            "vote_breakdown": verdict_counts,
+            "individual_judgments": judgments,
+            "average_composite_score": round(avg_composite_score, 2),
+            "score_std_dev": round(score_std_dev, 2),
+            "requires_human_review": consensus_status == "no_consensus"
+        },
+        "evidence_quality": {
+            **judgments[0]["evidence_quality"],  # Use first judge's detailed scores
+            "composite_score": round(avg_composite_score, 2)  # Override with average
+        },
+        "judge_notes": f"{consensus_status.replace('_', ' ').title()}: {verdict_counts}"
+    }
+    
+    logger.info(f"  Consensus: {consensus_status} ({agreement_rate:.0%} agreement, avg score: {avg_composite_score:.2f})")
+    
+    return consensus_judgment
+
+
+# --- BACKWARD COMPATIBILITY: Keep old function names ---
+def should_trigger_consensus(claim: Dict) -> bool:
+    """
+    Legacy function name. Redirects to should_use_consensus.
+    
+    Determine if claim requires consensus review.
+    
+    Args:
+        claim: Claim dictionary with evidence_quality field
+    
+    Returns:
+        True if consensus needed (borderline score 2.5-3.5)
+    """
+    return should_use_consensus(claim)
 
 
 def trigger_consensus_review(claim: Dict) -> Dict:
     """
+    Legacy function for backward compatibility.
     Add consensus review metadata to claim.
     
     Args:
@@ -727,6 +926,58 @@ def trigger_consensus_review(claim: Dict) -> Dict:
     }
     
     logger.info(f"Consensus review triggered for claim {claim.get('claim_id', 'N/A')} (composite: {composite})")
+    
+    return claim
+
+
+def process_claim_with_adaptive_consensus(claim: Dict, sub_req_def: str, api_manager) -> Optional[Dict]:
+    """
+    Intelligently apply consensus only where needed.
+    
+    Workflow:
+    1. Single judge evaluation (fast, cheap)
+    2. If borderline score → consensus (slow, expensive)
+    3. If clear approve/reject → skip consensus
+    
+    Args:
+        claim: Claim to evaluate
+        sub_req_def: Sub-requirement definition text
+        api_manager: API manager instance
+        
+    Returns:
+        Judgment with or without consensus metadata
+    """
+    # Initial single-judge evaluation
+    prompt = build_judge_prompt_enhanced(claim, sub_req_def)
+    logger.info(f"  Submitting claim to Judge AI (initial evaluation)...")
+    response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+    single_judgment = validate_judge_response_enhanced(response)
+    
+    if not single_judgment:
+        logger.error(f"  Initial judgment failed for claim {claim.get('claim_id', 'N/A')}")
+        return None
+    
+    # Add evidence quality to claim temporarily to check if consensus needed
+    temp_claim = claim.copy()
+    temp_claim['evidence_quality'] = single_judgment.get('evidence_quality', {})
+    
+    # Check if needs consensus
+    if should_use_consensus(temp_claim):
+        logger.info(f"  Borderline score detected ({single_judgment['evidence_quality']['composite_score']:.2f}). Using multi-judge consensus...")
+        # Borderline case: use multi-judge consensus
+        consensus_judgment = judge_with_consensus(claim, sub_req_def, api_manager)
+        if consensus_judgment:
+            return consensus_judgment
+        else:
+            # Consensus failed, fall back to single judge
+            logger.warning(f"  Consensus failed. Falling back to single judge.")
+            return single_judgment
+    else:
+        # Clear decision: trust single judge
+        logger.info(f"  Clear decision ({single_judgment['evidence_quality']['composite_score']:.2f}). Skipping consensus.")
+        return single_judgment
+
+# --- END MULTI-JUDGE CONSENSUS FUNCTIONS ---
     
     return claim
 
@@ -838,12 +1089,17 @@ def main():
                         }
                     }
                 else:
-                    # Use enhanced prompt with quality scoring
-                    prompt = build_judge_prompt_enhanced(claim, definition_text)
-                    logger.info(f"  Submitting claim to Judge AI...")
-                    safe_print(f"  Submitting claim to Judge AI...")
-                    response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
-                    ruling = validate_judge_response_enhanced(response)
+                    # Use adaptive consensus if enabled, otherwise use single judge
+                    if API_CONFIG.get("ENABLE_ADAPTIVE_CONSENSUS", False):
+                        # Adaptive consensus: single judge first, then consensus for borderline
+                        ruling = process_claim_with_adaptive_consensus(claim, definition_text, api_manager)
+                    else:
+                        # Original single-judge approach
+                        prompt = build_judge_prompt_enhanced(claim, definition_text)
+                        logger.info(f"  Submitting claim to Judge AI...")
+                        safe_print(f"  Submitting claim to Judge AI...")
+                        response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+                        ruling = validate_judge_response_enhanced(response)
 
                 if ruling:
                     canonical_pillar = find_robust_pillar_key(pillar_key)
@@ -858,6 +1114,9 @@ def main():
                     claim['judge_timestamp'] = datetime.now().isoformat()
                     # Add evidence quality scores to claim
                     claim['evidence_quality'] = ruling.get('evidence_quality', {})
+                    # Add consensus metadata if present
+                    if 'consensus_metadata' in ruling:
+                        claim['consensus_metadata'] = ruling['consensus_metadata']
                     all_judged_claims.append(claim)
 
                     if ruling['verdict'] == 'approved':
@@ -959,12 +1218,17 @@ def main():
                             }
                         }
                     else:
-                        # Use enhanced prompt with quality scoring
-                        prompt = build_judge_prompt_enhanced(new_claim, definition_text)
-                        logger.info(f"  Submitting DRA claim to Judge AI...")
-                        safe_print(f"  Submitting DRA claim to Judge AI...")
-                        response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
-                        ruling = validate_judge_response_enhanced(response)
+                        # Use adaptive consensus if enabled, otherwise use single judge
+                        if API_CONFIG.get("ENABLE_ADAPTIVE_CONSENSUS", False):
+                            # Adaptive consensus: single judge first, then consensus for borderline
+                            ruling = process_claim_with_adaptive_consensus(new_claim, definition_text, api_manager)
+                        else:
+                            # Original single-judge approach
+                            prompt = build_judge_prompt_enhanced(new_claim, definition_text)
+                            logger.info(f"  Submitting DRA claim to Judge AI...")
+                            safe_print(f"  Submitting DRA claim to Judge AI...")
+                            response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+                            ruling = validate_judge_response_enhanced(response)
 
                     if ruling:
                         new_claim['status'] = ruling['verdict']
@@ -972,6 +1236,9 @@ def main():
                         new_claim['judge_timestamp'] = datetime.now().isoformat()
                         # Add evidence quality scores to claim
                         new_claim['evidence_quality'] = ruling.get('evidence_quality', {})
+                        # Add consensus metadata if present
+                        if 'consensus_metadata' in ruling:
+                            new_claim['consensus_metadata'] = ruling['consensus_metadata']
 
                         if ruling['verdict'] == 'approved':
                             logger.info(f"  VERDICT (Appeal): APPROVED (Quality: {ruling.get('evidence_quality', {}).get('composite_score', 'N/A')})")
