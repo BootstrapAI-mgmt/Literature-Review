@@ -584,6 +584,92 @@ grep "Completeness:" gap_analysis.log
 
 ## Advanced Usage
 
+### Using Deep Reviewer for Strategic Gap-Filling
+
+Deep Reviewer re-analyzes existing papers to extract additional claims that address specific research gaps. This is most effective when you have papers that might contain relevant information not captured in the initial review.
+
+#### When to Use Deep Reviewer
+
+Deep Reviewer is most valuable when:
+- ✅ Gaps exist at 0-50% coverage
+- ✅ Contributing papers already exist for those gaps
+- ✅ Gaps are high-priority (bottlenecks or critical requirements)
+- ✅ Goal is to extract MORE from EXISTING papers
+
+Deep Reviewer has limited value when:
+- ❌ No existing papers to re-analyze
+- ❌ Gaps are already 80%+ covered
+- ❌ First-time corpus ingestion (run Journal Reviewer first)
+
+#### How to Use Deep Reviewer
+
+**Step 1: Review Gap Analysis**
+```bash
+# Run standard pipeline first
+python -m literature_review.orchestrator
+
+# Review the gap analysis
+open gap_analysis_output/executive_summary.md
+```
+
+**Step 2: Generate Deep Review Directions**
+```bash
+# Generate for top 10 critical gaps
+python scripts/generate_deep_review_directions.py --top 10
+
+# Or filter by criteria
+python scripts/generate_deep_review_directions.py \
+  --pillar "Pillar 1" \
+  --completeness-max 30 \
+  --has-papers
+```
+
+**Step 3: Run Deep Reviewer**
+```bash
+# Run Deep Reviewer
+python -m literature_review.reviewers.deep_reviewer
+
+# Or use convenience script
+./scripts/run_deep_review.sh
+```
+
+**Step 4: Process New Claims**
+```bash
+# Judge the new claims
+python -m literature_review.analysis.judge
+
+# Re-run gap analysis to see improvements
+python -m literature_review.orchestrator
+```
+
+#### Expected Results
+
+- 15-30 new claims per Deep Review run
+- 5-15% coverage improvement for targeted gaps
+- 20-40 minutes runtime
+- $3-8 API cost (Gemini Flash)
+
+#### Example Workflow
+
+```bash
+# Initial gap analysis shows Pillar 1 at 8% completeness
+python -m literature_review.orchestrator
+
+# Generate directions for Pillar 1 gaps under 30% coverage
+python scripts/generate_deep_review_directions.py \
+  --pillar "Pillar 1" \
+  --completeness-max 30
+
+# Review generated directions
+cat gap_analysis_output/deep_review_directions.json
+
+# Run Deep Reviewer with confirmation
+./scripts/run_deep_review.sh
+
+# Check improved coverage (expect Pillar 1 to increase to 15-23%)
+python -m literature_review.orchestrator
+```
+
 ### Custom Pillar Frameworks
 
 **Step 1: Create New Framework**
