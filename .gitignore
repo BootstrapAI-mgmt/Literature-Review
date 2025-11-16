@@ -52,6 +52,7 @@ cache/
 judge_cache/
 deep_reviewer_cache/
 *.cache
+analysis_cache/
 
 # Coverage reports
 .coverage

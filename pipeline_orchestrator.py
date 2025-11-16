@@ -3,7 +3,7 @@
 Pipeline Orchestrator v2.0 - Advanced Features & Error Recovery
 
 Runs the full Literature Review pipeline automatically:
-1. Journal-Reviewer → 2. Judge → 3. DRA (conditional) → 4. Sync → 5. Orchestrator
+1. Journal-Reviewer → 2. Judge → 3. DRA (conditional) → 4. Sync → 5. Orchestrator → 6. Proof Scorecard
 
 Features (v1.x):
 - Checkpoint/resume capability
@@ -19,6 +19,7 @@ Features (v2.0 - New):
 - Parallel processing support (behind feature flag)
 - Per-paper checkpoint tracking
 - Enhanced observability and metrics
+- Proof completeness scorecard generation
 
 Usage:
     # Basic usage (v1.x compatible)
@@ -234,6 +235,14 @@ class PipelineOrchestrator:
         # Initialize cost tracker
         self.cost_tracker = get_cost_tracker()
         self.budget_usd = self.config.get('budget_usd', 50.0)
+        # Initialize incremental analysis support
+        self.incremental = self.config.get('incremental', False)
+        self.force_full = self.config.get('force', False)
+        if self.incremental or self.force_full:
+            from literature_review.utils.incremental_analyzer import get_incremental_analyzer
+            self.incremental_analyzer = get_incremental_analyzer()
+        else:
+            self.incremental_analyzer = None
         
         # Log dry-run mode if enabled
         if self.dry_run:
@@ -584,6 +593,28 @@ class PipelineOrchestrator:
             self.log(warning_msg, "WARNING")
         else:
             self.log(f"💰 Budget status: ${budget_status['spent']:.2f} / ${budget_status['budget']:.2f} used", "INFO")
+        # Incremental analysis: detect changes before running
+        if self.incremental_analyzer:
+            changes = self.incremental_analyzer.detect_changes(
+                paper_dir='data/raw',
+                pillar_file='pillar_definitions.json',
+                force=self.force_full
+            )
+            
+            papers_to_analyze = changes['new'] + changes['modified']
+            
+            if not papers_to_analyze and not self.force_full:
+                self.log("✅ No changes detected - all papers are up to date", "INFO")
+                self.log("💡 Use --force to re-analyze all papers", "INFO")
+                self.log("=" * 70, "INFO")
+                return
+            
+            if self.incremental and not self.force_full:
+                total_papers = len(changes['new']) + len(changes['modified']) + len(changes['unchanged'])
+                self.log(f"📊 Incremental mode: analyzing {len(papers_to_analyze)}/{total_papers} papers", "INFO")
+                self.log(f"   New: {len(changes['new'])}, Modified: {len(changes['modified'])}, Unchanged: {len(changes['unchanged'])}", "INFO")
+            else:
+                self.log(f"📊 Full analysis mode: {len(papers_to_analyze)} papers", "INFO")
 
         # Stage 1: Journal Reviewer
         self.run_stage("journal_reviewer", "literature_review.reviewers.journal_reviewer", "Stage 1: Initial Paper Review", use_module=True)
@@ -605,6 +636,15 @@ class PipelineOrchestrator:
 
         # Stage 5: Orchestrator
         self.run_stage("orchestrator", "literature_review.orchestrator", "Stage 5: Gap Analysis & Convergence", use_module=True)
+
+        # Update incremental state after successful completion
+        if self.incremental_analyzer:
+            self.incremental_analyzer.update_fingerprints(
+                paper_dir='data/raw',
+                pillar_file='pillar_definitions.json'
+            )
+        # Stage 6: Proof Scorecard (NEW)
+        self.run_stage("proof_scorecard", "literature_review.analysis.proof_scorecard", "Stage 6: Proof Completeness Scorecard", use_module=True)
 
         # Mark pipeline complete
         self.checkpoint_data["status"] = "completed"
@@ -672,9 +712,30 @@ def main():
         type=float,
         default=50.0,
         help="Monthly API budget in USD (default: $50.00)"
+        "--incremental",
+        action="store_true",
+        default=True,
+        help="Use incremental analysis (default: True)"
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Force full re-analysis of all papers"
+    )
+    parser.add_argument(
+        "--clear-cache",
+        action="store_true",
+        help="Clear incremental analysis cache before running"
     )
 
     args = parser.parse_args()
+    
+    # Handle cache clearing first
+    if args.clear_cache:
+        from literature_review.utils.incremental_analyzer import get_incremental_analyzer
+        analyzer = get_incremental_analyzer()
+        analyzer.clear_cache()
+        print("✅ Incremental analysis cache cleared")
 
     # Load config if provided
     config = {}
@@ -688,6 +749,9 @@ def main():
     
     if args.budget:
         config['budget_usd'] = args.budget
+    # Set incremental flags
+    config['incremental'] = args.incremental and not args.force
+    config['force'] = args.force
     
     if args.enable_experimental:
         # Enable v2 features if requested
