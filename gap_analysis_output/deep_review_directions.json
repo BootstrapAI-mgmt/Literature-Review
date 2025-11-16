@@ -10,18 +10,6 @@
     "priority": "MEDIUM",
     "gap_analysis": "The literature mentions SNNs as biologically inspired but does not provide any specific details or examples of event-based sensor integration. It lacks discussion on methodologies, architectures, or challenges related to this integration."
   },
-  "Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction": {
-    "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
-    "requirement": "REQ-A2.1: Neuromorphic Sensing & Encoding",
-    "description": "",
-    "current_completeness": 30,
-    "contributing_papers": [
-      "gk8110.pdf",
-      "s10489-025-06259-x.pdf"
-    ],
-    "priority": "MEDIUM",
-    "gap_analysis": "While 'Feature extraction' is a core concept in some papers, and SNNs are mentioned, there's no direct discussion of *efficient SNN algorithms* specifically for *sparse feature extraction*. The connection to sparsity in SNNs is implied but not explicitly addressed with algorithms."
-  },
   "Sub-2.2.1: Scalable training algorithms for deep SNNs": {
     "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
     "requirement": "REQ-A2.2: Deep SNNs for Processing",
@@ -43,17 +31,5 @@
     ],
     "priority": "MEDIUM",
     "gap_analysis": "Multi-modal training is mentioned in the context of improving AI models' human-like outputs, but there is no specific discussion or architecture proposed for *SNN-based multi-sensory fusion*."
-  },
-  "Sub-2.2.3: SNN-based attentional mechanism": {
-    "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
-    "requirement": "REQ-A2.2: Deep SNNs for Processing",
-    "description": "",
-    "current_completeness": 30,
-    "contributing_papers": [
-      "gk8117.pdf",
-      "s10489-025-06259-x.pdf"
-    ],
-    "priority": "MEDIUM",
-    "gap_analysis": "Attention mechanisms are listed as a core concept and a technique to improve interpretability in DL, but there is no specific discussion or implementation of *SNN-based attentional mechanisms*."
   }
 }
