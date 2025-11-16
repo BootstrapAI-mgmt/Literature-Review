@@ -645,6 +645,9 @@ class PipelineOrchestrator:
             )
         # Stage 6: Proof Scorecard (NEW)
         self.run_stage("proof_scorecard", "literature_review.analysis.proof_scorecard", "Stage 6: Proof Completeness Scorecard", use_module=True)
+        
+        # Stage 7: Evidence Sufficiency Matrix (NEW)
+        self.run_stage("sufficiency_matrix", "literature_review.analysis.sufficiency_matrix", "Stage 7: Evidence Sufficiency Matrix", use_module=True)
 
         # Mark pipeline complete
         self.checkpoint_data["status"] = "completed"

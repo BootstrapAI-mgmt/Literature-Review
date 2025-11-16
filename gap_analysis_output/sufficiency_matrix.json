@@ -1,0 +1,1173 @@
+{
+  "summary": {
+    "total_requirements_analyzed": 32,
+    "quadrant_distribution": {
+      "Q3_Critical_Gap": 27,
+      "Q2_Promising_Seeds": 5
+    }
+  },
+  "requirement_analysis": {
+    "Pillar 1: Biological Stimulus-Response::REQ-B1.1: Sensory Transduction & Encoding::Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing": {
+      "requirement": "Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing",
+      "pillar": "Pillar 1: Biological Stimulus-Response",
+      "parent_requirement": "REQ-B1.1: Sensory Transduction & Encoding",
+      "quantity": 1,
+      "quality": 0.7,
+      "quantity_level": "low",
+      "quality_level": "medium",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "gk8110.pdf",
+          "alignment": 0.7,
+          "contribution_summary": "The paper demonstrates that ventral stream neurons, including face neurons, selectively respond to specific visual features, providing evidence for sensory feature extraction."
+        }
+      ]
+    },
+    "Pillar 1: Biological Stimulus-Response::REQ-B1.1: Sensory Transduction & Encoding::Sub-1.1.3: Understanding of population coding for complex stimuli": {
+      "requirement": "Sub-1.1.3: Understanding of population coding for complex stimuli",
+      "pillar": "Pillar 1: Biological Stimulus-Response",
+      "parent_requirement": "REQ-B1.1: Sensory Transduction & Encoding",
+      "quantity": 1,
+      "quality": 0.5,
+      "quantity_level": "low",
+      "quality_level": "medium",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "gk8110.pdf",
+          "alignment": 0.5,
+          "contribution_summary": "The paper acknowledges that semantic information for complex stimuli may be encoded at the population level, indicating an understanding of its potential role."
+        }
+      ]
+    },
+    "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.1: Neuromorphic Sensing & Encoding::Sub-2.1.1: Event-based sensor integration with SNNs": {
+      "requirement": "Sub-2.1.1: Event-based sensor integration with SNNs",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "parent_requirement": "REQ-A2.1: Neuromorphic Sensing & Encoding",
+      "quantity": 1,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper generally mentions Spiking Neural Networks (SNNs) as biologically inspired, which is a foundational concept for event-based processing, but does not detail integration."
+        }
+      ]
+    },
+    "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.1: Neuromorphic Sensing & Encoding::Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction": {
+      "requirement": "Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "parent_requirement": "REQ-A2.1: Neuromorphic Sensing & Encoding",
+      "quantity": 2,
+      "quality": 0.15000000000000002,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "gk8110.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper discusses feature extraction in the context of face neurons and population coding, which is relevant to the concept of feature extraction, but not specifically efficient SNN algorithms."
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.1,
+          "contribution_summary": "This paper lists 'Feature Extraction' as a core concept for Deep Learning and mentions SNNs, providing a general context but no specific SNN algorithms for sparse feature extraction."
+        }
+      ]
+    },
+    "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.1: Neuromorphic Sensing & Encoding::Sub-2.1.4: Adaptive sampling based on information content": {
+      "requirement": "Sub-2.1.4: Adaptive sampling based on information content",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "parent_requirement": "REQ-A2.1: Neuromorphic Sensing & Encoding",
+      "quantity": 1,
+      "quality": 0.3,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "contribution_summary": "This paper introduces adaptive teaching methods that infer student priors and optimize example selection, which conceptually aligns with adaptive sampling based on information content, though not in the SNN domain."
+        }
+      ]
+    },
+    "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.2: Deep SNNs for Processing::Sub-2.2.1: Scalable training algorithms for deep SNNs": {
+      "requirement": "Sub-2.2.1: Scalable training algorithms for deep SNNs",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "parent_requirement": "REQ-A2.2: Deep SNNs for Processing",
+      "quantity": 1,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper discusses Deep Neural Networks and SNNs, acknowledging SNNs as biologically inspired but also noting challenges, without detailing scalable training algorithms."
+        }
+      ]
+    },
+    "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.2: Deep SNNs for Processing::Sub-2.2.2: SNN architecture for multi-sensory fusion": {
+      "requirement": "Sub-2.2.2: SNN architecture for multi-sensory fusion",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "parent_requirement": "REQ-A2.2: Deep SNNs for Processing",
+      "quantity": 1,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "gk8117.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper mentions 'Multi-modal learning' as a core concept for enhancing AI models, which is a prerequisite for multi-sensory fusion, but does not specify SNN architectures."
+        }
+      ]
+    },
+    "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.2: Deep SNNs for Processing::Sub-2.2.3: SNN-based attentional mechanism": {
+      "requirement": "Sub-2.2.3: SNN-based attentional mechanism",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "parent_requirement": "REQ-A2.2: Deep SNNs for Processing",
+      "quantity": 2,
+      "quality": 0.15,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "gk8117.pdf",
+          "alignment": 0.15,
+          "contribution_summary": "This paper lists 'Attention mechanisms' as a core concept related to AI models, providing a general context for the requirement."
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.15,
+          "contribution_summary": "This paper mentions 'Attention Mechanisms' as a technique to improve interpretability in DL, but does not link them specifically to SNNs."
+        }
+      ]
+    },
+    "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.4: Metabolic Efficiency Validation::Sub-2.4.2: Event-driven vs clock-driven comparison (>10x improvement)": {
+      "requirement": "Sub-2.4.2: Event-driven vs clock-driven comparison (>10x improvement)",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "parent_requirement": "REQ-A2.4: Metabolic Efficiency Validation",
+      "quantity": 1,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper mentions SNNs as biologically inspired, which inherently relates to event-driven processing, but does not provide a comparison or efficiency metrics."
+        }
+      ]
+    },
+    "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.4: Metabolic Efficiency Validation::Sub-2.4.3: Energy-accuracy trade-off characterization": {
+      "requirement": "Sub-2.4.3: Energy-accuracy trade-off characterization",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "parent_requirement": "REQ-A2.4: Metabolic Efficiency Validation",
+      "quantity": 2,
+      "quality": 0.3,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.3,
+          "contribution_summary": "The approved claim from this paper directly identifies the challenge of high computational cost for real-time performance, which is a core aspect of the energy-accuracy trade-off."
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.3,
+          "contribution_summary": "The second approved claim from this paper reiterates the identification of high computational cost for real-time performance, reinforcing the relevance to energy-accuracy trade-off."
+        }
+      ]
+    },
+    "Pillar 3: Biological Skill Automatization::REQ-B3.4: Feedback Integration::Sub-3.4.2: Error-based learning signal propagation": {
+      "requirement": "Sub-3.4.2: Error-based learning signal propagation",
+      "pillar": "Pillar 3: Biological Skill Automatization",
+      "parent_requirement": "REQ-B3.4: Feedback Integration",
+      "quantity": 1,
+      "quality": 0.25,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "alignment": 0.25,
+          "contribution_summary": "This paper mentions 'Error-based learning' as a core concept in the context of adaptive teaching, where a system infers student misconceptions and optimizes example selection."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.1: Model-Based Exploration::Sub-4.1.1: AI equivalent of declarative learning with world models": {
+      "requirement": "Sub-4.1.1: AI equivalent of declarative learning with world models",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.1: Model-Based Exploration",
+      "quantity": 1,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper discusses neural-symbolic reasoning on knowledge graphs, which involves declarative knowledge representation, but does not explicitly link it to world models for exploration."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.1: Model-Based Exploration::Sub-4.1.2: Architecture showing exploration to exploitation shift": {
+      "requirement": "Sub-4.1.2: Architecture showing exploration to exploitation shift",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.1: Model-Based Exploration",
+      "quantity": 1,
+      "quality": 0.75,
+      "quantity_level": "low",
+      "quality_level": "high",
+      "quadrant": "Q2_Promising_Seeds",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.75,
+          "contribution_summary": "Approved claims from this paper explicitly state that RL-based reasoning models like DeepPath and MINERVA exhibit an exploration-exploitation dynamic in their search strategies."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.1: Model-Based Exploration::Sub-4.1.3: Uncertainty-guided exploration strategies": {
+      "requirement": "Sub-4.1.3: Uncertainty-guided exploration strategies",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.1: Model-Based Exploration",
+      "quantity": 2,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "contribution_summary": "This paper introduces AT_O_M, a probabilistic method that infers student priors, which implicitly deals with uncertainty in a teaching context, but not directly as an exploration strategy for skill learning."
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.1,
+          "contribution_summary": "This paper mentions challenges with incorporating uncertainties in Spiking Neural Networks, indicating an awareness of uncertainty but not a solution for guided exploration."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.2: Policy Compilation::Sub-4.2.1: Compiling model-based to model-free policy": {
+      "requirement": "Sub-4.2.1: Compiling model-based to model-free policy",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.2: Policy Compilation",
+      "quantity": 1,
+      "quality": 0.4,
+      "quantity_level": "low",
+      "quality_level": "medium",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.4,
+          "contribution_summary": "This paper lists 'Policy Compilation' as a core concept, indicating relevance, but does not elaborate on the specific mechanism of compiling model-based to model-free policies."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.2: Policy Compilation::Sub-4.2.2: Hierarchical task chunking framework": {
+      "requirement": "Sub-4.2.2: Hierarchical task chunking framework",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.2: Policy Compilation",
+      "quantity": 1,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper discusses multi-hop reasoning, which involves breaking down complex tasks, but does not present a formal 'hierarchical task chunking framework'."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.2: Policy Compilation::Sub-4.2.4: Progressive network pruning during consolidation": {
+      "requirement": "Sub-4.2.4: Progressive network pruning during consolidation",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.2: Policy Compilation",
+      "quantity": 2,
+      "quality": 0.22499999999999998,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.3,
+          "contribution_summary": "Approved claims from this paper mention AMIE+ achieving speedup through 'rule extending and pruning', which is a form of knowledge consolidation and reduction."
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.15,
+          "contribution_summary": "This paper discusses efforts to develop lightweight DL models and improve interpretability through techniques like knowledge distillation, which can involve pruning or simplification."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.3: Efficient Execution::Sub-4.3.1: Reduced computational cost after learning (>90% reduction)": {
+      "requirement": "Sub-4.3.1: Reduced computational cost after learning (>90% reduction)",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.3: Efficient Execution",
+      "quantity": 1,
+      "quality": 0.9,
+      "quantity_level": "low",
+      "quality_level": "high",
+      "quadrant": "Q2_Promising_Seeds",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.9,
+          "contribution_summary": "Approved claims from this paper explicitly state AMIE+ achieves a '100x speedup' through rule pruning and RLvLR reduces search space, directly meeting the >90% reduction target."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.3: Efficient Execution::Sub-4.3.3: Hardware acceleration for compiled policies": {
+      "requirement": "Sub-4.3.3: Hardware acceleration for compiled policies",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.3: Efficient Execution",
+      "quantity": 1,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper discusses the computational cost of deep learning and efforts to develop lightweight models, which indirectly relates to the need for efficient execution that could benefit from hardware acceleration."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.1: Error signal propagation from motor output": {
+      "requirement": "Sub-4.4.1: Error signal propagation from motor output",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.4: Feedback Integration from Response Execution",
+      "quantity": 1,
+      "quality": 0.3,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "contribution_summary": "This paper lists 'Error-based learning' as a core concept, indicating a general understanding of using errors for learning, but not specifically from motor output."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.2: Credit assignment across temporal delays": {
+      "requirement": "Sub-4.4.2: Credit assignment across temporal delays",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.4: Feedback Integration from Response Execution",
+      "quantity": 1,
+      "quality": 0.85,
+      "quantity_level": "low",
+      "quality_level": "high",
+      "quadrant": "Q2_Promising_Seeds",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.85,
+          "contribution_summary": "Approved claims from this paper explicitly state that SRN directly tackles delayed reward and uses intermediate rewards for credit assignment in multi-hop reasoning, directly addressing this requirement."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.3: Online learning during execution": {
+      "requirement": "Sub-4.4.3: Online learning during execution",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.4: Feedback Integration from Response Execution",
+      "quantity": 1,
+      "quality": 0.3,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "contribution_summary": "This paper discusses adaptive teaching methods (AT_O_M) that infer student priors and optimize example selection, which involves continuous adaptation that could be considered a form of online learning."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.4: Adaptive learning rate based on performance": {
+      "requirement": "Sub-4.4.4: Adaptive learning rate based on performance",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.4: Feedback Integration from Response Execution",
+      "quantity": 1,
+      "quality": 0.3,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "contribution_summary": "This paper describes adaptive teaching methods that adjust based on student performance, which is conceptually related to adapting learning based on performance, though not explicitly an 'adaptive learning rate'."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.5: Transfer Learning & Generalization::Sub-4.5.1: Cross-domain skill transfer metrics (>50% transfer efficiency)": {
+      "requirement": "Sub-4.5.1: Cross-domain skill transfer metrics (>50% transfer efficiency)",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.5: Transfer Learning & Generalization",
+      "quantity": 2,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper lists 'Transfer learning (implicit)' as a core concept, suggesting its relevance, but does not provide metrics or specific mechanisms for cross-domain skill transfer."
+        },
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper mentions few-shot learning and analogical reasoning as future directions, which are related to generalization and transfer, but does not define specific cross-domain transfer metrics."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.5: Transfer Learning & Generalization::Sub-4.5.2: Noise robustness during automatization": {
+      "requirement": "Sub-4.5.2: Noise robustness during automatization",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.5: Transfer Learning & Generalization",
+      "quantity": 1,
+      "quality": 0.2,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "contribution_summary": "This paper mentions challenges in incorporating uncertainties in SNNs, which is related to dealing with noisy inputs, but not specifically 'noise robustness during automatization'."
+        }
+      ]
+    },
+    "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.5: Transfer Learning & Generalization::Sub-4.5.4: Compositional skill combination": {
+      "requirement": "Sub-4.5.4: Compositional skill combination",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "parent_requirement": "REQ-A4.5: Transfer Learning & Generalization",
+      "quantity": 1,
+      "quality": 0.3,
+      "quantity_level": "low",
+      "quality_level": "low",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.3,
+          "contribution_summary": "This paper discusses multi-hop reasoning and the combination of symbolic and neural methods, which inherently involves compositional aspects, but not explicitly 'compositional skill combination' in the context of automatization."
+        }
+      ]
+    },
+    "Pillar 6: AI Memory Systems (Bridge)::REQ-A6.1: Encoding & Consolidation::Sub-6.1.3: Context-binding in memory networks": {
+      "requirement": "Sub-6.1.3: Context-binding in memory networks",
+      "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+      "parent_requirement": "REQ-A6.1: Encoding & Consolidation",
+      "quantity": 1,
+      "quality": 0.7,
+      "quantity_level": "low",
+      "quality_level": "medium",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.7,
+          "contribution_summary": "Approved claims demonstrate that attention mechanisms in models like MULTIQUE and SRN perform context-binding by focusing on specific parts of questions in multi-hop reasoning."
+        }
+      ]
+    },
+    "Pillar 6: AI Memory Systems (Bridge)::REQ-A6.2: Retrieval & Prioritization::Sub-6.2.1: Associative cued recall model": {
+      "requirement": "Sub-6.2.1: Associative cued recall model",
+      "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+      "parent_requirement": "REQ-A6.2: Retrieval & Prioritization",
+      "quantity": 1,
+      "quality": 0.8,
+      "quantity_level": "low",
+      "quality_level": "high",
+      "quadrant": "Q2_Promising_Seeds",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.8,
+          "contribution_summary": "Approved claims establish that KGC and KGQA tasks are direct examples of associative cued recall, where entities or answers are inferred based on cues."
+        }
+      ]
+    },
+    "Pillar 6: AI Memory Systems (Bridge)::REQ-A6.2: Retrieval & Prioritization::Sub-6.2.2: Salience-based prioritization": {
+      "requirement": "Sub-6.2.2: Salience-based prioritization",
+      "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+      "parent_requirement": "REQ-A6.2: Retrieval & Prioritization",
+      "quantity": 1,
+      "quality": 0.75,
+      "quantity_level": "low",
+      "quality_level": "high",
+      "quadrant": "Q2_Promising_Seeds",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.75,
+          "contribution_summary": "Approved claims confirm that attention mechanisms in models like ConvAt, IRN, and MULTIQUE demonstrate salience-based prioritization by emphasizing specific parts of questions or neighbors."
+        }
+      ]
+    },
+    "Pillar 7: System Integration & Orchestration::REQ-7.3: Global vs Local Optimization Balance::Sub-7.3.1: Hierarchical control with local autonomy": {
+      "requirement": "Sub-7.3.1: Hierarchical control with local autonomy",
+      "pillar": "Pillar 7: System Integration & Orchestration",
+      "parent_requirement": "REQ-7.3: Global vs Local Optimization Balance",
+      "quantity": 1,
+      "quality": 0.65,
+      "quantity_level": "low",
+      "quality_level": "medium",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "alignment": 0.65,
+          "contribution_summary": "The MULTIQUE method of breaking down complex questions into simpler partial queries and building sub-query graphs demonstrates a form of hierarchical control with local autonomy."
+        }
+      ]
+    },
+    "Pillar 7: System Integration & Orchestration::REQ-7.4: Emergent Behavior Validation::Sub-7.4.1: Metrics for emergent intelligence": {
+      "requirement": "Sub-7.4.1: Metrics for emergent intelligence",
+      "pillar": "Pillar 7: System Integration & Orchestration",
+      "parent_requirement": "REQ-7.4: Emergent Behavior Validation",
+      "quantity": 1,
+      "quality": 0.7,
+      "quantity_level": "low",
+      "quality_level": "medium",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "gk8117.pdf",
+          "alignment": 0.7,
+          "contribution_summary": "The use of Turing tests across various tasks serves as a metric for emergent intelligence by assessing whether AI output is indistinguishable from human behavior."
+        }
+      ]
+    },
+    "Pillar 7: System Integration & Orchestration::REQ-7.4: Emergent Behavior Validation::Sub-7.4.3: Novel situation adaptation": {
+      "requirement": "Sub-7.4.3: Novel situation adaptation",
+      "pillar": "Pillar 7: System Integration & Orchestration",
+      "parent_requirement": "REQ-7.4: Emergent Behavior Validation",
+      "quantity": 1,
+      "quality": 0.4,
+      "quantity_level": "low",
+      "quality_level": "medium",
+      "quadrant": "Q3_Critical_Gap",
+      "papers": [
+        {
+          "filename": "gk8117.pdf",
+          "alignment": 0.4,
+          "contribution_summary": "Turing tests are mentioned as a form of 'Emergent Behavior Validation' that assesses novel situation adaptation by determining if AI output is indistinguishable from human behavior."
+        }
+      ]
+    }
+  },
+  "quadrant_groups": {
+    "Q3_Critical_Gap": [
+      "Pillar 1: Biological Stimulus-Response::REQ-B1.1: Sensory Transduction & Encoding::Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing",
+      "Pillar 1: Biological Stimulus-Response::REQ-B1.1: Sensory Transduction & Encoding::Sub-1.1.3: Understanding of population coding for complex stimuli",
+      "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.1: Neuromorphic Sensing & Encoding::Sub-2.1.1: Event-based sensor integration with SNNs",
+      "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.1: Neuromorphic Sensing & Encoding::Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction",
+      "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.1: Neuromorphic Sensing & Encoding::Sub-2.1.4: Adaptive sampling based on information content",
+      "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.2: Deep SNNs for Processing::Sub-2.2.1: Scalable training algorithms for deep SNNs",
+      "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.2: Deep SNNs for Processing::Sub-2.2.2: SNN architecture for multi-sensory fusion",
+      "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.2: Deep SNNs for Processing::Sub-2.2.3: SNN-based attentional mechanism",
+      "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.4: Metabolic Efficiency Validation::Sub-2.4.2: Event-driven vs clock-driven comparison (>10x improvement)",
+      "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.4: Metabolic Efficiency Validation::Sub-2.4.3: Energy-accuracy trade-off characterization",
+      "Pillar 3: Biological Skill Automatization::REQ-B3.4: Feedback Integration::Sub-3.4.2: Error-based learning signal propagation",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.1: Model-Based Exploration::Sub-4.1.1: AI equivalent of declarative learning with world models",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.1: Model-Based Exploration::Sub-4.1.3: Uncertainty-guided exploration strategies",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.2: Policy Compilation::Sub-4.2.1: Compiling model-based to model-free policy",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.2: Policy Compilation::Sub-4.2.2: Hierarchical task chunking framework",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.2: Policy Compilation::Sub-4.2.4: Progressive network pruning during consolidation",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.3: Efficient Execution::Sub-4.3.3: Hardware acceleration for compiled policies",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.1: Error signal propagation from motor output",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.3: Online learning during execution",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.4: Adaptive learning rate based on performance",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.5: Transfer Learning & Generalization::Sub-4.5.1: Cross-domain skill transfer metrics (>50% transfer efficiency)",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.5: Transfer Learning & Generalization::Sub-4.5.2: Noise robustness during automatization",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.5: Transfer Learning & Generalization::Sub-4.5.4: Compositional skill combination",
+      "Pillar 6: AI Memory Systems (Bridge)::REQ-A6.1: Encoding & Consolidation::Sub-6.1.3: Context-binding in memory networks",
+      "Pillar 7: System Integration & Orchestration::REQ-7.3: Global vs Local Optimization Balance::Sub-7.3.1: Hierarchical control with local autonomy",
+      "Pillar 7: System Integration & Orchestration::REQ-7.4: Emergent Behavior Validation::Sub-7.4.1: Metrics for emergent intelligence",
+      "Pillar 7: System Integration & Orchestration::REQ-7.4: Emergent Behavior Validation::Sub-7.4.3: Novel situation adaptation"
+    ],
+    "Q2_Promising_Seeds": [
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.1: Model-Based Exploration::Sub-4.1.2: Architecture showing exploration to exploitation shift",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.3: Efficient Execution::Sub-4.3.1: Reduced computational cost after learning (>90% reduction)",
+      "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.2: Credit assignment across temporal delays",
+      "Pillar 6: AI Memory Systems (Bridge)::REQ-A6.2: Retrieval & Prioritization::Sub-6.2.1: Associative cued recall model",
+      "Pillar 6: AI Memory Systems (Bridge)::REQ-A6.2: Retrieval & Prioritization::Sub-6.2.2: Salience-based prioritization"
+    ]
+  },
+  "recommendations": {
+    "Q2_Promising_Seeds": [
+      "\u26a0\ufe0f 5 requirements have high-quality but limited evidence",
+      "\ud83c\udfaf Priority action: Run targeted searches to find more papers in these areas",
+      "\ud83d\udca1 These could become Q1 with 3-5 more high-quality papers",
+      "\ud83d\udca1 Consider Deep Reviewer to extract maximum value from existing papers"
+    ],
+    "Q3_Critical_Gap": [
+      "\ud83d\udea8 27 requirements have critical evidence gaps",
+      "\ud83c\udfaf Urgent action: Expand searches or relax inclusion criteria",
+      "\ud83d\udca1 Consider whether requirements are too specific or poorly defined",
+      "\ud83d\udca1 May need expert consultation or primary research"
+    ]
+  },
+  "matrix_visualization": {
+    "requirements": [
+      {
+        "id": "Pillar 1: Biological Stimulus-Response::REQ-B1.1: Sensory Transduction & Encoding::Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing",
+        "requirement": "Sub-1.1.2: Proven mechanism for sensory feature ex...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "x": 1,
+        "y": 0.7,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "gk8110.pdf",
+            "alignment": 0.7,
+            "contribution_summary": "The paper demonstrates that ventral stream neurons, including face neurons, selectively respond to specific visual features, providing evidence for sensory feature extraction."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 1: Biological Stimulus-Response::REQ-B1.1: Sensory Transduction & Encoding::Sub-1.1.3: Understanding of population coding for complex stimuli",
+        "requirement": "Sub-1.1.3: Understanding of population coding for ...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "x": 1,
+        "y": 0.5,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "gk8110.pdf",
+            "alignment": 0.5,
+            "contribution_summary": "The paper acknowledges that semantic information for complex stimuli may be encoded at the population level, indicating an understanding of its potential role."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.1: Neuromorphic Sensing & Encoding::Sub-2.1.1: Event-based sensor integration with SNNs",
+        "requirement": "Sub-2.1.1: Event-based sensor integration with SNN...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "x": 1,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper generally mentions Spiking Neural Networks (SNNs) as biologically inspired, which is a foundational concept for event-based processing, but does not detail integration."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.1: Neuromorphic Sensing & Encoding::Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction",
+        "requirement": "Sub-2.1.2: Efficient SNN algorithms for sparse fea...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "x": 2,
+        "y": 0.15000000000000002,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "gk8110.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper discusses feature extraction in the context of face neurons and population coding, which is relevant to the concept of feature extraction, but not specifically efficient SNN algorithms."
+          },
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.1,
+            "contribution_summary": "This paper lists 'Feature Extraction' as a core concept for Deep Learning and mentions SNNs, providing a general context but no specific SNN algorithms for sparse feature extraction."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.1: Neuromorphic Sensing & Encoding::Sub-2.1.4: Adaptive sampling based on information content",
+        "requirement": "Sub-2.1.4: Adaptive sampling based on information ...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "x": 1,
+        "y": 0.3,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2024.acl-long.718.pdf",
+            "alignment": 0.3,
+            "contribution_summary": "This paper introduces adaptive teaching methods that infer student priors and optimize example selection, which conceptually aligns with adaptive sampling based on information content, though not in the SNN domain."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.2: Deep SNNs for Processing::Sub-2.2.1: Scalable training algorithms for deep SNNs",
+        "requirement": "Sub-2.2.1: Scalable training algorithms for deep S...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "x": 1,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper discusses Deep Neural Networks and SNNs, acknowledging SNNs as biologically inspired but also noting challenges, without detailing scalable training algorithms."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.2: Deep SNNs for Processing::Sub-2.2.2: SNN architecture for multi-sensory fusion",
+        "requirement": "Sub-2.2.2: SNN architecture for multi-sensory fusi...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "x": 1,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "gk8117.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper mentions 'Multi-modal learning' as a core concept for enhancing AI models, which is a prerequisite for multi-sensory fusion, but does not specify SNN architectures."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.2: Deep SNNs for Processing::Sub-2.2.3: SNN-based attentional mechanism",
+        "requirement": "Sub-2.2.3: SNN-based attentional mechanism",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "x": 2,
+        "y": 0.15,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "gk8117.pdf",
+            "alignment": 0.15,
+            "contribution_summary": "This paper lists 'Attention mechanisms' as a core concept related to AI models, providing a general context for the requirement."
+          },
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.15,
+            "contribution_summary": "This paper mentions 'Attention Mechanisms' as a technique to improve interpretability in DL, but does not link them specifically to SNNs."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.4: Metabolic Efficiency Validation::Sub-2.4.2: Event-driven vs clock-driven comparison (>10x improvement)",
+        "requirement": "Sub-2.4.2: Event-driven vs clock-driven comparison...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "x": 1,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper mentions SNNs as biologically inspired, which inherently relates to event-driven processing, but does not provide a comparison or efficiency metrics."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 2: AI Stimulus-Response (Bridge)::REQ-A2.4: Metabolic Efficiency Validation::Sub-2.4.3: Energy-accuracy trade-off characterization",
+        "requirement": "Sub-2.4.3: Energy-accuracy trade-off characterizat...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "x": 2,
+        "y": 0.3,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.3,
+            "contribution_summary": "The approved claim from this paper directly identifies the challenge of high computational cost for real-time performance, which is a core aspect of the energy-accuracy trade-off."
+          },
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.3,
+            "contribution_summary": "The second approved claim from this paper reiterates the identification of high computational cost for real-time performance, reinforcing the relevance to energy-accuracy trade-off."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 3: Biological Skill Automatization::REQ-B3.4: Feedback Integration::Sub-3.4.2: Error-based learning signal propagation",
+        "requirement": "Sub-3.4.2: Error-based learning signal propagation",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "x": 1,
+        "y": 0.25,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2024.acl-long.718.pdf",
+            "alignment": 0.25,
+            "contribution_summary": "This paper mentions 'Error-based learning' as a core concept in the context of adaptive teaching, where a system infers student misconceptions and optimizes example selection."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.1: Model-Based Exploration::Sub-4.1.1: AI equivalent of declarative learning with world models",
+        "requirement": "Sub-4.1.1: AI equivalent of declarative learning w...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper discusses neural-symbolic reasoning on knowledge graphs, which involves declarative knowledge representation, but does not explicitly link it to world models for exploration."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.1: Model-Based Exploration::Sub-4.1.2: Architecture showing exploration to exploitation shift",
+        "requirement": "Sub-4.1.2: Architecture showing exploration to exp...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.75,
+        "quadrant": "Q2_Promising_Seeds",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.75,
+            "contribution_summary": "Approved claims from this paper explicitly state that RL-based reasoning models like DeepPath and MINERVA exhibit an exploration-exploitation dynamic in their search strategies."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.1: Model-Based Exploration::Sub-4.1.3: Uncertainty-guided exploration strategies",
+        "requirement": "Sub-4.1.3: Uncertainty-guided exploration strategi...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 2,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2024.acl-long.718.pdf",
+            "alignment": 0.3,
+            "contribution_summary": "This paper introduces AT_O_M, a probabilistic method that infers student priors, which implicitly deals with uncertainty in a teaching context, but not directly as an exploration strategy for skill learning."
+          },
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.1,
+            "contribution_summary": "This paper mentions challenges with incorporating uncertainties in Spiking Neural Networks, indicating an awareness of uncertainty but not a solution for guided exploration."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.2: Policy Compilation::Sub-4.2.1: Compiling model-based to model-free policy",
+        "requirement": "Sub-4.2.1: Compiling model-based to model-free pol...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.4,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.4,
+            "contribution_summary": "This paper lists 'Policy Compilation' as a core concept, indicating relevance, but does not elaborate on the specific mechanism of compiling model-based to model-free policies."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.2: Policy Compilation::Sub-4.2.2: Hierarchical task chunking framework",
+        "requirement": "Sub-4.2.2: Hierarchical task chunking framework",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper discusses multi-hop reasoning, which involves breaking down complex tasks, but does not present a formal 'hierarchical task chunking framework'."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.2: Policy Compilation::Sub-4.2.4: Progressive network pruning during consolidation",
+        "requirement": "Sub-4.2.4: Progressive network pruning during cons...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 2,
+        "y": 0.22499999999999998,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.3,
+            "contribution_summary": "Approved claims from this paper mention AMIE+ achieving speedup through 'rule extending and pruning', which is a form of knowledge consolidation and reduction."
+          },
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.15,
+            "contribution_summary": "This paper discusses efforts to develop lightweight DL models and improve interpretability through techniques like knowledge distillation, which can involve pruning or simplification."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.3: Efficient Execution::Sub-4.3.1: Reduced computational cost after learning (>90% reduction)",
+        "requirement": "Sub-4.3.1: Reduced computational cost after learni...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.9,
+        "quadrant": "Q2_Promising_Seeds",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.9,
+            "contribution_summary": "Approved claims from this paper explicitly state AMIE+ achieves a '100x speedup' through rule pruning and RLvLR reduces search space, directly meeting the >90% reduction target."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.3: Efficient Execution::Sub-4.3.3: Hardware acceleration for compiled policies",
+        "requirement": "Sub-4.3.3: Hardware acceleration for compiled poli...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper discusses the computational cost of deep learning and efforts to develop lightweight models, which indirectly relates to the need for efficient execution that could benefit from hardware acceleration."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.1: Error signal propagation from motor output",
+        "requirement": "Sub-4.4.1: Error signal propagation from motor out...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.3,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2024.acl-long.718.pdf",
+            "alignment": 0.3,
+            "contribution_summary": "This paper lists 'Error-based learning' as a core concept, indicating a general understanding of using errors for learning, but not specifically from motor output."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.2: Credit assignment across temporal delays",
+        "requirement": "Sub-4.4.2: Credit assignment across temporal delay...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.85,
+        "quadrant": "Q2_Promising_Seeds",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.85,
+            "contribution_summary": "Approved claims from this paper explicitly state that SRN directly tackles delayed reward and uses intermediate rewards for credit assignment in multi-hop reasoning, directly addressing this requirement."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.3: Online learning during execution",
+        "requirement": "Sub-4.4.3: Online learning during execution",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.3,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2024.acl-long.718.pdf",
+            "alignment": 0.3,
+            "contribution_summary": "This paper discusses adaptive teaching methods (AT_O_M) that infer student priors and optimize example selection, which involves continuous adaptation that could be considered a form of online learning."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.4: Feedback Integration from Response Execution::Sub-4.4.4: Adaptive learning rate based on performance",
+        "requirement": "Sub-4.4.4: Adaptive learning rate based on perform...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.3,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2024.acl-long.718.pdf",
+            "alignment": 0.3,
+            "contribution_summary": "This paper describes adaptive teaching methods that adjust based on student performance, which is conceptually related to adapting learning based on performance, though not explicitly an 'adaptive learning rate'."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.5: Transfer Learning & Generalization::Sub-4.5.1: Cross-domain skill transfer metrics (>50% transfer efficiency)",
+        "requirement": "Sub-4.5.1: Cross-domain skill transfer metrics (>5...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 2,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2024.acl-long.718.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper lists 'Transfer learning (implicit)' as a core concept, suggesting its relevance, but does not provide metrics or specific mechanisms for cross-domain skill transfer."
+          },
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper mentions few-shot learning and analogical reasoning as future directions, which are related to generalization and transfer, but does not define specific cross-domain transfer metrics."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.5: Transfer Learning & Generalization::Sub-4.5.2: Noise robustness during automatization",
+        "requirement": "Sub-4.5.2: Noise robustness during automatization",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.2,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "s10489-025-06259-x.pdf",
+            "alignment": 0.2,
+            "contribution_summary": "This paper mentions challenges in incorporating uncertainties in SNNs, which is related to dealing with noisy inputs, but not specifically 'noise robustness during automatization'."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 4: AI Skill Automatization (Bridge)::REQ-A4.5: Transfer Learning & Generalization::Sub-4.5.4: Compositional skill combination",
+        "requirement": "Sub-4.5.4: Compositional skill combination",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "x": 1,
+        "y": 0.3,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.3,
+            "contribution_summary": "This paper discusses multi-hop reasoning and the combination of symbolic and neural methods, which inherently involves compositional aspects, but not explicitly 'compositional skill combination' in the context of automatization."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 6: AI Memory Systems (Bridge)::REQ-A6.1: Encoding & Consolidation::Sub-6.1.3: Context-binding in memory networks",
+        "requirement": "Sub-6.1.3: Context-binding in memory networks",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "x": 1,
+        "y": 0.7,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.7,
+            "contribution_summary": "Approved claims demonstrate that attention mechanisms in models like MULTIQUE and SRN perform context-binding by focusing on specific parts of questions in multi-hop reasoning."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 6: AI Memory Systems (Bridge)::REQ-A6.2: Retrieval & Prioritization::Sub-6.2.1: Associative cued recall model",
+        "requirement": "Sub-6.2.1: Associative cued recall model",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "x": 1,
+        "y": 0.8,
+        "quadrant": "Q2_Promising_Seeds",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.8,
+            "contribution_summary": "Approved claims establish that KGC and KGQA tasks are direct examples of associative cued recall, where entities or answers are inferred based on cues."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 6: AI Memory Systems (Bridge)::REQ-A6.2: Retrieval & Prioritization::Sub-6.2.2: Salience-based prioritization",
+        "requirement": "Sub-6.2.2: Salience-based prioritization",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "x": 1,
+        "y": 0.75,
+        "quadrant": "Q2_Promising_Seeds",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.75,
+            "contribution_summary": "Approved claims confirm that attention mechanisms in models like ConvAt, IRN, and MULTIQUE demonstrate salience-based prioritization by emphasizing specific parts of questions or neighbors."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 7: System Integration & Orchestration::REQ-7.3: Global vs Local Optimization Balance::Sub-7.3.1: Hierarchical control with local autonomy",
+        "requirement": "Sub-7.3.1: Hierarchical control with local autonom...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "x": 1,
+        "y": 0.65,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "2010.05446v5.pdf",
+            "alignment": 0.65,
+            "contribution_summary": "The MULTIQUE method of breaking down complex questions into simpler partial queries and building sub-query graphs demonstrates a form of hierarchical control with local autonomy."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 7: System Integration & Orchestration::REQ-7.4: Emergent Behavior Validation::Sub-7.4.1: Metrics for emergent intelligence",
+        "requirement": "Sub-7.4.1: Metrics for emergent intelligence",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "x": 1,
+        "y": 0.7,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "gk8117.pdf",
+            "alignment": 0.7,
+            "contribution_summary": "The use of Turing tests across various tasks serves as a metric for emergent intelligence by assessing whether AI output is indistinguishable from human behavior."
+          }
+        ]
+      },
+      {
+        "id": "Pillar 7: System Integration & Orchestration::REQ-7.4: Emergent Behavior Validation::Sub-7.4.3: Novel situation adaptation",
+        "requirement": "Sub-7.4.3: Novel situation adaptation",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "x": 1,
+        "y": 0.4,
+        "quadrant": "Q3_Critical_Gap",
+        "papers": [
+          {
+            "filename": "gk8117.pdf",
+            "alignment": 0.4,
+            "contribution_summary": "Turing tests are mentioned as a form of 'Emergent Behavior Validation' that assesses novel situation adaptation by determining if AI output is indistinguishable from human behavior."
+          }
+        ]
+      }
+    ],
+    "quadrants": {
+      "Q1_Strong_Foundation": {
+        "min_quantity": 8,
+        "min_quality": 0.7,
+        "color": "#28a745"
+      },
+      "Q2_Promising_Seeds": {
+        "max_quantity": 8,
+        "min_quality": 0.7,
+        "color": "#ffc107"
+      },
+      "Q3_Critical_Gap": {
+        "max_quantity": 8,
+        "max_quality": 0.7,
+        "color": "#dc3545"
+      },
+      "Q4_Hollow_Coverage": {
+        "min_quantity": 8,
+        "max_quality": 0.7,
+        "color": "#fd7e14"
+      }
+    }
+  }
+}
