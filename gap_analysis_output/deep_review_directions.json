@@ -1,24 +1,59 @@
 {
-  "Sub-1.1.3: Understanding of population coding for complex stimuli": {
-    "pillar": "Pillar 1: Biological Stimulus-Response",
-    "requirement": "REQ-B1.1: Sensory Transduction & Encoding",
+  "Sub-2.1.1: Event-based sensor integration with SNNs": {
+    "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+    "requirement": "REQ-A2.1: Neuromorphic Sensing & Encoding",
     "description": "",
-    "current_completeness": 50,
+    "current_completeness": 20,
     "contributing_papers": [
-      "gk8110.pdf"
+      "s10489-025-06259-x.pdf"
     ],
     "priority": "MEDIUM",
-    "gap_analysis": "The paper acknowledges the importance and potential of population coding for semantic information and complex stimuli, but it does not directly investigate or provide a detailed understanding of how population coding works. It primarily focuses on single-unit and multi-unit activity, suggesting that population-level encoding of semantic categories is conceivable but not directly studied."
+    "gap_analysis": "The literature mentions SNNs as biologically inspired but does not provide any specific details or examples of event-based sensor integration. It lacks discussion on methodologies, architectures, or challenges related to this integration."
   },
-  "Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing": {
-    "pillar": "Pillar 1: Biological Stimulus-Response",
-    "requirement": "REQ-B1.1: Sensory Transduction & Encoding",
+  "Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction": {
+    "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+    "requirement": "REQ-A2.1: Neuromorphic Sensing & Encoding",
     "description": "",
-    "current_completeness": 70,
+    "current_completeness": 30,
     "contributing_papers": [
-      "gk8110.pdf"
+      "gk8110.pdf",
+      "s10489-025-06259-x.pdf"
     ],
     "priority": "MEDIUM",
-    "gap_analysis": "While the paper provides strong evidence for feature extraction by ventral stream neurons (e.g., face neurons responding to visual features), it doesn't detail the *proven mechanism* of how these features are extracted at a cellular or circuit level, beyond selective firing. The 'early processing' aspect is covered for visual features, but the mechanism itself could be more deeply elaborated."
+    "gap_analysis": "While 'Feature extraction' is a core concept in some papers, and SNNs are mentioned, there's no direct discussion of *efficient SNN algorithms* specifically for *sparse feature extraction*. The connection to sparsity in SNNs is implied but not explicitly addressed with algorithms."
+  },
+  "Sub-2.2.1: Scalable training algorithms for deep SNNs": {
+    "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+    "requirement": "REQ-A2.2: Deep SNNs for Processing",
+    "description": "",
+    "current_completeness": 20,
+    "contributing_papers": [
+      "s10489-025-06259-x.pdf"
+    ],
+    "priority": "MEDIUM",
+    "gap_analysis": "While deep learning frameworks and SNNs are mentioned, there is no specific discussion or evidence regarding *scalable training algorithms* for *deep SNNs*. The challenges of SNNs are noted, but not solutions for scalability in training."
+  },
+  "Sub-2.2.2: SNN architecture for multi-sensory fusion": {
+    "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+    "requirement": "REQ-A2.2: Deep SNNs for Processing",
+    "description": "",
+    "current_completeness": 20,
+    "contributing_papers": [
+      "gk8117.pdf"
+    ],
+    "priority": "MEDIUM",
+    "gap_analysis": "Multi-modal training is mentioned in the context of improving AI models' human-like outputs, but there is no specific discussion or architecture proposed for *SNN-based multi-sensory fusion*."
+  },
+  "Sub-2.2.3: SNN-based attentional mechanism": {
+    "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+    "requirement": "REQ-A2.2: Deep SNNs for Processing",
+    "description": "",
+    "current_completeness": 30,
+    "contributing_papers": [
+      "gk8117.pdf",
+      "s10489-025-06259-x.pdf"
+    ],
+    "priority": "MEDIUM",
+    "gap_analysis": "Attention mechanisms are listed as a core concept and a technique to improve interpretability in DL, but there is no specific discussion or implementation of *SNN-based attentional mechanisms*."
   }
 }

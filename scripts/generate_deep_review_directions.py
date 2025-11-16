@@ -68,9 +68,12 @@ def identify_high_priority_gaps(gap_report: Dict, criteria: Dict) -> List[Dict]:
                 if criteria.get('has_papers', True) and not contributing_papers:
                     continue
                 
-                if criteria.get('min_confidence', 'medium'):
-                    if confidence not in ['medium', 'high']:
-                        continue
+                # Filter by minimum confidence level
+                min_confidence = criteria.get('min_confidence', 'medium')
+                if min_confidence == 'high' and confidence != 'high':
+                    continue
+                elif min_confidence == 'medium' and confidence not in ['medium', 'high']:
+                    continue
                 
                 # Calculate priority score
                 priority_score = calculate_priority_score(
