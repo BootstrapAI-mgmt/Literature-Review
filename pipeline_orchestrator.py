@@ -3,7 +3,7 @@
 Pipeline Orchestrator v2.0 - Advanced Features & Error Recovery
 
 Runs the full Literature Review pipeline automatically:
-1. Journal-Reviewer → 2. Judge → 3. DRA (conditional) → 4. Sync → 5. Orchestrator
+1. Journal-Reviewer → 2. Judge → 3. DRA (conditional) → 4. Sync → 5. Orchestrator → 6. Proof Scorecard
 
 Features (v1.x):
 - Checkpoint/resume capability
@@ -19,6 +19,7 @@ Features (v2.0 - New):
 - Parallel processing support (behind feature flag)
 - Per-paper checkpoint tracking
 - Enhanced observability and metrics
+- Proof completeness scorecard generation
 
 Usage:
     # Basic usage (v1.x compatible)
@@ -577,6 +578,9 @@ class PipelineOrchestrator:
 
         # Stage 5: Orchestrator
         self.run_stage("orchestrator", "literature_review.orchestrator", "Stage 5: Gap Analysis & Convergence", use_module=True)
+
+        # Stage 6: Proof Scorecard (NEW)
+        self.run_stage("proof_scorecard", "literature_review.analysis.proof_scorecard", "Stage 6: Proof Completeness Scorecard", use_module=True)
 
         # Mark pipeline complete
         self.checkpoint_data["status"] = "completed"

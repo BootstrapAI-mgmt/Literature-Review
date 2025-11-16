@@ -475,6 +475,15 @@ def main():
         output_dir='proof_scorecard_output'
     )
     
+    # Generate HTML visualization
+    try:
+        from .proof_scorecard_viz import generate_html
+        html_output = os.path.join('proof_scorecard_output', 'proof_readiness.html')
+        generate_html(scorecard, html_output)
+        logger.info(f"Saved HTML visualization to {html_output}")
+    except Exception as e:
+        logger.warning(f"Could not generate HTML visualization: {e}")
+    
     # Print summary
     print("\n" + "="*60)
     print("PROOF COMPLETENESS SCORECARD")
