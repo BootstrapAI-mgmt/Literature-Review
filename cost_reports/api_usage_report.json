@@ -1,0 +1,36 @@
+{
+  "generated_at": "2025-11-16T20:43:00.650486",
+  "session_summary": {
+    "total_calls": 0,
+    "total_cost": 0.0,
+    "total_tokens": 0,
+    "total_cache_savings": 0.0,
+    "by_module": {},
+    "by_model": {}
+  },
+  "total_summary": {
+    "total_calls": 0,
+    "total_cost": 0.0,
+    "total_tokens": 0,
+    "total_cache_savings": 0.0,
+    "by_module": {},
+    "by_model": {}
+  },
+  "budget_status": {
+    "budget": 50.0,
+    "spent": 0.0,
+    "remaining": 50.0,
+    "percent_used": 0.0,
+    "at_risk": false,
+    "over_budget": false
+  },
+  "per_paper_analysis": {},
+  "cache_efficiency": {
+    "cache_hit_rate_percent": 0,
+    "total_tokens_cached": 0,
+    "total_savings_usd": 0
+  },
+  "recommendations": [
+    "\u2705 No API calls logged yet. Start using the system to get recommendations!"
+  ]
+}
