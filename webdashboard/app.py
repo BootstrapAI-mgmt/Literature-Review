@@ -10,6 +10,7 @@ Provides RESTful API and WebSocket endpoints for:
 
 import asyncio
 import json
+import logging
 import os
 import shutil
 import time
@@ -22,6 +23,9 @@ from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSock
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+
+# Setup logger
+logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -117,6 +121,7 @@ class JobConfig(BaseModel):
     """Job configuration parameters"""
     pillar_selections: List[str]
     run_mode: str  # "ONCE" or "DEEP_LOOP"
+    convergence_threshold: float = 5.0  # Default convergence threshold
 
 # Helper functions
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
@@ -222,6 +227,85 @@ async def upload_file(
     })
     
     return {"job_id": job_id, "status": "queued", "filename": file.filename}
+
+@app.post("/api/upload/batch")
+async def upload_batch(
+    files: List[UploadFile] = File(...),
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Upload multiple PDF files for a single analysis job
+    
+    Args:
+        files: List of PDF files to upload
+    
+    Returns:
+        Job ID and file count
+    """
+    verify_api_key(api_key)
+    
+    # Validate all files are PDFs
+    for file in files:
+        if not file.filename.endswith('.pdf'):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid file type: {file.filename}. Only PDFs allowed."
+            )
+    
+    # Generate job ID
+    job_id = str(uuid.uuid4())
+    
+    # Create job directory
+    job_dir = UPLOADS_DIR / job_id
+    job_dir.mkdir(exist_ok=True)
+    
+    # Save all uploaded files
+    uploaded_files = []
+    try:
+        for file in files:
+            # Sanitize filename
+            safe_filename = "".join(c for c in file.filename if c.isalnum() or c in "._- ")
+            target_path = job_dir / safe_filename
+            
+            with open(target_path, 'wb') as out:
+                shutil.copyfileobj(file.file, out)
+            uploaded_files.append({
+                "original_name": file.filename,
+                "path": str(target_path),
+                "size": target_path.stat().st_size
+            })
+    except Exception as e:
+        # Cleanup on error
+        shutil.rmtree(job_dir, ignore_errors=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to save files: {str(e)}"
+        )
+    
+    # Create job record - status is "draft" until configured
+    job_data = {
+        "id": job_id,
+        "status": "draft",  # Not queued until configured
+        "files": uploaded_files,
+        "file_count": len(uploaded_files),
+        "created_at": datetime.utcnow().isoformat(),
+        "config": None  # Will be set when user configures job
+    }
+    
+    save_job(job_id, job_data)
+    
+    # Broadcast update
+    await manager.broadcast({
+        "type": "job_created",
+        "job": job_data
+    })
+    
+    return {
+        "job_id": job_id,
+        "status": "draft",
+        "file_count": len(uploaded_files),
+        "files": uploaded_files
+    }
 
 @app.get("/api/jobs")
 async def list_jobs(
@@ -350,6 +434,90 @@ async def configure_job(
     save_job(job_id, job_data)
     
     return {"job_id": job_id, "config": config.dict()}
+
+@app.post("/api/jobs/{job_id}/start")
+async def start_job(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Start execution of a configured job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        Confirmation with job status
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job_data.get("status") not in ["draft", "failed"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job cannot be started (current status: {job_data['status']})"
+        )
+    
+    if not job_data.get("config"):
+        raise HTTPException(
+            status_code=400,
+            detail="Job must be configured before starting"
+        )
+    
+    # Build research database from uploaded files
+    try:
+        from webdashboard.database_builder import ResearchDatabaseBuilder
+        
+        job_dir = UPLOADS_DIR / job_id
+        pdf_files = list(job_dir.glob("*.pdf"))
+        
+        if not pdf_files:
+            raise HTTPException(
+                status_code=400,
+                detail="No PDF files found for this job"
+            )
+        
+        builder = ResearchDatabaseBuilder(job_id, pdf_files)
+        csv_path = builder.build_database()
+        
+        # Update job data with database path
+        job_data["research_database"] = str(csv_path)
+        
+    except ImportError:
+        raise HTTPException(
+            status_code=500,
+            detail="Database builder module not available"
+        )
+    except Exception as e:
+        logger.error(f"Failed to build database for job {job_id}: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to build research database: {str(e)}"
+        )
+    
+    # Update job status to queued
+    job_data["status"] = "queued"
+    job_data["queued_at"] = datetime.utcnow().isoformat()
+    save_job(job_id, job_data)
+    
+    # Enqueue for processing
+    if job_runner:
+        await job_runner.enqueue_job(job_id, job_data)
+    
+    # Broadcast update
+    await manager.broadcast({
+        "type": "job_started",
+        "job": job_data
+    })
+    
+    return {
+        "job_id": job_id,
+        "status": "queued",
+        "message": "Job queued for execution"
+    }
 
 @app.get("/api/logs/{job_id}")
 async def get_job_logs(

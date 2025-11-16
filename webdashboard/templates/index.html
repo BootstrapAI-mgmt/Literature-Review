@@ -108,24 +108,45 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header bg-primary text-white">
-                        <h5 class="mb-0">📤 Upload New PDF</h5>
+                        <h5 class="mb-0">📤 Upload Research Papers</h5>
                     </div>
                     <div class="card-body">
-                        <form id="uploadForm">
+                        <form id="batchUploadForm">
                             <div class="mb-3">
-                                <label for="fileInput" class="form-label">Select PDF file</label>
-                                <input class="form-control" type="file" id="fileInput" accept=".pdf" required>
+                                <label for="batchFileInput" class="form-label">
+                                    Select PDF files (multiple allowed)
+                                </label>
+                                <input 
+                                    class="form-control" 
+                                    type="file" 
+                                    id="batchFileInput" 
+                                    accept=".pdf" 
+                                    multiple
+                                    required>
+                                <div class="form-text">
+                                    Select one or more research papers (PDF format only)
+                                </div>
                             </div>
+                            
                             <div class="mb-3">
                                 <label for="apiKeyInput" class="form-label">API Key</label>
-                                <input type="password" class="form-control" id="apiKeyInput" 
-                                       placeholder="Enter API key" value="dev-key-change-in-production">
+                                <input 
+                                    type="password" 
+                                    class="form-control" 
+                                    id="apiKeyInput" 
+                                    value="dev-key-change-in-production">
                             </div>
-                            <button type="submit" class="btn btn-primary">Upload & Queue Job</button>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                📤 Upload Papers
+                            </button>
                         </form>
-                        <div class="progress mt-3" id="uploadProgress">
+                        
+                        <div class="progress mt-3" id="uploadProgress" style="display: none;">
                             <div class="progress-bar progress-bar-striped progress-bar-animated" 
-                                 role="progressbar" style="width: 100%"></div>
+                                 role="progressbar" style="width: 100%">
+                                Uploading...
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -162,6 +183,120 @@
                             </table>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Job Configuration Modal -->
+    <div class="modal fade" id="configModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Configure Analysis</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="configForm">
+                        <!-- Job Info -->
+                        <div class="alert alert-info">
+                            <strong>Job ID:</strong> <span id="configJobId"></span><br>
+                            <strong>Files:</strong> <span id="configFileCount"></span> PDFs uploaded
+                        </div>
+                        
+                        <!-- Pillar Selection -->
+                        <div class="mb-4">
+                            <h6>Select Pillars to Analyze</h6>
+                            <div class="form-check">
+                                <input 
+                                    class="form-check-input pillar-checkbox" 
+                                    type="checkbox" 
+                                    value="ALL" 
+                                    id="pillar_all"
+                                    onchange="toggleAllPillars(this)">
+                                <label class="form-check-label" for="pillar_all">
+                                    <strong>All Pillars</strong> (Comprehensive Analysis)
+                                </label>
+                            </div>
+                            <hr>
+                            <div id="pillarCheckboxes">
+                                <!-- Populated dynamically from pillar_definitions.json -->
+                            </div>
+                        </div>
+                        
+                        <!-- Run Mode Selection -->
+                        <div class="mb-4">
+                            <h6>Analysis Mode</h6>
+                            <div class="form-check">
+                                <input 
+                                    class="form-check-input" 
+                                    type="radio" 
+                                    name="runMode" 
+                                    value="ONCE" 
+                                    id="mode_once"
+                                    checked>
+                                <label class="form-check-label" for="mode_once">
+                                    <strong>Single Pass</strong> - Quick analysis (faster)
+                                </label>
+                                <div class="form-text ms-4">
+                                    Runs analysis once without iterative refinement.
+                                    Recommended for initial exploration.
+                                </div>
+                            </div>
+                            <div class="form-check mt-2">
+                                <input 
+                                    class="form-check-input" 
+                                    type="radio" 
+                                    name="runMode" 
+                                    value="DEEP_LOOP" 
+                                    id="mode_deep">
+                                <label class="form-check-label" for="mode_deep">
+                                    <strong>Deep Iterative Loop</strong> - Comprehensive (slower)
+                                </label>
+                                <div class="form-text ms-4">
+                                    Runs Deep Reviewer iteratively until convergence (±5%).
+                                    Provides most thorough gap analysis.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Advanced Options (Optional) -->
+                        <div class="mb-3">
+                            <button 
+                                class="btn btn-sm btn-outline-secondary" 
+                                type="button" 
+                                data-bs-toggle="collapse" 
+                                data-bs-target="#advancedOptions">
+                                ⚙️ Advanced Options
+                            </button>
+                            <div class="collapse mt-2" id="advancedOptions">
+                                <div class="card card-body">
+                                    <div class="mb-2">
+                                        <label class="form-label">Convergence Threshold (%)</label>
+                                        <input 
+                                            type="number" 
+                                            class="form-control" 
+                                            id="convergenceThreshold"
+                                            value="5.0"
+                                            min="0.1"
+                                            max="20"
+                                            step="0.1">
+                                        <div class="form-text">
+                                            Stop iterating when changes are below this threshold
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="saveConfigAndStart()">
+                        🚀 Save & Start Analysis
+                    </button>
                 </div>
             </div>
         </div>
@@ -329,6 +464,7 @@
         // Get status badge
         function getStatusBadge(status) {
             const badges = {
+                'draft': 'bg-info',
                 'queued': 'bg-secondary',
                 'running': 'bg-primary',
                 'completed': 'bg-success',
@@ -436,33 +572,32 @@
             }
         }
         
-        // Upload form handler
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+        // Upload form handler - Batch upload with configuration
+        document.getElementById('batchUploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
+            const fileInput = document.getElementById('batchFileInput');
+            const files = fileInput.files;
             
-            if (!file) {
-                alert('Please select a file');
+            if (files.length === 0) {
+                alert('Please select at least one PDF file');
                 return;
             }
             
             // Update API key from input
             apiKey = document.getElementById('apiKeyInput').value;
             
-            // Show progress
             document.getElementById('uploadProgress').style.display = 'block';
             
             try {
                 const formData = new FormData();
-                formData.append('file', file);
+                for (let file of files) {
+                    formData.append('files', file);
+                }
                 
-                const response = await fetch(`${API_BASE}/api/upload`, {
+                const response = await fetch(`${API_BASE}/api/upload/batch`, {
                     method: 'POST',
-                    headers: {
-                        'X-API-KEY': apiKey
-                    },
+                    headers: { 'X-API-KEY': apiKey },
                     body: formData
                 });
                 
@@ -473,19 +608,133 @@
                 
                 const result = await response.json();
                 
+                // Show configuration modal
+                currentJobId = result.job_id;
+                document.getElementById('configJobId').textContent = result.job_id;
+                document.getElementById('configFileCount').textContent = result.file_count;
+                
+                const modal = new bootstrap.Modal(document.getElementById('configModal'));
+                modal.show();
+                
                 // Reset form
                 fileInput.value = '';
                 
-                // Show success
-                alert(`File uploaded successfully! Job ID: ${result.job_id}`);
-                
             } catch (error) {
-                console.error('Upload error:', error);
                 alert('Upload failed: ' + error.message);
             } finally {
                 document.getElementById('uploadProgress').style.display = 'none';
             }
         });
+        
+        // Load pillar definitions and populate checkboxes
+        async function loadPillarDefinitions() {
+            try {
+                const response = await fetch('/static/pillar_definitions.json');
+                const definitions = await response.json();
+                
+                const container = document.getElementById('pillarCheckboxes');
+                container.innerHTML = '';
+                
+                // Filter out metadata sections
+                const metadata = ['Framework_Overview', 'Cross_Cutting_Requirements', 'Success_Criteria'];
+                
+                for (const [key, value] of Object.entries(definitions)) {
+                    if (metadata.includes(key)) continue;
+                    
+                    const checkbox = document.createElement('div');
+                    checkbox.className = 'form-check';
+                    checkbox.innerHTML = `
+                        <input 
+                            class="form-check-input pillar-checkbox-individual" 
+                            type="checkbox" 
+                            value="${key}" 
+                            id="pillar_${key.replace(/[^a-zA-Z0-9]/g, '_')}">
+                        <label class="form-check-label" for="pillar_${key.replace(/[^a-zA-Z0-9]/g, '_')}">
+                            ${key.replace(/_/g, ' ')}
+                        </label>
+                    `;
+                    container.appendChild(checkbox);
+                }
+            } catch (error) {
+                console.error('Failed to load pillar definitions:', error);
+            }
+        }
+        
+        // Toggle all pillars
+        function toggleAllPillars(checkbox) {
+            const individual = document.querySelectorAll('.pillar-checkbox-individual');
+            individual.forEach(cb => {
+                cb.checked = checkbox.checked;
+                cb.disabled = checkbox.checked;
+            });
+        }
+        
+        // Save configuration and start job
+        async function saveConfigAndStart() {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            
+            // Collect selected pillars
+            let pillar_selections = [];
+            if (document.getElementById('pillar_all').checked) {
+                pillar_selections = ['ALL'];
+            } else {
+                document.querySelectorAll('.pillar-checkbox-individual:checked').forEach(cb => {
+                    pillar_selections.push(cb.value);
+                });
+            }
+            
+            if (pillar_selections.length === 0) {
+                alert('Please select at least one pillar');
+                return;
+            }
+            
+            // Get run mode
+            const run_mode = document.querySelector('input[name="runMode"]:checked').value;
+            
+            // Get advanced options
+            const convergence_threshold = parseFloat(
+                document.getElementById('convergenceThreshold').value
+            );
+            
+            const config = {
+                pillar_selections,
+                run_mode,
+                convergence_threshold
+            };
+            
+            try {
+                // Save configuration
+                const configResponse = await fetch(`${API_BASE}/api/jobs/${currentJobId}/configure`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': apiKey
+                    },
+                    body: JSON.stringify(config)
+                });
+                
+                if (!configResponse.ok) throw new Error('Configuration failed');
+                
+                // Start job execution
+                const startResponse = await fetch(`${API_BASE}/api/jobs/${currentJobId}/start`, {
+                    method: 'POST',
+                    headers: { 'X-API-KEY': apiKey }
+                });
+                
+                if (!startResponse.ok) {
+                    const error = await startResponse.json();
+                    throw new Error(error.detail || 'Failed to start job');
+                }
+                
+                // Close modal
+                bootstrap.Modal.getInstance(document.getElementById('configModal')).hide();
+                
+                alert(`Job ${currentJobId} started successfully!`);
+                
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        }
         
         // Download button handler
         document.getElementById('downloadBtn').addEventListener('click', async () => {
@@ -528,6 +777,7 @@
         
         // Initialize
         connectWebSocket();
+        loadPillarDefinitions();
     </script>
 </body>
 </html>
