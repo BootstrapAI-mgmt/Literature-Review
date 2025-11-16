@@ -17,6 +17,7 @@ from sentence_transformers import SentenceTransformer
 # Import global rate limiter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from global_rate_limiter import global_limiter, ErrorAction
+from cost_tracker import get_cost_tracker
 
 load_dotenv()
 
@@ -78,8 +79,18 @@ class APIManager:
     def get_cache_filepath(self, prompt_hash: str) -> str:
         return os.path.join(self.cache_dir, f"{prompt_hash}.json")
 
-    def cached_api_call(self, prompt: str, use_cache: bool = True, is_json: bool = True) -> Optional[Any]:
-        """Make API call with caching, validation, and retry logic"""
+    def cached_api_call(self, prompt: str, use_cache: bool = True, is_json: bool = True, 
+                       module: str = 'unknown', operation: str = '', paper: str = '') -> Optional[Any]:
+        """Make API call with caching, validation, and retry logic
+        
+        Args:
+            prompt: The prompt to send to the API
+            use_cache: Whether to use cached responses
+            is_json: Whether to expect JSON response
+            module: Module name for cost tracking (e.g., 'journal_reviewer', 'judge')
+            operation: Operation description for cost tracking
+            paper: Paper filename for cost tracking
+        """
         prompt_hash = hashlib.md5(prompt.encode('utf-8')).hexdigest()
         cache_filepath = self.get_cache_filepath(prompt_hash)
 
@@ -120,6 +131,29 @@ class APIManager:
                 response_text = response.text
                 result = json.loads(response_text) if is_json else response_text
                 
+                # Track API cost
+                try:
+                    cost_tracker = get_cost_tracker()
+                    # Extract token counts from response metadata
+                    if hasattr(response, 'usage_metadata'):
+                        usage_metadata = response.usage_metadata
+                        input_tokens = getattr(usage_metadata, 'prompt_token_count', 0)
+                        output_tokens = getattr(usage_metadata, 'candidates_token_count', 0)
+                        cached_tokens = getattr(usage_metadata, 'cached_content_token_count', 0)
+                        
+                        cost_tracker.log_api_call(
+                            module=module,
+                            model="gemini-2.5-flash",
+                            input_tokens=input_tokens,
+                            output_tokens=output_tokens,
+                            cached_tokens=cached_tokens,
+                            operation=operation,
+                            paper=paper
+                        )
+                except Exception as e:
+                    # Don't fail the API call if cost tracking fails
+                    logger.warning(f"Failed to log API cost: {e}")
+                
                 try:
                     with open(cache_filepath, 'w', encoding='utf-8') as f:
                         json.dump(result, f, indent=2)
@@ -139,6 +173,28 @@ class APIManager:
                         repaired = response_text.replace('""', '"')  # Fix: ""key" -> "key"
                         result = json.loads(repaired)
                         logger.info("✅ Successfully repaired malformed JSON")
+                        
+                        # Track API cost for repaired response
+                        try:
+                            cost_tracker = get_cost_tracker()
+                            if hasattr(response, 'usage_metadata'):
+                                usage_metadata = response.usage_metadata
+                                input_tokens = getattr(usage_metadata, 'prompt_token_count', 0)
+                                output_tokens = getattr(usage_metadata, 'candidates_token_count', 0)
+                                cached_tokens = getattr(usage_metadata, 'cached_content_token_count', 0)
+                                
+                                cost_tracker.log_api_call(
+                                    module=module,
+                                    model="gemini-2.5-flash",
+                                    input_tokens=input_tokens,
+                                    output_tokens=output_tokens,
+                                    cached_tokens=cached_tokens,
+                                    operation=operation,
+                                    paper=paper
+                                )
+                        except Exception as tracking_error:
+                            logger.warning(f"Failed to log API cost: {tracking_error}")
+                        
                         # Cache the repaired result
                         try:
                             with open(cache_filepath, 'w', encoding='utf-8') as f:
