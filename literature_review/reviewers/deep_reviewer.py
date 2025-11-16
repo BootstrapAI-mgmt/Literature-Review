@@ -32,6 +32,10 @@ from sentence_transformers import SentenceTransformer
 import warnings
 from pathlib import Path
 
+# Import global rate limiter
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.global_rate_limiter import global_limiter, ErrorAction
+
 # --- CONFIGURATION ---
 load_dotenv()
 
@@ -53,7 +57,7 @@ CACHE_DIR = 'deep_reviewer_cache'
 API_CONFIG = {
     "RETRY_ATTEMPTS": 3,
     "RETRY_DELAY": 5,
-    "API_CALLS_PER_MINUTE": 60,
+    "API_CALLS_PER_MINUTE": 10,  # Conservative limit for gemini-2.5-flash (1000 RPM available)
 }
 REVIEW_CONFIG = {
     "DEEP_REVIEWER_CHUNK_SIZE": 75000,  # Chunk size for Deep Reviewer text processing
@@ -147,7 +151,7 @@ class APIManager:
                 thinking_config=thinking_config
             )
 
-            logger.info(f"[SUCCESS] Gemini Client (google-ai SDK) initialized (Thinking Enabled.")
+            logger.info(f"[SUCCESS] Gemini Client (google-ai SDK) initialized (Thinking Enabled).")
             safe_print(f"✅ Gemini Client initialized successfully (Thinking Enabled).")
         except Exception as e:
             logger.critical(f"[ERROR] Critical Error initializing Gemini Client: {e}")
@@ -155,31 +159,29 @@ class APIManager:
             raise
 
     def rate_limit(self):
-        """Implement rate limiting"""
-        current_time = time.time()
-        if current_time - self.minute_start >= 60:
-            self.calls_this_minute = 0
-            self.minute_start = current_time
-
-        if self.calls_this_minute >= API_CONFIG['API_CALLS_PER_MINUTE']:
-            sleep_time = 60.1 - (current_time - self.minute_start)
-            if sleep_time > 0:
-                logger.info(
-                    f"Rate limit ({API_CONFIG['API_CALLS_PER_MINUTE']}/min) reached. Sleeping for {sleep_time:.1f} seconds...")
-                safe_print(f"⏳ Rate limit reached. Sleeping for {sleep_time:.1f} seconds...")
-                time.sleep(sleep_time)
-                self.calls_this_minute = 0
-                self.minute_start = time.time()
-        self.calls_this_minute += 1
+        """Implement rate limiting using global limiter"""
+        global_limiter.wait_for_quota()
 
     def cached_api_call(self, prompt: str, use_cache: bool = True) -> Optional[Any]:
-        """Make API call with caching and retry logic"""
+        """Make API call with caching, validation, and retry logic"""
         prompt_hash = hashlib.md5(prompt.encode('utf-8')).hexdigest()
 
         if use_cache and prompt_hash in self.cache:
             logger.debug(f"Cache hit for hash: {prompt_hash}")
             safe_print("📦 Using cached response")
             return self.cache[prompt_hash]
+
+        # Validate request before making API call
+        is_valid, reason = global_limiter.validate_request(prompt, {'response_mime_type': 'application/json'})
+        if not is_valid:
+            logger.error(f"Request validation failed: {reason}")
+            global_limiter.record_request(success=False)
+            return None
+        
+        # Check if we should abort due to error patterns
+        if global_limiter.should_abort_pipeline():
+            logger.critical("Pipeline abort recommended due to error patterns")
+            return None
 
         logger.debug(f"Cache miss for hash: {prompt_hash}. Calling API...")
         self.rate_limit()
@@ -196,21 +198,42 @@ class APIManager:
                 response_text = response.text
                 result = json.loads(response_text)
                 self.cache[prompt_hash] = result
+                # Record successful request
+                global_limiter.record_request(success=True)
                 return result
             except json.JSONDecodeError as e:
                 logger.error(
                     f"JSON decode error on attempt {attempt + 1}: {e}. Response text: '{response_text[:500]}...'")
-                if attempt < API_CONFIG['RETRY_ATTEMPTS'] - 1:
+                # Categorize error
+                category = global_limiter.categorize_error(e, response_text)
+                action = global_limiter.get_action_for_error(category)
+                global_limiter.record_request(success=False, error_category=category, action=action)
+                
+                if action == ErrorAction.SKIP_DOCUMENT:
+                    logger.error(f"Skipping document due to {category.name}")
+                    return None
+                elif attempt < API_CONFIG['RETRY_ATTEMPTS'] - 1:
                     time.sleep(API_CONFIG['RETRY_DELAY'])
                 else:
                     logger.error("Max retries reached for JSON decode error.")
             except Exception as e:
+                # Categorize error
+                category = global_limiter.categorize_error(e, str(e))
+                action = global_limiter.get_action_for_error(category)
+                global_limiter.record_request(success=False, error=e, response_text=str(e))
+                
                 if "DeadlineExceeded" in str(e) or "Timeout" in str(e):
                     logger.error(f"API call timed out on attempt {attempt + 1}")
                 else:
                     logger.error(f"API error on attempt {attempt + 1}: {type(e).__name__} - {e}")
 
-                if "429" in str(e):
+                if action == ErrorAction.ABORT_PIPELINE:
+                    logger.critical(f"Aborting due to {category.name}")
+                    return None
+                elif action == ErrorAction.SKIP_DOCUMENT:
+                    logger.error(f"Skipping document due to {category.name}")
+                    return None
+                elif "429" in str(e):
                     logger.warning("Rate limit error detected by API, increasing sleep time.")
                     time.sleep(API_CONFIG['RETRY_DELAY'] * (attempt + 2))
                 elif attempt < API_CONFIG['RETRY_ATTEMPTS'] - 1:

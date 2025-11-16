@@ -23,9 +23,9 @@ import hashlib
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Tuple, Optional, Any
-# Use google.generativeai (SDK v0.8.5+)
-import google.generativeai as genai
-from google.generativeai import types
+# Use google.genai (new SDK)
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 import numpy as np
 import logging
@@ -33,6 +33,10 @@ import warnings
 import re               # For normalization
 import difflib          # For fuzzy matching
 from collections import defaultdict  # For grouping claims by file
+
+# Import global rate limiter
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.global_rate_limiter import global_limiter, ErrorAction
 
 # --- NEW: Import the Deep Requirements Analyzer ---
 from . import requirements as dra
@@ -55,7 +59,7 @@ CACHE_DIR = 'judge_cache'
 API_CONFIG = {
     "RETRY_ATTEMPTS": 3,
     "RETRY_DELAY": 5,
-    "API_CALLS_PER_MINUTE": 60,
+    "API_CALLS_PER_MINUTE": 10,  # Conservative limit for gemini-2.5-flash (1000 RPM available)
     "MATCH_CONFIDENCE_THRESHOLD": 0.8, # Match must be 80% similar
     "CLAIM_BATCH_SIZE": 10,  # Process claims in batches to handle large datasets
     # Consensus configuration (Task Card #18)
@@ -162,21 +166,8 @@ class APIManager:
             raise
 
     def rate_limit(self):
-        # (This function is unchanged)
-        current_time = time.time()
-        if current_time - self.minute_start >= 60:
-            self.calls_this_minute = 0
-            self.minute_start = current_time
-        if self.calls_this_minute >= API_CONFIG['API_CALLS_PER_MINUTE']:
-            sleep_time = 60.1 - (current_time - self.minute_start)
-            if sleep_time > 0:
-                logger.info(
-                    f"Rate limit ({API_CONFIG['API_CALLS_PER_MINUTE']}/min) reached. Sleeping for {sleep_time:.1f} seconds...")
-                safe_print(f"⏳ Rate limit reached. Sleeping for {sleep_time:.1f} seconds...")
-                time.sleep(sleep_time)
-                self.calls_this_minute = 0
-                self.minute_start = time.time()
-        self.calls_this_minute += 1
+        """Implement rate limiting using global limiter"""
+        global_limiter.wait_for_quota()
 
     # --- MODIFIED: cached_api_call now accepts 'is_json' ---
     def cached_api_call(self, prompt: str, use_cache: bool = True, is_json: bool = True) -> Optional[Any]:
@@ -185,6 +176,18 @@ class APIManager:
             logger.debug(f"Cache hit for hash: {prompt_hash}")
             safe_print("📦 Using cached response")
             return self.cache[prompt_hash]
+
+        # Validate request before making API call
+        is_valid, reason = global_limiter.validate_request(prompt, {'response_mime_type': 'application/json' if is_json else None})
+        if not is_valid:
+            logger.error(f"Request validation failed: {reason}")
+            global_limiter.record_request(success=False)
+            return None
+        
+        # Check if we should abort due to error patterns
+        if global_limiter.should_abort_pipeline():
+            logger.critical("Pipeline abort recommended due to error patterns")
+            return None
 
         logger.debug(f"Cache miss for hash: {prompt_hash}. Calling API...")
         self.rate_limit()
@@ -201,6 +204,14 @@ class APIManager:
                     config=current_config_object
                 )
                 response_text = response.text
+                
+                # DEBUG: Check for truncation issues
+                if response.candidates:
+                    finish_reason = response.candidates[0].finish_reason
+                    if finish_reason != 1:  # 1 = STOP (normal completion)
+                        logger.warning(f"⚠️ Response finish_reason: {finish_reason}, text length: {len(response_text)}")
+                        if hasattr(response.candidates[0], 'safety_ratings'):
+                            logger.warning(f"Safety ratings: {response.candidates[0].safety_ratings}")
 
                 # --- MODIFICATION: Parse based on 'is_json' ---
                 if is_json:
@@ -210,25 +221,74 @@ class APIManager:
                 # --- END MODIFICATION ---
 
                 self.cache[prompt_hash] = result
+                # Record successful request
+                global_limiter.record_request(success=True)
                 return result
 
             except json.JSONDecodeError as e:
+                # DEBUG: Save full response to file for analysis
+                debug_file = f"/tmp/judge_response_debug_{attempt}.txt"
+                with open(debug_file, 'w') as f:
+                    f.write(f"Response length: {len(response_text)}\n")
+                    f.write(f"Error: {e}\n")
+                    f.write(f"Full response:\n{response_text}\n")
+                logger.error(f"Saved debug response to {debug_file}")
+                
                 logger.error(
                     f"JSON decode error on attempt {attempt + 1}: {e}. Response text: '{response_text[:500]}...'")
-                if attempt < API_CONFIG['RETRY_ATTEMPTS'] - 1:
+                
+                # Try to repair common JSON issues
+                if attempt == 0:  # Only try repair on first attempt
+                    try:
+                        # Fix common malformations
+                        repaired = response_text
+                        # Fix double quotes at key start: ""key" -> "key"
+                        repaired = repaired.replace('""', '"')
+                        # Try parsing repaired JSON
+                        result = json.loads(repaired)
+                        logger.info("✅ Successfully repaired malformed JSON")
+                        self.cache[prompt_hash] = result
+                        global_limiter.record_request(success=True)
+                        return result
+                    except json.JSONDecodeError:
+                        logger.warning("JSON repair failed, will retry API call")
+                
+                # Categorize error
+                category = global_limiter.categorize_error(e, response_text)
+                action = global_limiter.get_action_for_error(category)
+                global_limiter.record_request(success=False, error=e, response_text=response_text)
+                
+                if action == ErrorAction.SKIP_DOCUMENT:
+                    logger.error(f"Skipping claim due to {category.name}")
+                    return None
+                elif attempt < API_CONFIG['RETRY_ATTEMPTS'] - 1:
                     time.sleep(API_CONFIG['RETRY_DELAY'])
                 else:
                     logger.error("Max retries reached for JSON decode error.")
             except Exception as e:
+                # Categorize error
+                category = global_limiter.categorize_error(e, str(e))
+                action = global_limiter.get_action_for_error(category)
+                global_limiter.record_request(success=False, error=e, response_text=str(e))
+                
                 if "DeadlineExceeded" in str(e) or "Timeout" in str(e):
                     logger.error(f"API call timed out on attempt {attempt + 1}")
                 else:
                     logger.error(f"API error on attempt {attempt + 1}: {type(e).__name__} - {e}")
-                if "429" in str(e):
+                
+                if action == ErrorAction.ABORT_PIPELINE:
+                    logger.critical(f"Aborting due to {category.name}")
+                    return None
+                elif action == ErrorAction.SKIP_DOCUMENT:
+                    logger.error(f"Skipping claim due to {category.name}")
+                    return None
+                elif "429" in str(e):
                     logger.warning("Rate limit error detected by API, increasing sleep time.")
                     time.sleep(API_CONFIG['RETRY_DELAY'] * (attempt + 2))
                 elif attempt < API_CONFIG['RETRY_ATTEMPTS'] - 1:
-                    time.sleep(API_CONFIG['RETRY_DELAY'])
+                    # Use delay from action's value tuple (name, delay_seconds)
+                    _, delay = action.value
+                    time.sleep(delay if delay > 0 else API_CONFIG['RETRY_DELAY'])
                 else:
                     logger.error("Max retries reached for API error.")
 
@@ -695,7 +755,7 @@ def validate_judge_response_enhanced(response: Any) -> Optional[Dict]:
         "relevance_score": (1, 5),
         "directness": (1, 3),
         "reproducibility_score": (1, 5),
-        "composite_score": (1, 5)
+        "composite_score": (0, 5)  # Composite can be 0-5 (average of other scores)
     }
     
     for score_name, (min_val, max_val) in required_scores.items():
@@ -954,10 +1014,21 @@ def process_claim_with_adaptive_consensus(claim: Dict, sub_req_def: str, api_man
     prompt = build_judge_prompt_enhanced(claim, sub_req_def)
     logger.info(f"  Submitting claim to Judge AI (initial evaluation)...")
     response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+    logger.info(f"  Response received: type={type(response)}, is_dict={isinstance(response, dict)}")
+    if isinstance(response, dict):
+        logger.info(f"  Response keys: {list(response.keys())}")
     single_judgment = validate_judge_response_enhanced(response)
     
     if not single_judgment:
         logger.error(f"  Initial judgment failed for claim {claim.get('claim_id', 'N/A')}")
+        if isinstance(response, dict):
+            logger.warning(f"  Validation failed. Has 'verdict': {'verdict' in response}, Has 'evidence_quality': {'evidence_quality' in response}")
+            if 'evidence_quality' in response:
+                quality = response['evidence_quality']
+                logger.warning(f"  evidence_quality contents: {quality}")
+                missing_scores = [k for k in ['strength_score', 'rigor_score', 'relevance_score', 'directness', 'reproducibility_score', 'composite_score'] if k not in quality]
+                if missing_scores:
+                    logger.warning(f"  Missing scores in evidence_quality: {missing_scores}")
         return None
     
     # Add evidence quality to claim temporarily to check if consensus needed
@@ -1003,10 +1074,11 @@ def main():
         safe_print(f"❌ Failed to initialize core components: {init_e}")
         return
 
-    papers_folder_path = dra.find_papers_folder()
-    if not papers_folder_path:
+    papers_folder_path = 'data/raw'  # Standard papers folder location
+    if not os.path.isdir(papers_folder_path):
         logger.error("Could not find PAPERS_FOLDER. DRA will fail.")
         safe_print("❌ Could not find PAPERS_FOLDER. DRA will be skipped.")
+        papers_folder_path = None
 
     logger.info("\n=== LOADING DATA ===")
     safe_print("\n=== LOADING DATA ===")
@@ -1035,7 +1107,7 @@ def main():
     if not claims_to_judge:
         logger.info("No pending claims found in version history.")
         safe_print("⚖️ No pending claims found. All work is done.")
-        return
+        return True  # No claims to judge is success, not failure
     
     logger.info(f"Found {len(claims_to_judge)} total claims pending judgment.")
     safe_print(f"⚖️ Found {len(claims_to_judge)} total claims pending judgment. The court is in session.")
@@ -1102,7 +1174,12 @@ def main():
                         logger.info(f"  Submitting claim to Judge AI...")
                         safe_print(f"  Submitting claim to Judge AI...")
                         response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+                        logger.info(f"  Response type: {type(response)}, has keys: {bool(response and isinstance(response, dict))}")
                         ruling = validate_judge_response_enhanced(response)
+                        if not ruling and response:
+                            logger.warning(f"  ⚠️ Validation failed. Response keys: {list(response.keys()) if isinstance(response, dict) else 'not a dict'}")
+
+
 
                 if ruling:
                     canonical_pillar = find_robust_pillar_key(pillar_key)
@@ -1143,6 +1220,12 @@ def main():
         # Log progress after each batch
         logger.info(f"\nBatch {batch_num} complete. Progress: {init_approved_count} approved, {init_rejected_count} rejected")
         safe_print(f"Batch {batch_num} complete. Progress: {init_approved_count} approved, {init_rejected_count} rejected")
+        
+        # ✅ CHECKPOINT: Save progress after each batch
+        logger.info(f"Saving checkpoint after batch {batch_num}...")
+        version_history = update_claims_in_history(version_history, all_judged_claims)
+        save_version_history(VERSION_HISTORY_FILE, version_history)
+        logger.info(f"✓ Checkpoint saved: {len(all_judged_claims)} claims persisted to version history")
 
     # --- PHASE 2: DRA Appeal Process ---
     logger.info("\n--- PHASE 2: DRA Appeal Process ---")
@@ -1159,8 +1242,7 @@ def main():
         safe_print(f"⚖️ Sending {len(claims_for_dra_appeal)} rejected claims to Deep Requirements Analyzer for appeal...")
         new_claims_for_rejudgment = dra.run_analysis(
             claims_for_dra_appeal,
-            api_manager,
-            papers_folder_path
+            api_manager
         )
         # Add source metadata
         for claim in new_claims_for_rejudgment:
@@ -1268,6 +1350,14 @@ def main():
             # Log progress after each DRA batch
             logger.info(f"\nDRA Batch {batch_num} complete. Progress: {dra_approved_count} approved, {dra_rejected_count} rejected")
             safe_print(f"DRA Batch {batch_num} complete. Progress: {dra_approved_count} approved, {dra_rejected_count} rejected")
+            
+            # ✅ CHECKPOINT: Save progress after each DRA batch
+            logger.info(f"Saving checkpoint after DRA batch {batch_num}...")
+            version_history = update_claims_in_history(version_history, all_judged_claims)
+            if new_claims_for_rejudgment:
+                version_history = add_new_claims_to_history(version_history, new_claims_for_rejudgment)
+            save_version_history(VERSION_HISTORY_FILE, version_history)
+            logger.info(f"✓ Checkpoint saved: {len(all_judged_claims)} total claims persisted")
 
     # --- PHASE 4: Save All Results to Version History ---
     logger.info("\n--- PHASE 4: Saving Results to Version History ---")
@@ -1302,6 +1392,8 @@ def main():
     end_time = time.time()
     logger.info(f"Total time taken: {end_time - start_time:.2f} seconds.")
     safe_print(f"Total time taken: {end_time - start_time:.2f} seconds.")
+    
+    return True  # Signal successful completion to orchestrator
 
 
 if __name__ == "__main__":

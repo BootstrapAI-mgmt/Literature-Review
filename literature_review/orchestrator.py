@@ -25,10 +25,14 @@ import pickle
 import csv
 import hashlib
 from sentence_transformers import SentenceTransformer
-# import subprocess  # To run external scripts
+import subprocess  # To run external scripts
 from pathlib import Path  # For file state checking
 from literature_review.reviewers import deep_reviewer
 from literature_review.analysis import judge
+
+# Import global rate limiter
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from utils.global_rate_limiter import global_limiter, ErrorAction
 
 # --- CONFIGURATION & SETUP ---
 load_dotenv()
@@ -82,9 +86,10 @@ ANALYSIS_CONFIG = {
     'QUALITY_WEIGHT_THRESHOLD': 0.7,
     'ENABLE_TREND_ANALYSIS': True,
     'ENABLE_NETWORK_ANALYSIS': True,
+    'ENABLE_SEMANTIC_SEARCH': False,  # Disable for testing (CPU bottleneck on sentence transformer)
     'CACHE_RESULTS': True,
     'EXPORT_FORMATS': ['html', 'json', 'latex'],
-    'API_CALLS_PER_MINUTE': 60,
+    'API_CALLS_PER_MINUTE': 10,  # Conservative limit for gemini-2.5-flash (1000 RPM available)
     'RETRY_ATTEMPTS': 3,
     'RETRY_DELAY': 5,
     'CONVERGENCE_THRESHOLD': 5.0  # 5% threshold
@@ -118,29 +123,25 @@ class APIManager:
             logger.critical(f"[ERROR] Critical Error initializing Gemini Client: {e}")
             safe_print(f"❌ Critical Error initializing Gemini Client: {e}")
             raise
-        try:
-            self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
-            logger.info("[SUCCESS] Sentence Transformer initialized.")
-            safe_print("✅ Sentence Transformer initialized.")
-        except Exception as e:
-            logger.warning(f"[WARNING] Could not initialize Sentence Transformer: {e}")
-            safe_print(f"⚠️ Could not initialize Sentence Transformer: {e}")
+        
+        # Initialize sentence transformer only if semantic search enabled
+        if ANALYSIS_CONFIG.get('ENABLE_SEMANTIC_SEARCH', False):
+            try:
+                self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
+                logger.info("[SUCCESS] Sentence Transformer initialized.")
+                safe_print("✅ Sentence Transformer initialized.")
+            except Exception as e:
+                logger.warning(f"[WARNING] Could not initialize Sentence Transformer: {e}")
+                safe_print(f"⚠️ Could not initialize Sentence Transformer: {e}")
+                self.embedder = None
+        else:
             self.embedder = None
+            logger.info("[INFO] Semantic search disabled (ENABLE_SEMANTIC_SEARCH=False)")
+            safe_print("ℹ️ Semantic search disabled for faster testing")
 
     def rate_limit(self):
-        current_time = time.time()
-        if current_time - self.minute_start >= 60:
-            self.calls_this_minute = 0
-            self.minute_start = current_time
-        if self.calls_this_minute >= ANALYSIS_CONFIG['API_CALLS_PER_MINUTE']:
-            sleep_time = 60.1 - (current_time - self.minute_start)
-            if sleep_time > 0:
-                logger.info(f"Rate limit ({ANALYSIS_CONFIG['API_CALLS_PER_MINUTE']}/min) reached. Sleeping for {sleep_time:.1f} seconds...")
-                safe_print(f"⏳ Rate limit reached. Sleeping for {sleep_time:.1f} seconds...")
-                time.sleep(sleep_time)
-                self.calls_this_minute = 0
-                self.minute_start = time.time()
-        self.calls_this_minute += 1
+        """Implement rate limiting using global limiter"""
+        global_limiter.wait_for_quota()
 
     def cached_api_call(self, prompt: str, use_cache: bool = True, is_json: bool = True) -> Optional[Any]:
         prompt_hash = hashlib.md5(prompt.encode('utf-8')).hexdigest()
@@ -148,6 +149,19 @@ class APIManager:
             logger.debug(f"Cache hit for hash: {prompt_hash}")
             safe_print("📦 Using cached response")
             return self.cache[prompt_hash]
+        
+        # Validate request before making API call
+        is_valid, reason = global_limiter.validate_request(prompt, {'response_mime_type': 'application/json' if is_json else None})
+        if not is_valid:
+            logger.error(f"Request validation failed: {reason}")
+            global_limiter.record_request(success=False)
+            return None
+        
+        # Check if we should abort due to error patterns
+        if global_limiter.should_abort_pipeline():
+            logger.critical("Pipeline abort recommended due to error patterns")
+            return None
+        
         logger.debug(f"Cache miss for hash: {prompt_hash}. Calling API...")
         self.rate_limit()
         response_text = ""
@@ -160,21 +174,47 @@ class APIManager:
                 response_text = response.text
                 result = json.loads(response_text) if is_json else response_text
                 self.cache[prompt_hash] = result
+                # Record successful request
+                global_limiter.record_request(success=True)
                 return result
             except json.JSONDecodeError as e:
                 logger.error(f"JSON decode error on attempt {attempt + 1}: {e}. Response text: '{response_text[:500]}...'")
-                if attempt < ANALYSIS_CONFIG['RETRY_ATTEMPTS'] - 1: time.sleep(ANALYSIS_CONFIG['RETRY_DELAY'])
-                else: logger.error("Max retries reached for JSON decode error.")
+                # Categorize error
+                category = global_limiter.categorize_error(e, response_text or "")
+                action = global_limiter.get_action_for_error(category)
+                global_limiter.record_request(success=False, error=e, response_text=response_text or "")
+                
+                if action == ErrorAction.SKIP_DOCUMENT:
+                    logger.error(f"Skipping request due to {category.name}")
+                    return None
+                elif attempt < ANALYSIS_CONFIG['RETRY_ATTEMPTS'] - 1: 
+                    time.sleep(ANALYSIS_CONFIG['RETRY_DELAY'])
+                else: 
+                    logger.error("Max retries reached for JSON decode error.")
             except Exception as e:
+                # Categorize error
+                category = global_limiter.categorize_error(e, str(e))
+                action = global_limiter.get_action_for_error(category)
+                global_limiter.record_request(success=False, error=e, response_text=str(e))
+                
                 if "DeadlineExceeded" in str(e) or "Timeout" in str(e):
                      logger.error(f"API call timed out on attempt {attempt + 1}")
                 else:
                     logger.error(f"API error on attempt {attempt + 1}: {type(e).__name__} - {e}")
-                if "429" in str(e):
+                
+                if action == ErrorAction.ABORT_PIPELINE:
+                    logger.critical(f"Aborting due to {category.name}")
+                    return None
+                elif action == ErrorAction.SKIP_DOCUMENT:
+                    logger.error(f"Skipping request due to {category.name}")
+                    return None
+                elif "429" in str(e):
                      logger.warning("Rate limit error detected by API, increasing sleep time.")
                      time.sleep(ANALYSIS_CONFIG['RETRY_DELAY'] * (attempt + 2))
                 elif attempt < ANALYSIS_CONFIG['RETRY_ATTEMPTS'] - 1:
-                     time.sleep(ANALYSIS_CONFIG['RETRY_DELAY'])
+                     # Use delay from action's value tuple
+                     _, delay = action.value
+                     time.sleep(delay if delay > 0 else ANALYSIS_CONFIG['RETRY_DELAY'])
                 else:
                      logger.error("Max retries reached for API error.")
         logger.error(f"API call failed after {ANALYSIS_CONFIG['RETRY_ATTEMPTS']} attempts.")
@@ -728,10 +768,198 @@ def identify_critical_gaps(results: Dict) -> List[str]:
     return [g[1] for g in critical_gaps[:10]]
 
 def generate_recommendations(results: Dict, database: ResearchDatabase) -> List[Dict]:
-    return [] # Code omitted for brevity
+    """Generate gap-closing search recommendations based on research gaps"""
+    recommendations = []
+    
+    try:
+        # Analyze each pillar for gaps
+        for pillar_name, pillar_data in results.items():
+            pillar_completeness = pillar_data.get('completeness', 0)
+            
+            # Process each sub-requirement
+            for req_name, req_data in pillar_data.get('analysis', {}).items():
+                for sub_req_name, sub_req_data in req_data.items():
+                    completeness = sub_req_data.get('completeness_percent', 0)
+                    
+                    # Focus on gaps (< 50% complete) or areas with no coverage
+                    if completeness < 50:
+                        # Extract key terms from requirement name
+                        req_short = sub_req_name.split(':')[-1].strip() if ':' in sub_req_name else sub_req_name
+                        
+                        # Determine priority based on completeness
+                        if completeness == 0:
+                            priority = "CRITICAL"
+                            urgency = 1
+                        elif completeness < 20:
+                            priority = "HIGH"
+                            urgency = 2
+                        elif completeness < 50:
+                            priority = "MEDIUM"
+                            urgency = 3
+                        else:
+                            priority = "LOW"
+                            urgency = 4
+                        
+                        # Generate search recommendations
+                        recommendation = {
+                            'pillar': pillar_name.split(':')[0],
+                            'requirement': req_short,
+                            'current_completeness': completeness,
+                            'priority': priority,
+                            'urgency': urgency,
+                            'gap_description': sub_req_data.get('gap_analysis', 'No specific gap analysis available'),
+                            'suggested_searches': []
+                        }
+                        
+                        # Generate specific search queries based on the requirement
+                        base_terms = req_short.lower()
+                        
+                        # Build search query variations
+                        searches = []
+                        
+                        # Direct search
+                        searches.append({
+                            'query': f'"{req_short}"',
+                            'rationale': 'Direct match for requirement topic',
+                            'databases': ['Google Scholar', 'arXiv', 'PubMed', 'IEEE Xplore']
+                        })
+                        
+                        # Add neuromorphic/AI context for AI pillars
+                        if 'AI' in pillar_name or 'Bridge' in pillar_name:
+                            searches.append({
+                                'query': f'neuromorphic AND ({req_short})',
+                                'rationale': 'Neuromorphic computing context',
+                                'databases': ['arXiv', 'IEEE Xplore', 'Frontiers']
+                            })
+                            searches.append({
+                                'query': f'"spiking neural networks" AND ({req_short})',
+                                'rationale': 'SNN-specific implementations',
+                                'databases': ['arXiv', 'IEEE Xplore']
+                            })
+                        
+                        # Add biological context for biological pillars
+                        if 'Biological' in pillar_name:
+                            searches.append({
+                                'query': f'neuroscience AND ({req_short})',
+                                'rationale': 'Neuroscience research context',
+                                'databases': ['PubMed', 'Nature', 'Science Direct']
+                            })
+                            searches.append({
+                                'query': f'"neural mechanisms" AND ({req_short})',
+                                'rationale': 'Neural mechanism studies',
+                                'databases': ['PubMed', 'Frontiers in Neuroscience']
+                            })
+                        
+                        # Add review/survey searches for critical gaps
+                        if priority in ['CRITICAL', 'HIGH']:
+                            searches.append({
+                                'query': f'review AND ({req_short})',
+                                'rationale': 'Literature reviews for comprehensive coverage',
+                                'databases': ['Google Scholar', 'Annual Reviews']
+                            })
+                        
+                        recommendation['suggested_searches'] = searches
+                        recommendations.append(recommendation)
+        
+        # Sort by urgency (critical first) then by completeness (lowest first)
+        recommendations.sort(key=lambda x: (x['urgency'], x['current_completeness']))
+        
+        return recommendations
+        
+    except Exception as e:
+        logger.error(f"Error generating recommendations: {e}")
+        return []
 
 def generate_executive_summary(results: Dict, database: ResearchDatabase, output_folder: str):
-    pass # Code omitted for brevity
+    """Generate an executive summary of the gap analysis results"""
+    try:
+        summary_path = os.path.join(output_folder, "executive_summary.md")
+        
+        # Calculate overall statistics
+        pillar_scores = {name: data.get('completeness', 0) for name, data in results.items()}
+        avg_completeness = np.mean(list(pillar_scores.values())) if pillar_scores else 0
+        total_papers = len(database.db) if database.db is not None else 0
+        
+        # Identify critical gaps
+        critical_gaps = identify_critical_gaps(results)
+        
+        # Build summary content
+        content = [
+            "# Gap Analysis Executive Summary\n",
+            f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n",
+            f"**Total Papers Analyzed:** {total_papers}",
+            f"**Average Research Completeness:** {avg_completeness:.1f}%\n",
+            "---\n",
+            "## Overall Completeness by Pillar\n"
+        ]
+        
+        # Add pillar completeness table
+        content.append("| Pillar | Completeness | Status |")
+        content.append("|:-------|-------------:|:-------|")
+        for pillar_name, score in sorted(pillar_scores.items(), key=lambda x: x[1], reverse=True):
+            status = "🟢 Good" if score >= 70 else "🟡 Moderate" if score >= 30 else "🔴 Critical"
+            pillar_short = pillar_name.split(':')[0]
+            content.append(f"| {pillar_short} | {score:.1f}% | {status} |")
+        
+        content.append("\n## Critical Research Gaps\n")
+        if critical_gaps:
+            content.append("The following areas require immediate attention:\n")
+            for i, gap in enumerate(critical_gaps[:10], 1):
+                content.append(f"{i}. {gap}")
+        else:
+            content.append("No critical gaps identified (all areas > 30% complete).\n")
+        
+        content.append("\n## Key Findings\n")
+        
+        # Identify strongest and weakest areas
+        if pillar_scores:
+            strongest = max(pillar_scores.items(), key=lambda x: x[1])
+            weakest = min(pillar_scores.items(), key=lambda x: x[1])
+            content.append(f"- **Strongest Area:** {strongest[0]} ({strongest[1]:.1f}% complete)")
+            content.append(f"- **Weakest Area:** {weakest[0]} ({weakest[1]:.1f}% complete)")
+        
+        # Count total sub-requirements and their status
+        total_subs = 0
+        complete_subs = 0
+        partial_subs = 0
+        missing_subs = 0
+        
+        for pillar_data in results.values():
+            for req_data in pillar_data.get('analysis', {}).values():
+                for sub_data in req_data.values():
+                    total_subs += 1
+                    completeness = sub_data.get('completeness_percent', 0)
+                    if completeness >= 80:
+                        complete_subs += 1
+                    elif completeness > 0:
+                        partial_subs += 1
+                    else:
+                        missing_subs += 1
+        
+        content.append(f"\n### Sub-Requirement Coverage ({total_subs} total)")
+        content.append(f"- ✅ **Well-Covered (≥80%):** {complete_subs} ({100*complete_subs/total_subs:.1f}%)")
+        content.append(f"- 🟡 **Partially Covered (1-79%):** {partial_subs} ({100*partial_subs/total_subs:.1f}%)")
+        content.append(f"- 🔴 **Not Covered (0%):** {missing_subs} ({100*missing_subs/total_subs:.1f}%)")
+        
+        content.append("\n## Recommendations\n")
+        content.append("1. **Immediate Actions:** Focus research efforts on critically low completeness areas (< 30%)")
+        content.append("2. **Deep Review:** Conduct targeted literature search for sub-requirements with 0% coverage")
+        content.append("3. **Validation:** Review high-completeness claims to ensure quality and accuracy")
+        content.append("4. **Gap Closure:** Prioritize filling gaps in foundational pillars (Biological systems)")
+        
+        content.append("\n---\n")
+        content.append("*For detailed analysis, see the full gap_analysis_report.json and pillar waterfall visualizations.*\n")
+        
+        # Write to file
+        with open(summary_path, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(content))
+        
+        logger.info(f"Executive summary generated: {summary_path}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to generate executive summary: {e}")
+        return False
 # --- END PRE-MAIN HELPER FUNCTIONS ---
 
 
@@ -755,10 +983,11 @@ def load_orchestrator_state(state_file: str) -> Tuple[Dict, Dict, Dict]:
         logger.warning(f"Error loading state file: {e}. Starting fresh.")
         return {"file_states": {}}, {}, {"iteration_timestamps": [], "sub_req_scores": {}}
 
-def save_orchestrator_state(state_file: str, previous_results: Dict, score_history: Dict):
-    """Saves the current run state, results, and score history."""
+def save_orchestrator_state(state_file: str, previous_results: Dict, score_history: Dict, stage: str = "final"):
+    """Saves the current run state, results, and score history with stage tracking."""
     state = {
         "last_run_timestamp": datetime.now().isoformat(),
+        "last_completed_stage": stage,  # Track which stage completed
         "last_run_state": {
             "file_states": {
                 RESEARCH_DB_FILE: Path(RESEARCH_DB_FILE).stat().st_mtime if os.path.exists(RESEARCH_DB_FILE) else 0,
@@ -771,7 +1000,7 @@ def save_orchestrator_state(state_file: str, previous_results: Dict, score_histo
     try:
         with open(state_file, 'w', encoding='utf-8') as f:
             json.dump(state, f, indent=2)
-        logger.info(f"Successfully saved orchestrator state to {state_file}")
+        logger.info(f"Successfully saved orchestrator state to {state_file} (stage: {stage})")
     except Exception as e:
         logger.error(f"Error saving orchestrator state: {e}")
 
@@ -802,8 +1031,13 @@ def get_user_analysis_target(pillar_definitions: Dict) -> Tuple[List[str], str]:
     safe_print("What would you like to re-assess?")
 
     pillar_names = list(pillar_definitions.keys())
+    # Filter out metadata sections that can't be analyzed
+    metadata_sections = {'Framework_Overview', 'Cross_Cutting_Requirements', 'Success_Criteria'}
+    analyzable_pillars = [k for k in pillar_names if k not in metadata_sections]
+    
     for i, name in enumerate(pillar_names, 1):
-        safe_print(f"  {i}. {name.split(':')[0]}")
+        status = "" if name in analyzable_pillars else " (metadata - skip)"
+        safe_print(f"  {i}. {name.split(':')[0]}{status}")
     safe_print("\n  ALL - Run analysis on all pillars (one pass)")
     safe_print("  DEEP - Run iterative deep-review loop on all pillars")
     safe_print("  NONE - Exit (default)")
@@ -813,13 +1047,17 @@ def get_user_analysis_target(pillar_definitions: Dict) -> Tuple[List[str], str]:
     if not choice or choice == "NONE":
         return [], "EXIT"
     if choice == "ALL":
-        return pillar_names, "ONCE"
+        return analyzable_pillars, "ONCE"  # Only return analyzable pillars
     if choice == "DEEP":
-        return pillar_names, "DEEP_LOOP"
+        return analyzable_pillars, "DEEP_LOOP"  # Only return analyzable pillars
     try:
         choice_idx = int(choice) - 1
         if 0 <= choice_idx < len(pillar_names):
-            return [pillar_names[choice_idx]], "ONCE"
+            selected = pillar_names[choice_idx]
+            if selected in metadata_sections:
+                safe_print(f"⚠️  {selected} is a metadata section and cannot be analyzed. Exiting.")
+                return [], "EXIT"
+            return [selected], "ONCE"
     except ValueError:
         pass
 
@@ -1307,7 +1545,9 @@ def main():
     if has_new_data:
         safe_print("📬 New data detected in CSV or JSON. Running Judge to validate claims before analysis.")
         run_initial_judge = True
-        analysis_target_pillars = list(definitions.keys())
+        # Filter out metadata sections (not analyzable pillars)
+        metadata_sections = {'Framework_Overview', 'Cross_Cutting_Requirements', 'Success_Criteria'}
+        analysis_target_pillars = [k for k in definitions.keys() if k not in metadata_sections]
         run_mode = "DEEP_LOOP"
     else:
         analysis_target_pillars, run_mode = get_user_analysis_target(definitions)
@@ -1332,6 +1572,10 @@ def main():
             safe_print("❌ Initial Judge run failed. Halting.")
             return
         safe_print("✅ Initial data validated by Judge.")
+        
+        # ✅ CHECKPOINT: Save state after judge completes
+        save_orchestrator_state(ORCHESTRATOR_STATE_FILE, previous_results, score_history, stage="judge_complete")
+        logger.info("✓ Checkpoint saved after Judge completion")
     # --- END NEW BLOCK ---
 
     # --- 3. Initialize Components ---
@@ -1414,6 +1658,11 @@ def main():
         needs_new_loop, directions, score_diffs = compare_scores(
             previous_results, all_results, definitions, ANALYSIS_CONFIG['CONVERGENCE_THRESHOLD']
         )
+        
+        # ✅ CHECKPOINT: Save state after each gap analysis iteration
+        save_orchestrator_state(ORCHESTRATOR_STATE_FILE, all_results, score_history, 
+                               stage=f"gap_analysis_iteration_{iteration_count}")
+        logger.info(f"✓ Checkpoint saved after iteration {iteration_count}")
 
         if score_diffs:
             safe_print("\n--- Score Changes This Iteration ---")
@@ -1437,7 +1686,9 @@ def main():
                 break
 
             previous_results = all_results.copy()
-            analysis_target_pillars = list(definitions.keys()) # Ensure all pillars are re-analyzed
+            # Filter out metadata sections (not analyzable pillars)
+            metadata_sections = {'Framework_Overview', 'Cross_Cutting_Requirements', 'Success_Criteria'}
+            analysis_target_pillars = [k for k in definitions.keys() if k not in metadata_sections]
         else:
             safe_print("\n✅ Convergence Reached. No sub-requirement changed by > 5%.")
             write_deep_review_directions(DEEP_REVIEW_DIRECTIONS_FILE, {}) # Clear directions
@@ -1448,52 +1699,256 @@ def main():
     logger.info("Analysis loop complete. Generating final reports...")
     safe_print("\n--- 📊 Generating Final Reports ---")
 
+    # Track visualization generation success
+    visualization_errors = []
+    
+    # Generate pillar waterfall plots
+    logger.info("Generating pillar waterfall visualizations...")
     for pillar_name, pillar_data in all_results.items():
-        plotter.create_waterfall_plot(
-            pillar_name, pillar_data.get('waterfall_data', []),
-            os.path.join(OUTPUT_FOLDER, f"waterfall_{pillar_name.split(':')[0]}.html")
-        )
-        if pillar_data.get('analysis'):
-            for req_key, req_data in pillar_data['analysis'].items():
-                for sub_req_key, sub_req_data in req_data.items():
-                    contributions = sub_req_data.get('contributing_papers', [])
-                    if contributions:
-                        plotter.create_sub_requirement_waterfall(
-                            sub_req_key, contributions, sub_req_data.get('completeness_percent', 0),
-                            os.path.join(OUTPUT_FOLDER, f"sub_waterfall_{sub_req_key.split(':')[0]}.html")
-                        )
-
+        try:
+            output_path = os.path.join(OUTPUT_FOLDER, f"waterfall_{pillar_name.split(':')[0]}.html")
+            logger.info(f"  Creating waterfall for {pillar_name}...")
+            plotter.create_waterfall_plot(
+                pillar_name, pillar_data.get('waterfall_data', []),
+                output_path
+            )
+            logger.info(f"  ✅ Waterfall saved: {output_path}")
+        except Exception as e:
+            error_msg = f"Failed to create waterfall for {pillar_name}: {e}"
+            logger.error(error_msg)
+            visualization_errors.append(error_msg)
+            safe_print(f"  ⚠️ {error_msg}")
+    
+    # Generate radar plot
     if radar_data:
-        plotter.create_radar_plot(
-            radar_data, os.path.join(OUTPUT_FOLDER, "_OVERALL_Research_Gap_Radar.html"),
-            velocity_data=velocity_data if trend_analyzer else None
-        )
+        try:
+            logger.info("Generating research gap radar plot...")
+            radar_path = os.path.join(OUTPUT_FOLDER, "_OVERALL_Research_Gap_Radar.html")
+            plotter.create_radar_plot(
+                radar_data, radar_path,
+                velocity_data=velocity_data if trend_analyzer else None
+            )
+            logger.info(f"  ✅ Radar plot saved: {radar_path}")
+            safe_print("  ✅ Research gap radar generated.")
+        except Exception as e:
+            error_msg = f"Failed to create radar plot: {e}"
+            logger.error(error_msg)
+            visualization_errors.append(error_msg)
+            safe_print(f"  ⚠️ {error_msg}")
+    
+    # Generate paper network visualization
+    if ANALYSIS_CONFIG.get('ENABLE_NETWORK_ANALYSIS') and database_df_obj and database_df_obj.paper_network:
+        try:
+            logger.info("Generating paper network visualization...")
+            network_path = os.path.join(OUTPUT_FOLDER, "_Paper_Network.html")
+            plotter.create_network_plot(
+                database_df_obj.paper_network,
+                network_path
+            )
+            logger.info(f"  ✅ Network plot saved: {network_path}")
+            safe_print("  ✅ Paper network visualization generated.")
+        except Exception as e:
+            error_msg = f"Failed to create network plot: {e}"
+            logger.error(error_msg)
+            visualization_errors.append(error_msg)
+            safe_print(f"  ⚠️ {error_msg}")
+    
+    # Generate research trends visualization
+    if trend_analyzer:
+        try:
+            logger.info("Generating research trends visualization...")
+            trends_path = os.path.join(OUTPUT_FOLDER, "_Research_Trends.html")
+            trend_data = trend_analyzer.analyze_trends(definitions)
+            if trend_data:
+                plotter.create_trend_plot(trend_data, trends_path)
+                logger.info(f"  ✅ Trends plot saved: {trends_path}")
+                safe_print("  ✅ Research trends visualization generated.")
+        except Exception as e:
+            error_msg = f"Failed to create trends plot: {e}"
+            logger.error(error_msg)
+            visualization_errors.append(error_msg)
+            safe_print(f"  ⚠️ {error_msg}")
 
     if score_history["iteration_timestamps"]:
         logger.info("Generating convergence plots...")
         try:
-            plotter.create_convergence_plots(
-                score_history, definitions,
-                os.path.join(OUTPUT_FOLDER, "_OVERALL_Score_Convergence.html")
-            )
-            safe_print("  ✅ Convergence plots generated.")
-        except AttributeError:
-             logger.warning("`plotter.create_convergence_plots` not found. Skipping.")
-             safe_print("  ⚠️ `plotter.create_convergence_plots` not found. Skipping convergence graphs.")
+            # Check if convergence plots function exists
+            if hasattr(plotter, 'create_convergence_plots'):
+                plotter.create_convergence_plots(
+                    score_history, definitions,
+                    os.path.join(OUTPUT_FOLDER, "_OVERALL_Score_Convergence.html")
+                )
+                logger.info("  ✅ Convergence plots generated.")
+                safe_print("  ✅ Convergence plots generated.")
+            else:
+                logger.warning("create_convergence_plots not found in plotter module. Skipping.")
+                safe_print("  ⚠️ Convergence plots not available (function not implemented).")
         except Exception as e:
-             logger.error(f"Failed to create convergence plots: {e}")
-             safe_print(f"  ⚠️ Failed to create convergence plots: {e}")
+            error_msg = f"Failed to create convergence plots: {e}"
+            logger.error(error_msg)
+            visualization_errors.append(error_msg)
+            safe_print(f"  ⚠️ {error_msg}")
 
+    # Generate JSON report
+    logger.info("Generating JSON report...")
     if 'json' in ANALYSIS_CONFIG['EXPORT_FORMATS']:
-        report_generator.generate_json_report(all_results, "gap_analysis_report.json")
+        try:
+            report_generator.generate_json_report(all_results, "gap_analysis_report.json")
+            json_path = os.path.join(OUTPUT_FOLDER, "gap_analysis_report.json")
+            if os.path.exists(json_path):
+                logger.info(f"  ✅ JSON report saved: {json_path}")
+                safe_print("  ✅ JSON report generated.")
+            else:
+                error_msg = "JSON report function completed but file not found"
+                logger.warning(error_msg)
+                visualization_errors.append(error_msg)
+        except Exception as e:
+            error_msg = f"Failed to generate JSON report: {e}"
+            logger.error(error_msg)
+            visualization_errors.append(error_msg)
+            safe_print(f"  ⚠️ {error_msg}")
 
-    report_generator.generate_contribution_report_md(all_results)
+    # Generate contribution markdown report
+    logger.info("Generating contribution markdown report...")
+    try:
+        report_generator.generate_contribution_report_md(all_results)
+        if os.path.exists(CONTRIBUTION_REPORT_FILE):
+            logger.info(f"  ✅ Contribution report saved: {CONTRIBUTION_REPORT_FILE}")
+            safe_print("  ✅ Contribution report generated.")
+        else:
+            error_msg = "Contribution report function completed but file not found"
+            logger.warning(error_msg)
+            visualization_errors.append(error_msg)
+    except Exception as e:
+        error_msg = f"Failed to generate contribution report: {e}"
+        logger.error(error_msg)
+        visualization_errors.append(error_msg)
+        safe_print(f"  ⚠️ {error_msg}")
 
-    database_df_obj = ResearchDatabase(RESEARCH_DB_FILE) # Re-load for final summary
-    generate_executive_summary(all_results, database_df_obj, OUTPUT_FOLDER)
+    # Generate executive summary
+    logger.info("Generating executive summary...")
+    try:
+        database_df_obj = ResearchDatabase(RESEARCH_DB_FILE) # Re-load for final summary
+        generate_executive_summary(all_results, database_df_obj, OUTPUT_FOLDER)
+        summary_path = os.path.join(OUTPUT_FOLDER, "executive_summary.md")
+        if os.path.exists(summary_path):
+            logger.info(f"  ✅ Executive summary saved: {summary_path}")
+            safe_print("  ✅ Executive summary generated.")
+        else:
+            logger.warning("Executive summary function completed but no file generated (may be a stub)")
+            safe_print("  ⚠️ Executive summary not available (function not implemented).")
+    except Exception as e:
+        error_msg = f"Failed to generate executive summary: {e}"
+        logger.error(error_msg)
+        visualization_errors.append(error_msg)
+        safe_print(f"  ⚠️ {error_msg}")
+    
+    # Generate gap-closing search recommendations
+    logger.info("Generating gap-closing search recommendations...")
+    try:
+        database_df_obj = ResearchDatabase(RESEARCH_DB_FILE) # Re-load if needed
+        recommendations = generate_recommendations(all_results, database_df_obj)
+        
+        if recommendations:
+            # Save as JSON
+            rec_json_path = os.path.join(OUTPUT_FOLDER, "suggested_searches.json")
+            with open(rec_json_path, 'w', encoding='utf-8') as f:
+                json.dump(recommendations, f, indent=2)
+            logger.info(f"  ✅ Search recommendations JSON saved: {rec_json_path}")
+            
+            # Save as formatted markdown
+            rec_md_path = os.path.join(OUTPUT_FOLDER, "suggested_searches.md")
+            md_content = ["# Gap-Closing Literature Search Recommendations\n"]
+            md_content.append(f"**Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+            md_content.append(f"**Total Recommendations:** {len(recommendations)}\n")
+            md_content.append("---\n")
+            
+            # Group by priority
+            for priority in ["CRITICAL", "HIGH", "MEDIUM", "LOW"]:
+                priority_recs = [r for r in recommendations if r['priority'] == priority]
+                if priority_recs:
+                    emoji = {"CRITICAL": "🔴", "HIGH": "🟠", "MEDIUM": "🟡", "LOW": "🟢"}
+                    md_content.append(f"\n## {emoji[priority]} {priority} Priority ({len(priority_recs)} gaps)\n")
+                    
+                    for i, rec in enumerate(priority_recs, 1):
+                        md_content.append(f"\n### {i}. {rec['pillar']} - {rec['requirement']}")
+                        md_content.append(f"**Current Coverage:** {rec['current_completeness']:.1f}%  ")
+                        md_content.append(f"**Gap:** {rec['gap_description']}\n")
+                        
+                        md_content.append("**Suggested Searches:**")
+                        for j, search in enumerate(rec['suggested_searches'], 1):
+                            md_content.append(f"{j}. `{search['query']}`")
+                            md_content.append(f"   - *Rationale:* {search['rationale']}")
+                            md_content.append(f"   - *Databases:* {', '.join(search['databases'])}")
+                        md_content.append("")
+            
+            with open(rec_md_path, 'w', encoding='utf-8') as f:
+                f.write('\n'.join(md_content))
+            
+            logger.info(f"  ✅ Search recommendations markdown saved: {rec_md_path}")
+            safe_print(f"  ✅ Gap-closing search recommendations generated ({len(recommendations)} gaps identified).")
+        else:
+            logger.info("  ℹ️ No gap-closing recommendations generated (all areas >50% complete)")
+            safe_print("  ℹ️ No critical gaps requiring additional searches.")
+            
+    except Exception as e:
+        error_msg = f"Failed to generate search recommendations: {e}"
+        logger.error(error_msg)
+        visualization_errors.append(error_msg)
+        safe_print(f"  ⚠️ {error_msg}")
+    
+    # Report any visualization errors
+    if visualization_errors:
+        logger.warning(f"\n⚠️  {len(visualization_errors)} visualization(s) failed:")
+        for error in visualization_errors:
+            logger.warning(f"  - {error}")
+        safe_print(f"\n⚠️  {len(visualization_errors)} visualization(s) encountered errors (see log for details)")
+    else:
+        logger.info("\n✅ All visualizations generated successfully!")
+        safe_print("\n✅ All visualizations generated successfully!")
+    
+    # --- Validate Expected Output Files ---
+    logger.info("\n" + "=" * 80)
+    logger.info("VALIDATING OUTPUT FILES")
+    safe_print("\n--- 📋 Validating Output Files ---")
+    
+    expected_outputs = {
+        'Pillar Waterfalls': [f"waterfall_{pname.split(':')[0]}.html" for pname in all_results.keys()],
+        'Visualizations': ['_OVERALL_Research_Gap_Radar.html', '_Paper_Network.html', '_Research_Trends.html'],
+        'Reports': ['gap_analysis_report.json', 'executive_summary.md', 'suggested_searches.json', 'suggested_searches.md', CONTRIBUTION_REPORT_FILE.split('/')[-1]]
+    }
+    
+    missing_files = []
+    found_files = []
+    
+    for category, files in expected_outputs.items():
+        for filename in files:
+            filepath = os.path.join(OUTPUT_FOLDER, filename) if not filename.startswith(OUTPUT_FOLDER) else filename
+            if os.path.exists(filepath):
+                file_size = os.path.getsize(filepath)
+                found_files.append((filename, file_size))
+                logger.info(f"  ✅ {filename} ({file_size:,} bytes)")
+            else:
+                missing_files.append(filename)
+                logger.warning(f"  ❌ {filename} - NOT FOUND")
+    
+    # Summary
+    total_expected = sum(len(files) for files in expected_outputs.values())
+    total_found = len(found_files)
+    success_rate = (total_found / total_expected * 100) if total_expected > 0 else 0
+    
+    logger.info(f"\nOutput Generation Summary:")
+    logger.info(f"  Found: {total_found}/{total_expected} files ({success_rate:.1f}%)")
+    safe_print(f"\n📊 Output Files: {total_found}/{total_expected} generated ({success_rate:.1f}%)")
+    
+    if missing_files:
+        logger.warning(f"  Missing {len(missing_files)} file(s):")
+        for filename in missing_files:
+            logger.warning(f"    - {filename}")
+        safe_print(f"⚠️  {len(missing_files)} expected file(s) not generated (see log)")
 
     # --- 6. Save Final State ---
-    save_orchestrator_state(ORCHESTRATOR_STATE_FILE, all_results, score_history)
+    save_orchestrator_state(ORCHESTRATOR_STATE_FILE, all_results, score_history, stage="final")
 
     logger.info("\n" + "=" * 80)
     logger.info("ANALYSIS COMPLETE")

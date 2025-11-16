@@ -38,11 +38,10 @@ OUTPUT_FILE = 'suggested_searches.md'
 CACHE_DIR = os.path.join(os.path.dirname(__file__), 'recommender_cache')
 
 # Analysis configuration
-ANALYSIS_CONFIG = {
-    'COMPLETENESS_THRESHOLD': 80,  # Find gaps with completeness < this value
-    'API_CALLS_PER_MINUTE': 60,
+RECOMMENDATION_CONFIG = {
     'RETRY_ATTEMPTS': 3,
-    'RETRY_DELAY': 5
+    'RETRY_DELAY': 5,
+    'API_CALLS_PER_MINUTE': 10,  # Conservative limit for gemini-2.5-flash (1000 RPM available)
 }
 
 # Setup logging

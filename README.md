@@ -80,7 +80,7 @@ python Orchestrator.py
 2. **Judge**: Evaluate claims against requirements
 3. **DeepRequirementsAnalyzer (DRA)**: Re-analyze rejected claims (conditional)
 4. **Sync**: Update CSV database from version history
-5. **Orchestrator**: Identify gaps and drive convergence
+5. **Orchestrator**: Identify gaps, generate gap-closing search recommendations, and drive convergence
 
 ## Configuration
 

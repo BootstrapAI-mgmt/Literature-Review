@@ -1,0 +1,3885 @@
+[
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Conclusive model of how raw sensory data is transduced into neural spikes",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not address the initial transduction of raw sensory data into neural spikes. It focuses on later stages of processing within the cortex.",
+    "suggested_searches": [
+      {
+        "query": "\"Conclusive model of how raw sensory data is transduced into neural spikes\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Conclusive model of how raw sensory data is transduced into neural spikes)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Conclusive model of how raw sensory data is transduced into neural spikes)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Conclusive model of how raw sensory data is transduced into neural spikes)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Detailed mapping of thalamic relay pathways for major senses",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss thalamic relay pathways for any major senses.",
+    "suggested_searches": [
+      {
+        "query": "\"Detailed mapping of thalamic relay pathways for major senses\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Detailed mapping of thalamic relay pathways for major senses)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Detailed mapping of thalamic relay pathways for major senses)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Detailed mapping of thalamic relay pathways for major senses)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Model of multi-sensory integration in parietal cortex",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss multi-sensory integration or the role of the parietal cortex.",
+    "suggested_searches": [
+      {
+        "query": "\"Model of multi-sensory integration in parietal cortex\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Model of multi-sensory integration in parietal cortex)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Model of multi-sensory integration in parietal cortex)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Model of multi-sensory integration in parietal cortex)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Role of prefrontal cortex in top-down attentional gating",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss the prefrontal cortex or top-down attentional gating.",
+    "suggested_searches": [
+      {
+        "query": "\"Role of prefrontal cortex in top-down attentional gating\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Role of prefrontal cortex in top-down attentional gating)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Role of prefrontal cortex in top-down attentional gating)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Role of prefrontal cortex in top-down attentional gating)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Feedback connections from higher to lower processing areas",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss feedback connections between processing areas.",
+    "suggested_searches": [
+      {
+        "query": "\"Feedback connections from higher to lower processing areas\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Feedback connections from higher to lower processing areas)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Feedback connections from higher to lower processing areas)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Feedback connections from higher to lower processing areas)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Conclusive model of evidence accumulation for decision-making",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss decision-making or evidence accumulation models.",
+    "suggested_searches": [
+      {
+        "query": "\"Conclusive model of evidence accumulation for decision-making\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Conclusive model of evidence accumulation for decision-making)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Conclusive model of evidence accumulation for decision-making)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Conclusive model of evidence accumulation for decision-making)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Role of Basal Ganglia loops in action selection",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss the Basal Ganglia or action selection.",
+    "suggested_searches": [
+      {
+        "query": "\"Role of Basal Ganglia loops in action selection\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Role of Basal Ganglia loops in action selection)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Role of Basal Ganglia loops in action selection)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Role of Basal Ganglia loops in action selection)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Pathway from Primary Motor Cortex to spinal cord",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss motor pathways or the spinal cord.",
+    "suggested_searches": [
+      {
+        "query": "\"Pathway from Primary Motor Cortex to spinal cord\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Pathway from Primary Motor Cortex to spinal cord)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Pathway from Primary Motor Cortex to spinal cord)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Pathway from Primary Motor Cortex to spinal cord)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Inhibitory control mechanisms for action suppression",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss inhibitory control or action suppression.",
+    "suggested_searches": [
+      {
+        "query": "\"Inhibitory control mechanisms for action suppression\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Inhibitory control mechanisms for action suppression)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Inhibitory control mechanisms for action suppression)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Inhibitory control mechanisms for action suppression)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Short-term synaptic facilitation/depression (ms-s)",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss short-term synaptic plasticity.",
+    "suggested_searches": [
+      {
+        "query": "\"Short-term synaptic facilitation/depression (ms-s)\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Short-term synaptic facilitation/depression (ms-s))",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Short-term synaptic facilitation/depression (ms-s))",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Short-term synaptic facilitation/depression (ms-s))",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Medium-term STDP mechanisms (s-min)",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss STDP mechanisms.",
+    "suggested_searches": [
+      {
+        "query": "\"Medium-term STDP mechanisms (s-min)\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Medium-term STDP mechanisms (s-min))",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Medium-term STDP mechanisms (s-min))",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Medium-term STDP mechanisms (s-min))",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Long-term structural plasticity (hours-days)",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss long-term structural plasticity.",
+    "suggested_searches": [
+      {
+        "query": "\"Long-term structural plasticity (hours-days)\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Long-term structural plasticity (hours-days))",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Long-term structural plasticity (hours-days))",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Long-term structural plasticity (hours-days))",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Hardware-agnostic deployment on neuromorphic chips",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no mention of hardware-agnostic deployment, neuromorphic chips, or specific deployment strategies for SNNs in the provided literature.",
+    "suggested_searches": [
+      {
+        "query": "\"Hardware-agnostic deployment on neuromorphic chips\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Hardware-agnostic deployment on neuromorphic chips)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Hardware-agnostic deployment on neuromorphic chips)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Hardware-agnostic deployment on neuromorphic chips)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Homeostatic plasticity for network stability",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no mention of homeostatic plasticity or mechanisms for network stability in the provided literature.",
+    "suggested_searches": [
+      {
+        "query": "\"Homeostatic plasticity for network stability\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Homeostatic plasticity for network stability)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Homeostatic plasticity for network stability)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Homeostatic plasticity for network stability)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "SNN model of evidence accumulation",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The literature does not discuss SNN models, evidence accumulation, or their combination for decision-making processes.",
+    "suggested_searches": [
+      {
+        "query": "\"SNN model of evidence accumulation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (SNN model of evidence accumulation)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (SNN model of evidence accumulation)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (SNN model of evidence accumulation)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Computational Basal Ganglia for action selection",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no mention of the Basal Ganglia, computational models of it, or its role in action selection within the provided texts.",
+    "suggested_searches": [
+      {
+        "query": "\"Computational Basal Ganglia for action selection\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Computational Basal Ganglia for action selection)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Computational Basal Ganglia for action selection)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Computational Basal Ganglia for action selection)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Closed-loop SNN controller for actuators",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The literature does not discuss closed-loop control, SNNs in a control context, or interaction with actuators.",
+    "suggested_searches": [
+      {
+        "query": "\"Closed-loop SNN controller for actuators\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Closed-loop SNN controller for actuators)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Closed-loop SNN controller for actuators)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Closed-loop SNN controller for actuators)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Inhibitory gating for action suppression",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no discussion of inhibitory gating, action suppression, or related neural mechanisms in the provided papers.",
+    "suggested_searches": [
+      {
+        "query": "\"Inhibitory gating for action suppression\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Inhibitory gating for action suppression)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Inhibitory gating for action suppression)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Inhibitory gating for action suppression)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Sparse coding efficiency metrics (< 10% activation)",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "While 'sparsity' is a quantitative target, the provided literature does not discuss sparse coding efficiency metrics or specific activation targets.",
+    "suggested_searches": [
+      {
+        "query": "\"Sparse coding efficiency metrics (< 10% activation)\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Sparse coding efficiency metrics (< 10% activation))",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Sparse coding efficiency metrics (< 10% activation))",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Sparse coding efficiency metrics (< 10% activation))",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Dynamic voltage/frequency scaling based on task demands",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no discussion of dynamic voltage/frequency scaling or adaptive power management based on task demands in the provided literature.",
+    "suggested_searches": [
+      {
+        "query": "\"Dynamic voltage/frequency scaling based on task demands\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Dynamic voltage/frequency scaling based on task demands)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Dynamic voltage/frequency scaling based on task demands)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Dynamic voltage/frequency scaling based on task demands)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Role of Hippocampus/PFC in initial motor task encoding",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss the biological roles of the hippocampus or prefrontal cortex in motor task encoding. The papers focus on computational teaching methods and neural-symbolic reasoning, not biological brain regions.",
+    "suggested_searches": [
+      {
+        "query": "\"Role of Hippocampus/PFC in initial motor task encoding\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Role of Hippocampus/PFC in initial motor task encoding)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Role of Hippocampus/PFC in initial motor task encoding)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Role of Hippocampus/PFC in initial motor task encoding)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Mechanism of error-correction signals from cerebellum",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no mention of the cerebellum or its role in error-correction signals within the provided literature. The papers discuss 'error-based learning' in a computational context but not the biological mechanism involving the cerebellum.",
+    "suggested_searches": [
+      {
+        "query": "\"Mechanism of error-correction signals from cerebellum\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Mechanism of error-correction signals from cerebellum)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Mechanism of error-correction signals from cerebellum)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Mechanism of error-correction signals from cerebellum)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Working memory maintenance during skill acquisition",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The literature does not address working memory maintenance during skill acquisition from a biological or cognitive neuroscience perspective. While 'adaptive teaching' and 'reinforcement learning' are mentioned, they do not directly relate to working memory mechanisms.",
+    "suggested_searches": [
+      {
+        "query": "\"Working memory maintenance during skill acquisition\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Working memory maintenance during skill acquisition)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Working memory maintenance during skill acquisition)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Working memory maintenance during skill acquisition)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Pathway shift from cognitive to motor control",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided papers do not discuss biological pathway shifts from cognitive to motor control. Their focus is on computational models for teaching and reasoning, not neurobiological processes of skill consolidation.",
+    "suggested_searches": [
+      {
+        "query": "\"Pathway shift from cognitive to motor control\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Pathway shift from cognitive to motor control)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Pathway shift from cognitive to motor control)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Pathway shift from cognitive to motor control)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Striatum role in habit formation and chunking",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no mention of the striatum, habit formation, or chunking in the context of biological skill automatization within the provided literature.",
+    "suggested_searches": [
+      {
+        "query": "\"Striatum role in habit formation and chunking\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Striatum role in habit formation and chunking)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Striatum role in habit formation and chunking)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Striatum role in habit formation and chunking)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Sleep spindles and REM in procedural memory",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The literature does not discuss sleep spindles, REM sleep, or their role in procedural memory consolidation.",
+    "suggested_searches": [
+      {
+        "query": "\"Sleep spindles and REM in procedural memory\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Sleep spindles and REM in procedural memory)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Sleep spindles and REM in procedural memory)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Sleep spindles and REM in procedural memory)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Dopaminergic reinforcement signals in skill consolidation",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "While 'Reinforcement learning' is mentioned in both papers, it is discussed in a computational context (e.g., for adaptive teaching or path search in KGs) and not in the biological context of dopaminergic signals for skill consolidation.",
+    "suggested_searches": [
+      {
+        "query": "\"Dopaminergic reinforcement signals in skill consolidation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Dopaminergic reinforcement signals in skill consolidation)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Dopaminergic reinforcement signals in skill consolidation)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Dopaminergic reinforcement signals in skill consolidation)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Neural signature of automatized skill",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss the neural signatures of automatized skills from a biological perspective. The papers focus on computational models and adaptive teaching.",
+    "suggested_searches": [
+      {
+        "query": "\"Neural signature of automatized skill\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Neural signature of automatized skill)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Neural signature of automatized skill)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Neural signature of automatized skill)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Cerebellar role in real-time tuning",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no mention of the cerebellum or its role in real-time tuning of automatized skills in the provided literature.",
+    "suggested_searches": [
+      {
+        "query": "\"Cerebellar role in real-time tuning\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Cerebellar role in real-time tuning)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Cerebellar role in real-time tuning)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Cerebellar role in real-time tuning)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Reduced prefrontal activation in expert performance",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The literature does not discuss prefrontal activation or its reduction in expert performance from a neurobiological standpoint.",
+    "suggested_searches": [
+      {
+        "query": "\"Reduced prefrontal activation in expert performance\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Reduced prefrontal activation in expert performance)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Reduced prefrontal activation in expert performance)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Reduced prefrontal activation in expert performance)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Proprioceptive feedback integration",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The provided literature does not discuss proprioceptive feedback or its integration in skill learning.",
+    "suggested_searches": [
+      {
+        "query": "\"Proprioceptive feedback integration\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Proprioceptive feedback integration)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Proprioceptive feedback integration)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Proprioceptive feedback integration)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Prediction error computation in cerebellum",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "The literature does not discuss prediction error computation specifically in the cerebellum or any biological brain region.",
+    "suggested_searches": [
+      {
+        "query": "\"Prediction error computation in cerebellum\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Prediction error computation in cerebellum)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Prediction error computation in cerebellum)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Prediction error computation in cerebellum)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Hippocampal to neocortical consolidation model",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Hippocampal to neocortical consolidation model\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Hippocampal to neocortical consolidation model)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Hippocampal to neocortical consolidation model)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Hippocampal to neocortical consolidation model)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Synaptic plasticity mechanisms (LTP/LTD)",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Synaptic plasticity mechanisms (LTP/LTD)\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Synaptic plasticity mechanisms (LTP/LTD))",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Synaptic plasticity mechanisms (LTP/LTD))",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Synaptic plasticity mechanisms (LTP/LTD))",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Place and time cells in context encoding",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Place and time cells in context encoding\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Place and time cells in context encoding)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Place and time cells in context encoding)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Place and time cells in context encoding)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Theta-gamma coupling in memory encoding",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Theta-gamma coupling in memory encoding\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Theta-gamma coupling in memory encoding)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Theta-gamma coupling in memory encoding)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Theta-gamma coupling in memory encoding)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Pattern completion mechanism",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Pattern completion mechanism\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Pattern completion mechanism)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Pattern completion mechanism)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Pattern completion mechanism)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Amygdala role in emotional prioritization",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Amygdala role in emotional prioritization\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Amygdala role in emotional prioritization)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Amygdala role in emotional prioritization)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Amygdala role in emotional prioritization)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Memory reconsolidation model",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Memory reconsolidation model\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Memory reconsolidation model)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Memory reconsolidation model)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Memory reconsolidation model)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Interference resolution mechanisms",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Interference resolution mechanisms\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Interference resolution mechanisms)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Interference resolution mechanisms)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Interference resolution mechanisms)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Working memory maintenance and manipulation",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Working memory maintenance and manipulation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Working memory maintenance and manipulation)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Working memory maintenance and manipulation)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Working memory maintenance and manipulation)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Episodic-semantic memory interaction",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Episodic-semantic memory interaction\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Episodic-semantic memory interaction)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Episodic-semantic memory interaction)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Episodic-semantic memory interaction)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 5",
+    "requirement": "Procedural memory integration",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No relevant papers or claims found",
+    "suggested_searches": [
+      {
+        "query": "\"Procedural memory integration\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Procedural memory integration)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Procedural memory integration)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Procedural memory integration)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Systems consolidation without catastrophic forgetting",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing systems consolidation or mechanisms to prevent catastrophic forgetting. The literature review mentions challenges in DL, but not specific solutions for this requirement.",
+    "suggested_searches": [
+      {
+        "query": "\"Systems consolidation without catastrophic forgetting\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Systems consolidation without catastrophic forgetting)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Systems consolidation without catastrophic forgetting)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Systems consolidation without catastrophic forgetting)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Hebbian plasticity implementation",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No evidence directly addresses the implementation of Hebbian plasticity. While SNNs are mentioned as biologically inspired, their specific implementation of Hebbian learning is not detailed.",
+    "suggested_searches": [
+      {
+        "query": "\"Hebbian plasticity implementation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Hebbian plasticity implementation)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Hebbian plasticity implementation)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Hebbian plasticity implementation)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Compression and abstraction during consolidation",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No evidence discusses compression or abstraction specifically during memory consolidation. The general literature mentions DL's limited abstraction capabilities, indicating a gap.",
+    "suggested_searches": [
+      {
+        "query": "\"Compression and abstraction during consolidation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Compression and abstraction during consolidation)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Compression and abstraction during consolidation)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Compression and abstraction during consolidation)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Memory editing/reconsolidation",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing memory editing or reconsolidation mechanisms. The literature review mentions challenges in DL but not specific solutions for dynamic memory modification.",
+    "suggested_searches": [
+      {
+        "query": "\"Memory editing/reconsolidation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Memory editing/reconsolidation)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Memory editing/reconsolidation)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Memory editing/reconsolidation)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Similarity-based generalization",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No evidence addresses similarity-based generalization. While DL excels in feature extraction, the specific mechanism for generalizing based on memory similarity is not discussed.",
+    "suggested_searches": [
+      {
+        "query": "\"Similarity-based generalization\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Similarity-based generalization)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Similarity-based generalization)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Similarity-based generalization)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Working memory integration with SNNs",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "While SNNs are mentioned, there is no evidence on their integration with working memory or how they contribute to action selection. The literature notes SNN challenges with data input delays.",
+    "suggested_searches": [
+      {
+        "query": "\"Working memory integration with SNNs\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Working memory integration with SNNs)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Working memory integration with SNNs)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Working memory integration with SNNs)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Episodic memory retrieval for context-aware responses",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No evidence discusses episodic memory retrieval or its use for generating context-aware responses. The focus is on general DL applications, not specific memory types.",
+    "suggested_searches": [
+      {
+        "query": "\"Episodic memory retrieval for context-aware responses\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Episodic memory retrieval for context-aware responses)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Episodic memory retrieval for context-aware responses)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Episodic memory retrieval for context-aware responses)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Predictive coding using stored priors",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence related to predictive coding or the use of stored priors for prediction. The literature does not touch upon this aspect of memory-guided action.",
+    "suggested_searches": [
+      {
+        "query": "\"Predictive coding using stored priors\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Predictive coding using stored priors)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Predictive coding using stored priors)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Predictive coding using stored priors)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Memory-based planning and simulation",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No evidence addresses memory-based planning or simulation. While reinforcement learning is mentioned as a core concept, its application to memory-based planning is not detailed.",
+    "suggested_searches": [
+      {
+        "query": "\"Memory-based planning and simulation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Memory-based planning and simulation)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Memory-based planning and simulation)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Memory-based planning and simulation)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Hierarchical memory organization",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No evidence discusses hierarchical memory organization. The literature review mentions memory networks as a core concept but does not elaborate on their structure or hierarchy.",
+    "suggested_searches": [
+      {
+        "query": "\"Hierarchical memory organization\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Hierarchical memory organization)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Hierarchical memory organization)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Hierarchical memory organization)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Active forgetting of irrelevant information",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence on active forgetting mechanisms. The literature review highlights challenges in DL but does not offer solutions for managing irrelevant information.",
+    "suggested_searches": [
+      {
+        "query": "\"Active forgetting of irrelevant information\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Active forgetting of irrelevant information)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Active forgetting of irrelevant information)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Active forgetting of irrelevant information)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 6",
+    "requirement": "Memory indexing for rapid retrieval",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "No evidence specifically addresses memory indexing for rapid retrieval. While retrieval is implied in KGC/KGQA, the underlying indexing mechanisms are not discussed.",
+    "suggested_searches": [
+      {
+        "query": "\"Memory indexing for rapid retrieval\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Memory indexing for rapid retrieval)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Memory indexing for rapid retrieval)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Memory indexing for rapid retrieval)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Unified spike-based communication format",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing unified spike-based communication formats.",
+    "suggested_searches": [
+      {
+        "query": "\"Unified spike-based communication format\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Unified spike-based communication format)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Asynchronous message passing between modules",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing asynchronous message passing between modules.",
+    "suggested_searches": [
+      {
+        "query": "\"Asynchronous message passing between modules\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Asynchronous message passing between modules)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Priority-based routing for time-critical signals",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing priority-based routing for time-critical signals.",
+    "suggested_searches": [
+      {
+        "query": "\"Priority-based routing for time-critical signals\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Priority-based routing for time-critical signals)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Bandwidth allocation based on information content",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing bandwidth allocation based on information content.",
+    "suggested_searches": [
+      {
+        "query": "\"Bandwidth allocation based on information content\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Bandwidth allocation based on information content)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Global clock synchronization mechanisms",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing global clock synchronization mechanisms.",
+    "suggested_searches": [
+      {
+        "query": "\"Global clock synchronization mechanisms\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Global clock synchronization mechanisms)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Multi-timescale integration framework",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing multi-timescale integration frameworks.",
+    "suggested_searches": [
+      {
+        "query": "\"Multi-timescale integration framework\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Multi-timescale integration framework)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Temporal credit assignment across modules",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing temporal credit assignment across modules.",
+    "suggested_searches": [
+      {
+        "query": "\"Temporal credit assignment across modules\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Temporal credit assignment across modules)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Phase-locking between oscillatory components",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing phase-locking between oscillatory components.",
+    "suggested_searches": [
+      {
+        "query": "\"Phase-locking between oscillatory components\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Phase-locking between oscillatory components)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Conflict resolution between competing objectives",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing conflict resolution between competing objectives.",
+    "suggested_searches": [
+      {
+        "query": "\"Conflict resolution between competing objectives\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Conflict resolution between competing objectives)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Resource allocation across pillars",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing resource allocation across pillars.",
+    "suggested_searches": [
+      {
+        "query": "\"Resource allocation across pillars\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Resource allocation across pillars)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Meta-learning for system-level adaptation",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing meta-learning for system-level adaptation.",
+    "suggested_searches": [
+      {
+        "query": "\"Meta-learning for system-level adaptation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Meta-learning for system-level adaptation)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Compositional task performance",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing compositional task performance.",
+    "suggested_searches": [
+      {
+        "query": "\"Compositional task performance\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Compositional task performance)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "System-level robustness and fault tolerance",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing system-level robustness and fault tolerance.",
+    "suggested_searches": [
+      {
+        "query": "\"System-level robustness and fault tolerance\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (System-level robustness and fault tolerance)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Staged activation of pillars during development",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing staged activation of pillars during development.",
+    "suggested_searches": [
+      {
+        "query": "\"Staged activation of pillars during development\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Staged activation of pillars during development)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Curriculum learning for system maturation",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing curriculum learning for system maturation.",
+    "suggested_searches": [
+      {
+        "query": "\"Curriculum learning for system maturation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Curriculum learning for system maturation)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Self-organization principles",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing self-organization principles.",
+    "suggested_searches": [
+      {
+        "query": "\"Self-organization principles\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Self-organization principles)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Critical periods for inter-pillar connectivity",
+    "current_completeness": 0,
+    "priority": "CRITICAL",
+    "urgency": 1,
+    "gap_description": "There is no evidence discussing critical periods for inter-pillar connectivity.",
+    "suggested_searches": [
+      {
+        "query": "\"Critical periods for inter-pillar connectivity\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Critical periods for inter-pillar connectivity)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 1",
+    "requirement": "Temporal dynamics of spike-timing in sensory encoding",
+    "current_completeness": 10,
+    "priority": "HIGH",
+    "urgency": 2,
+    "gap_description": "The paper mentions studying multi- and single-unit spiking activity but does not delve into the temporal dynamics or precise spike-timing mechanisms in sensory encoding. The focus is on the tuning properties of neurons rather than the temporal precision of their firing patterns.",
+    "suggested_searches": [
+      {
+        "query": "\"Temporal dynamics of spike-timing in sensory encoding\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Temporal dynamics of spike-timing in sensory encoding)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Temporal dynamics of spike-timing in sensory encoding)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      },
+      {
+        "query": "review AND (Temporal dynamics of spike-timing in sensory encoding)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Cerebellar module for fine-tuning",
+    "current_completeness": 10,
+    "priority": "HIGH",
+    "urgency": 2,
+    "gap_description": "There is no mention of a 'cerebellar module' or its AI equivalent for fine-tuning in the provided literature. The biological analogy is completely absent.",
+    "suggested_searches": [
+      {
+        "query": "\"Cerebellar module for fine-tuning\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Cerebellar module for fine-tuning)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Cerebellar module for fine-tuning)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Cerebellar module for fine-tuning)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Graceful degradation with component failure",
+    "current_completeness": 10,
+    "priority": "HIGH",
+    "urgency": 2,
+    "gap_description": "There is no mention of 'graceful degradation with component failure' in the provided literature. This aspect of robustness is entirely unaddressed.",
+    "suggested_searches": [
+      {
+        "query": "\"Graceful degradation with component failure\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Graceful degradation with component failure)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Graceful degradation with component failure)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "review AND (Graceful degradation with component failure)",
+        "rationale": "Literature reviews for comprehensive coverage",
+        "databases": [
+          "Google Scholar",
+          "Annual Reviews"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Event-based sensor integration with SNNs",
+    "current_completeness": 20,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The literature mentions SNNs as biologically inspired but does not provide any specific details or examples of event-based sensor integration. It lacks discussion on methodologies, architectures, or challenges related to this integration.",
+    "suggested_searches": [
+      {
+        "query": "\"Event-based sensor integration with SNNs\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Event-based sensor integration with SNNs)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Event-based sensor integration with SNNs)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Scalable training algorithms for deep SNNs",
+    "current_completeness": 20,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "While deep learning frameworks and SNNs are mentioned, there is no specific discussion or evidence regarding *scalable training algorithms* for *deep SNNs*. The challenges of SNNs are noted, but not solutions for scalability in training.",
+    "suggested_searches": [
+      {
+        "query": "\"Scalable training algorithms for deep SNNs\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Scalable training algorithms for deep SNNs)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Scalable training algorithms for deep SNNs)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "SNN architecture for multi-sensory fusion",
+    "current_completeness": 20,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "Multi-modal training is mentioned in the context of improving AI models' human-like outputs, but there is no specific discussion or architecture proposed for *SNN-based multi-sensory fusion*.",
+    "suggested_searches": [
+      {
+        "query": "\"SNN architecture for multi-sensory fusion\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (SNN architecture for multi-sensory fusion)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (SNN architecture for multi-sensory fusion)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Event-driven vs clock-driven comparison (>10x improvement)",
+    "current_completeness": 20,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "SNNs are mentioned as biologically inspired, implying event-driven processing, but no direct comparison or quantification of improvement (e.g., >10x) against clock-driven systems is provided.",
+    "suggested_searches": [
+      {
+        "query": "\"Event-driven vs clock-driven comparison (>10x improvement)\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Event-driven vs clock-driven comparison (>10x improvement))",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Event-driven vs clock-driven comparison (>10x improvement))",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "AI equivalent of declarative learning with world models",
+    "current_completeness": 20,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The literature discusses knowledge graphs and reasoning, which are related to declarative knowledge, but lacks explicit mention or architectural proposals for 'world models' in the context of AI skill automatization or a direct AI equivalent of declarative learning that uses such models for exploration.",
+    "suggested_searches": [
+      {
+        "query": "\"AI equivalent of declarative learning with world models\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (AI equivalent of declarative learning with world models)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (AI equivalent of declarative learning with world models)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Hierarchical task chunking framework",
+    "current_completeness": 20,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The literature discusses multi-hop reasoning and hierarchical structures in knowledge graphs, but there is no explicit mention or framework for 'hierarchical task chunking' in the context of skill automatization.",
+    "suggested_searches": [
+      {
+        "query": "\"Hierarchical task chunking framework\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Hierarchical task chunking framework)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Hierarchical task chunking framework)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "AI sleep consolidation equivalent (offline optimization)",
+    "current_completeness": 20,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The concept of 'offline optimization' or an 'AI sleep consolidation equivalent' is not explicitly discussed in the provided literature. While some methods might involve offline training, the biological analogy and specific mechanisms are missing.",
+    "suggested_searches": [
+      {
+        "query": "\"AI sleep consolidation equivalent (offline optimization)\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (AI sleep consolidation equivalent (offline optimization))",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (AI sleep consolidation equivalent (offline optimization))",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Hardware acceleration for compiled policies",
+    "current_completeness": 20,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The literature mentions DL frameworks and computational costs, implying a need for efficiency, but does not explicitly discuss 'hardware acceleration for compiled policies' as a specific solution or research area.",
+    "suggested_searches": [
+      {
+        "query": "\"Hardware acceleration for compiled policies\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Hardware acceleration for compiled policies)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Hardware acceleration for compiled policies)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Noise robustness during automatization",
+    "current_completeness": 20,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The literature mentions challenges with uncertainties in SNNs, but there is no explicit discussion or proposed solutions for 'noise robustness during automatization' of skills.",
+    "suggested_searches": [
+      {
+        "query": "\"Noise robustness during automatization\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Noise robustness during automatization)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Noise robustness during automatization)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 3",
+    "requirement": "Error-based learning signal propagation",
+    "current_completeness": 25,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "While 'error-based learning' is mentioned in the context of adaptive teaching and reinforcement learning, the literature does not detail the *biological signal propagation* mechanisms or specific neural pathways involved.",
+    "suggested_searches": [
+      {
+        "query": "\"Error-based learning signal propagation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuroscience AND (Error-based learning signal propagation)",
+        "rationale": "Neuroscience research context",
+        "databases": [
+          "PubMed",
+          "Nature",
+          "Science Direct"
+        ]
+      },
+      {
+        "query": "\"neural mechanisms\" AND (Error-based learning signal propagation)",
+        "rationale": "Neural mechanism studies",
+        "databases": [
+          "PubMed",
+          "Frontiers in Neuroscience"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Efficient SNN algorithms for sparse feature extraction",
+    "current_completeness": 30,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "While 'Feature extraction' is a core concept in some papers, and SNNs are mentioned, there's no direct discussion of *efficient SNN algorithms* specifically for *sparse feature extraction*. The connection to sparsity in SNNs is implied but not explicitly addressed with algorithms.",
+    "suggested_searches": [
+      {
+        "query": "\"Efficient SNN algorithms for sparse feature extraction\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Efficient SNN algorithms for sparse feature extraction)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Efficient SNN algorithms for sparse feature extraction)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "Adaptive sampling based on information content",
+    "current_completeness": 30,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The concept of adaptive teaching and optimizing example selection based on student priors (information) is present, which is analogous to adaptive sampling. However, this is discussed in the context of LLMs and teaching, not specifically for SNNs or sensory input sampling.",
+    "suggested_searches": [
+      {
+        "query": "\"Adaptive sampling based on information content\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Adaptive sampling based on information content)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Adaptive sampling based on information content)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 2",
+    "requirement": "SNN-based attentional mechanism",
+    "current_completeness": 30,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "Attention mechanisms are listed as a core concept and a technique to improve interpretability in DL, but there is no specific discussion or implementation of *SNN-based attentional mechanisms*.",
+    "suggested_searches": [
+      {
+        "query": "\"SNN-based attentional mechanism\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (SNN-based attentional mechanism)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (SNN-based attentional mechanism)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Uncertainty-guided exploration strategies",
+    "current_completeness": 30,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The literature mentions probabilistic methods (AT_O_M) and challenges with uncertainties in SNNs, but does not explicitly detail or propose uncertainty-guided exploration strategies for AI skill automatization. The focus is more on inferring student priors or general DL challenges.",
+    "suggested_searches": [
+      {
+        "query": "\"Uncertainty-guided exploration strategies\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Uncertainty-guided exploration strategies)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Uncertainty-guided exploration strategies)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Error signal propagation from motor output",
+    "current_completeness": 30,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The literature discusses error-based learning and credit assignment, but does not explicitly detail 'error signal propagation from motor output' in the context of AI skill automatization. The focus is more on abstract reasoning or teaching feedback.",
+    "suggested_searches": [
+      {
+        "query": "\"Error signal propagation from motor output\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Error signal propagation from motor output)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Error signal propagation from motor output)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Online learning during execution",
+    "current_completeness": 30,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "While adaptive teaching methods imply some form of online adjustment, the literature does not explicitly detail 'online learning during execution' for skill automatization, focusing more on policy optimization or student adaptation.",
+    "suggested_searches": [
+      {
+        "query": "\"Online learning during execution\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Online learning during execution)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Online learning during execution)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Adaptive learning rate based on performance",
+    "current_completeness": 30,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The literature mentions adaptive teaching and policy optimization, which could implicitly involve adaptive learning rates. However, there is no explicit discussion or mechanism proposed for an 'adaptive learning rate based on performance' in the context of skill automatization.",
+    "suggested_searches": [
+      {
+        "query": "\"Adaptive learning rate based on performance\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Adaptive learning rate based on performance)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Adaptive learning rate based on performance)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Compositional skill combination",
+    "current_completeness": 30,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The literature discusses multi-hop reasoning and hierarchical structures, which imply compositionality. However, 'compositional skill combination' as a distinct mechanism for automatization, especially with a target of '>10 skills combinable without retraining', is not explicitly addressed.",
+    "suggested_searches": [
+      {
+        "query": "\"Compositional skill combination\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Compositional skill combination)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Compositional skill combination)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Compiling model-based to model-free policy",
+    "current_completeness": 40,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The concept of 'Policy Compilation' is mentioned in the context of neural-symbolic reasoning, but the literature does not explicitly detail a process or architecture for compiling a model-based policy into a model-free one, which is a specific technical requirement.",
+    "suggested_searches": [
+      {
+        "query": "\"Compiling model-based to model-free policy\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Compiling model-based to model-free policy)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Compiling model-based to model-free policy)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Cross-domain skill transfer metrics (>50% transfer efficiency)",
+    "current_completeness": 40,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "Transfer learning is mentioned as a core concept and implicit in adaptive teaching, but there is no explicit discussion of 'cross-domain skill transfer metrics' or quantitative targets like '>50% transfer efficiency' in the provided evidence.",
+    "suggested_searches": [
+      {
+        "query": "\"Cross-domain skill transfer metrics (>50% transfer efficiency)\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Cross-domain skill transfer metrics (>50% transfer efficiency))",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Cross-domain skill transfer metrics (>50% transfer efficiency))",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 7",
+    "requirement": "Novel situation adaptation",
+    "current_completeness": 40,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The evidence mentions Turing tests as assessing novel situation adaptation, but does not provide specific details on how this adaptation is measured or demonstrated beyond the general concept of human-like performance.",
+    "suggested_searches": [
+      {
+        "query": "\"Novel situation adaptation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  },
+  {
+    "pillar": "Pillar 4",
+    "requirement": "Progressive network pruning during consolidation",
+    "current_completeness": 45,
+    "priority": "MEDIUM",
+    "urgency": 3,
+    "gap_description": "The evidence mentions 'rule pruning' for speedup and efforts to develop 'lightweight DL models', which are related to network pruning. However, 'progressive network pruning during consolidation' as a specific, structured process for skill automatization is not explicitly detailed.",
+    "suggested_searches": [
+      {
+        "query": "\"Progressive network pruning during consolidation\"",
+        "rationale": "Direct match for requirement topic",
+        "databases": [
+          "Google Scholar",
+          "arXiv",
+          "PubMed",
+          "IEEE Xplore"
+        ]
+      },
+      {
+        "query": "neuromorphic AND (Progressive network pruning during consolidation)",
+        "rationale": "Neuromorphic computing context",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore",
+          "Frontiers"
+        ]
+      },
+      {
+        "query": "\"spiking neural networks\" AND (Progressive network pruning during consolidation)",
+        "rationale": "SNN-specific implementations",
+        "databases": [
+          "arXiv",
+          "IEEE Xplore"
+        ]
+      }
+    ]
+  }
+]

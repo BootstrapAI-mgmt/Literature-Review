@@ -30,6 +30,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 import warnings
 from pathlib import Path
 
+# Import global rate limiter
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from utils.global_rate_limiter import global_limiter, ErrorAction
+
 # Note: pandas is imported locally in the function that needs it
 # import pandas as pd
 
@@ -76,7 +80,7 @@ REVIEW_CONFIG = {
     "SIMILARITY_THRESHOLD": 0.85,
     "MIN_TEXT_LENGTH": 500,
     "CHUNK_SIZE": 100000,
-    "API_CALLS_PER_MINUTE": 60,
+    "API_CALLS_PER_MINUTE": 10,  # Conservative limit for gemini-2.5-flash (1000 RPM available)
     "CONSENSUS_EVALUATIONS": 1,
     "API_TIMEOUT": 600
 }
@@ -231,29 +235,29 @@ class APIManager:
             self.embedder = None
 
     def rate_limit(self):
-        """Implement rate limiting"""
-        current_time = time.time()
-        if current_time - self.minute_start >= 60:
-            self.calls_this_minute = 0
-            self.minute_start = current_time
-        if self.calls_this_minute >= REVIEW_CONFIG['API_CALLS_PER_MINUTE']:
-            sleep_time = 60.1 - (current_time - self.minute_start)
-            if sleep_time > 0:
-                logger.info(
-                    f"Rate limit ({REVIEW_CONFIG['API_CALLS_PER_MINUTE']}/min) reached. Sleeping for {sleep_time:.1f} seconds...")
-                safe_print(f"⏳ Rate limit reached. Sleeping for {sleep_time:.1f} seconds...")
-                time.sleep(sleep_time)
-                self.calls_this_minute = 0
-                self.minute_start = time.time()
-        self.calls_this_minute += 1
+        """Implement rate limiting using global limiter"""
+        global_limiter.wait_for_quota()
 
     def cached_api_call(self, prompt: str, use_cache: bool = True, is_json: bool = True) -> Optional[Any]:
-        """Make API call with caching and retry logic"""
+        """Make API call with caching, validation, and retry logic"""
         prompt_hash = hashlib.md5(prompt.encode('utf-8')).hexdigest()
         if use_cache and prompt_hash in self.cache:
             logger.debug(f"Cache hit for hash: {prompt_hash}")
             safe_print("📦 Using cached response")
             return self.cache[prompt_hash]
+        
+        # Validate request before making API call
+        is_valid, reason = global_limiter.validate_request(prompt, {'response_mime_type': 'application/json' if is_json else None})
+        if not is_valid:
+            logger.error(f"Request validation failed: {reason}")
+            global_limiter.record_request(success=False)
+            return None
+        
+        # Check if we should abort due to error patterns
+        if global_limiter.should_abort_pipeline():
+            logger.critical("Pipeline abort recommended due to error patterns")
+            return None
+        
         logger.debug(f"Cache miss for hash: {prompt_hash}. Calling API...")
         self.rate_limit()
         response_text = ""
@@ -271,24 +275,48 @@ class APIManager:
                 else:
                     result = response_text
                 self.cache[prompt_hash] = result
+                # Record successful request
+                global_limiter.record_request(success=True)
                 return result
             except json.JSONDecodeError as e:
                 logger.error(
                     f"JSON decode error on attempt {attempt + 1}: {e}. Response text: '{response_text[:500]}...'")
-                if attempt < REVIEW_CONFIG['RETRY_ATTEMPTS'] - 1:
+                # Categorize error
+                category = global_limiter.categorize_error(e, response_text)
+                action = global_limiter.get_action_for_error(category)
+                global_limiter.record_request(success=False, error_category=category, action=action)
+                
+                if action == ErrorAction.SKIP_DOCUMENT:
+                    logger.error(f"Skipping document due to {category.name}")
+                    return None
+                elif attempt < REVIEW_CONFIG['RETRY_ATTEMPTS'] - 1:
                     time.sleep(REVIEW_CONFIG['RETRY_DELAY'])
                 else:
                     logger.error("Max retries reached for JSON decode error.")
             except Exception as e:
+                # Categorize error
+                category = global_limiter.categorize_error(e, str(e))
+                action = global_limiter.get_action_for_error(category)
+                global_limiter.record_request(success=False, error=e, response_text=str(e))
+                
                 if "DeadlineExceeded" in str(e) or "Timeout" in str(e):
                     logger.error(f"API call timed out on attempt {attempt + 1}")
                 else:
                     logger.error(f"API error on attempt {attempt + 1}: {type(e).__name__} - {e}")
-                if "429" in str(e):
+                
+                if action == ErrorAction.ABORT_PIPELINE:
+                    logger.critical(f"Aborting due to {category.name}")
+                    return None
+                elif action == ErrorAction.SKIP_DOCUMENT:
+                    logger.error(f"Skipping document due to {category.name}")
+                    return None
+                elif "429" in str(e):
                     logger.warning("Rate limit error detected by API, increasing sleep time.")
                     time.sleep(REVIEW_CONFIG['RETRY_DELAY'] * (attempt + 2))
                 elif attempt < REVIEW_CONFIG['RETRY_ATTEMPTS'] - 1:
-                    time.sleep(REVIEW_CONFIG['RETRY_DELAY'])
+                    # Use delay from action's value tuple (name, delay_seconds)
+                    _, delay = action.value
+                    time.sleep(delay if delay > 0 else REVIEW_CONFIG['RETRY_DELAY'])
                 else:
                     logger.error("Max retries reached for API error.")
         logger.error(f"API call failed after {REVIEW_CONFIG['RETRY_ATTEMPTS']} attempts.")
@@ -645,6 +673,9 @@ class PaperAnalyzer:
         "SUMMARIZED_FROM_CHUNKS", "TITLE", "VALIDATION_METHOD"
     ]
     # --- END MODIFICATION ---
+    
+    # Required JSON keys for validation (same as DATABASE_COLUMN_ORDER for journal papers)
+    REQUIRED_JSON_KEYS = DATABASE_COLUMN_ORDER
 
     NON_JOURNAL_JSON_KEYS = [
         "FILENAME", "DOCUMENT_TYPE", "DETECTED_TOPICS", "KEY_CONCEPTS",
@@ -934,6 +965,15 @@ The JSON object must contain these exact keys:
             result = api_manager.cached_api_call(prompt, use_cache=(i == 0), is_json=True)
 
             if result:
+                # Add fields that will be populated post-processing (with correct types)
+                result.setdefault('CROSS_REFERENCES_COUNT', "0")
+                result.setdefault('EXTRACTION_METHOD', str(metadata.extraction_method))
+                result.setdefault('EXTRACTION_QUALITY', str(metadata.extraction_quality))
+                result.setdefault('MENTIONED_PAPERS', [])
+                result.setdefault('REVIEW_TIMESTAMP', str(metadata.timestamp))
+                result.setdefault('SIMILAR_PAPERS', [])
+                result.setdefault('SUMMARIZED_FROM_CHUNKS', 'Yes' if '[[[ This document was summarized' in final_text_to_analyze else 'No')
+                
                 is_valid, errors = PaperAnalyzer.validate_response(result, required_fields)
                 if is_valid:
                     evaluations.append(result)
@@ -1443,17 +1483,17 @@ def process_batch(batch_files: List[Tuple[str, str]], api_manager: APIManager,
                     references = network_analyzer.extract_cross_references(result,
                                                                          existing_reviews + batch_journal_results)
                     if references:
-                        result['CROSS_REFERENCES_COUNT'] = len(references)
+                        result['CROSS_REFERENCES_COUNT'] = str(len(references))
                         result['MENTIONED_PAPERS'] = list(
                             set([ref['target'] for ref in references if ref['source'] == filename] +
                                 [ref['source'] for ref in references if ref['target'] == filename]))
                     else:
-                        result['CROSS_REFERENCES_COUNT'] = 0
+                        result['CROSS_REFERENCES_COUNT'] = "0"
                         result['MENTIONED_PAPERS'] = []
                 except Exception as net_e:
                     logger.error(f"Error during network analysis for {filename}: {net_e}")
                     result['SIMILAR_PAPERS'] = ["Error"]
-                    result['CROSS_REFERENCES_COUNT'] = -1
+                    result['CROSS_REFERENCES_COUNT'] = "-1"
                     result['MENTIONED_PAPERS'] = ["Error"]
 
                 version_control.save_version(filename, result)

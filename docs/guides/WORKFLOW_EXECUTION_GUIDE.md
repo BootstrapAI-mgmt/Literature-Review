@@ -312,19 +312,21 @@ Top papers:
   1. research_paper_5.pdf (8 potential matches)
   2. research_paper_3.pdf (6 potential matches)
 
-Triggering Deep-Reviewer for targeted analysis...
-Deep-Reviewer found 5 new claims
-Adding to version history...
-
-=== ITERATION 2 ===
-Completeness Score: 55.0% (22/40 sub-requirements met)
-Gap: 18 missing sub-requirements
-...
+Generating gap-closing search recommendations...
+✅ Gap-closing search recommendations generated (97 gaps identified).
 
 === CONVERGENCE ACHIEVED ===
 Final Score: 96.5% (gap <5%)
 Iterations: 4
 Reports generated in gap_analysis_output/
+  - 7 pillar waterfall visualizations
+  - Research gap radar plot
+  - Paper network visualization
+  - Research trends plot
+  - Gap analysis report (JSON)
+  - Executive summary (Markdown)
+  - Suggested searches (JSON + Markdown) 🆕
+  - Sub-requirement contributions (Markdown)
 ```
 
 ---
