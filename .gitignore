@@ -78,5 +78,8 @@ api_cache/
 mock_api_key/
 .locks/
 
+# Cost tracking reports (local data)
+cost_reports/
+
 # Web Dashboard workspace
 workspace/

@@ -45,6 +45,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional, Dict, Any, Tuple
 
+# Import cost tracker
+sys.path.insert(0, str(Path(__file__).parent))
+from literature_review.utils.cost_tracker import get_cost_tracker
+
 
 class RetryPolicy:
     """Manages retry logic and exponential backoff."""
@@ -226,6 +230,10 @@ class PipelineOrchestrator:
 
         # Initialize retry policy
         self.retry_policy = RetryPolicy(self.config)
+        
+        # Initialize cost tracker
+        self.cost_tracker = get_cost_tracker()
+        self.budget_usd = self.config.get('budget_usd', 50.0)
         
         # Log dry-run mode if enabled
         if self.dry_run:
@@ -556,6 +564,26 @@ class PipelineOrchestrator:
         self.log("Literature Review Pipeline Orchestrator v1.3", "INFO")
         self.log(f"Run ID: {self.run_id}", "INFO")
         self.log("=" * 70, "INFO")
+        
+        # Check budget at start
+        budget_status = self.cost_tracker.get_budget_status(self.budget_usd)
+        
+        if budget_status['over_budget']:
+            error_msg = (
+                f"⚠️ Over budget! Spent ${budget_status['spent']:.2f} / ${budget_status['budget']:.2f}. "
+                f"Increase budget in config or reset cost log to continue."
+            )
+            self.log(error_msg, "ERROR")
+            raise RuntimeError("Budget exceeded. Pipeline aborted.")
+        
+        if budget_status['at_risk']:
+            warning_msg = (
+                f"⚠️ Budget at risk: ${budget_status['remaining']:.2f} remaining "
+                f"({budget_status['percent_used']:.1f}% used)"
+            )
+            self.log(warning_msg, "WARNING")
+        else:
+            self.log(f"💰 Budget status: ${budget_status['spent']:.2f} / ${budget_status['budget']:.2f} used", "INFO")
 
         # Stage 1: Journal Reviewer
         self.run_stage("journal_reviewer", "literature_review.reviewers.journal_reviewer", "Stage 1: Initial Paper Review", use_module=True)
@@ -582,6 +610,27 @@ class PipelineOrchestrator:
         self.checkpoint_data["status"] = "completed"
         self.checkpoint_data["completed_at"] = datetime.now().isoformat()
         self._write_checkpoint()
+
+        # Generate cost report
+        self.log("=" * 70, "INFO")
+        self.log("📊 COST REPORT", "INFO")
+        self.log("=" * 70, "INFO")
+        
+        report = self.cost_tracker.generate_report()
+        session_summary = report['session_summary']
+        total_summary = report['total_summary']
+        
+        self.log(f"Session Cost: ${session_summary['total_cost']:.4f} ({session_summary['total_calls']} calls)", "INFO")
+        self.log(f"Total Cost: ${total_summary['total_cost']:.4f} ({total_summary['total_calls']} calls)", "INFO")
+        
+        budget_status = report['budget_status']
+        self.log(f"Budget Remaining: ${budget_status['remaining']:.2f}", "INFO")
+        
+        if report['recommendations']:
+            self.log("", "INFO")
+            self.log("💡 Cost Optimization Recommendations:", "INFO")
+            for rec in report['recommendations']:
+                self.log(f"   {rec}", "INFO")
 
         # Summary
         elapsed = datetime.now() - self.start_time
@@ -618,6 +667,12 @@ def main():
         action="store_true",
         help="Enable experimental v2.0 features (parallel processing, quota management). Use with caution."
     )
+    parser.add_argument(
+        "--budget",
+        type=float,
+        default=50.0,
+        help="Monthly API budget in USD (default: $50.00)"
+    )
 
     args = parser.parse_args()
 
@@ -630,6 +685,9 @@ def main():
     # Override config with CLI flags
     if args.dry_run:
         config['dry_run'] = True
+    
+    if args.budget:
+        config['budget_usd'] = args.budget
     
     if args.enable_experimental:
         # Enable v2 features if requested
