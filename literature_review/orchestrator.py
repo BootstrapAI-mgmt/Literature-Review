@@ -12,7 +12,7 @@ import sys
 import time
 import numpy as np
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional, Any
+from typing import Dict, List, Tuple, Optional, Any, Callable
 # Use google.genai (new SDK) for Client() interface
 from google import genai
 from google.genai import types
@@ -97,6 +97,36 @@ ANALYSIS_CONFIG = {
 
 
 # --- HELPER CLASSES ---
+
+class OrchestratorConfig:
+    """Configuration for orchestrator execution"""
+    
+    def __init__(
+        self,
+        job_id: str,
+        analysis_target: List[str],
+        run_mode: str,
+        skip_user_prompts: bool = True,
+        progress_callback: Optional[callable] = None,
+        log_callback: Optional[callable] = None
+    ):
+        """
+        Initialize orchestrator configuration
+        
+        Args:
+            job_id: Unique job identifier (use "terminal" for interactive mode)
+            analysis_target: List of pillar names or ["ALL"]
+            run_mode: "ONCE" (single pass) or "DEEP_LOOP" (iterative)
+            skip_user_prompts: If True, skip interactive prompts
+            progress_callback: Optional callback for progress updates
+            log_callback: Optional callback for log messages
+        """
+        self.job_id = job_id
+        self.analysis_target = analysis_target
+        self.run_mode = run_mode
+        self.skip_user_prompts = skip_user_prompts
+        self.progress_callback = progress_callback
+        self.log_callback = log_callback
 
 # --- APIManager Class (Unchanged) ---
 class APIManager:
@@ -1511,7 +1541,14 @@ def analyze_evidence_evolution(db: pd.DataFrame, pillar_definitions: Dict) -> Di
 
 
 # --- MAIN EXECUTION (MODIFIED) ---
-def main():
+def main(config: Optional[OrchestratorConfig] = None):
+    """
+    Main orchestrator entry point
+    
+    Args:
+        config: Optional configuration for programmatic execution.
+                If None, runs in interactive terminal mode.
+    """
     logger.info("\n" + "=" * 80)
     logger.info("ENHANCED GAP ANALYSIS ORCHESTRATOR v3.6 (Pre-Analysis Judge Run)")
     logger.info("=" * 80)
@@ -1539,7 +1576,22 @@ def main():
     run_mode = "" # "ONCE" or "DEEP_LOOP" or "EXIT"
     run_initial_judge = False
 
-    if has_new_data:
+    # Use config if provided (programmatic mode), otherwise use interactive mode
+    if config is not None and config.skip_user_prompts:
+        # Programmatic mode from dashboard
+        analysis_target_pillars = config.analysis_target
+        run_mode = config.run_mode
+        
+        # Log via callback if available
+        if config.log_callback:
+            config.log_callback(f"Starting job {config.job_id} with mode {run_mode}")
+        
+        # For programmatic mode, always run initial judge if there's new data
+        if has_new_data:
+            run_initial_judge = True
+        
+        logger.info(f"Running in programmatic mode: job_id={config.job_id}, mode={run_mode}, pillars={analysis_target_pillars}")
+    elif has_new_data:
         safe_print("📬 New data detected in CSV or JSON. Running Judge to validate claims before analysis.")
         run_initial_judge = True
         # Filter out metadata sections (not analyzable pillars)

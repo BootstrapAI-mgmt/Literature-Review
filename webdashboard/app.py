@@ -50,6 +50,9 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 # API Key for authentication (from environment)
 API_KEY = os.getenv("DASHBOARD_API_KEY", "dev-key-change-in-production")
 
+# Global job runner instance
+job_runner: Optional["PipelineJobRunner"] = None
+
 # WebSocket connections manager
 class ConnectionManager:
     """Manages WebSocket connections for real-time updates"""
@@ -80,6 +83,20 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+# Startup event to initialize JobRunner
+@app.on_event("startup")
+async def startup_event():
+    """Initialize background services on app startup"""
+    global job_runner
+    from webdashboard.job_runner import PipelineJobRunner
+    
+    job_runner = PipelineJobRunner(max_workers=2)
+    
+    # Start background worker
+    asyncio.create_task(job_runner.start())
+    
+    print("Dashboard started with background job runner")
+
 # Pydantic models
 class JobStatus(BaseModel):
     """Job status information"""
@@ -95,6 +112,11 @@ class JobStatus(BaseModel):
 class RetryRequest(BaseModel):
     """Request to retry a job"""
     force: bool = False
+
+class JobConfig(BaseModel):
+    """Job configuration parameters"""
+    pillar_selections: List[str]
+    run_mode: str  # "ONCE" or "DEEP_LOOP"
 
 # Helper functions
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
@@ -170,7 +192,7 @@ async def upload_file(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save file: {str(e)}")
     
-    # Create job record
+    # Create job record with default configuration
     job_data = {
         "id": job_id,
         "status": "queued",
@@ -180,10 +202,18 @@ async def upload_file(
         "started_at": None,
         "completed_at": None,
         "error": None,
-        "progress": {}
+        "progress": {},
+        "config": {
+            "pillar_selections": ["ALL"],  # Default
+            "run_mode": "ONCE"  # Default
+        }
     }
     
     save_job(job_id, job_data)
+    
+    # ENQUEUE JOB FOR PROCESSING
+    if job_runner:
+        await job_runner.enqueue_job(job_id, job_data)
     
     # Broadcast update to WebSocket clients
     await manager.broadcast({
@@ -292,6 +322,34 @@ async def retry_job(
     })
     
     return {"job_id": job_id, "status": "queued", "message": "Retry requested"}
+
+@app.post("/api/jobs/{job_id}/configure")
+async def configure_job(
+    job_id: str,
+    config: JobConfig,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Configure job parameters before execution
+    
+    Args:
+        job_id: Job identifier
+        config: Job configuration (pillar selections and run mode)
+    
+    Returns:
+        Updated job configuration
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Update job configuration
+    job_data["config"] = config.dict()
+    save_job(job_id, job_data)
+    
+    return {"job_id": job_id, "config": config.dict()}
 
 @app.get("/api/logs/{job_id}")
 async def get_job_logs(

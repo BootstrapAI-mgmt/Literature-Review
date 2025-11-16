@@ -3,15 +3,89 @@ Orchestrator Integration Module
 
 Coordinates Journal-Reviewer, Deep-Reviewer, Judge, and CSV sync.
 Implements evidence triangulation across multiple reviewers.
+Provides programmatic interface for dashboard integration.
 
-Version: 1.0 (Task Card #9: Orchestrator Integration Tests)
+Version: 2.0 (Phase 1: Core Pipeline Integration)
 """
 
 import json
 import os
 import pandas as pd
 from datetime import datetime
-from typing import Optional
+from pathlib import Path
+from typing import Optional, Callable, List, Dict
+
+
+def run_pipeline_for_job(
+    job_id: str,
+    pillar_selections: List[str],
+    run_mode: str,
+    progress_callback: Optional[Callable] = None,
+    log_callback: Optional[Callable] = None
+) -> Dict:
+    """
+    Execute orchestrator pipeline for a dashboard job
+    
+    Args:
+        job_id: Unique job identifier
+        pillar_selections: List of pillar names or ["ALL"]
+        run_mode: "ONCE" (single pass) or "DEEP_LOOP" (iterative)
+        progress_callback: Function to call with progress updates
+        log_callback: Function to call with log messages
+    
+    Returns:
+        Dict with execution results and output file paths
+    """
+    from literature_review.orchestrator import main as orchestrator_main, OrchestratorConfig
+    
+    # Create job-specific output directory
+    output_dir = Path(f"workspace/jobs/{job_id}/outputs")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Configure orchestrator
+    config = OrchestratorConfig(
+        job_id=job_id,
+        analysis_target=pillar_selections,
+        run_mode=run_mode,
+        skip_user_prompts=True,
+        progress_callback=progress_callback,
+        log_callback=log_callback
+    )
+    
+    # Execute pipeline
+    try:
+        if log_callback:
+            log_callback(f"Starting orchestrator for job {job_id}")
+        
+        if progress_callback:
+            progress_callback("Initializing pipeline")
+        
+        result = orchestrator_main(config)
+        
+        if progress_callback:
+            progress_callback("Pipeline execution completed")
+        
+        # Collect output file paths from standard output directory
+        standard_output_dir = Path("gap_analysis_output")
+        output_files = []
+        
+        if standard_output_dir.exists():
+            output_files = [str(f) for f in standard_output_dir.glob("**/*") if f.is_file()]
+        
+        return {
+            "status": "success",
+            "output_dir": str(output_dir),
+            "output_files": output_files,
+            "result": result
+        }
+    except Exception as e:
+        if log_callback:
+            log_callback(f"Pipeline failed: {str(e)}")
+        
+        return {
+            "status": "failed",
+            "error": str(e)
+        }
 
 
 class Orchestrator:
