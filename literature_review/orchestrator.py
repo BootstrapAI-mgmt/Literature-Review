@@ -1030,33 +1030,30 @@ def get_user_analysis_target(pillar_definitions: Dict) -> Tuple[List[str], str]:
     safe_print("\n--- No new data detected ---")
     safe_print("What would you like to re-assess?")
 
-    pillar_names = list(pillar_definitions.keys())
     # Filter out metadata sections that can't be analyzed
     metadata_sections = {'Framework_Overview', 'Cross_Cutting_Requirements', 'Success_Criteria'}
-    analyzable_pillars = [k for k in pillar_names if k not in metadata_sections]
+    all_keys = list(pillar_definitions.keys())
+    analyzable_pillars = [k for k in all_keys if k not in metadata_sections]
     
-    for i, name in enumerate(pillar_names, 1):
-        status = "" if name in analyzable_pillars else " (metadata - skip)"
-        safe_print(f"  {i}. {name.split(':')[0]}{status}")
-    safe_print("\n  ALL - Run analysis on all pillars (one pass)")
-    safe_print("  DEEP - Run iterative deep-review loop on all pillars")
-    safe_print("  NONE - Exit (default)")
+    # Only show analyzable pillars to user
+    for i, name in enumerate(analyzable_pillars, 1):
+        safe_print(f"  {i}. {name.split(':')[0]}")
+    safe_print(f"\n  ALL - Run analysis on all pillars (one pass)")
+    safe_print(f"  DEEP - Run iterative deep-review loop on all pillars")
+    safe_print(f"  NONE - Exit (default)")
 
-    choice = input("Enter choice (1-6, ALL, DEEP, NONE): ").strip().upper()
+    choice = input(f"Enter choice (1-{len(analyzable_pillars)}, ALL, DEEP, NONE): ").strip().upper()
 
     if not choice or choice == "NONE":
         return [], "EXIT"
     if choice == "ALL":
-        return analyzable_pillars, "ONCE"  # Only return analyzable pillars
+        return analyzable_pillars, "ONCE"
     if choice == "DEEP":
-        return analyzable_pillars, "DEEP_LOOP"  # Only return analyzable pillars
+        return analyzable_pillars, "DEEP_LOOP"
     try:
         choice_idx = int(choice) - 1
-        if 0 <= choice_idx < len(pillar_names):
-            selected = pillar_names[choice_idx]
-            if selected in metadata_sections:
-                safe_print(f"⚠️  {selected} is a metadata section and cannot be analyzed. Exiting.")
-                return [], "EXIT"
+        if 0 <= choice_idx < len(analyzable_pillars):
+            selected = analyzable_pillars[choice_idx]
             return [selected], "ONCE"
     except ValueError:
         pass
