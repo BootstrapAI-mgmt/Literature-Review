@@ -280,9 +280,72 @@ Status badges are color-coded:
 - 🟢 COMPLETED (green)
 - 🔴 FAILED (red)
 
-### 4. View Job Details
+### 4. Understanding Summary Cards
 
-Click "View" or click on a job row to see:
+Each job in the list displays quick-view summary cards showing key metrics at a glance:
+
+![Summary Cards Demo](https://github.com/user-attachments/assets/4a28deb1-9991-4ce2-a470-3d66a1982f03)
+
+#### Metrics Displayed
+
+**📊 Coverage (Completeness Percentage)**
+- Shows percentage of requirements covered by the analyzed papers
+- Color-coded for quick assessment:
+  - 🟢 **Green (≥80%)**: Good coverage - most requirements addressed
+  - 🟡 **Yellow (60-79%)**: Medium coverage - some gaps exist
+  - 🔴 **Red (<60%)**: Poor coverage - significant gaps need addressing
+
+**⚠️ Critical Gaps**
+- Count of high-severity gaps (severity ≥8 out of 10)
+- Red border appears if any critical gaps exist
+- Helps prioritize which jobs need immediate attention
+
+**📄 Papers**
+- Total number of research papers analyzed in this job
+- Useful for comparing analysis depth across jobs
+
+**💡 Recommendations**
+- Number of actionable recommendations generated
+- Hover over the card to preview the top 2 recommendations
+- Click "Full Results" to see complete recommendations list
+
+#### Using Summary Cards
+
+**Quick Comparison:** Scan multiple jobs to find the best analysis run without opening each one
+
+**At-a-Glance Status:** Immediately see job health and completeness
+
+**Prioritization:** Identify jobs with critical gaps that need attention first
+
+**Example Workflow:**
+```
+Scenario: You ran analyses on 3 different paper sets
+
+Job 1: 87.5% coverage, 2 critical gaps, 8 papers
+→ Good coverage but has critical issues to address
+
+Job 2: 65.3% coverage, 4 critical gaps, 12 papers  
+→ More papers but lower coverage, more critical work needed
+
+Job 3: Running...
+→ Analysis still in progress, no results yet
+
+Decision: Start with Job 1 (best coverage) to address critical gaps,
+then improve Job 2's coverage by adding targeted papers
+```
+
+#### Pending Analysis Jobs
+
+Jobs that are in "draft", "queued", or "running" status show:
+```
+Analysis pending or in progress
+```
+
+Summary cards only appear for completed jobs that have generated results.
+
+### 5. View Job Details
+
+Click "View Details" button to see:
 - Full Job ID
 - Current Status
 - Filename
@@ -296,7 +359,7 @@ Actions available in detail view:
 - **Retry Job**: Retry a failed job
 - **Close**: Close the detail modal
 
-### 5. Real-time Updates
+### 6. Real-time Updates
 
 The dashboard uses WebSockets for real-time updates:
 - Connection status shown in top-right corner
