@@ -38,7 +38,7 @@ class SmartDeduplicator:
                 'file': paper_file,
                 'title': title,
                 'abstract': abstract,
-                'text': f"{title}. {abstract}"  # Combined for embedding
+                'text': f"{title}. {abstract}" if abstract else title  # Combined for embedding
             })
         
         # Generate embeddings
@@ -176,14 +176,15 @@ class SmartDeduplicator:
         }
 
 
-def run_smart_dedup(review_log: str, output_file: str = 'review_log_deduped.json'):
+def run_smart_dedup(review_log: str, output_file: str = None):
     """Run smart deduplication and save results."""
     deduplicator = SmartDeduplicator()
     result = deduplicator.deduplicate_papers(review_log)
     
-    # Save deduplicated reviews
-    with open(output_file, 'w') as f:
-        json.dump(result['merged_reviews'], f, indent=2)
+    # Save deduplicated reviews (skip if None for dry-run mode)
+    if output_file:
+        with open(output_file, 'w') as f:
+            json.dump(result['merged_reviews'], f, indent=2)
     
     print("\n" + "="*60)
     print("SMART SEMANTIC DEDUPLICATION")
@@ -199,7 +200,8 @@ def run_smart_dedup(review_log: str, output_file: str = 'review_log_deduped.json
             print(f"  {file1} ≈ {file2} ({sim:.0%} similar)")
     
     print("\n" + "="*60)
-    print(f"Deduplicated reviews saved to: {output_file}")
+    if output_file:
+        print(f"Deduplicated reviews saved to: {output_file}")
     print("="*60 + "\n")
     
     return result

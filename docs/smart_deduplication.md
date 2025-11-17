@@ -67,6 +67,8 @@ For datasets >200 papers, use batch processing:
 result = deduplicator.deduplicate_papers_batch('review_log.json', batch_size=50)
 ```
 
+> **Note:** Batch processing currently only detects duplicates within each batch, not across batches. For complete duplicate detection on large datasets, use the standard `deduplicate_papers()` method or ensure batch size is large enough to contain all potential duplicates.
+
 ## Requirements
 
 - sentence-transformers >= 2.2.0

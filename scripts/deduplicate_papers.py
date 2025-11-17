@@ -43,7 +43,7 @@ def main():
     # Run deduplication
     result = run_smart_dedup(
         review_log=args.review_log,
-        output_file=args.output if not args.dry_run else None
+        output_file=None if args.dry_run else args.output
     )
     
     # Show duplicates
