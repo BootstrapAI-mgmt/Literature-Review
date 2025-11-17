@@ -123,6 +123,75 @@ for paper_file, review in result['merged_reviews'].items():
 }
 ```
 
+### Pipeline Integration
+
+#### Option 1: Using Configuration
+
+Enable automatic deduplication in `pipeline_config.json`:
+
+```json
+{
+  "deduplication": {
+    "enabled": true,
+    "threshold": 0.90,
+    "batch_size": 50,
+    "run_before_gap_analysis": true,
+    "output_file": "review_log_deduped.json"
+  }
+}
+```
+
+#### Option 2: Manual Integration
+
+Run deduplication as a pipeline step before gap analysis:
+
+```bash
+# Step 1: Run deduplication
+python scripts/deduplicate_papers.py --review-log review_log.json --output review_log_deduped.json
+
+# Step 2: Run gap analysis with deduplicated file
+python -m literature_review.orchestrator --review-log review_log_deduped.json
+```
+
+#### Option 3: Programmatic Integration
+
+Integrate deduplication in your Python code:
+
+```python
+from literature_review.utils.smart_dedup import SmartDeduplicator
+import json
+
+# Load configuration
+with open('pipeline_config.json') as f:
+    config = json.load(f)
+
+dedup_config = config.get('deduplication', {})
+
+if dedup_config.get('enabled', False):
+    print("Running semantic deduplication...")
+    
+    deduplicator = SmartDeduplicator()
+    deduplicator.similarity_threshold = dedup_config.get('threshold', 0.90)
+    
+    batch_size = dedup_config.get('batch_size', 50)
+    result = deduplicator.deduplicate_papers_batch('review_log.json', batch_size=batch_size)
+    
+    # Save deduplicated version
+    output_file = dedup_config.get('output_file', 'review_log_deduped.json')
+    with open(output_file, 'w') as f:
+        json.dump(result['merged_reviews'], f, indent=2)
+    
+    print(f"✅ Deduplication complete: {result['duplicate_pairs']} duplicates merged")
+    print(f"   Reduction: {result['reduction']}%")
+    
+    # Continue with deduplicated data
+    review_log_file = output_file
+else:
+    review_log_file = 'review_log.json'
+
+# Continue with gap analysis...
+```
+
 ## Performance
 
 - **Small datasets (10 papers)**: ~5 seconds
