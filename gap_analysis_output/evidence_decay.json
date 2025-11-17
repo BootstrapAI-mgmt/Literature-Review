@@ -1,7 +1,7 @@
 {
-  "analysis_date": "2025-11-17T01:48:01.973629",
+  "analysis_date": "2025-11-17T01:49:31.998990",
   "current_year": 2025,
-  "half_life_years": 5.0,
+  "half_life_years": 3.0,
   "requirement_analysis": {
     "Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing": {
       "requirement": "Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing",
@@ -10,7 +10,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.7,
       "needs_update": false,
       "papers": [
@@ -21,7 +21,7 @@
           "year": 2022,
           "title": "gk8110.pdf",
           "alignment": 0.7,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -33,7 +33,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.5,
       "needs_update": false,
       "papers": [
@@ -44,7 +44,7 @@
           "year": 2022,
           "title": "gk8110.pdf",
           "alignment": 0.5,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -56,7 +56,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -67,7 +67,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -79,7 +79,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.15,
       "needs_update": false,
       "papers": [
@@ -90,7 +90,7 @@
           "year": 2022,
           "title": "gk8110.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         },
         {
@@ -100,7 +100,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.1,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -112,7 +112,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.3,
       "needs_update": false,
       "papers": [
@@ -123,7 +123,7 @@
           "year": 2022,
           "title": "2024.acl-long.718.pdf",
           "alignment": 0.3,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -135,7 +135,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -146,7 +146,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -158,7 +158,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -169,7 +169,7 @@
           "year": 2022,
           "title": "gk8117.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -181,7 +181,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.15,
       "needs_update": false,
       "papers": [
@@ -192,7 +192,7 @@
           "year": 2022,
           "title": "gk8117.pdf",
           "alignment": 0.15,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         },
         {
@@ -202,7 +202,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.15,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -214,7 +214,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -225,7 +225,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -237,7 +237,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.3,
       "needs_update": false,
       "papers": [
@@ -248,7 +248,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.3,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         },
         {
@@ -258,7 +258,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.3,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -270,7 +270,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.25,
       "needs_update": false,
       "papers": [
@@ -281,7 +281,7 @@
           "year": 2022,
           "title": "2024.acl-long.718.pdf",
           "alignment": 0.25,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -293,7 +293,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -304,7 +304,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -316,7 +316,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.75,
       "needs_update": false,
       "papers": [
@@ -327,7 +327,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.75,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -339,7 +339,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -350,7 +350,7 @@
           "year": 2022,
           "title": "2024.acl-long.718.pdf",
           "alignment": 0.3,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         },
         {
@@ -360,7 +360,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.1,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -372,7 +372,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.4,
       "needs_update": false,
       "papers": [
@@ -383,7 +383,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.4,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -395,7 +395,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -406,7 +406,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -418,8 +418,8 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
-      "freshness_score": 0.23,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.22,
       "needs_update": false,
       "papers": [
         {
@@ -429,7 +429,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.3,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         },
         {
@@ -439,7 +439,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.15,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -451,7 +451,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.9,
       "needs_update": false,
       "papers": [
@@ -462,7 +462,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.9,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -474,7 +474,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -485,7 +485,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -497,7 +497,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.3,
       "needs_update": false,
       "papers": [
@@ -508,7 +508,7 @@
           "year": 2022,
           "title": "2024.acl-long.718.pdf",
           "alignment": 0.3,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -520,7 +520,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.85,
       "needs_update": false,
       "papers": [
@@ -531,7 +531,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.85,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -543,7 +543,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.3,
       "needs_update": false,
       "papers": [
@@ -554,7 +554,7 @@
           "year": 2022,
           "title": "2024.acl-long.718.pdf",
           "alignment": 0.3,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -566,7 +566,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.3,
       "needs_update": false,
       "papers": [
@@ -577,7 +577,7 @@
           "year": 2022,
           "title": "2024.acl-long.718.pdf",
           "alignment": 0.3,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -589,7 +589,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -600,7 +600,7 @@
           "year": 2022,
           "title": "2024.acl-long.718.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         },
         {
@@ -610,7 +610,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -622,7 +622,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.2,
       "needs_update": false,
       "papers": [
@@ -633,7 +633,7 @@
           "year": 2022,
           "title": "s10489-025-06259-x.pdf",
           "alignment": 0.2,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -645,7 +645,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.3,
       "needs_update": false,
       "papers": [
@@ -656,7 +656,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.3,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -668,7 +668,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.7,
       "needs_update": false,
       "papers": [
@@ -679,7 +679,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.7,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -691,7 +691,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.8,
       "needs_update": false,
       "papers": [
@@ -702,7 +702,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.8,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -714,7 +714,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.75,
       "needs_update": false,
       "papers": [
@@ -725,7 +725,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.75,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -737,7 +737,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.65,
       "needs_update": false,
       "papers": [
@@ -748,7 +748,7 @@
           "year": 2022,
           "title": "2010.05446v5.pdf",
           "alignment": 0.65,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -760,7 +760,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.7,
       "needs_update": false,
       "papers": [
@@ -771,7 +771,7 @@
           "year": 2022,
           "title": "gk8117.pdf",
           "alignment": 0.7,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
@@ -783,7 +783,7 @@
       "avg_age_years": 3.0,
       "oldest_paper_year": 2022,
       "newest_paper_year": 2022,
-      "avg_decay_weight": 0.66,
+      "avg_decay_weight": 0.5,
       "freshness_score": 0.4,
       "needs_update": false,
       "papers": [
@@ -794,7 +794,7 @@
           "year": 2022,
           "title": "gk8117.pdf",
           "alignment": 0.4,
-          "decay_weight": 0.66,
+          "decay_weight": 0.5,
           "age_years": 3
         }
       ]
