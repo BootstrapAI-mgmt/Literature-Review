@@ -901,6 +901,54 @@
         </div>
     </div>
 
+    <!-- Results Viewer Modal -->
+    <div class="modal fade" id="resultsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        📊 Analysis Results - <span id="resultsJobId"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Sidebar: File browser -->
+                        <div class="col-md-3">
+                            <h6>Output Files</h6>
+                            <div class="list-group" id="resultsFileList" style="max-height: 600px; overflow-y: auto;">
+                                <div class="text-center text-muted p-3">
+                                    Loading...
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-primary w-100" onclick="downloadAllResults()">
+                                    📦 Download All (ZIP)
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Main area: File viewer -->
+                        <div class="col-md-9">
+                            <div id="resultsViewer">
+                                <div class="text-center text-muted p-5">
+                                    <h5>Select a file to view</h5>
+                                    <p>Choose a file from the list on the left</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -1211,6 +1259,11 @@
                         <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); showJobDetail('${job.id}')">
                             View
                         </button>
+                        ${job.status === 'completed' ? `
+                            <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); showJobResults('${job.id}')">
+                                📊 Results
+                            </button>
+                        ` : ''}
                     </td>
                 </tr>
             `).join('');
@@ -1676,6 +1729,173 @@
                 alert('Retry failed: ' + error.message);
             }
         });
+        
+        // Results Viewer Functions
+        async function showJobResults(jobId) {
+            // Set modal title
+            document.getElementById('resultsJobId').textContent = jobId;
+            currentJobId = jobId;
+            
+            // Fetch results list
+            const response = await fetch(`${API_BASE}/api/jobs/${jobId}/results`, {
+                headers: { 'X-API-KEY': apiKey }
+            });
+            
+            if (!response.ok) {
+                alert('Failed to load results');
+                return;
+            }
+            
+            const data = await response.json();
+            
+            // Render file list grouped by category
+            renderFileList(data.outputs);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('resultsModal'));
+            modal.show();
+        }
+        
+        function renderFileList(outputs) {
+            const fileList = document.getElementById('resultsFileList');
+            fileList.innerHTML = '';
+            
+            // Group by category
+            const grouped = {};
+            outputs.forEach(file => {
+                if (!grouped[file.category]) {
+                    grouped[file.category] = [];
+                }
+                grouped[file.category].push(file);
+            });
+            
+            // Render each category
+            const categoryTitles = {
+                'pillar_waterfalls': '📊 Pillar Waterfalls',
+                'visualizations': '📈 Visualizations',
+                'reports': '📄 Reports',
+                'data': '💾 Data Files',
+                'other': '📦 Other'
+            };
+            
+            for (const [category, files] of Object.entries(grouped)) {
+                // Category header
+                const header = document.createElement('div');
+                header.className = 'list-group-item bg-light fw-bold';
+                header.textContent = categoryTitles[category] || category;
+                fileList.appendChild(header);
+                
+                // Files in category
+                files.forEach(file => {
+                    const item = document.createElement('a');
+                    item.href = '#';
+                    item.className = 'list-group-item list-group-item-action';
+                    item.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-truncate" style="font-size: 0.85rem;">${file.filename}</span>
+                            <span class="badge bg-secondary">${formatFileSize(file.size)}</span>
+                        </div>
+                    `;
+                    item.onclick = (e) => {
+                        e.preventDefault();
+                        viewFile(file);
+                    };
+                    fileList.appendChild(item);
+                });
+            }
+        }
+        
+        async function viewFile(file) {
+            const viewer = document.getElementById('resultsViewer');
+            
+            // Show loading
+            viewer.innerHTML = '<div class="text-center p-5"><div class="spinner-border"></div></div>';
+            
+            const fileUrl = `${API_BASE}/api/jobs/${currentJobId}/results/${file.path}`;
+            
+            try {
+                if (file.mime_type === 'text/html' || file.filename.endsWith('.html')) {
+                    // Render HTML in iframe
+                    viewer.innerHTML = `
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6>${file.filename}</h6>
+                            <a href="${fileUrl}" class="btn btn-sm btn-outline-primary" download>
+                                💾 Download
+                            </a>
+                        </div>
+                        <iframe 
+                            src="${fileUrl}" 
+                            style="width: 100%; height: 600px; border: 1px solid #dee2e6; border-radius: 5px;">
+                        </iframe>
+                    `;
+                } else if (file.mime_type === 'application/json' || file.filename.endsWith('.json')) {
+                    // Fetch and pretty-print JSON
+                    const response = await fetch(fileUrl, {
+                        headers: { 'X-API-KEY': apiKey }
+                    });
+                    const jsonData = await response.json();
+                    
+                    viewer.innerHTML = `
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6>${file.filename}</h6>
+                            <a href="${fileUrl}" class="btn btn-sm btn-outline-primary" download>
+                                💾 Download
+                            </a>
+                        </div>
+                        <pre class="bg-dark text-light p-3" style="max-height: 600px; overflow-y: auto; border-radius: 5px;"><code>${JSON.stringify(jsonData, null, 2)}</code></pre>
+                    `;
+                } else if (file.mime_type?.startsWith('text/') || file.filename.endsWith('.md')) {
+                    // Fetch and display text/markdown
+                    const response = await fetch(fileUrl, {
+                        headers: { 'X-API-KEY': apiKey }
+                    });
+                    const textData = await response.text();
+                    
+                    viewer.innerHTML = `
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6>${file.filename}</h6>
+                            <a href="${fileUrl}" class="btn btn-sm btn-outline-primary" download>
+                                💾 Download
+                            </a>
+                        </div>
+                        <pre class="bg-light p-3" style="max-height: 600px; overflow-y: auto; border-radius: 5px;"><code>${escapeHtml(textData)}</code></pre>
+                    `;
+                } else {
+                    // Download-only for binary files
+                    viewer.innerHTML = `
+                        <div class="text-center p-5">
+                            <h5>${file.filename}</h5>
+                            <p class="text-muted">Preview not available for this file type</p>
+                            <a href="${fileUrl}" class="btn btn-primary" download>
+                                💾 Download File
+                            </a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                viewer.innerHTML = `
+                    <div class="alert alert-danger">
+                        Failed to load file: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function downloadAllResults() {
+            window.open(`${API_BASE}/api/jobs/${currentJobId}/results/download/all`, '_blank');
+        }
         
         // Initialize
         connectWebSocket();
