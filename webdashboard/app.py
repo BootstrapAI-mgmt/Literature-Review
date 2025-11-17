@@ -915,50 +915,6 @@ async def get_job_results(
         "output_dir": str(output_dir)
     }
 
-@app.get("/api/jobs/{job_id}/results/{file_path:path}")
-async def get_job_result_file(
-    job_id: str,
-    file_path: str,
-    api_key: str = Header(None, alias="X-API-KEY")
-):
-    """
-    Get a specific output file
-    
-    Args:
-        job_id: Job identifier
-        file_path: Relative path to file within output directory
-    
-    Returns:
-        File content
-    """
-    verify_api_key(api_key)
-    
-    # Validate job exists and completed
-    job_data = load_job(job_id)
-    if not job_data:
-        raise HTTPException(status_code=404, detail="Job not found")
-    
-    if job_data.get("status") != "completed":
-        raise HTTPException(status_code=400, detail="Job not completed")
-    
-    # Build full file path (prevent directory traversal)
-    output_dir = JOBS_DIR / job_id / "outputs" / "gap_analysis_output"
-    full_path = (output_dir / file_path).resolve()
-    
-    # Security check: ensure path is within output directory
-    if not str(full_path).startswith(str(output_dir.resolve())):
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    if not full_path.exists() or not full_path.is_file():
-        raise HTTPException(status_code=404, detail="File not found")
-    
-    # Return file
-    return FileResponse(
-        path=full_path,
-        media_type=mimetypes.guess_type(full_path.name)[0] or "application/octet-stream",
-        filename=full_path.name
-    )
-
 @app.get("/api/jobs/{job_id}/results/download/all")
 async def download_all_results(
     job_id: str,
@@ -1005,6 +961,50 @@ async def download_all_results(
         headers={
             "Content-Disposition": f"attachment; filename=job_{job_id}_results.zip"
         }
+    )
+
+@app.get("/api/jobs/{job_id}/results/{file_path:path}")
+async def get_job_result_file(
+    job_id: str,
+    file_path: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get a specific output file
+    
+    Args:
+        job_id: Job identifier
+        file_path: Relative path to file within output directory
+    
+    Returns:
+        File content
+    """
+    verify_api_key(api_key)
+    
+    # Validate job exists and completed
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job_data.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="Job not completed")
+    
+    # Build full file path (prevent directory traversal)
+    output_dir = JOBS_DIR / job_id / "outputs" / "gap_analysis_output"
+    full_path = (output_dir / file_path).resolve()
+    
+    # Security check: ensure path is within output directory
+    if not str(full_path).startswith(str(output_dir.resolve())):
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not full_path.exists() or not full_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Return file
+    return FileResponse(
+        path=full_path,
+        media_type=mimetypes.guess_type(full_path.name)[0] or "application/octet-stream",
+        filename=full_path.name
     )
 
 @app.get("/health")
