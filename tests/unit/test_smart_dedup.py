@@ -186,3 +186,99 @@ def test_batch_processing(tmp_path, sample_reviews_with_duplicates):
     # Should produce same duplicate count
     assert result_regular['duplicate_pairs'] == result_batch['duplicate_pairs']
     assert result_regular['unique_count'] == result_batch['unique_count']
+
+
+@pytest.mark.unit
+def test_cross_batch_detection(tmp_path):
+    """Test that batch mode finds cross-batch duplicates."""
+    # Create test data where duplicates span different batches
+    reviews = {}
+    for i in range(10):
+        reviews[f"paper_{i}.json"] = {
+            "metadata": {
+                "title": f"Paper on Topic {i % 3}",
+                "abstract": f"This paper discusses topic {i % 3} in detail."
+            }
+        }
+    
+    review_file = tmp_path / "review.json"
+    with open(review_file, 'w') as f:
+        json.dump(reviews, f)
+    
+    deduplicator = SmartDeduplicator()
+    deduplicator.similarity_threshold = 0.85
+    
+    # Use small batch size to force cross-batch scenarios
+    result = deduplicator.deduplicate_papers_batch(str(review_file), batch_size=3)
+    
+    # Should find duplicates across batches
+    assert result['duplicate_pairs'] > 0
+    assert result['unique_count'] < result['original_count']
+
+
+@pytest.mark.unit
+def test_full_metadata_preservation(tmp_path):
+    """Test that full metadata is preserved from duplicates."""
+    reviews = {
+        "paper1.json": {
+            "metadata": {
+                "title": "Deep Learning for Image Classification",
+                "abstract": "This paper presents a novel approach to image classification.",
+                "authors": ["John Doe", "Jane Smith"],
+                "year": 2023
+            },
+            "judge_analysis": {
+                "score": 0.85,
+                "notes": "High quality paper"
+            }
+        },
+        "paper2.json": {
+            "metadata": {
+                "title": "Image Classification with Deep Learning",
+                "abstract": "We present a new approach to image classification.",
+                "authors": ["John Doe", "Jane Smith"],
+                "year": 2023
+            },
+            "judge_analysis": {
+                "score": 0.82,
+                "notes": "Good methodology"
+            }
+        }
+    }
+    
+    review_file = tmp_path / "review.json"
+    with open(review_file, 'w') as f:
+        json.dump(reviews, f)
+    
+    deduplicator = SmartDeduplicator()
+    result = deduplicator.deduplicate_papers(str(review_file))
+    
+    # Check for duplicate_versions field with full metadata
+    found_duplicates = False
+    for paper_file, review in result['merged_reviews'].items():
+        if 'duplicate_versions' in review:
+            found_duplicates = True
+            for dup in review['duplicate_versions']:
+                # Check all required fields
+                assert 'filename' in dup
+                assert 'similarity_score' in dup
+                assert 'metadata' in dup
+                assert 'title' in dup
+                assert 'abstract' in dup
+                assert 'merged_at' in dup
+                
+                # Check metadata is complete
+                assert 'authors' in dup['metadata']
+                assert 'year' in dup['metadata']
+                
+                # Verify timestamp format
+                from datetime import datetime
+                datetime.fromisoformat(dup['merged_at'])
+    
+    assert found_duplicates, "Should have found at least one duplicate"
+    
+    # Also check backward compatibility - duplicates field should exist
+    for paper_file, review in result['merged_reviews'].items():
+        if 'duplicate_versions' in review:
+            assert 'duplicates' in review
+            assert isinstance(review['duplicates'], list)

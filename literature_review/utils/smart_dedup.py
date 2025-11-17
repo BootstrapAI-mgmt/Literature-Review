@@ -6,6 +6,7 @@ from typing import Dict, List, Tuple
 from sentence_transformers import SentenceTransformer
 import numpy as np
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +84,7 @@ class SmartDeduplicator:
         return duplicates
     
     def _merge_duplicates(self, reviews: Dict, duplicates: List[Tuple]) -> Dict:
-        """Merge duplicate entries, keeping best version."""
+        """Merge duplicate entries with full metadata preservation."""
         merged = dict(reviews)
         
         for file1, file2, similarity in duplicates:
@@ -102,12 +103,28 @@ class SmartDeduplicator:
             
             if score1 >= score2:
                 keep, remove = file1, file2
+                kept_review, removed_review = review1, review2
             else:
                 keep, remove = file2, file1
+                kept_review, removed_review = review2, review1
             
-            # Merge metadata
+            # NEW: Preserve full metadata from duplicate
+            duplicate_info = {
+                'filename': remove,
+                'similarity_score': similarity,
+                'metadata': removed_review.get('metadata', {}),
+                'title': removed_review.get('metadata', {}).get('title', ''),
+                'abstract': removed_review.get('metadata', {}).get('abstract', ''),
+                'merged_at': datetime.now().isoformat()
+            }
+            
+            # Append to duplicates list (handle multiple duplicates)
+            if 'duplicate_versions' not in merged[keep]:
+                merged[keep]['duplicate_versions'] = []
+            merged[keep]['duplicate_versions'].append(duplicate_info)
+            
+            # Also keep simple list for backward compatibility
             merged[keep]['duplicates'] = merged[keep].get('duplicates', []) + [remove]
-            merged[keep]['similarity_score'] = similarity
             
             # Remove duplicate
             del merged[remove]
@@ -118,16 +135,20 @@ class SmartDeduplicator:
     
     def deduplicate_papers_batch(self, review_log_file: str, batch_size: int = 50) -> Dict:
         """
-        Deduplicate papers in batches for large datasets.
+        Deduplicate papers in batches with cross-batch detection.
+        
+        This method processes papers in batches for memory efficiency while
+        ensuring duplicates are detected across all batches, not just within
+        each batch.
         
         Args:
             review_log_file: Path to review log
             batch_size: Number of papers per batch
         
         Returns:
-            Deduplication report
+            Deduplication report with cross-batch duplicate detection
         """
-        logger.info("Running smart deduplication in batch mode...")
+        logger.info("Running smart deduplication in batch mode with cross-batch detection...")
         
         with open(review_log_file, 'r') as f:
             reviews = json.load(f)
@@ -149,19 +170,47 @@ class SmartDeduplicator:
                 'text': f"{title}. {abstract}"
             })
         
-        # Process in batches
+        # Progressive comparison for cross-batch duplicate detection
+        all_embeddings = []
+        all_papers = []
         all_duplicates = []
         
+        # Generate embeddings in batches (memory efficient)
         for i in range(0, len(papers), batch_size):
             batch = papers[i:i + batch_size]
-            logger.info(f"Processing batch {i//batch_size + 1}/{(len(papers)-1)//batch_size + 1}")
+            batch_num = i // batch_size + 1
+            total_batches = (len(papers) - 1) // batch_size + 1
+            logger.info(f"Processing batch {batch_num}/{total_batches}")
             
             texts = [p['text'] for p in batch]
-            embeddings = self.model.encode(texts, show_progress_bar=False)
+            batch_embeddings = self.model.encode(texts, show_progress_bar=False)
             
-            # Find duplicates within batch
-            batch_duplicates = self._find_duplicates(batch, embeddings)
-            all_duplicates.extend(batch_duplicates)
+            # Compare current batch against ALL previous papers
+            for j, paper in enumerate(batch):
+                current_emb = batch_embeddings[j]
+                
+                # Check against all previous embeddings
+                for k, prev_emb in enumerate(all_embeddings):
+                    similarity = np.dot(current_emb, prev_emb) / (
+                        np.linalg.norm(current_emb) * np.linalg.norm(prev_emb)
+                    )
+                    
+                    if similarity >= self.similarity_threshold:
+                        all_duplicates.append((
+                            all_papers[k]['file'],
+                            paper['file'],
+                            round(float(similarity), 3)
+                        ))
+            
+            # Also check within current batch
+            batch_dupes = self._find_duplicates(batch, batch_embeddings)
+            all_duplicates.extend(batch_dupes)
+            
+            # Accumulate for next iteration
+            all_embeddings.extend(batch_embeddings)
+            all_papers.extend(batch)
+        
+        logger.info(f"Cross-batch detection complete: {len(all_duplicates)} duplicate pairs found")
         
         # Merge duplicates
         merged_reviews = self._merge_duplicates(reviews, all_duplicates)
