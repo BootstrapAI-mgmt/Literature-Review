@@ -17,24 +17,39 @@ try:
 except ImportError:
     PyPDF2 = None
 
+try:
+    from literature_review.metadata_extractor import EnhancedMetadataExtractor
+    ENHANCED_EXTRACTION_AVAILABLE = True
+except ImportError:
+    ENHANCED_EXTRACTION_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
 class ResearchDatabaseBuilder:
     """Builds research database CSV from uploaded PDFs"""
     
-    def __init__(self, job_id: str, pdf_files: List[Path]):
+    def __init__(self, job_id: str, pdf_files: List[Path], use_enhanced_extraction: bool = True):
         """
         Initialize database builder
         
         Args:
             job_id: Unique job identifier
             pdf_files: List of PDF file paths to process
+            use_enhanced_extraction: Use enhanced metadata extraction if available
         """
         self.job_id = job_id
         self.pdf_files = pdf_files
         self.output_dir = Path(f"workspace/jobs/{job_id}")
         self.output_dir.mkdir(parents=True, exist_ok=True)
+        self.use_enhanced_extraction = use_enhanced_extraction and ENHANCED_EXTRACTION_AVAILABLE
+        
+        if self.use_enhanced_extraction:
+            self.enhanced_extractor = EnhancedMetadataExtractor()
+            logger.info("Using enhanced metadata extraction with PyMuPDF")
+        else:
+            self.enhanced_extractor = None
+            logger.info("Using basic metadata extraction with PyPDF2")
     
     def build_database(self) -> Path:
         """
@@ -65,6 +80,43 @@ class ResearchDatabaseBuilder:
     
     def _extract_pdf_metadata(self, pdf_path: Path) -> Dict:
         """Extract metadata from a single PDF"""
+        # Use enhanced extraction if available
+        if self.use_enhanced_extraction and self.enhanced_extractor:
+            try:
+                metadata = self.enhanced_extractor.extract_metadata(str(pdf_path))
+                
+                # Convert to database format
+                # Join authors list into comma-separated string
+                authors_str = ", ".join(metadata.get('authors', ['Unknown']))
+                
+                # Use current year as fallback
+                year = metadata.get('year') or datetime.now().year
+                
+                # Log confidence scores for monitoring
+                confidence = metadata.get('confidence', {})
+                low_confidence = [k for k, v in confidence.items() if v < 0.5]
+                if low_confidence:
+                    logger.warning(
+                        f"Low confidence metadata for {pdf_path.name}: {low_confidence}"
+                    )
+                
+                return {
+                    "Title": metadata.get('title', pdf_path.stem),
+                    "Authors": authors_str,
+                    "Year": year,
+                    "File": str(pdf_path),
+                    "Abstract": metadata.get('abstract', ''),
+                    "Requirement(s)": "[]",  # Empty initially, filled by Judge
+                    "Score": "",
+                    "Keywords": "",  # Could be extracted from journal field
+                    "DOI": metadata.get('doi', ''),  # Add DOI if available
+                    "Journal": metadata.get('journal', ''),  # Add journal if available
+                }
+            except Exception as e:
+                logger.error(f"Enhanced extraction failed for {pdf_path}, falling back to basic: {e}")
+                # Fall through to basic extraction
+        
+        # Basic extraction with PyPDF2 (fallback)
         with open(pdf_path, 'rb') as f:
             reader = PyPDF2.PdfReader(f)
             
