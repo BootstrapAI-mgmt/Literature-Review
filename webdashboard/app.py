@@ -28,6 +28,11 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Any
 
+from webdashboard.duplicate_detector import (
+    check_for_duplicates,
+    load_existing_papers_from_review_log
+)
+
 # Setup logger
 logger = logging.getLogger(__name__)
 
@@ -130,6 +135,11 @@ class JobConfig(BaseModel):
 class PromptResponse(BaseModel):
     """User response to a prompt"""
     response: Any
+
+class UploadConfirmRequest(BaseModel):
+    """Request to confirm upload after duplicate detection"""
+    action: str  # "skip_duplicates" or "overwrite_all"
+    job_id: str
 
 # Helper functions
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
@@ -244,11 +254,13 @@ async def upload_batch(
     """
     Upload multiple PDF files for a single analysis job
     
+    Includes duplicate detection across existing papers in review_log.json
+    
     Args:
         files: List of PDF files to upload
     
     Returns:
-        Job ID and file count
+        Job ID and file count, or duplicate warning if duplicates detected
     """
     verify_api_key(api_key)
     
@@ -280,7 +292,8 @@ async def upload_batch(
             uploaded_files.append({
                 "original_name": file.filename,
                 "path": str(target_path),
-                "size": target_path.stat().st_size
+                "size": target_path.stat().st_size,
+                "title": file.filename.replace('.pdf', '').replace('_', ' ').replace('-', ' ')
             })
     except Exception as e:
         # Cleanup on error
@@ -290,6 +303,12 @@ async def upload_batch(
             detail=f"Failed to save files: {str(e)}"
         )
     
+    # Check for duplicates against existing papers in review_log.json
+    review_log_path = BASE_DIR / "review_log.json"
+    existing_papers = load_existing_papers_from_review_log(review_log_path)
+    
+    duplicate_check = check_for_duplicates(uploaded_files, existing_papers)
+    
     # Create job record - status is "draft" until configured
     job_data = {
         "id": job_id,
@@ -297,23 +316,127 @@ async def upload_batch(
         "files": uploaded_files,
         "file_count": len(uploaded_files),
         "created_at": datetime.utcnow().isoformat(),
-        "config": None  # Will be set when user configures job
+        "config": None,  # Will be set when user configures job
+        "duplicate_check": duplicate_check  # Store duplicate check results
     }
     
     save_job(job_id, job_data)
     
-    # Broadcast update
-    await manager.broadcast({
-        "type": "job_created",
-        "job": job_data
-    })
+    # Check if duplicates were found
+    if duplicate_check['duplicates']:
+        # Return duplicate warning to user
+        return {
+            "status": "duplicates_found",
+            "job_id": job_id,
+            "duplicates": duplicate_check['duplicates'],
+            "new": duplicate_check['new'],
+            "matches": duplicate_check['matches'],
+            "message": f"{len(duplicate_check['duplicates'])} of {len(uploaded_files)} papers already exist"
+        }
+    else:
+        # No duplicates, proceed normally
+        # Broadcast update
+        await manager.broadcast({
+            "type": "job_created",
+            "job": job_data
+        })
+        
+        return {
+            "job_id": job_id,
+            "status": "draft",
+            "file_count": len(uploaded_files),
+            "files": uploaded_files
+        }
+
+@app.post("/api/upload/confirm")
+async def confirm_upload(
+    request: UploadConfirmRequest,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Confirm upload after duplicate warning
     
-    return {
-        "job_id": job_id,
-        "status": "draft",
-        "file_count": len(uploaded_files),
-        "files": uploaded_files
-    }
+    Args:
+        request: Confirmation request with action and job_id
+    
+    Returns:
+        Updated job status
+    """
+    verify_api_key(api_key)
+    
+    job_id = request.job_id
+    action = request.action
+    
+    # Load job data
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Get duplicate check results
+    duplicate_check = job_data.get('duplicate_check')
+    if not duplicate_check:
+        raise HTTPException(
+            status_code=400,
+            detail="No duplicate check results found for this job"
+        )
+    
+    if action == "skip_duplicates":
+        # Remove duplicate files from job
+        new_files = [f for f in job_data['files'] 
+                    if f['original_name'] not in [d['original_name'] 
+                                                  for d in duplicate_check['duplicates']]]
+        
+        # Delete duplicate files from disk
+        job_dir = UPLOADS_DIR / job_id
+        for dup in duplicate_check['duplicates']:
+            dup_path = Path(dup['path'])
+            if dup_path.exists():
+                dup_path.unlink()
+        
+        # Update job data
+        job_data['files'] = new_files
+        job_data['file_count'] = len(new_files)
+        job_data['duplicates_skipped'] = len(duplicate_check['duplicates'])
+        save_job(job_id, job_data)
+        
+        # Broadcast update
+        await manager.broadcast({
+            "type": "job_created",
+            "job": job_data
+        })
+        
+        return {
+            "status": "success",
+            "job_id": job_id,
+            "uploaded": len(new_files),
+            "skipped": len(duplicate_check['duplicates']),
+            "message": f"Uploaded {len(new_files)} new papers, skipped {len(duplicate_check['duplicates'])} duplicates"
+        }
+    
+    elif action == "overwrite_all":
+        # Keep all files (including duplicates)
+        # Just clear the duplicate check flag
+        job_data['duplicates_overwritten'] = len(duplicate_check['duplicates'])
+        save_job(job_id, job_data)
+        
+        # Broadcast update
+        await manager.broadcast({
+            "type": "job_created",
+            "job": job_data
+        })
+        
+        return {
+            "status": "success",
+            "job_id": job_id,
+            "uploaded": len(job_data['files']),
+            "message": f"Uploaded all {len(job_data['files'])} papers (including {len(duplicate_check['duplicates'])} duplicates)"
+        }
+    
+    else:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid action: {action}. Must be 'skip_duplicates' or 'overwrite_all'"
+        )
 
 @app.get("/api/jobs")
 async def list_jobs(
