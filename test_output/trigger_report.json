@@ -1,0 +1,31 @@
+{
+  "total_papers": 5,
+  "triggered_papers": 3,
+  "trigger_rate": 0.6,
+  "candidates": [
+    {
+      "paper": "gk8117.pdf",
+      "title": "Neural Coding in the Primary Visual Cortex",
+      "gap_score": 1.0,
+      "quality_score": 0.45,
+      "roi_score": 1.8,
+      "trigger_reason": "Critical gap coverage (100%)"
+    },
+    {
+      "paper": "2010.05446v5.pdf",
+      "title": "Spiking Neural Networks for Event-Based Processing",
+      "gap_score": 0.0,
+      "quality_score": 0.85,
+      "roi_score": 0.0,
+      "trigger_reason": "High quality (85%)"
+    },
+    {
+      "paper": "gk8110.pdf",
+      "title": "Neuronal Representation of Visual Features in the Ventral Stream",
+      "gap_score": 0.0,
+      "quality_score": 0.75,
+      "roi_score": 0.0,
+      "trigger_reason": "High quality (75%)"
+    }
+  ]
+}

@@ -749,6 +749,8 @@ def main():
         type=float,
         default=50.0,
         help="Monthly API budget in USD (default: $50.00)"
+    )
+    parser.add_argument(
         "--incremental",
         action="store_true",
         default=True,
