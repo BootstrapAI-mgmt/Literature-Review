@@ -1,0 +1,332 @@
+{
+  "requirement_analysis": {
+    "Sub-1.1.2": {
+      "requirement": "Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-1.1.3": {
+      "requirement": "Sub-1.1.3: Understanding of population coding for complex stimuli",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-2.1.1": {
+      "requirement": "Sub-2.1.1: Event-based sensor integration with SNNs",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-2.1.2": {
+      "requirement": "Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction",
+      "total_papers": 2,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": true
+    },
+    "Sub-2.1.4": {
+      "requirement": "Sub-2.1.4: Adaptive sampling based on information content",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-2.2.1": {
+      "requirement": "Sub-2.2.1: Scalable training algorithms for deep SNNs",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-2.2.2": {
+      "requirement": "Sub-2.2.2: SNN architecture for multi-sensory fusion",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-2.2.3": {
+      "requirement": "Sub-2.2.3: SNN-based attentional mechanism",
+      "total_papers": 2,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": true
+    },
+    "Sub-2.4.2": {
+      "requirement": "Sub-2.4.2: Event-driven vs clock-driven comparison (>10x improvement)",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-2.4.3": {
+      "requirement": "Sub-2.4.3: Energy-accuracy trade-off characterization",
+      "total_papers": 2,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": true
+    },
+    "Sub-3.4.2": {
+      "requirement": "Sub-3.4.2: Error-based learning signal propagation",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.1.1": {
+      "requirement": "Sub-4.1.1: AI equivalent of declarative learning with world models",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.1.2": {
+      "requirement": "Sub-4.1.2: Architecture showing exploration to exploitation shift",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.1.3": {
+      "requirement": "Sub-4.1.3: Uncertainty-guided exploration strategies",
+      "total_papers": 2,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": true
+    },
+    "Sub-4.2.1": {
+      "requirement": "Sub-4.2.1: Compiling model-based to model-free policy",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.2.2": {
+      "requirement": "Sub-4.2.2: Hierarchical task chunking framework",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.2.4": {
+      "requirement": "Sub-4.2.4: Progressive network pruning during consolidation",
+      "total_papers": 2,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": true
+    },
+    "Sub-4.3.1": {
+      "requirement": "Sub-4.3.1: Reduced computational cost after learning (>90% reduction)",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.3.3": {
+      "requirement": "Sub-4.3.3: Hardware acceleration for compiled policies",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.4.1": {
+      "requirement": "Sub-4.4.1: Error signal propagation from motor output",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.4.2": {
+      "requirement": "Sub-4.4.2: Credit assignment across temporal delays",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.4.3": {
+      "requirement": "Sub-4.4.3: Online learning during execution",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.4.4": {
+      "requirement": "Sub-4.4.4: Adaptive learning rate based on performance",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.5.1": {
+      "requirement": "Sub-4.5.1: Cross-domain skill transfer metrics (>50% transfer efficiency)",
+      "total_papers": 2,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": true
+    },
+    "Sub-4.5.2": {
+      "requirement": "Sub-4.5.2: Noise robustness during automatization",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-4.5.4": {
+      "requirement": "Sub-4.5.4: Compositional skill combination",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-6.1.3": {
+      "requirement": "Sub-6.1.3: Context-binding in memory networks",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-6.2.1": {
+      "requirement": "Sub-6.2.1: Associative cued recall model",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-6.2.2": {
+      "requirement": "Sub-6.2.2: Salience-based prioritization",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-7.3.1": {
+      "requirement": "Sub-7.3.1: Hierarchical control with local autonomy",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-7.4.1": {
+      "requirement": "Sub-7.4.1: Metrics for emergent intelligence",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    },
+    "Sub-7.4.3": {
+      "requirement": "Sub-7.4.3: Novel situation adaptation",
+      "total_papers": 1,
+      "unique_institutions": 0,
+      "unique_author_groups": 0,
+      "diversity_score": 0.0,
+      "convergence_score": 0.5,
+      "needs_validation": true,
+      "echo_chamber_risk": false
+    }
+  },
+  "author_groups": {},
+  "institution_groups": {},
+  "summary": {
+    "total_requirements_analyzed": 32,
+    "needs_independent_validation": 32,
+    "echo_chamber_risks": 6,
+    "avg_diversity_score": 0.0
+  }
+}
