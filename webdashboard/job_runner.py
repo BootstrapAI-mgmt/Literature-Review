@@ -9,9 +9,11 @@ import asyncio
 import json
 import logging
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
+
+from webdashboard.eta_calculator import AdaptiveETACalculator
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +32,8 @@ class PipelineJobRunner:
         self.running_jobs: Dict[str, asyncio.Task] = {}
         self.executor = ThreadPoolExecutor(max_workers=max_workers)
         self.logger = logging.getLogger(__name__)
+        self.eta_calculator = AdaptiveETACalculator()
+        self.stage_timings: Dict[str, Dict] = {}  # job_id -> {stage -> start_time}
         
     async def start(self):
         """Start the background worker loop"""
@@ -162,7 +166,7 @@ class PipelineJobRunner:
     
     def _write_progress_event(self, job_id: str, event):
         """
-        Write progress event to JSONL file
+        Write progress event to JSONL file and track stage durations
         
         Args:
             job_id: Job identifier
@@ -173,6 +177,9 @@ class PipelineJobRunner:
         
         progress_file = Path(f"workspace/status/{job_id}_progress.jsonl")
         progress_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Track stage timing for ETA calculation
+        self._track_stage_timing(job_id, event)
         
         # Convert ProgressEvent to dict for JSON serialization
         event_dict = {
@@ -186,6 +193,87 @@ class PipelineJobRunner:
         
         with open(progress_file, 'a') as f:
             f.write(json.dumps(event_dict) + '\n')
+    
+    def _track_stage_timing(self, job_id: str, event):
+        """
+        Track stage start/end times for ETA calculation
+        
+        Args:
+            job_id: Job identifier
+            event: ProgressEvent object
+        """
+        if job_id not in self.stage_timings:
+            self.stage_timings[job_id] = {}
+        
+        stage = event.stage
+        phase = event.phase
+        
+        if phase == 'starting':
+            # Record stage start time
+            self.stage_timings[job_id][stage] = {
+                'start_time': datetime.now(timezone.utc),
+                'stage': stage
+            }
+        elif phase == 'complete' and stage in self.stage_timings[job_id]:
+            # Calculate duration and record to history
+            timing = self.stage_timings[job_id][stage]
+            end_time = datetime.now(timezone.utc)
+            duration_seconds = (end_time - timing['start_time']).total_seconds()
+            
+            # Get paper count from job data
+            paper_count = self._get_paper_count(job_id)
+            
+            # Record to ETA calculator history
+            self.eta_calculator.record_stage_completion(
+                stage_name=stage,
+                duration_seconds=duration_seconds,
+                paper_count=paper_count
+            )
+            
+            # Store in timing info
+            timing['end_time'] = end_time
+            timing['duration_seconds'] = duration_seconds
+            
+            self.logger.info(
+                f"Stage '{stage}' completed in {duration_seconds:.1f}s "
+                f"({duration_seconds/max(paper_count, 1):.1f}s per paper)"
+            )
+    
+    def _get_paper_count(self, job_id: str) -> int:
+        """
+        Get the number of papers being processed in this job
+        
+        Args:
+            job_id: Job identifier
+            
+        Returns:
+            Number of papers, defaults to 10 if not found
+        """
+        try:
+            job_file = Path(f"workspace/jobs/{job_id}/job.json")
+            if job_file.exists():
+                with open(job_file, 'r') as f:
+                    job_data = json.load(f)
+                    return len(job_data.get('papers', []))
+        except Exception as e:
+            self.logger.warning(f"Could not determine paper count for job {job_id}: {e}")
+        
+        # Default to 10 papers if we can't determine
+        return 10
+    
+    def get_job_eta(self, job_id: str, current_stage: str) -> Dict:
+        """
+        Get ETA for remaining stages in a job
+        
+        Args:
+            job_id: Job identifier
+            current_stage: Current stage name
+            
+        Returns:
+            ETA information dictionary
+        """
+        paper_count = self._get_paper_count(job_id)
+        return self.eta_calculator.calculate_eta(current_stage, paper_count)
     
     def _run_orchestrator_sync(self, job_id: str, job_data: dict):
         """
