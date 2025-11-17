@@ -109,7 +109,7 @@
     <div class="container">
         <h1>🔍 Evidence Triangulation Analysis</h1>
         <p>Source diversity and bias detection across requirements</p>
-        
+
         <div class="summary-grid">
             <div class="summary-card">
                 <h2>32</h2>
@@ -124,7 +124,7 @@
                 <p>Echo Chamber Risks</p>
             </div>
         </div>
-        
+
         <div class="summary-grid">
             <div class="summary-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <h2>0.0</h2>
@@ -379,31 +379,31 @@
                 </tr>
             </tbody>
         </table>
-        
+
         <div id="diversity-chart"></div>
     </div>
-    
+
     <script>
         // Diversity distribution chart
         const requirements = [{"req_id": "Sub-1.1.2", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-1.1.3", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-2.1.1", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-2.1.2", "diversity": 0.0, "papers": 2, "institutions": 0}, {"req_id": "Sub-2.1.4", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-2.2.1", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-2.2.2", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-2.2.3", "diversity": 0.0, "papers": 2, "institutions": 0}, {"req_id": "Sub-2.4.2", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-2.4.3", "diversity": 0.0, "papers": 2, "institutions": 0}, {"req_id": "Sub-3.4.2", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.1.1", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.1.2", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.1.3", "diversity": 0.0, "papers": 2, "institutions": 0}, {"req_id": "Sub-4.2.1", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.2.2", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.2.4", "diversity": 0.0, "papers": 2, "institutions": 0}, {"req_id": "Sub-4.3.1", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.3.3", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.4.1", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.4.2", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.4.3", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.4.4", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.5.1", "diversity": 0.0, "papers": 2, "institutions": 0}, {"req_id": "Sub-4.5.2", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-4.5.4", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-6.1.3", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-6.2.1", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-6.2.2", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-7.3.1", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-7.4.1", "diversity": 0.0, "papers": 1, "institutions": 0}, {"req_id": "Sub-7.4.3", "diversity": 0.0, "papers": 1, "institutions": 0}];
-        
+
         const trace = {
             x: requirements.map(r => r.req_id),
             y: requirements.map(r => r.diversity),
             type: 'bar',
             marker: {
-                color: requirements.map(r => 
+                color: requirements.map(r =>
                     r.diversity >= 0.7 ? '#28a745' :
                     r.diversity >= 0.5 ? '#ffc107' :
                     '#dc3545'
                 )
             },
-            text: requirements.map(r => 
+            text: requirements.map(r =>
                 `${r.institutions} institutions<br>${r.papers} papers`
             ),
             hovertemplate: '%{x}<br>Diversity: %{y:.0%}<br>%{text}<extra></extra>'
         };
-        
+
         const layout = {
             title: 'Source Diversity by Requirement',
             xaxis: {
@@ -440,7 +440,7 @@
             ],
             height: 500
         };
-        
+
         Plotly.newPlot('diversity-chart', [trace], layout);
     </script>
 </body>

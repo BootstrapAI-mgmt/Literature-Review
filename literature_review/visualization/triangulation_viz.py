@@ -9,13 +9,13 @@ import os
 
 def generate_triangulation_html(report_file: str, output_file: str):
     """Generate HTML visualization for triangulation analysis."""
-    
-    with open(report_file, 'r') as f:
+
+    with open(report_file, "r") as f:
         report = json.load(f)
-    
-    req_analysis = report['requirement_analysis']
-    summary = report['summary']
-    
+
+    req_analysis = report["requirement_analysis"]
+    summary = report["summary"]
+
     html = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -127,7 +127,7 @@ def generate_triangulation_html(report_file: str, output_file: str):
     <div class="container">
         <h1>🔍 Evidence Triangulation Analysis</h1>
         <p>Source diversity and bias detection across requirements</p>
-        
+
         <div class="summary-grid">
             <div class="summary-card">
                 <h2>{summary['total_requirements_analyzed']}</h2>
@@ -142,32 +142,32 @@ def generate_triangulation_html(report_file: str, output_file: str):
                 <p>Echo Chamber Risks</p>
             </div>
         </div>
-        
+
         <div class="summary-grid">
             <div class="summary-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
                 <h2>{summary['avg_diversity_score']}</h2>
                 <p>Avg Diversity Score</p>
             </div>
         </div>"""
-    
+
     # Add risk section if there are echo chamber risks
-    if summary['echo_chamber_risks'] > 0:
+    if summary["echo_chamber_risks"] > 0:
         html += f"""
         <div class="risk-section">
             <h3>⚠️ Echo Chamber Risks Detected</h3>
             <p>{summary['echo_chamber_risks']} requirements show evidence of echo chamber bias (papers from same institution/research group citing each other).</p>
             <p><strong>Recommendation:</strong> Seek independent validation from diverse research groups.</p>
         </div>"""
-    
+
     # Add validation section if requirements need independent validation
-    if summary['needs_independent_validation'] > 0:
+    if summary["needs_independent_validation"] > 0:
         html += f"""
         <div class="validation-section">
             <h3>🚨 Independent Validation Needed</h3>
             <p>{summary['needs_independent_validation']} requirements have low source diversity (&lt;50%) and need independent validation.</p>
             <p><strong>Action Required:</strong> Search for papers from different institutions and research groups.</p>
         </div>"""
-    
+
     html += """
         <h2>Requirement Diversity Analysis</h2>
         <table class="requirement-table">
@@ -181,27 +181,38 @@ def generate_triangulation_html(report_file: str, output_file: str):
                 </tr>
             </thead>
             <tbody>"""
-    
+
     # Sort by diversity score (lowest first - these need attention)
-    sorted_reqs = sorted(
-        req_analysis.items(),
-        key=lambda x: x[1]['diversity_score']
-    )
-    
+    sorted_reqs = sorted(req_analysis.items(), key=lambda x: x[1]["diversity_score"])
+
     for req_id, analysis in sorted_reqs:
-        diversity_class = 'diversity-high' if analysis['diversity_score'] >= 0.7 else \
-                         'diversity-medium' if analysis['diversity_score'] >= 0.5 else \
-                         'diversity-low'
-        
+        diversity_class = (
+            "diversity-high"
+            if analysis["diversity_score"] >= 0.7
+            else (
+                "diversity-medium"
+                if analysis["diversity_score"] >= 0.5
+                else "diversity-low"
+            )
+        )
+
         status_badges = []
-        if analysis['needs_validation']:
-            status_badges.append('<span class="diversity-badge diversity-low">Needs Validation</span>')
-        if analysis['echo_chamber_risk']:
+        if analysis["needs_validation"]:
+            status_badges.append(
+                '<span class="diversity-badge diversity-low">Needs Validation</span>'
+            )
+        if analysis["echo_chamber_risk"]:
             status_badges.append('<span class="echo-badge">Echo Chamber Risk</span>')
         if not status_badges:
-            status_badges.append('<span class="diversity-badge diversity-high">✓ Validated</span>')
-        
-        req_text = analysis['requirement'][:80] + "..." if len(analysis['requirement']) > 80 else analysis['requirement']
+            status_badges.append(
+                '<span class="diversity-badge diversity-high">✓ Validated</span>'
+            )
+
+        req_text = (
+            analysis["requirement"][:80] + "..."
+            if len(analysis["requirement"]) > 80
+            else analysis["requirement"]
+        )
         html += f"""
                 <tr>
                     <td><strong>{req_id}</strong><br><small>{req_text}</small></td>
@@ -210,43 +221,48 @@ def generate_triangulation_html(report_file: str, output_file: str):
                     <td><span class="diversity-badge {diversity_class}">{analysis['diversity_score']:.0%}</span></td>
                     <td>{' '.join(status_badges)}</td>
                 </tr>"""
-    
-    html += """
+
+    html += (
+        """
             </tbody>
         </table>
-        
+
         <div id="diversity-chart"></div>
     </div>
-    
+
     <script>
         // Diversity distribution chart
-        const requirements = """ + json.dumps([
-            {
-                'req_id': req_id,
-                'diversity': analysis['diversity_score'],
-                'papers': analysis['total_papers'],
-                'institutions': analysis['unique_institutions']
-            }
-            for req_id, analysis in sorted_reqs
-        ]) + """;
-        
+        const requirements = """
+        + json.dumps(
+            [
+                {
+                    "req_id": req_id,
+                    "diversity": analysis["diversity_score"],
+                    "papers": analysis["total_papers"],
+                    "institutions": analysis["unique_institutions"],
+                }
+                for req_id, analysis in sorted_reqs
+            ]
+        )
+        + """;
+
         const trace = {
             x: requirements.map(r => r.req_id),
             y: requirements.map(r => r.diversity),
             type: 'bar',
             marker: {
-                color: requirements.map(r => 
+                color: requirements.map(r =>
                     r.diversity >= 0.7 ? '#28a745' :
                     r.diversity >= 0.5 ? '#ffc107' :
                     '#dc3545'
                 )
             },
-            text: requirements.map(r => 
+            text: requirements.map(r =>
                 `${r.institutions} institutions<br>${r.papers} papers`
             ),
             hovertemplate: '%{x}<br>Diversity: %{y:.0%}<br>%{text}<extra></extra>'
         };
-        
+
         const layout = {
             title: 'Source Diversity by Requirement',
             xaxis: {
@@ -283,14 +299,15 @@ def generate_triangulation_html(report_file: str, output_file: str):
             ],
             height: 500
         };
-        
+
         Plotly.newPlot('diversity-chart', [trace], layout);
     </script>
 </body>
 </html>"""
-    
+    )
+
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
-    with open(output_file, 'w') as f:
+    with open(output_file, "w") as f:
         f.write(html)
-    
+
     print(f"Triangulation visualization saved to {output_file}")
