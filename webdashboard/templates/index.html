@@ -708,6 +708,9 @@
                                     style="width: 0%">
                                 </div>
                             </div>
+                            <div class="d-flex justify-content-end mt-1">
+                                <small class="text-muted" id="etaDisplay">ETA: calculating...</small>
+                            </div>
                         </div>
                         
                         <!-- Stage Indicators -->
@@ -1013,6 +1016,16 @@
                 
                 progressBar.style.width = event.percentage + '%';
                 progressPercentage.textContent = event.percentage.toFixed(1) + '%';
+            }
+            
+            // Update ETA display
+            if (event.metadata && event.metadata.eta_seconds) {
+                const etaElement = document.getElementById('etaDisplay');
+                if (etaElement) {
+                    const minutes = Math.floor(event.metadata.eta_seconds / 60);
+                    const seconds = Math.floor(event.metadata.eta_seconds % 60);
+                    etaElement.textContent = `ETA: ${minutes}m ${seconds}s`;
+                }
             }
             
             // Update stage indicator

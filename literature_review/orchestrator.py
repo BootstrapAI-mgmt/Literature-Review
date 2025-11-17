@@ -141,6 +141,70 @@ class ProgressEvent:
     metadata: Optional[Dict] = None
 
 
+class ETACalculator:
+    """Estimates time to completion for pipeline jobs"""
+    
+    def __init__(self):
+        self.stage_history = {}  # stage -> list of durations
+    
+    def record_stage_duration(self, stage: str, duration: float):
+        """Record how long a stage took"""
+        if stage not in self.stage_history:
+            self.stage_history[stage] = []
+        
+        self.stage_history[stage].append(duration)
+        
+        # Keep last 10 measurements
+        if len(self.stage_history[stage]) > 10:
+            self.stage_history[stage].pop(0)
+    
+    def estimate_eta(
+        self,
+        current_stage: str,
+        stage_started_at: datetime,
+        remaining_stages: list
+    ) -> Optional[timedelta]:
+        """
+        Estimate time to completion
+        
+        Args:
+            current_stage: Stage currently executing
+            stage_started_at: When current stage started
+            remaining_stages: List of stages still to execute
+        
+        Returns:
+            Estimated time remaining
+        """
+        # Estimate current stage remaining time
+        if current_stage in self.stage_history:
+            avg_duration = sum(self.stage_history[current_stage]) / len(self.stage_history[current_stage])
+            elapsed = (datetime.utcnow() - stage_started_at).total_seconds()
+            current_stage_remaining = max(0, avg_duration - elapsed)
+        else:
+            # No historical data, use default
+            current_stage_remaining = 60  # 1 minute default
+        
+        # Estimate remaining stages
+        remaining_time = current_stage_remaining
+        
+        for stage in remaining_stages:
+            if stage in self.stage_history:
+                remaining_time += sum(self.stage_history[stage]) / len(self.stage_history[stage])
+            else:
+                # Default estimates per stage
+                defaults = {
+                    "initialization": 30,
+                    "judge": 180,  # 3 minutes
+                    "deep_review": 300,  # 5 minutes
+                    "gap_analysis": 240,  # 4 minutes
+                    "visualization": 60,  # 1 minute
+                    "finalization": 30
+                }
+                remaining_time += defaults.get(stage, 60)
+        
+        return timedelta(seconds=remaining_time)
+
+
 class ProgressTracker:
     """Tracks and emits pipeline progress events"""
     
@@ -149,6 +213,7 @@ class ProgressTracker:
         self.current_stage = None
         self.stages_completed = []
         self.stage_start_times = {}
+        self.eta_calculator = ETACalculator()
         
         # Define pipeline stages and weights for percentage calculation
         self.stage_weights = {
@@ -166,18 +231,39 @@ class ProgressTracker:
         if phase == "starting":
             self.stage_start_times[stage] = datetime.utcnow()
             self.current_stage = stage
+        elif phase == "complete" and stage in self.stage_start_times:
+            # Record stage duration for ETA calculation
+            duration = (datetime.utcnow() - self.stage_start_times[stage]).total_seconds()
+            self.eta_calculator.record_stage_duration(stage, duration)
         
         # Calculate percentage
         percentage = self.calculate_percentage(stage, phase)
         
-        # Create event
+        # Calculate ETA
+        eta = None
+        if self.current_stage and self.current_stage in self.stage_start_times:
+            remaining_stages = [
+                s for s in self.stage_weights.keys()
+                if s not in self.stages_completed and s != self.current_stage
+            ]
+            eta = self.eta_calculator.estimate_eta(
+                self.current_stage,
+                self.stage_start_times[self.current_stage],
+                remaining_stages
+            )
+        
+        # Create event with ETA in metadata
+        metadata = kwargs.copy() if kwargs else {}
+        if eta:
+            metadata['eta_seconds'] = eta.total_seconds()
+        
         event = ProgressEvent(
             timestamp=datetime.utcnow().isoformat(),
             stage=stage,
             phase=phase,
             message=message,
             percentage=percentage,
-            metadata=kwargs if kwargs else None
+            metadata=metadata if metadata else None
         )
         
         # Call progress callback if provided
