@@ -199,6 +199,7 @@ class PipelineJobRunner:
             Result dictionary from orchestrator execution
         """
         from literature_review.orchestrator_integration import run_pipeline_for_job
+        from literature_review.orchestrator import ProgressEvent
         
         def progress_callback(event):
             """Callback for progress events"""
@@ -212,6 +213,19 @@ class PipelineJobRunner:
             """Callback for log messages"""
             self._write_log(job_id, f"LOG: {message}")
         
+        async def prompt_callback(prompt_type: str, prompt_data: dict):
+            """Async callback for user prompts"""
+            from webdashboard.prompt_handler import prompt_handler
+            
+            # Request user input via PromptHandler
+            response = await prompt_handler.request_user_input(
+                job_id=job_id,
+                prompt_type=prompt_type,
+                prompt_data=prompt_data,
+                timeout_seconds=300
+            )
+            return response
+        
         config = job_data.get("config", {})
         
         return run_pipeline_for_job(
@@ -219,5 +233,6 @@ class PipelineJobRunner:
             pillar_selections=config.get("pillar_selections", ["ALL"]),
             run_mode=config.get("run_mode", "ONCE"),
             progress_callback=progress_callback,
-            log_callback=log_callback
+            log_callback=log_callback,
+            prompt_callback=prompt_callback
         )

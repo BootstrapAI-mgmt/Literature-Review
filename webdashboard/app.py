@@ -26,6 +26,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSock
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from typing import Any
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -125,6 +126,10 @@ class JobConfig(BaseModel):
     pillar_selections: List[str]
     run_mode: str  # "ONCE" or "DEEP_LOOP"
     convergence_threshold: float = 5.0  # Default convergence threshold
+
+class PromptResponse(BaseModel):
+    """User response to a prompt"""
+    response: Any
 
 # Helper functions
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
@@ -521,6 +526,34 @@ async def start_job(
         "status": "queued",
         "message": "Job queued for execution"
     }
+
+@app.post("/api/prompts/{prompt_id}/respond")
+async def respond_to_prompt(
+    prompt_id: str,
+    response: PromptResponse,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Submit user response to a prompt
+    
+    Args:
+        prompt_id: Prompt identifier
+        response: User's response
+    
+    Returns:
+        Confirmation of response submission
+    """
+    verify_api_key(api_key)
+    
+    try:
+        from webdashboard.prompt_handler import prompt_handler
+        prompt_handler.submit_response(prompt_id, response.response)
+        return {"status": "success", "prompt_id": prompt_id}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error submitting prompt response: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/logs/{job_id}")
 async def get_job_logs(

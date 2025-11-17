@@ -110,7 +110,8 @@ class OrchestratorConfig:
         run_mode: str,
         skip_user_prompts: bool = True,
         progress_callback: Optional[callable] = None,
-        log_callback: Optional[callable] = None
+        log_callback: Optional[callable] = None,
+        prompt_callback: Optional[callable] = None
     ):
         """
         Initialize orchestrator configuration
@@ -122,6 +123,7 @@ class OrchestratorConfig:
             skip_user_prompts: If True, skip interactive prompts
             progress_callback: Optional callback for progress updates
             log_callback: Optional callback for log messages
+            prompt_callback: Optional async callback for interactive prompts
         """
         self.job_id = job_id
         self.analysis_target = analysis_target
@@ -129,6 +131,7 @@ class OrchestratorConfig:
         self.skip_user_prompts = skip_user_prompts
         self.progress_callback = progress_callback
         self.log_callback = log_callback
+        self.prompt_callback = prompt_callback
 
 
 @dataclass
@@ -1227,41 +1230,130 @@ def check_for_new_data(last_run_state: Dict) -> bool:
     logger.info("No new file data detected since last run.")
     return False
 
-def get_user_analysis_target(pillar_definitions: Dict) -> Tuple[List[str], str]:
-    """Asks the user what to analyze. Returns (pillar_list, run_mode)."""
-    safe_print("\n--- No new data detected ---")
-    safe_print("What would you like to re-assess?")
-
+async def get_user_analysis_target_async(
+    pillar_definitions: Dict,
+    prompt_callback: Optional[Callable] = None
+) -> Tuple[List[str], str]:
+    """
+    Get analysis target from user (async version for dashboard)
+    
+    Args:
+        pillar_definitions: Available pillars
+        prompt_callback: Async callback for prompts (if None, uses terminal input)
+    
+    Returns:
+        (pillar_list, run_mode)
+    """
     # Filter out metadata sections that can't be analyzed
     metadata_sections = {'Framework_Overview', 'Cross_Cutting_Requirements', 'Success_Criteria'}
     all_keys = list(pillar_definitions.keys())
     analyzable_pillars = [k for k in all_keys if k not in metadata_sections]
     
-    # Only show analyzable pillars to user
-    for i, name in enumerate(analyzable_pillars, 1):
-        safe_print(f"  {i}. {name.split(':')[0]}")
-    safe_print(f"\n  ALL - Run analysis on all pillars (one pass)")
-    safe_print(f"  DEEP - Run iterative deep-review loop on all pillars")
-    safe_print(f"  NONE - Exit (default)")
-
-    choice = input(f"Enter choice (1-{len(analyzable_pillars)}, ALL, DEEP, NONE): ").strip().upper()
-
+    if prompt_callback is None:
+        # Terminal mode - original behavior
+        safe_print("\n--- No new data detected ---")
+        safe_print("What would you like to re-assess?")
+        
+        for i, name in enumerate(analyzable_pillars, 1):
+            safe_print(f"  {i}. {name.split(':')[0]}")
+        safe_print(f"\n  ALL - Run analysis on all pillars (one pass)")
+        safe_print(f"  DEEP - Run iterative deep-review loop on all pillars")
+        safe_print(f"  NONE - Exit (default)")
+        
+        choice = input(f"Enter choice (1-{len(analyzable_pillars)}, ALL, DEEP, NONE): ").strip().upper()
+    else:
+        # Dashboard mode - use prompt callback
+        choice = await prompt_callback(
+            prompt_type="pillar_selection",
+            prompt_data={
+                "message": "Select pillars to analyze",
+                "options": analyzable_pillars,
+                "allow_all": True,
+                "allow_deep": True,
+                "allow_none": True
+            }
+        )
+    
+    # Parse response (same logic for both modes)
     if not choice or choice == "NONE":
         return [], "EXIT"
     if choice == "ALL":
         return analyzable_pillars, "ONCE"
     if choice == "DEEP":
         return analyzable_pillars, "DEEP_LOOP"
+    
     try:
         choice_idx = int(choice) - 1
         if 0 <= choice_idx < len(analyzable_pillars):
-            selected = analyzable_pillars[choice_idx]
-            return [selected], "ONCE"
+            return [analyzable_pillars[choice_idx]], "ONCE"
     except ValueError:
         pass
-
+    
     safe_print("Invalid choice. Exiting.")
     return [], "EXIT"
+
+
+def get_user_analysis_target(
+    pillar_definitions: Dict,
+    prompt_callback: Optional[Callable] = None
+) -> Tuple[List[str], str]:
+    """
+    Asks the user what to analyze. Returns (pillar_list, run_mode).
+    
+    Args:
+        pillar_definitions: Available pillars
+        prompt_callback: Optional async callback for prompts (dashboard mode)
+    
+    Returns:
+        (pillar_list, run_mode)
+    """
+    if prompt_callback is None:
+        # Terminal mode - use sync code
+        safe_print("\n--- No new data detected ---")
+        safe_print("What would you like to re-assess?")
+
+        # Filter out metadata sections that can't be analyzed
+        metadata_sections = {'Framework_Overview', 'Cross_Cutting_Requirements', 'Success_Criteria'}
+        all_keys = list(pillar_definitions.keys())
+        analyzable_pillars = [k for k in all_keys if k not in metadata_sections]
+        
+        # Only show analyzable pillars to user
+        for i, name in enumerate(analyzable_pillars, 1):
+            safe_print(f"  {i}. {name.split(':')[0]}")
+        safe_print(f"\n  ALL - Run analysis on all pillars (one pass)")
+        safe_print(f"  DEEP - Run iterative deep-review loop on all pillars")
+        safe_print(f"  NONE - Exit (default)")
+
+        choice = input(f"Enter choice (1-{len(analyzable_pillars)}, ALL, DEEP, NONE): ").strip().upper()
+
+        if not choice or choice == "NONE":
+            return [], "EXIT"
+        if choice == "ALL":
+            return analyzable_pillars, "ONCE"
+        if choice == "DEEP":
+            return analyzable_pillars, "DEEP_LOOP"
+        try:
+            choice_idx = int(choice) - 1
+            if 0 <= choice_idx < len(analyzable_pillars):
+                selected = analyzable_pillars[choice_idx]
+                return [selected], "ONCE"
+        except ValueError:
+            pass
+
+        safe_print("Invalid choice. Exiting.")
+        return [], "EXIT"
+    else:
+        # Dashboard mode - run async callback
+        import asyncio
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            return loop.run_until_complete(
+                get_user_analysis_target_async(pillar_definitions, prompt_callback)
+            )
+        finally:
+            loop.close()
+
 
 
 def run_script(script_name: str) -> bool:
@@ -1786,7 +1878,9 @@ def main(config: Optional[OrchestratorConfig] = None):
         analysis_target_pillars = [k for k in definitions.keys() if k not in metadata_sections]
         run_mode = "DEEP_LOOP"
     else:
-        analysis_target_pillars, run_mode = get_user_analysis_target(definitions)
+        # Interactive mode - may use prompt callback if provided in config
+        prompt_callback = config.prompt_callback if config else None
+        analysis_target_pillars, run_mode = get_user_analysis_target(definitions, prompt_callback)
         if run_mode == "EXIT":
             safe_print("Exiting.")
             return
