@@ -9,18 +9,21 @@ Provides RESTful API and WebSocket endpoints for:
 """
 
 import asyncio
+import io
 import json
 import logging
+import mimetypes
 import os
 import shutil
 import time
 import uuid
+import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect, Header
-from fastapi.responses import FileResponse, HTMLResponse
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -640,6 +643,85 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception:
         manager.disconnect(websocket)
 
+@app.websocket("/ws/jobs/{job_id}/progress")
+async def job_progress_stream(websocket: WebSocket, job_id: str):
+    """
+    WebSocket endpoint for real-time job progress updates
+    
+    Streams:
+    - Progress percentage
+    - Stage updates
+    - Log messages
+    - Iteration counts
+    
+    Args:
+        job_id: Unique job identifier
+    """
+    await websocket.accept()
+    
+    try:
+        # Send initial status
+        job_data = load_job(job_id)
+        if job_data:
+            await websocket.send_json({
+                "type": "initial_status",
+                "job": job_data
+            })
+        
+        # Watch for progress updates
+        progress_file = Path(f"workspace/status/{job_id}_progress.jsonl")
+        log_file = Path(f"workspace/logs/{job_id}.log")
+        
+        last_progress_pos = 0
+        last_log_pos = 0
+        
+        while True:
+            # Check if job is still active
+            current_job = load_job(job_id)
+            if current_job and current_job.get("status") in ["completed", "failed"]:
+                await websocket.send_json({
+                    "type": "job_complete",
+                    "status": current_job["status"]
+                })
+                break
+            
+            # Stream progress updates
+            if progress_file.exists():
+                with open(progress_file, 'r') as f:
+                    f.seek(last_progress_pos)
+                    new_lines = f.readlines()
+                    last_progress_pos = f.tell()
+                
+                for line in new_lines:
+                    try:
+                        event = json.loads(line)
+                        await websocket.send_json({
+                            "type": "progress",
+                            "event": event
+                        })
+                    except json.JSONDecodeError:
+                        pass
+            
+            # Stream log updates
+            if log_file.exists():
+                with open(log_file, 'r') as f:
+                    f.seek(last_log_pos)
+                    new_lines = f.readlines()
+                    last_log_pos = f.tell()
+                
+                if new_lines:
+                    await websocket.send_json({
+                        "type": "logs",
+                        "lines": new_lines
+                    })
+            
+            await asyncio.sleep(0.5)  # Poll every 500ms
+    
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        logger.error(f"WebSocket error for job {job_id}: {e}")
+
 @app.get("/api/jobs/{job_id}/proof-scorecard")
 async def get_proof_scorecard(
     job_id: str,
@@ -824,6 +906,183 @@ async def get_job_output_file(
     return FileResponse(
         path=full_path,
         media_type=media_type,
+        filename=full_path.name
+    )
+
+def categorize_output_file(filename: str) -> str:
+    """
+    Categorize output file by name pattern
+    
+    Args:
+        filename: Name of the output file
+    
+    Returns:
+        Category string for grouping files
+    """
+    if filename.startswith("waterfall_"):
+        return "pillar_waterfalls"
+    elif filename.startswith("_OVERALL_") or filename.startswith("_"):
+        return "visualizations"
+    elif filename.endswith(".json"):
+        return "data"
+    elif filename.endswith(".md"):
+        return "reports"
+    elif filename.endswith(".html"):
+        return "visualizations"
+    else:
+        return "other"
+
+@app.get("/api/jobs/{job_id}/results")
+async def get_job_results(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get list of all output files for a job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        List of output files with metadata
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job_data.get("status") != "completed":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job has not completed (status: {job_data['status']})"
+        )
+    
+    # Get output directory
+    output_dir = JOBS_DIR / job_id / "outputs" / "gap_analysis_output"
+    
+    if not output_dir.exists():
+        return {
+            "job_id": job_id,
+            "output_count": 0,
+            "outputs": []
+        }
+    
+    # Collect all output files
+    outputs = []
+    for file_path in output_dir.rglob("*"):
+        if file_path.is_file():
+            # Determine file category
+            category = categorize_output_file(file_path.name)
+            
+            outputs.append({
+                "filename": file_path.name,
+                "path": str(file_path.relative_to(output_dir)),
+                "size": file_path.stat().st_size,
+                "category": category,
+                "mime_type": mimetypes.guess_type(file_path.name)[0] or "application/octet-stream",
+                "modified": file_path.stat().st_mtime
+            })
+    
+    # Sort by category then name
+    outputs.sort(key=lambda x: (x["category"], x["filename"]))
+    
+    return {
+        "job_id": job_id,
+        "output_count": len(outputs),
+        "outputs": outputs,
+        "output_dir": str(output_dir)
+    }
+
+@app.get("/api/jobs/{job_id}/results/download/all")
+async def download_all_results(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Download all job results as a ZIP file
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        ZIP archive of all output files
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job_data.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="Job not completed")
+    
+    output_dir = JOBS_DIR / job_id / "outputs" / "gap_analysis_output"
+    
+    if not output_dir.exists():
+        raise HTTPException(status_code=404, detail="No results found")
+    
+    # Create ZIP in memory
+    zip_buffer = io.BytesIO()
+    
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        for file_path in output_dir.rglob("*"):
+            if file_path.is_file():
+                # Add file to ZIP with relative path
+                arcname = file_path.relative_to(output_dir)
+                zip_file.write(file_path, arcname=arcname)
+    
+    zip_buffer.seek(0)
+    
+    return StreamingResponse(
+        io.BytesIO(zip_buffer.read()),
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f"attachment; filename=job_{job_id}_results.zip"
+        }
+    )
+
+@app.get("/api/jobs/{job_id}/results/{file_path:path}")
+async def get_job_result_file(
+    job_id: str,
+    file_path: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get a specific output file
+    
+    Args:
+        job_id: Job identifier
+        file_path: Relative path to file within output directory
+    
+    Returns:
+        File content
+    """
+    verify_api_key(api_key)
+    
+    # Validate job exists and completed
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job_data.get("status") != "completed":
+        raise HTTPException(status_code=400, detail="Job not completed")
+    
+    # Build full file path (prevent directory traversal)
+    output_dir = JOBS_DIR / job_id / "outputs" / "gap_analysis_output"
+    full_path = (output_dir / file_path).resolve()
+    
+    # Security check: ensure path is within output directory
+    if not str(full_path).startswith(str(output_dir.resolve())):
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    if not full_path.exists() or not full_path.is_file():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Return file
+    return FileResponse(
+        path=full_path,
+        media_type=mimetypes.guess_type(full_path.name)[0] or "application/octet-stream",
         filename=full_path.name
     )
 

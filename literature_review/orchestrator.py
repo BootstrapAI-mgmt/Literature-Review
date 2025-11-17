@@ -11,8 +11,9 @@ import os
 import sys
 import time
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Optional, Any, Callable
+from dataclasses import dataclass
 # Use google.genai (new SDK) for Client() interface
 from google import genai
 from google.genai import types
@@ -29,6 +30,7 @@ import subprocess  # To run external scripts
 from pathlib import Path  # For file state checking
 from literature_review.reviewers import deep_reviewer
 from literature_review.analysis import judge
+from literature_review.optimization.search_optimizer import generate_search_plan
 
 # Import global rate limiter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -127,6 +129,176 @@ class OrchestratorConfig:
         self.skip_user_prompts = skip_user_prompts
         self.progress_callback = progress_callback
         self.log_callback = log_callback
+
+
+@dataclass
+class ProgressEvent:
+    """Structured progress event for pipeline execution"""
+    timestamp: str
+    stage: str  # "initialization", "judge", "deep_review", "gap_analysis", "visualization", "finalization"
+    phase: str  # "starting", "running", "complete", "error"
+    message: str
+    percentage: Optional[float] = None
+    metadata: Optional[Dict] = None
+
+
+class ETACalculator:
+    """Estimates time to completion for pipeline jobs"""
+    
+    def __init__(self):
+        self.stage_history = {}  # stage -> list of durations
+    
+    def record_stage_duration(self, stage: str, duration: float):
+        """Record how long a stage took"""
+        if stage not in self.stage_history:
+            self.stage_history[stage] = []
+        
+        self.stage_history[stage].append(duration)
+        
+        # Keep last 10 measurements
+        if len(self.stage_history[stage]) > 10:
+            self.stage_history[stage].pop(0)
+    
+    def estimate_eta(
+        self,
+        current_stage: str,
+        stage_started_at: datetime,
+        remaining_stages: list
+    ) -> Optional[timedelta]:
+        """
+        Estimate time to completion
+        
+        Args:
+            current_stage: Stage currently executing
+            stage_started_at: When current stage started
+            remaining_stages: List of stages still to execute
+        
+        Returns:
+            Estimated time remaining
+        """
+        # Estimate current stage remaining time
+        if current_stage in self.stage_history:
+            avg_duration = sum(self.stage_history[current_stage]) / len(self.stage_history[current_stage])
+            elapsed = (datetime.utcnow() - stage_started_at).total_seconds()
+            current_stage_remaining = max(0, avg_duration - elapsed)
+        else:
+            # No historical data, use default
+            current_stage_remaining = 60  # 1 minute default
+        
+        # Estimate remaining stages
+        remaining_time = current_stage_remaining
+        
+        for stage in remaining_stages:
+            if stage in self.stage_history:
+                remaining_time += sum(self.stage_history[stage]) / len(self.stage_history[stage])
+            else:
+                # Default estimates per stage
+                defaults = {
+                    "initialization": 30,
+                    "judge": 180,  # 3 minutes
+                    "deep_review": 300,  # 5 minutes
+                    "gap_analysis": 240,  # 4 minutes
+                    "visualization": 60,  # 1 minute
+                    "finalization": 30
+                }
+                remaining_time += defaults.get(stage, 60)
+        
+        return timedelta(seconds=remaining_time)
+
+
+class ProgressTracker:
+    """Tracks and emits pipeline progress events"""
+    
+    def __init__(self, callback: Optional[Callable] = None):
+        self.callback = callback
+        self.current_stage = None
+        self.stages_completed = []
+        self.stage_start_times = {}
+        self.eta_calculator = ETACalculator()
+        
+        # Define pipeline stages and weights for percentage calculation
+        self.stage_weights = {
+            "initialization": 5,
+            "judge": 15,
+            "deep_review": 30,
+            "gap_analysis": 35,
+            "visualization": 10,
+            "finalization": 5
+        }
+    
+    def emit(self, stage: str, phase: str, message: str, **kwargs):
+        """Emit a progress event"""
+        # Track stage timing
+        if phase == "starting":
+            self.stage_start_times[stage] = datetime.utcnow()
+            self.current_stage = stage
+        elif phase == "complete" and stage in self.stage_start_times:
+            # Record stage duration for ETA calculation
+            duration = (datetime.utcnow() - self.stage_start_times[stage]).total_seconds()
+            self.eta_calculator.record_stage_duration(stage, duration)
+        
+        # Calculate percentage
+        percentage = self.calculate_percentage(stage, phase)
+        
+        # Calculate ETA
+        eta = None
+        if self.current_stage and self.current_stage in self.stage_start_times:
+            remaining_stages = [
+                s for s in self.stage_weights.keys()
+                if s not in self.stages_completed and s != self.current_stage
+            ]
+            eta = self.eta_calculator.estimate_eta(
+                self.current_stage,
+                self.stage_start_times[self.current_stage],
+                remaining_stages
+            )
+        
+        # Create event with ETA in metadata
+        metadata = kwargs.copy() if kwargs else {}
+        if eta:
+            metadata['eta_seconds'] = eta.total_seconds()
+        
+        event = ProgressEvent(
+            timestamp=datetime.utcnow().isoformat(),
+            stage=stage,
+            phase=phase,
+            message=message,
+            percentage=percentage,
+            metadata=metadata if metadata else None
+        )
+        
+        # Call progress callback if provided
+        if self.callback:
+            self.callback(event)
+        
+        # Also log to file
+        logger.info(f"[{stage}] {message}")
+        
+        # Also print to terminal if not suppressed
+        if not kwargs.get('suppress_terminal'):
+            safe_print(f"[{stage}] {message}")
+    
+    def calculate_percentage(self, stage: str, phase: str) -> float:
+        """Calculate overall completion percentage"""
+        total_weight = sum(self.stage_weights.values())
+        
+        # Calculate completed weight including the current stage if complete
+        completed_weight = sum(
+            self.stage_weights.get(s, 0) for s in self.stages_completed
+        )
+        
+        if phase == "complete":
+            # Add this stage's weight if it's being completed
+            if stage not in self.stages_completed:
+                completed_weight += self.stage_weights.get(stage, 0)
+                # Mark as completed for future calculations
+                self.stages_completed.append(stage)
+        elif phase == "running":
+            # Stage is partially complete (50%)
+            completed_weight += self.stage_weights.get(stage, 0) * 0.5
+        
+        return (completed_weight / total_weight) * 100
+
 
 # --- APIManager Class (Unchanged) ---
 class APIManager:
@@ -1554,18 +1726,33 @@ def main(config: Optional[OrchestratorConfig] = None):
     logger.info("=" * 80)
     global_start_time = time.time()
 
+    # Initialize progress tracker
+    progress_tracker = ProgressTracker(
+        callback=config.progress_callback if config else None
+    )
+    
+    progress_tracker.emit("initialization", "starting", "Starting orchestrator pipeline...")
+
     # --- 1. Load Static Definitions & State ---
+    progress_tracker.emit("initialization", "running", "Loading pillar definitions...")
     try:
         with open(DEFINITIONS_FILE, 'r') as f:
             definitions = json.load(f)
         logger.info(f"[SUCCESS] Loaded {len(definitions)} pillar definitions")
+        progress_tracker.emit(
+            "initialization", 
+            "complete", 
+            f"Loaded {len(definitions)} pillar definitions"
+        )
     except FileNotFoundError:
         logger.error(f"[ERROR] Definitions file not found: {DEFINITIONS_FILE}. Exiting.")
         safe_print(f"❌ Definitions file not found: {DEFINITIONS_FILE}. Exiting.")
+        progress_tracker.emit("initialization", "error", f"Definitions file not found: {DEFINITIONS_FILE}")
         return
     except json.JSONDecodeError as e:
         logger.error(f"[ERROR] Error decoding JSON from {DEFINITIONS_FILE}. Exiting.")
         safe_print(f"❌ Error decoding JSON from {DEFINITIONS_FILE}. Exiting.")
+        progress_tracker.emit("initialization", "error", f"Error decoding JSON: {e}")
         return
 
     last_run_state, previous_results, score_history = load_orchestrator_state(ORCHESTRATOR_STATE_FILE)
@@ -1616,11 +1803,14 @@ def main(config: Optional[OrchestratorConfig] = None):
 
     # --- NEW: Initial Judge Run ---
     if run_initial_judge:
+        progress_tracker.emit("judge", "starting", "Running Judge to validate claims...")
         if not judge.main():
             logger.critical("Initial Judge run failed. Halting.")
             safe_print("❌ Initial Judge run failed. Halting.")
+            progress_tracker.emit("judge", "error", "Judge validation failed")
             return
         safe_print("✅ Initial data validated by Judge.")
+        progress_tracker.emit("judge", "complete", "Claims validated successfully")
         
         # ✅ CHECKPOINT: Save state after judge completes
         save_orchestrator_state(ORCHESTRATOR_STATE_FILE, previous_results, score_history, stage="judge_complete")
@@ -1647,6 +1837,13 @@ def main(config: Optional[OrchestratorConfig] = None):
         iteration_count += 1
         logger.info(f"\n--- Starting Analysis Iteration {iteration_count} ---")
         safe_print(f"\n--- 🔄 Starting Analysis Iteration {iteration_count} ---")
+        
+        progress_tracker.emit(
+            "gap_analysis",
+            "running",
+            f"Starting gap analysis iteration {iteration_count}",
+            iteration=iteration_count
+        )
 
         # --- 4a. Load databases (fresh every loop) ---
         database_df_obj = ResearchDatabase(RESEARCH_DB_FILE)
@@ -1708,6 +1905,14 @@ def main(config: Optional[OrchestratorConfig] = None):
             previous_results, all_results, definitions, ANALYSIS_CONFIG['CONVERGENCE_THRESHOLD']
         )
         
+        progress_tracker.emit(
+            "gap_analysis",
+            "running",
+            f"Iteration {iteration_count} complete",
+            iteration=iteration_count,
+            completeness_scores={k: v.get('completeness', 0) for k, v in all_results.items()}
+        )
+        
         # ✅ CHECKPOINT: Save state after each gap analysis iteration
         save_orchestrator_state(ORCHESTRATOR_STATE_FILE, all_results, score_history, 
                                stage=f"gap_analysis_iteration_{iteration_count}")
@@ -1727,12 +1932,19 @@ def main(config: Optional[OrchestratorConfig] = None):
             safe_print("\nConvergence not met. Running new Deep Review loop...")
             write_deep_review_directions(DEEP_REVIEW_DIRECTIONS_FILE, directions)
 
+            progress_tracker.emit("deep_review", "starting", f"Running Deep Review for iteration {iteration_count + 1}...")
             if not deep_reviewer.main():
                 safe_print("❌ Deep Reviewer failed. Halting loop.")
+                progress_tracker.emit("deep_review", "error", "Deep Reviewer failed")
                 break
+            progress_tracker.emit("deep_review", "complete", "Deep Review completed successfully")
+            
+            progress_tracker.emit("judge", "starting", "Validating new claims from Deep Review...")
             if not judge.main():
                 safe_print("❌ Judge failed. Halting loop.")
+                progress_tracker.emit("judge", "error", "Judge validation failed")
                 break
+            progress_tracker.emit("judge", "complete", "New claims validated")
 
             previous_results = all_results.copy()
             # Filter out metadata sections (not analyzable pillars)
@@ -1741,12 +1953,15 @@ def main(config: Optional[OrchestratorConfig] = None):
         else:
             safe_print("\n✅ Convergence Reached. No sub-requirement changed by > 5%.")
             write_deep_review_directions(DEEP_REVIEW_DIRECTIONS_FILE, {}) # Clear directions
+            progress_tracker.emit("gap_analysis", "complete", "Gap analysis converged")
             break
 
     # --- 5. Post-Loop: Generate Final Reports ---
     logger.info("\n" + "=" * 80)
     logger.info("Analysis loop complete. Generating final reports...")
     safe_print("\n--- 📊 Generating Final Reports ---")
+    
+    progress_tracker.emit("visualization", "starting", "Generating visualizations and reports...")
 
     # Track visualization generation success
     visualization_errors = []
@@ -1965,6 +2180,26 @@ def main(config: Optional[OrchestratorConfig] = None):
             
             logger.info(f"  ✅ Search recommendations markdown saved: {rec_md_path}")
             safe_print(f"  ✅ Gap-closing search recommendations generated ({len(recommendations)} gaps identified).")
+            
+            # Generate optimized search plan
+            logger.info("Optimizing search strategy based on ROI...")
+            try:
+                gap_file = os.path.join(OUTPUT_FOLDER, "gap_analysis_report.json")
+                optimized_plan_path = os.path.join(OUTPUT_FOLDER, "optimized_search_plan.json")
+                
+                # Only generate if gap report exists
+                if os.path.exists(gap_file):
+                    plan = generate_search_plan(
+                        gap_file=gap_file,
+                        searches_file=rec_json_path,
+                        output_file=optimized_plan_path
+                    )
+                    logger.info(f"  ✅ Optimized search plan saved: {optimized_plan_path}")
+                    safe_print(f"  ✅ ROI-optimized search plan generated ({plan['high_priority_searches']} high priority searches).")
+                else:
+                    logger.warning("  ⚠️ Gap analysis report not found, skipping search optimization")
+            except Exception as e:
+                logger.warning(f"  ⚠️ Failed to generate optimized search plan: {e}")
         else:
             logger.info("  ℹ️ No gap-closing recommendations generated (all areas >50% complete)")
             safe_print("  ℹ️ No critical gaps requiring additional searches.")
@@ -1993,7 +2228,7 @@ def main(config: Optional[OrchestratorConfig] = None):
     expected_outputs = {
         'Pillar Waterfalls': [f"waterfall_{pname.split(':')[0]}.html" for pname in all_results.keys()],
         'Visualizations': ['_OVERALL_Research_Gap_Radar.html', '_Paper_Network.html', '_Research_Trends.html'],
-        'Reports': ['gap_analysis_report.json', 'executive_summary.md', 'suggested_searches.json', 'suggested_searches.md', 'evidence_decay.json', CONTRIBUTION_REPORT_FILE.split('/')[-1]]
+        'Reports': ['gap_analysis_report.json', 'executive_summary.md', 'suggested_searches.json', 'suggested_searches.md', 'evidence_decay.json', 'optimized_search_plan.json', CONTRIBUTION_REPORT_FILE.split('/')[-1]]
     }
     
     missing_files = []
@@ -2027,6 +2262,9 @@ def main(config: Optional[OrchestratorConfig] = None):
 
     # --- 6. Save Final State ---
     save_orchestrator_state(ORCHESTRATOR_STATE_FILE, all_results, score_history, stage="final")
+    
+    progress_tracker.emit("visualization", "complete", "All visualizations and reports generated")
+    progress_tracker.emit("finalization", "starting", "Finalizing pipeline execution...")
 
     logger.info("\n" + "=" * 80)
     logger.info("ANALYSIS COMPLETE")
@@ -2036,6 +2274,8 @@ def main(config: Optional[OrchestratorConfig] = None):
         safe_print(f"📊 Average completeness: {np.mean(list(radar_data.values())):.1f}% after {iteration_count} iteration(s).")
     safe_print(f"Total time: {(time.time() - global_start_time):.2f} seconds.")
     safe_print(f"Reports saved to '{OUTPUT_FOLDER}'")
+    
+    progress_tracker.emit("finalization", "complete", f"Pipeline completed in {(time.time() - global_start_time):.2f} seconds")
 
 
 if __name__ == "__main__":

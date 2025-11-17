@@ -160,6 +160,33 @@ class PipelineJobRunner:
         with open(log_file, 'a') as f:
             f.write(f"[{timestamp}] {message}\n")
     
+    def _write_progress_event(self, job_id: str, event):
+        """
+        Write progress event to JSONL file
+        
+        Args:
+            job_id: Job identifier
+            event: ProgressEvent object
+        """
+        from pathlib import Path
+        import json
+        
+        progress_file = Path(f"workspace/status/{job_id}_progress.jsonl")
+        progress_file.parent.mkdir(parents=True, exist_ok=True)
+        
+        # Convert ProgressEvent to dict for JSON serialization
+        event_dict = {
+            'timestamp': event.timestamp,
+            'stage': event.stage,
+            'phase': event.phase,
+            'message': event.message,
+            'percentage': event.percentage,
+            'metadata': event.metadata
+        }
+        
+        with open(progress_file, 'a') as f:
+            f.write(json.dumps(event_dict) + '\n')
+    
     def _run_orchestrator_sync(self, job_id: str, job_data: dict):
         """
         Run orchestrator synchronously (called in thread pool)
@@ -173,9 +200,13 @@ class PipelineJobRunner:
         """
         from literature_review.orchestrator_integration import run_pipeline_for_job
         
-        def progress_callback(message: str):
-            """Callback for progress updates"""
-            self._write_log(job_id, f"PROGRESS: {message}")
+        def progress_callback(event):
+            """Callback for progress events"""
+            # Write to progress file
+            self._write_progress_event(job_id, event)
+            
+            # Also write to log
+            self._write_log(job_id, f"[{event.stage}] {event.message}")
         
         def log_callback(message: str):
             """Callback for log messages"""

@@ -337,6 +337,65 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Progress Monitoring Styles */
+        .stage-item {
+            padding: 8px;
+            margin: 4px 0;
+            border-left: 3px solid #dee2e6;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .stage-item.active {
+            border-left-color: #0d6efd;
+            background: #e7f1ff;
+        }
+        
+        .stage-item.complete {
+            border-left-color: #198754;
+            background: #d1e7dd;
+        }
+        
+        .stage-item.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .iteration-counter {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+        
+        .log-viewer-live {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .log-line {
+            margin: 2px 0;
+        }
+        
+        .log-line.error {
+            color: #f48771;
+        }
+        
+        .log-line.warning {
+            color: #dcdcaa;
+        }
+        
+        .log-line.success {
+            color: #4ec9b0;
+        }
     </style>
 </head>
 <body>
@@ -631,6 +690,78 @@
                         </div>
                     </div>
                     
+                    <!-- Real-time Progress Display -->
+                    <div class="mb-3" id="progressContainer" style="display: none;">
+                        <h6>Pipeline Progress</h6>
+                        
+                        <!-- Overall Progress Bar -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Overall Completion</span>
+                                <span id="progressPercentage">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div 
+                                    class="progress-bar progress-bar-striped progress-bar-animated" 
+                                    id="progressBar"
+                                    role="progressbar" 
+                                    style="width: 0%">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end mt-1">
+                                <small class="text-muted" id="etaDisplay">ETA: calculating...</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Stage Indicators -->
+                        <div class="mb-3">
+                            <h6 class="small">Pipeline Stages</h6>
+                            <div id="stageIndicators">
+                                <div class="stage-item" data-stage="initialization">
+                                    <span class="badge bg-secondary">⏸</span> Initialization
+                                </div>
+                                <div class="stage-item" data-stage="judge">
+                                    <span class="badge bg-secondary">⏸</span> Judge Validation
+                                </div>
+                                <div class="stage-item" data-stage="deep_review">
+                                    <span class="badge bg-secondary">⏸</span> Deep Review
+                                    <span class="iteration-counter" style="display: none;"></span>
+                                </div>
+                                <div class="stage-item" data-stage="gap_analysis">
+                                    <span class="badge bg-secondary">⏸</span> Gap Analysis
+                                    <span class="iteration-counter" style="display: none;"></span>
+                                </div>
+                                <div class="stage-item" data-stage="visualization">
+                                    <span class="badge bg-secondary">⏸</span> Visualization
+                                </div>
+                                <div class="stage-item" data-stage="finalization">
+                                    <span class="badge bg-secondary">⏸</span> Finalization
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Live Logs -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="small mb-0">Live Logs</h6>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="clearLogs()">
+                                        Clear
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="toggleAutoScroll()">
+                                        <span id="autoScrollIcon">🔒</span> Auto-scroll
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="log-viewer-live" id="liveLogViewer">
+                                <div class="text-muted text-center p-3">
+                                    Waiting for logs...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Legacy Progress Section (kept for backward compatibility) -->
                     <div class="mb-3" id="progressSection" style="display: none;">
                         <strong>Progress:</strong>
                         <div id="detailProgress"></div>
@@ -770,6 +901,54 @@
         </div>
     </div>
 
+    <!-- Results Viewer Modal -->
+    <div class="modal fade" id="resultsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        📊 Analysis Results - <span id="resultsJobId"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Sidebar: File browser -->
+                        <div class="col-md-3">
+                            <h6>Output Files</h6>
+                            <div class="list-group" id="resultsFileList" style="max-height: 600px; overflow-y: auto;">
+                                <div class="text-center text-muted p-3">
+                                    Loading...
+                                </div>
+                            </div>
+                            
+                            <div class="mt-3">
+                                <button class="btn btn-sm btn-outline-primary w-100" onclick="downloadAllResults()">
+                                    📦 Download All (ZIP)
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Main area: File viewer -->
+                        <div class="col-md-9">
+                            <div id="resultsViewer">
+                                <div class="text-center text-muted p-5">
+                                    <h5>Select a file to view</h5>
+                                    <p>Choose a file from the list on the left</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -824,6 +1003,178 @@
             ws.onerror = (error) => {
                 console.error('WebSocket error:', error);
             };
+        }
+        
+        // Progress WebSocket for job-specific real-time updates
+        let progressWebSocket = null;
+        let autoScroll = true;
+        
+        function connectProgressWebSocket(jobId) {
+            // Close existing connection
+            if (progressWebSocket) {
+                progressWebSocket.close();
+            }
+            
+            // Connect to job-specific progress stream
+            const wsUrl = `ws://${window.location.host}/ws/jobs/${jobId}/progress`;
+            progressWebSocket = new WebSocket(wsUrl);
+            
+            progressWebSocket.onopen = () => {
+                console.log('Progress WebSocket connected');
+                document.getElementById('progressContainer').style.display = 'block';
+            };
+            
+            progressWebSocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                switch (data.type) {
+                    case 'initial_status':
+                        handleInitialStatus(data.job);
+                        break;
+                    case 'progress':
+                        handleProgressEvent(data.event);
+                        break;
+                    case 'logs':
+                        handleLogLines(data.lines);
+                        break;
+                    case 'job_complete':
+                        handleJobComplete(data.status);
+                        break;
+                }
+            };
+            
+            progressWebSocket.onerror = (error) => {
+                console.error('Progress WebSocket error:', error);
+            };
+            
+            progressWebSocket.onclose = () => {
+                console.log('Progress WebSocket disconnected');
+            };
+        }
+        
+        function handleInitialStatus(job) {
+            console.log('Initial job status:', job);
+        }
+        
+        function handleProgressEvent(event) {
+            // Update progress bar
+            if (event.percentage !== null && event.percentage !== undefined) {
+                const progressBar = document.getElementById('progressBar');
+                const progressPercentage = document.getElementById('progressPercentage');
+                
+                progressBar.style.width = event.percentage + '%';
+                progressPercentage.textContent = event.percentage.toFixed(1) + '%';
+            }
+            
+            // Update ETA display
+            if (event.metadata && event.metadata.eta_seconds) {
+                const etaElement = document.getElementById('etaDisplay');
+                if (etaElement) {
+                    const minutes = Math.floor(event.metadata.eta_seconds / 60);
+                    const seconds = Math.floor(event.metadata.eta_seconds % 60);
+                    etaElement.textContent = `ETA: ${minutes}m ${seconds}s`;
+                }
+            }
+            
+            // Update stage indicator
+            const stageItem = document.querySelector(`[data-stage="${event.stage}"]`);
+            if (stageItem) {
+                const badge = stageItem.querySelector('.badge');
+                const iterationCounter = stageItem.querySelector('.iteration-counter');
+                
+                // Remove all status classes
+                stageItem.classList.remove('active', 'complete', 'error');
+                
+                switch (event.phase) {
+                    case 'starting':
+                    case 'running':
+                        stageItem.classList.add('active');
+                        badge.className = 'badge bg-primary';
+                        badge.textContent = '⏳';
+                        break;
+                    case 'complete':
+                        stageItem.classList.add('complete');
+                        badge.className = 'badge bg-success';
+                        badge.textContent = '✅';
+                        break;
+                    case 'error':
+                        stageItem.classList.add('error');
+                        badge.className = 'badge bg-danger';
+                        badge.textContent = '❌';
+                        break;
+                }
+                
+                // Show iteration counter if present
+                if (event.metadata && event.metadata.iteration) {
+                    iterationCounter.textContent = `(Iteration ${event.metadata.iteration})`;
+                    iterationCounter.style.display = 'inline';
+                }
+            }
+            
+            // Add log line for event
+            appendLogLine(`[${event.stage}] ${event.message}`, getLogClass(event.phase));
+        }
+        
+        function handleLogLines(lines) {
+            lines.forEach(line => {
+                appendLogLine(line.trim());
+            });
+        }
+        
+        function appendLogLine(text, cssClass = '') {
+            const logViewer = document.getElementById('liveLogViewer');
+            
+            // Remove "waiting" message if present
+            if (logViewer.querySelector('.text-muted')) {
+                logViewer.innerHTML = '';
+            }
+            
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line ' + cssClass;
+            logLine.textContent = text;
+            
+            logViewer.appendChild(logLine);
+            
+            // Auto-scroll if enabled
+            if (autoScroll) {
+                logViewer.scrollTop = logViewer.scrollHeight;
+            }
+        }
+        
+        function getLogClass(phase) {
+            switch (phase) {
+                case 'error':
+                    return 'error';
+                case 'complete':
+                    return 'success';
+                case 'running':
+                    return '';
+                default:
+                    return '';
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('liveLogViewer').innerHTML = '';
+        }
+        
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            const icon = document.getElementById('autoScrollIcon');
+            icon.textContent = autoScroll ? '🔒' : '🔓';
+        }
+        
+        function handleJobComplete(status) {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.classList.remove('progress-bar-animated');
+            
+            if (status === 'completed') {
+                progressBar.classList.add('bg-success');
+                progressBar.style.width = '100%';
+                document.getElementById('progressPercentage').textContent = '100%';
+            } else {
+                progressBar.classList.add('bg-danger');
+            }
         }
         
         // Update or add job in state
@@ -908,6 +1259,11 @@
                         <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); showJobDetail('${job.id}')">
                             View
                         </button>
+                        ${job.status === 'completed' ? `
+                            <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); showJobResults('${job.id}')">
+                                📊 Results
+                            </button>
+                        ` : ''}
                     </td>
                 </tr>
             `).join('');
@@ -1153,6 +1509,14 @@
                     await fetchEnhancedOutputs(jobId, currentApiKey);
                 }
                 
+                // Connect to progress stream if job is running or queued
+                if (job.status === 'running' || job.status === 'queued') {
+                    connectProgressWebSocket(jobId);
+                } else {
+                    // Hide progress container for completed/failed jobs
+                    document.getElementById('progressContainer').style.display = 'none';
+                }
+                
                 // Show modal
                 const modal = new bootstrap.Modal(document.getElementById('jobDetailModal'));
                 modal.show();
@@ -1365,6 +1729,173 @@
                 alert('Retry failed: ' + error.message);
             }
         });
+        
+        // Results Viewer Functions
+        async function showJobResults(jobId) {
+            // Set modal title
+            document.getElementById('resultsJobId').textContent = jobId;
+            currentJobId = jobId;
+            
+            // Fetch results list
+            const response = await fetch(`${API_BASE}/api/jobs/${jobId}/results`, {
+                headers: { 'X-API-KEY': apiKey }
+            });
+            
+            if (!response.ok) {
+                alert('Failed to load results');
+                return;
+            }
+            
+            const data = await response.json();
+            
+            // Render file list grouped by category
+            renderFileList(data.outputs);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('resultsModal'));
+            modal.show();
+        }
+        
+        function renderFileList(outputs) {
+            const fileList = document.getElementById('resultsFileList');
+            fileList.innerHTML = '';
+            
+            // Group by category
+            const grouped = {};
+            outputs.forEach(file => {
+                if (!grouped[file.category]) {
+                    grouped[file.category] = [];
+                }
+                grouped[file.category].push(file);
+            });
+            
+            // Render each category
+            const categoryTitles = {
+                'pillar_waterfalls': '📊 Pillar Waterfalls',
+                'visualizations': '📈 Visualizations',
+                'reports': '📄 Reports',
+                'data': '💾 Data Files',
+                'other': '📦 Other'
+            };
+            
+            for (const [category, files] of Object.entries(grouped)) {
+                // Category header
+                const header = document.createElement('div');
+                header.className = 'list-group-item bg-light fw-bold';
+                header.textContent = categoryTitles[category] || category;
+                fileList.appendChild(header);
+                
+                // Files in category
+                files.forEach(file => {
+                    const item = document.createElement('a');
+                    item.href = '#';
+                    item.className = 'list-group-item list-group-item-action';
+                    item.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-truncate" style="font-size: 0.85rem;">${file.filename}</span>
+                            <span class="badge bg-secondary">${formatFileSize(file.size)}</span>
+                        </div>
+                    `;
+                    item.onclick = (e) => {
+                        e.preventDefault();
+                        viewFile(file);
+                    };
+                    fileList.appendChild(item);
+                });
+            }
+        }
+        
+        async function viewFile(file) {
+            const viewer = document.getElementById('resultsViewer');
+            
+            // Show loading
+            viewer.innerHTML = '<div class="text-center p-5"><div class="spinner-border"></div></div>';
+            
+            const fileUrl = `${API_BASE}/api/jobs/${currentJobId}/results/${file.path}`;
+            
+            try {
+                if (file.mime_type === 'text/html' || file.filename.endsWith('.html')) {
+                    // Render HTML in iframe
+                    viewer.innerHTML = `
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6>${file.filename}</h6>
+                            <a href="${fileUrl}" class="btn btn-sm btn-outline-primary" download>
+                                💾 Download
+                            </a>
+                        </div>
+                        <iframe 
+                            src="${fileUrl}" 
+                            style="width: 100%; height: 600px; border: 1px solid #dee2e6; border-radius: 5px;">
+                        </iframe>
+                    `;
+                } else if (file.mime_type === 'application/json' || file.filename.endsWith('.json')) {
+                    // Fetch and pretty-print JSON
+                    const response = await fetch(fileUrl, {
+                        headers: { 'X-API-KEY': apiKey }
+                    });
+                    const jsonData = await response.json();
+                    
+                    viewer.innerHTML = `
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6>${file.filename}</h6>
+                            <a href="${fileUrl}" class="btn btn-sm btn-outline-primary" download>
+                                💾 Download
+                            </a>
+                        </div>
+                        <pre class="bg-dark text-light p-3" style="max-height: 600px; overflow-y: auto; border-radius: 5px;"><code>${JSON.stringify(jsonData, null, 2)}</code></pre>
+                    `;
+                } else if (file.mime_type?.startsWith('text/') || file.filename.endsWith('.md')) {
+                    // Fetch and display text/markdown
+                    const response = await fetch(fileUrl, {
+                        headers: { 'X-API-KEY': apiKey }
+                    });
+                    const textData = await response.text();
+                    
+                    viewer.innerHTML = `
+                        <div class="d-flex justify-content-between mb-2">
+                            <h6>${file.filename}</h6>
+                            <a href="${fileUrl}" class="btn btn-sm btn-outline-primary" download>
+                                💾 Download
+                            </a>
+                        </div>
+                        <pre class="bg-light p-3" style="max-height: 600px; overflow-y: auto; border-radius: 5px;"><code>${escapeHtml(textData)}</code></pre>
+                    `;
+                } else {
+                    // Download-only for binary files
+                    viewer.innerHTML = `
+                        <div class="text-center p-5">
+                            <h5>${file.filename}</h5>
+                            <p class="text-muted">Preview not available for this file type</p>
+                            <a href="${fileUrl}" class="btn btn-primary" download>
+                                💾 Download File
+                            </a>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                viewer.innerHTML = `
+                    <div class="alert alert-danger">
+                        Failed to load file: ${error.message}
+                    </div>
+                `;
+            }
+        }
+        
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+        
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        async function downloadAllResults() {
+            window.open(`${API_BASE}/api/jobs/${currentJobId}/results/download/all`, '_blank');
+        }
         
         // Initialize
         connectWebSocket();
