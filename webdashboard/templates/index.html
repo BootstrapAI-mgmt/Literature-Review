@@ -985,6 +985,53 @@
         </div>
     </div>
 
+    <!-- Duplicate Warning Modal -->
+    <div class="modal fade" id="duplicateWarningModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">⚠️ Duplicate Papers Detected</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="alert alert-warning">
+                        <strong><span id="duplicate-count">0</span> of <span id="total-count">0</span> papers already exist</strong> in your database.
+                    </p>
+                    
+                    <h6>Duplicates Found:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Paper Title</th>
+                                    <th>Match Type</th>
+                                    <th>Confidence</th>
+                                </tr>
+                            </thead>
+                            <tbody id="duplicate-list">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <h6 class="mt-3">New Papers (<span id="new-count">0</span>):</h6>
+                    <ul id="new-papers-list" class="list-group">
+                        <!-- Populated dynamically -->
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel Upload</button>
+                    <button type="button" class="btn btn-primary" onclick="handleDuplicates('skip_duplicates')">
+                        Skip Duplicates (Upload <span id="new-count-btn">0</span> New)
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="handleDuplicates('overwrite_all')">
+                        Overwrite All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -1601,13 +1648,18 @@
                 
                 const result = await response.json();
                 
-                // Show configuration modal
-                currentJobId = result.job_id;
-                document.getElementById('configJobId').textContent = result.job_id;
-                document.getElementById('configFileCount').textContent = result.file_count;
-                
-                const modal = new bootstrap.Modal(document.getElementById('configModal'));
-                modal.show();
+                // Check if duplicates were found
+                if (result.status === 'duplicates_found') {
+                    showDuplicateWarning(result);
+                } else {
+                    // Show configuration modal
+                    currentJobId = result.job_id;
+                    document.getElementById('configJobId').textContent = result.job_id;
+                    document.getElementById('configFileCount').textContent = result.file_count;
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('configModal'));
+                    modal.show();
+                }
                 
                 // Reset form
                 fileInput.value = '';
@@ -1618,6 +1670,120 @@
                 document.getElementById('uploadProgress').style.display = 'none';
             }
         });
+        
+        // Store upload data globally for duplicate confirmation
+        let uploadData = null;
+        
+        // Show duplicate warning modal
+        function showDuplicateWarning(data) {
+            uploadData = data;
+            
+            // Update counts
+            document.getElementById('duplicate-count').textContent = data.duplicates.length;
+            document.getElementById('total-count').textContent = data.duplicates.length + data.new.length;
+            document.getElementById('new-count').textContent = data.new.length;
+            document.getElementById('new-count-btn').textContent = data.new.length;
+            
+            // Populate duplicate list
+            const tbody = document.getElementById('duplicate-list');
+            tbody.innerHTML = '';
+            for (let dup of data.duplicates) {
+                const matchInfo = dup.match_info || {};
+                const method = matchInfo.method || 'unknown';
+                const confidence = matchInfo.confidence || 0;
+                
+                let methodBadge = '';
+                switch(method) {
+                    case 'hash':
+                        methodBadge = '<span class="badge bg-danger">Exact File Match</span>';
+                        break;
+                    case 'exact_title':
+                        methodBadge = '<span class="badge bg-warning">Title Match</span>';
+                        break;
+                    case 'fuzzy_title':
+                        methodBadge = '<span class="badge bg-info">Similar Title</span>';
+                        break;
+                    default:
+                        methodBadge = '<span class="badge bg-secondary">Unknown</span>';
+                }
+                
+                const row = `
+                    <tr>
+                        <td>${dup.title || dup.original_name}</td>
+                        <td>${methodBadge}</td>
+                        <td>${(confidence * 100).toFixed(1)}%</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            }
+            
+            // Populate new papers list
+            const newList = document.getElementById('new-papers-list');
+            newList.innerHTML = '';
+            for (let paper of data.new) {
+                const item = `<li class="list-group-item">${paper.title || paper.original_name}</li>`;
+                newList.innerHTML += item;
+            }
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('duplicateWarningModal'));
+            modal.show();
+        }
+        
+        // Handle duplicate confirmation
+        async function handleDuplicates(action) {
+            if (!uploadData) {
+                alert('No upload data available');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/upload/confirm`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': apiKey
+                    },
+                    body: JSON.stringify({
+                        action: action,
+                        job_id: uploadData.job_id
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Confirmation failed');
+                }
+                
+                const result = await response.json();
+                
+                // Hide duplicate modal
+                const duplicateModal = bootstrap.Modal.getInstance(document.getElementById('duplicateWarningModal'));
+                duplicateModal.hide();
+                
+                // Show success message
+                alert(result.message);
+                
+                // Show configuration modal if there are files to configure
+                if (result.uploaded > 0) {
+                    currentJobId = uploadData.job_id;
+                    document.getElementById('configJobId').textContent = uploadData.job_id;
+                    document.getElementById('configFileCount').textContent = result.uploaded;
+                    
+                    const configModal = new bootstrap.Modal(document.getElementById('configModal'));
+                    configModal.show();
+                } else {
+                    // No files to configure, refresh job list
+                    await loadJobs();
+                }
+                
+                // Clear upload data
+                uploadData = null;
+                
+            } catch (error) {
+                alert('Failed to confirm upload: ' + error.message);
+            }
+        }
         
         // Load pillar definitions and populate checkboxes
         async function loadPillarDefinitions() {

@@ -98,10 +98,52 @@ You should see:
 
 ### 2. Upload a PDF
 
+#### Single File Upload
+
 1. Click "Choose File" and select a PDF
 2. Enter your API key (default: `dev-key-change-in-production`)
 3. Click "Upload & Queue Job"
 4. The job will appear in the jobs table with status "QUEUED"
+
+#### Batch Upload with Duplicate Detection
+
+When uploading multiple PDFs, the dashboard automatically checks for duplicates:
+
+1. Select multiple PDF files (Ctrl/Cmd + click)
+2. Enter your API key
+3. Click "Upload Batch"
+4. If duplicates are detected, a warning modal will appear:
+   - **Duplicates Found**: Papers that already exist in your database
+   - **Match Type**: How the duplicate was detected:
+     - 🔴 **Exact File Match**: Same PDF file content (SHA256 hash)
+     - 🟡 **Title Match**: Exact title match (case-insensitive)
+     - 🔵 **Similar Title**: Fuzzy title match (≥95% similarity)
+   - **Confidence**: Match confidence percentage
+   - **New Papers**: Papers that don't exist yet
+
+5. Choose an action:
+   - **Skip Duplicates**: Upload only new papers (recommended)
+   - **Overwrite All**: Upload all papers, including duplicates
+   - **Cancel**: Cancel the entire upload
+
+**Example Scenario:**
+```
+Upload 5 PDFs:
+- paper1.pdf (already exists) ✗
+- paper2.pdf (new) ✓
+- paper3.pdf (already exists with 97% similar title) ✗
+- paper4.pdf (new) ✓
+- paper5.pdf (new) ✓
+
+Result: 2 duplicates detected, 3 new papers
+Action: Skip Duplicates → Only uploads paper2, paper4, paper5
+```
+
+**Benefits:**
+- Prevents accidental re-uploads across sessions
+- Saves processing time and costs
+- Maintains database cleanliness
+- Clear visibility into what's already in your database
 
 ### 3. Monitor Jobs
 
@@ -177,6 +219,61 @@ The dashboard exposes a REST API:
 curl -X POST http://localhost:8000/api/upload \
   -H "X-API-KEY: your-key" \
   -F "file=@paper.pdf"
+```
+
+#### Batch upload with duplicate detection
+```bash
+curl -X POST http://localhost:8000/api/upload/batch \
+  -H "X-API-KEY: your-key" \
+  -F "files=@paper1.pdf" \
+  -F "files=@paper2.pdf" \
+  -F "files=@paper3.pdf"
+```
+
+Response when duplicates are found:
+```json
+{
+  "status": "duplicates_found",
+  "job_id": "abc-123",
+  "duplicates": [
+    {
+      "title": "Machine Learning Survey",
+      "original_name": "paper1.pdf",
+      "match_info": {
+        "method": "exact_title",
+        "confidence": 1.0
+      }
+    }
+  ],
+  "new": [
+    {
+      "title": "Deep Learning Review",
+      "original_name": "paper2.pdf"
+    }
+  ],
+  "message": "1 of 2 papers already exist"
+}
+```
+
+#### Confirm upload after duplicate detection
+```bash
+# Skip duplicates - upload only new papers
+curl -X POST http://localhost:8000/api/upload/confirm \
+  -H "X-API-KEY: your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "skip_duplicates",
+    "job_id": "abc-123"
+  }'
+
+# Overwrite all - upload all papers including duplicates
+curl -X POST http://localhost:8000/api/upload/confirm \
+  -H "X-API-KEY: your-key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "action": "overwrite_all",
+    "job_id": "abc-123"
+  }'
 ```
 
 #### List all jobs
