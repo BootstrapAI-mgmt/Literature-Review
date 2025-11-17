@@ -890,6 +890,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-info" id="viewProgressBtn" style="display: none;" onclick="viewProgressFromDetails()">
+                        ⏱️ View Progress History
+                    </button>
                     <button type="button" class="btn btn-primary" id="downloadBtn">
                         📥 Download PDF
                     </button>
@@ -1026,6 +1029,69 @@
                     </button>
                     <button type="button" class="btn btn-danger" onclick="handleDuplicates('overwrite_all')">
                         Overwrite All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress History Modal -->
+    <div class="modal fade" id="progressHistoryModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        ⏱️ Progress Timeline - Job <span id="history-job-id"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Total Duration Summary -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Total Duration:</strong> <span id="total-duration"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Slowest Stage:</strong> <span id="slowest-stage"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline Visualization -->
+                    <div class="card mb-3">
+                        <div class="card-header">
+                            <strong>Timeline Visualization</strong>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="timeline-chart" style="height: 150px;"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Stage Details Table -->
+                    <h6 class="mt-4">Stage Breakdown</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Stage</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Duration</th>
+                                    <th>% of Total</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="stage-details">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="exportProgressReport()">
+                        📥 Export CSV
                     </button>
                 </div>
             </div>
@@ -1592,6 +1658,11 @@
                 // Fetch enhanced outputs if job is completed
                 if (job.status === 'completed') {
                     await fetchEnhancedOutputs(jobId, currentApiKey);
+                    // Show progress history button for completed jobs
+                    document.getElementById('viewProgressBtn').style.display = 'inline-block';
+                } else {
+                    // Hide progress history button for non-completed jobs
+                    document.getElementById('viewProgressBtn').style.display = 'none';
                 }
                 
                 // Connect to progress stream if job is running or queued
@@ -2315,6 +2386,159 @@
                 if (promptTimeoutInterval) {
                     clearInterval(promptTimeoutInterval);
                 }
+            }
+        }
+        
+        // Progress History Functions
+        async function viewProgressHistory(jobId) {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/jobs/${jobId}/progress-history`, {
+                    headers: {
+                        'X-API-KEY': apiKey
+                    }
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Failed to load progress history');
+                }
+                
+                const data = await response.json();
+                
+                // Populate modal
+                document.getElementById('history-job-id').textContent = jobId;
+                document.getElementById('total-duration').textContent = data.total_duration_human;
+                document.getElementById('slowest-stage').textContent = data.slowest_stage || 'N/A';
+                
+                // Render timeline chart
+                renderTimelineChart(data.timeline);
+                
+                // Populate stage details table
+                const tbody = document.getElementById('stage-details');
+                tbody.innerHTML = '';
+                
+                for (let stage of data.timeline) {
+                    const startTime = new Date(stage.start_time).toLocaleString();
+                    const endTime = new Date(stage.end_time).toLocaleString();
+                    const statusBadge = getStageStatusBadge(stage.status);
+                    
+                    const row = `
+                        <tr>
+                            <td><strong>${stage.stage}</strong></td>
+                            <td><small>${startTime}</small></td>
+                            <td><small>${endTime}</small></td>
+                            <td>${stage.duration_human}</td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar" role="progressbar" 
+                                         style="width: ${stage.percentage}%"
+                                         aria-valuenow="${stage.percentage}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        ${stage.percentage}%
+                                    </div>
+                                </div>
+                            </td>
+                            <td>${statusBadge}</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                }
+                
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('progressHistoryModal'));
+                modal.show();
+                
+            } catch (error) {
+                alert('Failed to load progress history: ' + error.message);
+            }
+        }
+        
+        function renderTimelineChart(timeline) {
+            const ctx = document.getElementById('timeline-chart').getContext('2d');
+            
+            // Destroy existing chart if any
+            if (window.progressTimelineChart) {
+                window.progressTimelineChart.destroy();
+            }
+            
+            // Prepare data for horizontal bar chart
+            const labels = timeline.map(stage => stage.stage);
+            const durations = timeline.map(stage => stage.duration_seconds);
+            const colors = timeline.map(stage => {
+                if (stage.status === 'completed') return '#28a745';
+                if (stage.status === 'error') return '#dc3545';
+                return '#6c757d';
+            });
+            
+            window.progressTimelineChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Duration (seconds)',
+                        data: durations,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c),
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const seconds = context.parsed.x;
+                                    const minutes = Math.floor(seconds / 60);
+                                    const secs = seconds % 60;
+                                    return `${minutes}min ${secs}s`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Duration (seconds)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        function getStageStatusBadge(status) {
+            if (status === 'completed') {
+                return '<span class="badge bg-success">Completed</span>';
+            } else if (status === 'error') {
+                return '<span class="badge bg-danger">Error</span>';
+            } else {
+                return '<span class="badge bg-secondary">Unknown</span>';
+            }
+        }
+        
+        async function exportProgressReport() {
+            const jobId = document.getElementById('history-job-id').textContent;
+            const apiKey = document.getElementById('apiKeyInput').value;
+            
+            // Trigger CSV download
+            window.location.href = `${API_BASE}/api/jobs/${jobId}/progress-history.csv?api_key=${apiKey}`;
+        }
+        
+        function viewProgressFromDetails() {
+            // Get current job ID and call viewProgressHistory
+            const jobId = currentJobId || document.getElementById('detailJobId').textContent;
+            if (jobId) {
+                viewProgressHistory(jobId);
             }
         }
         
