@@ -337,6 +337,65 @@
                 grid-template-columns: 1fr;
             }
         }
+        
+        /* Progress Monitoring Styles */
+        .stage-item {
+            padding: 8px;
+            margin: 4px 0;
+            border-left: 3px solid #dee2e6;
+            background: #f8f9fa;
+            transition: all 0.3s;
+        }
+        
+        .stage-item.active {
+            border-left-color: #0d6efd;
+            background: #e7f1ff;
+        }
+        
+        .stage-item.complete {
+            border-left-color: #198754;
+            background: #d1e7dd;
+        }
+        
+        .stage-item.error {
+            border-left-color: #dc3545;
+            background: #f8d7da;
+        }
+        
+        .iteration-counter {
+            font-size: 0.875rem;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+        
+        .log-viewer-live {
+            background-color: #1e1e1e;
+            color: #d4d4d4;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        
+        .log-line {
+            margin: 2px 0;
+        }
+        
+        .log-line.error {
+            color: #f48771;
+        }
+        
+        .log-line.warning {
+            color: #dcdcaa;
+        }
+        
+        .log-line.success {
+            color: #4ec9b0;
+        }
     </style>
 </head>
 <body>
@@ -631,6 +690,78 @@
                         </div>
                     </div>
                     
+                    <!-- Real-time Progress Display -->
+                    <div class="mb-3" id="progressContainer" style="display: none;">
+                        <h6>Pipeline Progress</h6>
+                        
+                        <!-- Overall Progress Bar -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>Overall Completion</span>
+                                <span id="progressPercentage">0%</span>
+                            </div>
+                            <div class="progress">
+                                <div 
+                                    class="progress-bar progress-bar-striped progress-bar-animated" 
+                                    id="progressBar"
+                                    role="progressbar" 
+                                    style="width: 0%">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-end mt-1">
+                                <small class="text-muted" id="etaDisplay">ETA: calculating...</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Stage Indicators -->
+                        <div class="mb-3">
+                            <h6 class="small">Pipeline Stages</h6>
+                            <div id="stageIndicators">
+                                <div class="stage-item" data-stage="initialization">
+                                    <span class="badge bg-secondary">⏸</span> Initialization
+                                </div>
+                                <div class="stage-item" data-stage="judge">
+                                    <span class="badge bg-secondary">⏸</span> Judge Validation
+                                </div>
+                                <div class="stage-item" data-stage="deep_review">
+                                    <span class="badge bg-secondary">⏸</span> Deep Review
+                                    <span class="iteration-counter" style="display: none;"></span>
+                                </div>
+                                <div class="stage-item" data-stage="gap_analysis">
+                                    <span class="badge bg-secondary">⏸</span> Gap Analysis
+                                    <span class="iteration-counter" style="display: none;"></span>
+                                </div>
+                                <div class="stage-item" data-stage="visualization">
+                                    <span class="badge bg-secondary">⏸</span> Visualization
+                                </div>
+                                <div class="stage-item" data-stage="finalization">
+                                    <span class="badge bg-secondary">⏸</span> Finalization
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Live Logs -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <h6 class="small mb-0">Live Logs</h6>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <button type="button" class="btn btn-outline-secondary" onclick="clearLogs()">
+                                        Clear
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" onclick="toggleAutoScroll()">
+                                        <span id="autoScrollIcon">🔒</span> Auto-scroll
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="log-viewer-live" id="liveLogViewer">
+                                <div class="text-muted text-center p-3">
+                                    Waiting for logs...
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Legacy Progress Section (kept for backward compatibility) -->
                     <div class="mb-3" id="progressSection" style="display: none;">
                         <strong>Progress:</strong>
                         <div id="detailProgress"></div>
@@ -824,6 +955,178 @@
             ws.onerror = (error) => {
                 console.error('WebSocket error:', error);
             };
+        }
+        
+        // Progress WebSocket for job-specific real-time updates
+        let progressWebSocket = null;
+        let autoScroll = true;
+        
+        function connectProgressWebSocket(jobId) {
+            // Close existing connection
+            if (progressWebSocket) {
+                progressWebSocket.close();
+            }
+            
+            // Connect to job-specific progress stream
+            const wsUrl = `ws://${window.location.host}/ws/jobs/${jobId}/progress`;
+            progressWebSocket = new WebSocket(wsUrl);
+            
+            progressWebSocket.onopen = () => {
+                console.log('Progress WebSocket connected');
+                document.getElementById('progressContainer').style.display = 'block';
+            };
+            
+            progressWebSocket.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                
+                switch (data.type) {
+                    case 'initial_status':
+                        handleInitialStatus(data.job);
+                        break;
+                    case 'progress':
+                        handleProgressEvent(data.event);
+                        break;
+                    case 'logs':
+                        handleLogLines(data.lines);
+                        break;
+                    case 'job_complete':
+                        handleJobComplete(data.status);
+                        break;
+                }
+            };
+            
+            progressWebSocket.onerror = (error) => {
+                console.error('Progress WebSocket error:', error);
+            };
+            
+            progressWebSocket.onclose = () => {
+                console.log('Progress WebSocket disconnected');
+            };
+        }
+        
+        function handleInitialStatus(job) {
+            console.log('Initial job status:', job);
+        }
+        
+        function handleProgressEvent(event) {
+            // Update progress bar
+            if (event.percentage !== null && event.percentage !== undefined) {
+                const progressBar = document.getElementById('progressBar');
+                const progressPercentage = document.getElementById('progressPercentage');
+                
+                progressBar.style.width = event.percentage + '%';
+                progressPercentage.textContent = event.percentage.toFixed(1) + '%';
+            }
+            
+            // Update ETA display
+            if (event.metadata && event.metadata.eta_seconds) {
+                const etaElement = document.getElementById('etaDisplay');
+                if (etaElement) {
+                    const minutes = Math.floor(event.metadata.eta_seconds / 60);
+                    const seconds = Math.floor(event.metadata.eta_seconds % 60);
+                    etaElement.textContent = `ETA: ${minutes}m ${seconds}s`;
+                }
+            }
+            
+            // Update stage indicator
+            const stageItem = document.querySelector(`[data-stage="${event.stage}"]`);
+            if (stageItem) {
+                const badge = stageItem.querySelector('.badge');
+                const iterationCounter = stageItem.querySelector('.iteration-counter');
+                
+                // Remove all status classes
+                stageItem.classList.remove('active', 'complete', 'error');
+                
+                switch (event.phase) {
+                    case 'starting':
+                    case 'running':
+                        stageItem.classList.add('active');
+                        badge.className = 'badge bg-primary';
+                        badge.textContent = '⏳';
+                        break;
+                    case 'complete':
+                        stageItem.classList.add('complete');
+                        badge.className = 'badge bg-success';
+                        badge.textContent = '✅';
+                        break;
+                    case 'error':
+                        stageItem.classList.add('error');
+                        badge.className = 'badge bg-danger';
+                        badge.textContent = '❌';
+                        break;
+                }
+                
+                // Show iteration counter if present
+                if (event.metadata && event.metadata.iteration) {
+                    iterationCounter.textContent = `(Iteration ${event.metadata.iteration})`;
+                    iterationCounter.style.display = 'inline';
+                }
+            }
+            
+            // Add log line for event
+            appendLogLine(`[${event.stage}] ${event.message}`, getLogClass(event.phase));
+        }
+        
+        function handleLogLines(lines) {
+            lines.forEach(line => {
+                appendLogLine(line.trim());
+            });
+        }
+        
+        function appendLogLine(text, cssClass = '') {
+            const logViewer = document.getElementById('liveLogViewer');
+            
+            // Remove "waiting" message if present
+            if (logViewer.querySelector('.text-muted')) {
+                logViewer.innerHTML = '';
+            }
+            
+            const logLine = document.createElement('div');
+            logLine.className = 'log-line ' + cssClass;
+            logLine.textContent = text;
+            
+            logViewer.appendChild(logLine);
+            
+            // Auto-scroll if enabled
+            if (autoScroll) {
+                logViewer.scrollTop = logViewer.scrollHeight;
+            }
+        }
+        
+        function getLogClass(phase) {
+            switch (phase) {
+                case 'error':
+                    return 'error';
+                case 'complete':
+                    return 'success';
+                case 'running':
+                    return '';
+                default:
+                    return '';
+            }
+        }
+        
+        function clearLogs() {
+            document.getElementById('liveLogViewer').innerHTML = '';
+        }
+        
+        function toggleAutoScroll() {
+            autoScroll = !autoScroll;
+            const icon = document.getElementById('autoScrollIcon');
+            icon.textContent = autoScroll ? '🔒' : '🔓';
+        }
+        
+        function handleJobComplete(status) {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.classList.remove('progress-bar-animated');
+            
+            if (status === 'completed') {
+                progressBar.classList.add('bg-success');
+                progressBar.style.width = '100%';
+                document.getElementById('progressPercentage').textContent = '100%';
+            } else {
+                progressBar.classList.add('bg-danger');
+            }
         }
         
         // Update or add job in state
@@ -1151,6 +1454,14 @@
                 // Fetch enhanced outputs if job is completed
                 if (job.status === 'completed') {
                     await fetchEnhancedOutputs(jobId, currentApiKey);
+                }
+                
+                // Connect to progress stream if job is running or queued
+                if (job.status === 'running' || job.status === 'queued') {
+                    connectProgressWebSocket(jobId);
+                } else {
+                    // Hide progress container for completed/failed jobs
+                    document.getElementById('progressContainer').style.display = 'none';
                 }
                 
                 // Show modal
