@@ -39,7 +39,10 @@ class PromptHandler:
             timeout_seconds: How long to wait for response (default: 300 = 5 minutes)
         
         Returns:
-            User's response
+            User's response. For pillar_selection, can be:
+                - str: Special options like "ALL", "DEEP", "NONE"
+                - List[str]: Multi-select pillar subset like ["P1: Pillar 1", "P3: Pillar 3"]
+            For other prompt types, returns str.
         
         Raises:
             TimeoutError: If user doesn't respond in time

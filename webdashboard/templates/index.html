@@ -2103,10 +2103,12 @@
         
         // === INTERACTIVE PROMPTS ===
         let currentPromptId = null;
+        let currentPromptType = null;
         let promptTimeoutInterval = null;
         
         function showPrompt(promptData) {
             currentPromptId = promptData.prompt_id;
+            currentPromptType = promptData.prompt_type;
             
             // Set job ID
             document.getElementById('promptJobId').textContent = promptData.job_id;
@@ -2144,12 +2146,31 @@
             
             let html = '<div class="mb-3">';
             
+            // Helper buttons and count badge
+            html += `
+                <div class="d-flex justify-content-between mb-3">
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllPillars()">
+                            ✓ Select All
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearAllPillars()">
+                            ✕ Clear All
+                        </button>
+                    </div>
+                    <div>
+                        <span id="pillar-count" class="badge bg-secondary">0 selected</span>
+                    </div>
+                </div>
+                <hr>
+            `;
+            
+            // Special options (mutually exclusive with individual pillars)
             if (promptData.allow_all) {
                 html += `
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="promptChoice" value="ALL" id="choice_all">
-                        <label class="form-check-label" for="choice_all">
-                            <strong>ALL</strong> - Analyze all pillars (single pass)
+                        <input class="form-check-input special-option" type="checkbox" value="ALL" id="choice_all" onchange="handleSpecialOption('ALL')">
+                        <label class="form-check-label fw-bold" for="choice_all">
+                            ALL - Analyze all pillars (single pass)
                         </label>
                     </div>
                 `;
@@ -2158,9 +2179,20 @@
             if (promptData.allow_deep) {
                 html += `
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="promptChoice" value="DEEP" id="choice_deep">
-                        <label class="form-check-label" for="choice_deep">
-                            <strong>DEEP</strong> - Run iterative deep-review loop
+                        <input class="form-check-input special-option" type="checkbox" value="DEEP" id="choice_deep" onchange="handleSpecialOption('DEEP')">
+                        <label class="form-check-label fw-bold" for="choice_deep">
+                            DEEP - Run iterative deep-review loop
+                        </label>
+                    </div>
+                `;
+            }
+            
+            if (promptData.allow_none) {
+                html += `
+                    <div class="form-check mb-2">
+                        <input class="form-check-input special-option" type="checkbox" value="NONE" id="choice_none" onchange="handleSpecialOption('NONE')">
+                        <label class="form-check-label fw-bold" for="choice_none">
+                            NONE - Cancel analysis
                         </label>
                     </div>
                 `;
@@ -2168,29 +2200,20 @@
             
             html += '<hr>';
             
+            // Individual pillars (checkbox multi-select)
+            html += '<div id="individual-pillars">';
             pillars.forEach((pillar, index) => {
                 const pillarName = pillar.split(':')[0];
                 html += `
                     <div class="form-check">
-                        <input class="form-check-input" type="radio" name="promptChoice" value="${index + 1}" id="choice_${index}">
+                        <input class="form-check-input pillar-checkbox" type="checkbox" value="${pillar}" id="choice_${index}" onchange="updatePillarCount()">
                         <label class="form-check-label" for="choice_${index}">
                             ${index + 1}. ${pillarName}
                         </label>
                     </div>
                 `;
             });
-            
-            if (promptData.allow_none) {
-                html += `
-                    <hr>
-                    <div class="form-check">
-                        <input class="form-check-input" type="radio" name="promptChoice" value="NONE" id="choice_none">
-                        <label class="form-check-label" for="choice_none">
-                            <strong>NONE</strong> - Cancel analysis
-                        </label>
-                    </div>
-                `;
-            }
+            html += '</div>';
             
             html += '</div>';
             return html;
@@ -2235,6 +2258,79 @@
             `;
         }
         
+        function selectAllPillars() {
+            // Uncheck special options
+            document.querySelectorAll('.special-option').forEach(cb => cb.checked = false);
+            
+            // Check all individual pillars
+            document.querySelectorAll('.pillar-checkbox').forEach(cb => cb.checked = true);
+            updatePillarCount();
+        }
+        
+        function clearAllPillars() {
+            // Uncheck everything
+            document.querySelectorAll('.special-option, .pillar-checkbox').forEach(cb => cb.checked = false);
+            updatePillarCount();
+        }
+        
+        function handleSpecialOption(option) {
+            const checkbox = document.getElementById(`choice_${option.toLowerCase()}`);
+            
+            if (checkbox && checkbox.checked) {
+                // Uncheck all other options (special and individual)
+                document.querySelectorAll('.special-option, .pillar-checkbox').forEach(cb => {
+                    if (cb !== checkbox) {
+                        cb.checked = false;
+                    }
+                });
+            }
+            
+            updatePillarCount();
+        }
+        
+        function updatePillarCount() {
+            // Count selected individual pillars
+            const selectedPillars = document.querySelectorAll('.pillar-checkbox:checked').length;
+            
+            // Check if special option selected
+            const specialSelected = document.querySelector('.special-option:checked');
+            const countBadge = document.getElementById('pillar-count');
+            
+            if (!countBadge) return; // Not in pillar selection prompt
+            
+            if (specialSelected) {
+                countBadge.textContent = specialSelected.value;
+                countBadge.className = 'badge bg-primary';
+            } else if (selectedPillars > 0) {
+                countBadge.textContent = `${selectedPillars} selected`;
+                countBadge.className = 'badge bg-info';
+            } else {
+                countBadge.textContent = '0 selected';
+                countBadge.className = 'badge bg-secondary';
+            }
+        }
+        
+        function getSelectedPillars() {
+            // Check for special options first
+            const specialOption = document.querySelector('.special-option:checked');
+            if (specialOption) {
+                return specialOption.value;  // Return "ALL", "DEEP", or "NONE"
+            }
+            
+            // Otherwise, return array of selected individual pillars
+            const selected = [];
+            document.querySelectorAll('.pillar-checkbox:checked').forEach(cb => {
+                selected.push(cb.value);
+            });
+            
+            // Validation
+            if (selected.length === 0) {
+                return null;  // Indicates validation failure
+            }
+            
+            return selected;  // Returns array like ["P1: Pillar 1", "P3: Pillar 3"]
+        }
+        
         function startTimeoutCountdown(seconds) {
             const display = document.getElementById('promptTimeout');
             let remaining = seconds;
@@ -2260,14 +2356,27 @@
         }
         
         async function submitPromptResponse() {
-            const selected = document.querySelector('input[name="promptChoice"]:checked');
+            let response;
             
-            if (!selected) {
-                alert('Please select an option');
-                return;
+            // Handle different prompt types
+            if (currentPromptType === 'pillar_selection') {
+                response = getSelectedPillars();
+                if (response === null) {
+                    alert('Please select at least one pillar or choose a special option (ALL, DEEP, NONE)');
+                    return;
+                }
+            } else {
+                // Other prompt types use radio buttons
+                const selected = document.querySelector('input[name="promptChoice"]:checked');
+                
+                if (!selected) {
+                    alert('Please select an option');
+                    return;
+                }
+                
+                response = selected.value;
             }
             
-            const response = selected.value;
             const apiKey = document.getElementById('apiKeyInput').value;
             
             try {
