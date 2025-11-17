@@ -84,3 +84,4 @@ cost_reports/
 
 # Web Dashboard workspace
 workspace/
+orchestrator_state_backup_*.json
