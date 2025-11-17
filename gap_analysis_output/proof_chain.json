@@ -1,0 +1,2302 @@
+{
+  "graph_stats": {
+    "total_requirements": 108,
+    "total_dependencies": 0,
+    "critical_path_length": 1
+  },
+  "critical_paths": [
+    [
+      "Pillar 1-REQ-B1.1-Sub-1.1.1"
+    ],
+    [
+      "Pillar 1-REQ-B1.1-Sub-1.1.2"
+    ],
+    [
+      "Pillar 1-REQ-B1.1-Sub-1.1.3"
+    ],
+    [
+      "Pillar 1-REQ-B1.1-Sub-1.1.4"
+    ],
+    [
+      "Pillar 1-REQ-B1.2-Sub-1.2.1"
+    ]
+  ],
+  "blocking_requirements": [],
+  "proof_propagation": {
+    "Pillar 1-REQ-B1.1-Sub-1.1.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.1-Sub-1.1.2": {
+      "own_readiness": 0.06999999999999999,
+      "propagated_readiness": 0.06999999999999999,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.1-Sub-1.1.3": {
+      "own_readiness": 0.05,
+      "propagated_readiness": 0.05,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.1-Sub-1.1.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.2-Sub-1.2.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.2-Sub-1.2.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.2-Sub-1.2.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.2-Sub-1.2.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.3-Sub-1.3.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.3-Sub-1.3.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.3-Sub-1.3.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.3-Sub-1.3.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.4-Sub-1.4.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.4-Sub-1.4.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 1-REQ-B1.4-Sub-1.4.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.1-Sub-2.1.1": {
+      "own_readiness": 0.020000000000000004,
+      "propagated_readiness": 0.020000000000000004,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.1-Sub-2.1.2": {
+      "own_readiness": 0.06,
+      "propagated_readiness": 0.06,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.1-Sub-2.1.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.1-Sub-2.1.4": {
+      "own_readiness": 0.03,
+      "propagated_readiness": 0.03,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.2-Sub-2.2.1": {
+      "own_readiness": 0.020000000000000004,
+      "propagated_readiness": 0.020000000000000004,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.2-Sub-2.2.2": {
+      "own_readiness": 0.020000000000000004,
+      "propagated_readiness": 0.020000000000000004,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.2-Sub-2.2.3": {
+      "own_readiness": 0.06,
+      "propagated_readiness": 0.06,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.2-Sub-2.2.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.3-Sub-2.3.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.3-Sub-2.3.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.3-Sub-2.3.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.3-Sub-2.3.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.4-Sub-2.4.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.4-Sub-2.4.2": {
+      "own_readiness": 0.020000000000000004,
+      "propagated_readiness": 0.020000000000000004,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.4-Sub-2.4.3": {
+      "own_readiness": 0.12,
+      "propagated_readiness": 0.12,
+      "is_bottleneck": false
+    },
+    "Pillar 2-REQ-A2.4-Sub-2.4.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.1-Sub-3.1.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.1-Sub-3.1.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.1-Sub-3.1.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.2-Sub-3.2.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.2-Sub-3.2.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.2-Sub-3.2.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.2-Sub-3.2.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.3-Sub-3.3.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.3-Sub-3.3.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.3-Sub-3.3.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.4-Sub-3.4.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.4-Sub-3.4.2": {
+      "own_readiness": 0.025,
+      "propagated_readiness": 0.025,
+      "is_bottleneck": false
+    },
+    "Pillar 3-REQ-B3.4-Sub-3.4.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.1-Sub-4.1.1": {
+      "own_readiness": 0.020000000000000004,
+      "propagated_readiness": 0.020000000000000004,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.1-Sub-4.1.2": {
+      "own_readiness": 0.07500000000000001,
+      "propagated_readiness": 0.07500000000000001,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.1-Sub-4.1.3": {
+      "own_readiness": 0.06,
+      "propagated_readiness": 0.06,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.2-Sub-4.2.1": {
+      "own_readiness": 0.04000000000000001,
+      "propagated_readiness": 0.04000000000000001,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.2-Sub-4.2.2": {
+      "own_readiness": 0.020000000000000004,
+      "propagated_readiness": 0.020000000000000004,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.2-Sub-4.2.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.2-Sub-4.2.4": {
+      "own_readiness": 0.09000000000000001,
+      "propagated_readiness": 0.09000000000000001,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.3-Sub-4.3.1": {
+      "own_readiness": 0.09000000000000001,
+      "propagated_readiness": 0.09000000000000001,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.3-Sub-4.3.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.3-Sub-4.3.3": {
+      "own_readiness": 0.020000000000000004,
+      "propagated_readiness": 0.020000000000000004,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.4-Sub-4.4.1": {
+      "own_readiness": 0.03,
+      "propagated_readiness": 0.03,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.4-Sub-4.4.2": {
+      "own_readiness": 0.085,
+      "propagated_readiness": 0.085,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.4-Sub-4.4.3": {
+      "own_readiness": 0.03,
+      "propagated_readiness": 0.03,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.4-Sub-4.4.4": {
+      "own_readiness": 0.03,
+      "propagated_readiness": 0.03,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.5-Sub-4.5.1": {
+      "own_readiness": 0.08000000000000002,
+      "propagated_readiness": 0.08000000000000002,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.5-Sub-4.5.2": {
+      "own_readiness": 0.020000000000000004,
+      "propagated_readiness": 0.020000000000000004,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.5-Sub-4.5.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 4-REQ-A4.5-Sub-4.5.4": {
+      "own_readiness": 0.03,
+      "propagated_readiness": 0.03,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.1-Sub-5.1.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.1-Sub-5.1.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.1-Sub-5.1.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.1-Sub-5.1.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.2-Sub-5.2.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.2-Sub-5.2.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.2-Sub-5.2.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.2-Sub-5.2.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.3-Sub-5.3.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.3-Sub-5.3.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 5-REQ-B5.3-Sub-5.3.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.1-Sub-6.1.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.1-Sub-6.1.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.1-Sub-6.1.3": {
+      "own_readiness": 0.06999999999999999,
+      "propagated_readiness": 0.06999999999999999,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.1-Sub-6.1.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.2-Sub-6.2.1": {
+      "own_readiness": 0.08000000000000002,
+      "propagated_readiness": 0.08000000000000002,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.2-Sub-6.2.2": {
+      "own_readiness": 0.07500000000000001,
+      "propagated_readiness": 0.07500000000000001,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.2-Sub-6.2.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.2-Sub-6.2.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.3-Sub-6.3.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.3-Sub-6.3.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.3-Sub-6.3.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.3-Sub-6.3.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.4-Sub-6.4.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.4-Sub-6.4.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 6-REQ-A6.4-Sub-6.4.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.1-Sub-7.1.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.1-Sub-7.1.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.1-Sub-7.1.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.1-Sub-7.1.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.2-Sub-7.2.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.2-Sub-7.2.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.2-Sub-7.2.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.2-Sub-7.2.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.3-Sub-7.3.1": {
+      "own_readiness": 0.065,
+      "propagated_readiness": 0.065,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.3-Sub-7.3.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.3-Sub-7.3.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.3-Sub-7.3.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.4-Sub-7.4.1": {
+      "own_readiness": 0.06999999999999999,
+      "propagated_readiness": 0.06999999999999999,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.4-Sub-7.4.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.4-Sub-7.4.3": {
+      "own_readiness": 0.04000000000000001,
+      "propagated_readiness": 0.04000000000000001,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.4-Sub-7.4.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.5-Sub-7.5.1": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.5-Sub-7.5.2": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.5-Sub-7.5.3": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    },
+    "Pillar 7-REQ-7.5-Sub-7.5.4": {
+      "own_readiness": 0.0,
+      "propagated_readiness": 0.0,
+      "is_bottleneck": false
+    }
+  },
+  "prioritized_requirements": [
+    {
+      "requirement_id": "Pillar 1-REQ-B1.1-Sub-1.1.1",
+      "requirement": "Sub-1.1.1: Conclusive model of how raw sensory data is transduced into neural sp",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.1-Sub-1.1.4",
+      "requirement": "Sub-1.1.4: Temporal dynamics of spike-timing in sensory encoding",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.2-Sub-1.2.1",
+      "requirement": "Sub-1.2.1: Detailed mapping of thalamic relay pathways for major senses",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.2-Sub-1.2.2",
+      "requirement": "Sub-1.2.2: Model of multi-sensory integration in parietal cortex",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.2-Sub-1.2.3",
+      "requirement": "Sub-1.2.3: Role of prefrontal cortex in top-down attentional gating",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.2-Sub-1.2.4",
+      "requirement": "Sub-1.2.4: Feedback connections from higher to lower processing areas",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.3-Sub-1.3.1",
+      "requirement": "Sub-1.3.1: Conclusive model of evidence accumulation for decision-making",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.3-Sub-1.3.2",
+      "requirement": "Sub-1.3.2: Role of Basal Ganglia loops in action selection",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.3-Sub-1.3.3",
+      "requirement": "Sub-1.3.3: Pathway from Primary Motor Cortex to spinal cord",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.3-Sub-1.3.4",
+      "requirement": "Sub-1.3.4: Inhibitory control mechanisms for action suppression",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.4-Sub-1.4.1",
+      "requirement": "Sub-1.4.1: Short-term synaptic facilitation/depression (ms-s)",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.4-Sub-1.4.2",
+      "requirement": "Sub-1.4.2: Medium-term STDP mechanisms (s-min)",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.4-Sub-1.4.3",
+      "requirement": "Sub-1.4.3: Long-term structural plasticity (hours-days)",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.1-Sub-2.1.3",
+      "requirement": "Sub-2.1.3: Hardware-agnostic deployment on neuromorphic chips",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.2-Sub-2.2.4",
+      "requirement": "Sub-2.2.4: Homeostatic plasticity for network stability",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.3-Sub-2.3.1",
+      "requirement": "Sub-2.3.1: SNN model of evidence accumulation",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.3-Sub-2.3.2",
+      "requirement": "Sub-2.3.2: Computational Basal Ganglia for action selection",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.3-Sub-2.3.3",
+      "requirement": "Sub-2.3.3: Closed-loop SNN controller for actuators",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.3-Sub-2.3.4",
+      "requirement": "Sub-2.3.4: Inhibitory gating for action suppression",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.4-Sub-2.4.1",
+      "requirement": "Sub-2.4.1: Sparse coding efficiency metrics (< 10% activation)",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.4-Sub-2.4.4",
+      "requirement": "Sub-2.4.4: Dynamic voltage/frequency scaling based on task demands",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.1-Sub-3.1.1",
+      "requirement": "Sub-3.1.1: Role of Hippocampus/PFC in initial motor task encoding",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.1-Sub-3.1.2",
+      "requirement": "Sub-3.1.2: Mechanism of error-correction signals from cerebellum",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.1-Sub-3.1.3",
+      "requirement": "Sub-3.1.3: Working memory maintenance during skill acquisition",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.2-Sub-3.2.1",
+      "requirement": "Sub-3.2.1: Pathway shift from cognitive to motor control",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.2-Sub-3.2.2",
+      "requirement": "Sub-3.2.2: Striatum role in habit formation and chunking",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.2-Sub-3.2.3",
+      "requirement": "Sub-3.2.3: Sleep spindles and REM in procedural memory",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.2-Sub-3.2.4",
+      "requirement": "Sub-3.2.4: Dopaminergic reinforcement signals in skill consolidation",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.3-Sub-3.3.1",
+      "requirement": "Sub-3.3.1: Neural signature of automatized skill",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.3-Sub-3.3.2",
+      "requirement": "Sub-3.3.2: Cerebellar role in real-time tuning",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.3-Sub-3.3.3",
+      "requirement": "Sub-3.3.3: Reduced prefrontal activation in expert performance",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.4-Sub-3.4.1",
+      "requirement": "Sub-3.4.1: Proprioceptive feedback integration",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.4-Sub-3.4.3",
+      "requirement": "Sub-3.4.3: Prediction error computation in cerebellum",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.2-Sub-4.2.3",
+      "requirement": "Sub-4.2.3: AI sleep consolidation equivalent (offline optimization)",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.3-Sub-4.3.2",
+      "requirement": "Sub-4.3.2: Cerebellar module for fine-tuning",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.5-Sub-4.5.3",
+      "requirement": "Sub-4.5.3: Graceful degradation with component failure",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.1-Sub-5.1.1",
+      "requirement": "Sub-5.1.1: Hippocampal to neocortical consolidation model",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.1-Sub-5.1.2",
+      "requirement": "Sub-5.1.2: Synaptic plasticity mechanisms (LTP/LTD)",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.1-Sub-5.1.3",
+      "requirement": "Sub-5.1.3: Place and time cells in context encoding",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.1-Sub-5.1.4",
+      "requirement": "Sub-5.1.4: Theta-gamma coupling in memory encoding",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.2-Sub-5.2.1",
+      "requirement": "Sub-5.2.1: Pattern completion mechanism",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.2-Sub-5.2.2",
+      "requirement": "Sub-5.2.2: Amygdala role in emotional prioritization",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.2-Sub-5.2.3",
+      "requirement": "Sub-5.2.3: Memory reconsolidation model",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.2-Sub-5.2.4",
+      "requirement": "Sub-5.2.4: Interference resolution mechanisms",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.3-Sub-5.3.1",
+      "requirement": "Sub-5.3.1: Working memory maintenance and manipulation",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.3-Sub-5.3.2",
+      "requirement": "Sub-5.3.2: Episodic-semantic memory interaction",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 5-REQ-B5.3-Sub-5.3.3",
+      "requirement": "Sub-5.3.3: Procedural memory integration",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.1-Sub-6.1.1",
+      "requirement": "Sub-6.1.1: Systems consolidation without catastrophic forgetting",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.1-Sub-6.1.2",
+      "requirement": "Sub-6.1.2: Hebbian plasticity implementation",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.1-Sub-6.1.4",
+      "requirement": "Sub-6.1.4: Compression and abstraction during consolidation",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.2-Sub-6.2.3",
+      "requirement": "Sub-6.2.3: Memory editing/reconsolidation",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.2-Sub-6.2.4",
+      "requirement": "Sub-6.2.4: Similarity-based generalization",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.3-Sub-6.3.1",
+      "requirement": "Sub-6.3.1: Working memory integration with SNNs",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.3-Sub-6.3.2",
+      "requirement": "Sub-6.3.2: Episodic memory retrieval for context-aware responses",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.3-Sub-6.3.3",
+      "requirement": "Sub-6.3.3: Predictive coding using stored priors",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.3-Sub-6.3.4",
+      "requirement": "Sub-6.3.4: Memory-based planning and simulation",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.4-Sub-6.4.1",
+      "requirement": "Sub-6.4.1: Hierarchical memory organization",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.4-Sub-6.4.2",
+      "requirement": "Sub-6.4.2: Active forgetting of irrelevant information",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.4-Sub-6.4.3",
+      "requirement": "Sub-6.4.3: Memory indexing for rapid retrieval",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.1-Sub-7.1.1",
+      "requirement": "Sub-7.1.1: Unified spike-based communication format",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.1-Sub-7.1.2",
+      "requirement": "Sub-7.1.2: Asynchronous message passing between modules",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.1-Sub-7.1.3",
+      "requirement": "Sub-7.1.3: Priority-based routing for time-critical signals",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.1-Sub-7.1.4",
+      "requirement": "Sub-7.1.4: Bandwidth allocation based on information content",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.2-Sub-7.2.1",
+      "requirement": "Sub-7.2.1: Global clock synchronization mechanisms",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.2-Sub-7.2.2",
+      "requirement": "Sub-7.2.2: Multi-timescale integration framework",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.2-Sub-7.2.3",
+      "requirement": "Sub-7.2.3: Temporal credit assignment across modules",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.2-Sub-7.2.4",
+      "requirement": "Sub-7.2.4: Phase-locking between oscillatory components",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.3-Sub-7.3.2",
+      "requirement": "Sub-7.3.2: Conflict resolution between competing objectives",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.3-Sub-7.3.3",
+      "requirement": "Sub-7.3.3: Resource allocation across pillars",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.3-Sub-7.3.4",
+      "requirement": "Sub-7.3.4: Meta-learning for system-level adaptation",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.4-Sub-7.4.2",
+      "requirement": "Sub-7.4.2: Compositional task performance",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.4-Sub-7.4.4",
+      "requirement": "Sub-7.4.4: System-level robustness and fault tolerance",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.5-Sub-7.5.1",
+      "requirement": "Sub-7.5.1: Staged activation of pillars during development",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.5-Sub-7.5.2",
+      "requirement": "Sub-7.5.2: Curriculum learning for system maturation",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.5-Sub-7.5.3",
+      "requirement": "Sub-7.5.3: Self-organization principles",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.5-Sub-7.5.4",
+      "requirement": "Sub-7.5.4: Critical periods for inter-pillar connectivity",
+      "priority_score": 1.0,
+      "impact": 1,
+      "current_readiness": 0.0,
+      "papers_found": 0,
+      "gap_severity": "Critical"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.1-Sub-2.1.1",
+      "requirement": "Sub-2.1.1: Event-based sensor integration with SNNs",
+      "priority_score": 0.98,
+      "impact": 1,
+      "current_readiness": 0.02,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.2-Sub-2.2.1",
+      "requirement": "Sub-2.2.1: Scalable training algorithms for deep SNNs",
+      "priority_score": 0.98,
+      "impact": 1,
+      "current_readiness": 0.02,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.2-Sub-2.2.2",
+      "requirement": "Sub-2.2.2: SNN architecture for multi-sensory fusion",
+      "priority_score": 0.98,
+      "impact": 1,
+      "current_readiness": 0.02,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.4-Sub-2.4.2",
+      "requirement": "Sub-2.4.2: Event-driven vs clock-driven comparison (>10x improvement)",
+      "priority_score": 0.98,
+      "impact": 1,
+      "current_readiness": 0.02,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.1-Sub-4.1.1",
+      "requirement": "Sub-4.1.1: AI equivalent of declarative learning with world models",
+      "priority_score": 0.98,
+      "impact": 1,
+      "current_readiness": 0.02,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.2-Sub-4.2.2",
+      "requirement": "Sub-4.2.2: Hierarchical task chunking framework",
+      "priority_score": 0.98,
+      "impact": 1,
+      "current_readiness": 0.02,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.3-Sub-4.3.3",
+      "requirement": "Sub-4.3.3: Hardware acceleration for compiled policies",
+      "priority_score": 0.98,
+      "impact": 1,
+      "current_readiness": 0.02,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.5-Sub-4.5.2",
+      "requirement": "Sub-4.5.2: Noise robustness during automatization",
+      "priority_score": 0.98,
+      "impact": 1,
+      "current_readiness": 0.02,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.1-Sub-2.1.4",
+      "requirement": "Sub-2.1.4: Adaptive sampling based on information content",
+      "priority_score": 0.97,
+      "impact": 1,
+      "current_readiness": 0.03,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 3-REQ-B3.4-Sub-3.4.2",
+      "requirement": "Sub-3.4.2: Error-based learning signal propagation",
+      "priority_score": 0.97,
+      "impact": 1,
+      "current_readiness": 0.03,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.4-Sub-4.4.1",
+      "requirement": "Sub-4.4.1: Error signal propagation from motor output",
+      "priority_score": 0.97,
+      "impact": 1,
+      "current_readiness": 0.03,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.4-Sub-4.4.3",
+      "requirement": "Sub-4.4.3: Online learning during execution",
+      "priority_score": 0.97,
+      "impact": 1,
+      "current_readiness": 0.03,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.4-Sub-4.4.4",
+      "requirement": "Sub-4.4.4: Adaptive learning rate based on performance",
+      "priority_score": 0.97,
+      "impact": 1,
+      "current_readiness": 0.03,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.5-Sub-4.5.4",
+      "requirement": "Sub-4.5.4: Compositional skill combination",
+      "priority_score": 0.97,
+      "impact": 1,
+      "current_readiness": 0.03,
+      "papers_found": 1,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.2-Sub-4.2.1",
+      "requirement": "Sub-4.2.1: Compiling model-based to model-free policy",
+      "priority_score": 0.96,
+      "impact": 1,
+      "current_readiness": 0.04,
+      "papers_found": 1,
+      "gap_severity": "Medium"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.4-Sub-7.4.3",
+      "requirement": "Sub-7.4.3: Novel situation adaptation",
+      "priority_score": 0.96,
+      "impact": 1,
+      "current_readiness": 0.04,
+      "papers_found": 1,
+      "gap_severity": "Medium"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.1-Sub-1.1.3",
+      "requirement": "Sub-1.1.3: Understanding of population coding for complex stimuli",
+      "priority_score": 0.95,
+      "impact": 1,
+      "current_readiness": 0.05,
+      "papers_found": 1,
+      "gap_severity": "Medium"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.1-Sub-2.1.2",
+      "requirement": "Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction",
+      "priority_score": 0.94,
+      "impact": 1,
+      "current_readiness": 0.06,
+      "papers_found": 2,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.2-Sub-2.2.3",
+      "requirement": "Sub-2.2.3: SNN-based attentional mechanism",
+      "priority_score": 0.94,
+      "impact": 1,
+      "current_readiness": 0.06,
+      "papers_found": 2,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.1-Sub-4.1.3",
+      "requirement": "Sub-4.1.3: Uncertainty-guided exploration strategies",
+      "priority_score": 0.94,
+      "impact": 1,
+      "current_readiness": 0.06,
+      "papers_found": 2,
+      "gap_severity": "High"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.3-Sub-7.3.1",
+      "requirement": "Sub-7.3.1: Hierarchical control with local autonomy",
+      "priority_score": 0.94,
+      "impact": 1,
+      "current_readiness": 0.07,
+      "papers_found": 1,
+      "gap_severity": "Low"
+    },
+    {
+      "requirement_id": "Pillar 1-REQ-B1.1-Sub-1.1.2",
+      "requirement": "Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing",
+      "priority_score": 0.93,
+      "impact": 1,
+      "current_readiness": 0.07,
+      "papers_found": 1,
+      "gap_severity": "Low"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.1-Sub-4.1.2",
+      "requirement": "Sub-4.1.2: Architecture showing exploration to exploitation shift",
+      "priority_score": 0.93,
+      "impact": 1,
+      "current_readiness": 0.08,
+      "papers_found": 1,
+      "gap_severity": "Low"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.1-Sub-6.1.3",
+      "requirement": "Sub-6.1.3: Context-binding in memory networks",
+      "priority_score": 0.93,
+      "impact": 1,
+      "current_readiness": 0.07,
+      "papers_found": 1,
+      "gap_severity": "Low"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.2-Sub-6.2.2",
+      "requirement": "Sub-6.2.2: Salience-based prioritization",
+      "priority_score": 0.93,
+      "impact": 1,
+      "current_readiness": 0.08,
+      "papers_found": 1,
+      "gap_severity": "Low"
+    },
+    {
+      "requirement_id": "Pillar 7-REQ-7.4-Sub-7.4.1",
+      "requirement": "Sub-7.4.1: Metrics for emergent intelligence",
+      "priority_score": 0.93,
+      "impact": 1,
+      "current_readiness": 0.07,
+      "papers_found": 1,
+      "gap_severity": "Low"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.4-Sub-4.4.2",
+      "requirement": "Sub-4.4.2: Credit assignment across temporal delays",
+      "priority_score": 0.92,
+      "impact": 1,
+      "current_readiness": 0.09,
+      "papers_found": 1,
+      "gap_severity": "Covered"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.5-Sub-4.5.1",
+      "requirement": "Sub-4.5.1: Cross-domain skill transfer metrics (>50% transfer efficiency)",
+      "priority_score": 0.92,
+      "impact": 1,
+      "current_readiness": 0.08,
+      "papers_found": 2,
+      "gap_severity": "Medium"
+    },
+    {
+      "requirement_id": "Pillar 6-REQ-A6.2-Sub-6.2.1",
+      "requirement": "Sub-6.2.1: Associative cued recall model",
+      "priority_score": 0.92,
+      "impact": 1,
+      "current_readiness": 0.08,
+      "papers_found": 1,
+      "gap_severity": "Covered"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.2-Sub-4.2.4",
+      "requirement": "Sub-4.2.4: Progressive network pruning during consolidation",
+      "priority_score": 0.91,
+      "impact": 1,
+      "current_readiness": 0.09,
+      "papers_found": 2,
+      "gap_severity": "Medium"
+    },
+    {
+      "requirement_id": "Pillar 4-REQ-A4.3-Sub-4.3.1",
+      "requirement": "Sub-4.3.1: Reduced computational cost after learning (>90% reduction)",
+      "priority_score": 0.91,
+      "impact": 1,
+      "current_readiness": 0.09,
+      "papers_found": 1,
+      "gap_severity": "Covered"
+    },
+    {
+      "requirement_id": "Pillar 2-REQ-A2.4-Sub-2.4.3",
+      "requirement": "Sub-2.4.3: Energy-accuracy trade-off characterization",
+      "priority_score": 0.88,
+      "impact": 1,
+      "current_readiness": 0.12,
+      "papers_found": 2,
+      "gap_severity": "Low"
+    }
+  ],
+  "graph_data": {
+    "nodes": [
+      {
+        "id": "Pillar 1-REQ-B1.1-Sub-1.1.1",
+        "label": "Sub-1.1.1: Conclusive model of how raw s...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.1-Sub-1.1.2",
+        "label": "Sub-1.1.2: Proven mechanism for sensory ...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 1,
+        "gap_severity": "Low"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.1-Sub-1.1.3",
+        "label": "Sub-1.1.3: Understanding of population c...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 1,
+        "gap_severity": "Medium"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.1-Sub-1.1.4",
+        "label": "Sub-1.1.4: Temporal dynamics of spike-ti...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.2-Sub-1.2.1",
+        "label": "Sub-1.2.1: Detailed mapping of thalamic ...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.2-Sub-1.2.2",
+        "label": "Sub-1.2.2: Model of multi-sensory integr...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.2-Sub-1.2.3",
+        "label": "Sub-1.2.3: Role of prefrontal cortex in ...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.2-Sub-1.2.4",
+        "label": "Sub-1.2.4: Feedback connections from hig...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.3-Sub-1.3.1",
+        "label": "Sub-1.3.1: Conclusive model of evidence ...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.3-Sub-1.3.2",
+        "label": "Sub-1.3.2: Role of Basal Ganglia loops i...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.3-Sub-1.3.3",
+        "label": "Sub-1.3.3: Pathway from Primary Motor Co...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.3-Sub-1.3.4",
+        "label": "Sub-1.3.4: Inhibitory control mechanisms...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.4-Sub-1.4.1",
+        "label": "Sub-1.4.1: Short-term synaptic facilitat...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.4-Sub-1.4.2",
+        "label": "Sub-1.4.2: Medium-term STDP mechanisms (...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 1-REQ-B1.4-Sub-1.4.3",
+        "label": "Sub-1.4.3: Long-term structural plastici...",
+        "pillar": "Pillar 1: Biological Stimulus-Response",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.1-Sub-2.1.1",
+        "label": "Sub-2.1.1: Event-based sensor integratio...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.1-Sub-2.1.2",
+        "label": "Sub-2.1.2: Efficient SNN algorithms for ...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 2,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.1-Sub-2.1.3",
+        "label": "Sub-2.1.3: Hardware-agnostic deployment ...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.1-Sub-2.1.4",
+        "label": "Sub-2.1.4: Adaptive sampling based on in...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.2-Sub-2.2.1",
+        "label": "Sub-2.2.1: Scalable training algorithms ...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.2-Sub-2.2.2",
+        "label": "Sub-2.2.2: SNN architecture for multi-se...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.2-Sub-2.2.3",
+        "label": "Sub-2.2.3: SNN-based attentional mechani...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 2,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.2-Sub-2.2.4",
+        "label": "Sub-2.2.4: Homeostatic plasticity for ne...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.3-Sub-2.3.1",
+        "label": "Sub-2.3.1: SNN model of evidence accumul...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.3-Sub-2.3.2",
+        "label": "Sub-2.3.2: Computational Basal Ganglia f...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.3-Sub-2.3.3",
+        "label": "Sub-2.3.3: Closed-loop SNN controller fo...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.3-Sub-2.3.4",
+        "label": "Sub-2.3.4: Inhibitory gating for action ...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.4-Sub-2.4.1",
+        "label": "Sub-2.4.1: Sparse coding efficiency metr...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.4-Sub-2.4.2",
+        "label": "Sub-2.4.2: Event-driven vs clock-driven ...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.4-Sub-2.4.3",
+        "label": "Sub-2.4.3: Energy-accuracy trade-off cha...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 2,
+        "gap_severity": "Low"
+      },
+      {
+        "id": "Pillar 2-REQ-A2.4-Sub-2.4.4",
+        "label": "Sub-2.4.4: Dynamic voltage/frequency sca...",
+        "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.1-Sub-3.1.1",
+        "label": "Sub-3.1.1: Role of Hippocampus/PFC in in...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.1-Sub-3.1.2",
+        "label": "Sub-3.1.2: Mechanism of error-correction...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.1-Sub-3.1.3",
+        "label": "Sub-3.1.3: Working memory maintenance du...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.2-Sub-3.2.1",
+        "label": "Sub-3.2.1: Pathway shift from cognitive ...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.2-Sub-3.2.2",
+        "label": "Sub-3.2.2: Striatum role in habit format...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.2-Sub-3.2.3",
+        "label": "Sub-3.2.3: Sleep spindles and REM in pro...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.2-Sub-3.2.4",
+        "label": "Sub-3.2.4: Dopaminergic reinforcement si...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.3-Sub-3.3.1",
+        "label": "Sub-3.3.1: Neural signature of automatiz...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.3-Sub-3.3.2",
+        "label": "Sub-3.3.2: Cerebellar role in real-time ...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.3-Sub-3.3.3",
+        "label": "Sub-3.3.3: Reduced prefrontal activation...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.4-Sub-3.4.1",
+        "label": "Sub-3.4.1: Proprioceptive feedback integ...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.4-Sub-3.4.2",
+        "label": "Sub-3.4.2: Error-based learning signal p...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 3-REQ-B3.4-Sub-3.4.3",
+        "label": "Sub-3.4.3: Prediction error computation ...",
+        "pillar": "Pillar 3: Biological Skill Automatization",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.1-Sub-4.1.1",
+        "label": "Sub-4.1.1: AI equivalent of declarative ...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.1-Sub-4.1.2",
+        "label": "Sub-4.1.2: Architecture showing explorat...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "Low"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.1-Sub-4.1.3",
+        "label": "Sub-4.1.3: Uncertainty-guided exploratio...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 2,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.2-Sub-4.2.1",
+        "label": "Sub-4.2.1: Compiling model-based to mode...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "Medium"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.2-Sub-4.2.2",
+        "label": "Sub-4.2.2: Hierarchical task chunking fr...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.2-Sub-4.2.3",
+        "label": "Sub-4.2.3: AI sleep consolidation equiva...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 0,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.2-Sub-4.2.4",
+        "label": "Sub-4.2.4: Progressive network pruning d...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 2,
+        "gap_severity": "Medium"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.3-Sub-4.3.1",
+        "label": "Sub-4.3.1: Reduced computational cost af...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "Covered"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.3-Sub-4.3.2",
+        "label": "Sub-4.3.2: Cerebellar module for fine-tu...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.3-Sub-4.3.3",
+        "label": "Sub-4.3.3: Hardware acceleration for com...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.4-Sub-4.4.1",
+        "label": "Sub-4.4.1: Error signal propagation from...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.4-Sub-4.4.2",
+        "label": "Sub-4.4.2: Credit assignment across temp...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "Covered"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.4-Sub-4.4.3",
+        "label": "Sub-4.4.3: Online learning during execut...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.4-Sub-4.4.4",
+        "label": "Sub-4.4.4: Adaptive learning rate based ...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.5-Sub-4.5.1",
+        "label": "Sub-4.5.1: Cross-domain skill transfer m...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 2,
+        "gap_severity": "Medium"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.5-Sub-4.5.2",
+        "label": "Sub-4.5.2: Noise robustness during autom...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.5-Sub-4.5.3",
+        "label": "Sub-4.5.3: Graceful degradation with com...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 4-REQ-A4.5-Sub-4.5.4",
+        "label": "Sub-4.5.4: Compositional skill combinati...",
+        "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+        "papers": 1,
+        "gap_severity": "High"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.1-Sub-5.1.1",
+        "label": "Sub-5.1.1: Hippocampal to neocortical co...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.1-Sub-5.1.2",
+        "label": "Sub-5.1.2: Synaptic plasticity mechanism...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.1-Sub-5.1.3",
+        "label": "Sub-5.1.3: Place and time cells in conte...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.1-Sub-5.1.4",
+        "label": "Sub-5.1.4: Theta-gamma coupling in memor...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.2-Sub-5.2.1",
+        "label": "Sub-5.2.1: Pattern completion mechanism...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.2-Sub-5.2.2",
+        "label": "Sub-5.2.2: Amygdala role in emotional pr...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.2-Sub-5.2.3",
+        "label": "Sub-5.2.3: Memory reconsolidation model...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.2-Sub-5.2.4",
+        "label": "Sub-5.2.4: Interference resolution mecha...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.3-Sub-5.3.1",
+        "label": "Sub-5.3.1: Working memory maintenance an...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.3-Sub-5.3.2",
+        "label": "Sub-5.3.2: Episodic-semantic memory inte...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 5-REQ-B5.3-Sub-5.3.3",
+        "label": "Sub-5.3.3: Procedural memory integration...",
+        "pillar": "Pillar 5: Biological Memory Systems",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.1-Sub-6.1.1",
+        "label": "Sub-6.1.1: Systems consolidation without...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.1-Sub-6.1.2",
+        "label": "Sub-6.1.2: Hebbian plasticity implementa...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.1-Sub-6.1.3",
+        "label": "Sub-6.1.3: Context-binding in memory net...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 1,
+        "gap_severity": "Low"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.1-Sub-6.1.4",
+        "label": "Sub-6.1.4: Compression and abstraction d...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.2-Sub-6.2.1",
+        "label": "Sub-6.2.1: Associative cued recall model...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 1,
+        "gap_severity": "Covered"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.2-Sub-6.2.2",
+        "label": "Sub-6.2.2: Salience-based prioritization...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 1,
+        "gap_severity": "Low"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.2-Sub-6.2.3",
+        "label": "Sub-6.2.3: Memory editing/reconsolidatio...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.2-Sub-6.2.4",
+        "label": "Sub-6.2.4: Similarity-based generalizati...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.3-Sub-6.3.1",
+        "label": "Sub-6.3.1: Working memory integration wi...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.3-Sub-6.3.2",
+        "label": "Sub-6.3.2: Episodic memory retrieval for...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.3-Sub-6.3.3",
+        "label": "Sub-6.3.3: Predictive coding using store...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.3-Sub-6.3.4",
+        "label": "Sub-6.3.4: Memory-based planning and sim...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.4-Sub-6.4.1",
+        "label": "Sub-6.4.1: Hierarchical memory organizat...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.4-Sub-6.4.2",
+        "label": "Sub-6.4.2: Active forgetting of irreleva...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 6-REQ-A6.4-Sub-6.4.3",
+        "label": "Sub-6.4.3: Memory indexing for rapid ret...",
+        "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.1-Sub-7.1.1",
+        "label": "Sub-7.1.1: Unified spike-based communica...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.1-Sub-7.1.2",
+        "label": "Sub-7.1.2: Asynchronous message passing ...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.1-Sub-7.1.3",
+        "label": "Sub-7.1.3: Priority-based routing for ti...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.1-Sub-7.1.4",
+        "label": "Sub-7.1.4: Bandwidth allocation based on...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.2-Sub-7.2.1",
+        "label": "Sub-7.2.1: Global clock synchronization ...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.2-Sub-7.2.2",
+        "label": "Sub-7.2.2: Multi-timescale integration f...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.2-Sub-7.2.3",
+        "label": "Sub-7.2.3: Temporal credit assignment ac...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.2-Sub-7.2.4",
+        "label": "Sub-7.2.4: Phase-locking between oscilla...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.3-Sub-7.3.1",
+        "label": "Sub-7.3.1: Hierarchical control with loc...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 1,
+        "gap_severity": "Low"
+      },
+      {
+        "id": "Pillar 7-REQ-7.3-Sub-7.3.2",
+        "label": "Sub-7.3.2: Conflict resolution between c...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.3-Sub-7.3.3",
+        "label": "Sub-7.3.3: Resource allocation across pi...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.3-Sub-7.3.4",
+        "label": "Sub-7.3.4: Meta-learning for system-leve...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.4-Sub-7.4.1",
+        "label": "Sub-7.4.1: Metrics for emergent intellig...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 1,
+        "gap_severity": "Low"
+      },
+      {
+        "id": "Pillar 7-REQ-7.4-Sub-7.4.2",
+        "label": "Sub-7.4.2: Compositional task performanc...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.4-Sub-7.4.3",
+        "label": "Sub-7.4.3: Novel situation adaptation...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 1,
+        "gap_severity": "Medium"
+      },
+      {
+        "id": "Pillar 7-REQ-7.4-Sub-7.4.4",
+        "label": "Sub-7.4.4: System-level robustness and f...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.5-Sub-7.5.1",
+        "label": "Sub-7.5.1: Staged activation of pillars ...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.5-Sub-7.5.2",
+        "label": "Sub-7.5.2: Curriculum learning for syste...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.5-Sub-7.5.3",
+        "label": "Sub-7.5.3: Self-organization principles...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      },
+      {
+        "id": "Pillar 7-REQ-7.5-Sub-7.5.4",
+        "label": "Sub-7.5.4: Critical periods for inter-pi...",
+        "pillar": "Pillar 7: System Integration & Orchestration",
+        "papers": 0,
+        "gap_severity": "Critical"
+      }
+    ],
+    "edges": []
+  }
+}
