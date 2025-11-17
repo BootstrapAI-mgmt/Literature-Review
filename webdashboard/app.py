@@ -640,6 +640,193 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception:
         manager.disconnect(websocket)
 
+@app.get("/api/jobs/{job_id}/proof-scorecard")
+async def get_proof_scorecard(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get proof scorecard summary for a job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        Proof scorecard summary with overall score, verdict, and recommendations
+    """
+    verify_api_key(api_key)
+    
+    scorecard_file = JOBS_DIR / job_id / "outputs" / "proof_scorecard_output" / "proof_scorecard.json"
+    
+    if not scorecard_file.exists():
+        # Return empty response instead of 404 - this is optional output
+        return {
+            "available": False,
+            "message": "Proof scorecard not yet generated"
+        }
+    
+    try:
+        with open(scorecard_file, 'r') as f:
+            scorecard = json.load(f)
+        
+        return {
+            "available": True,
+            "overall_score": scorecard['overall_proof_status']['proof_readiness_score'],
+            "verdict": scorecard['overall_proof_status']['verdict'],
+            "headline": scorecard['overall_proof_status']['headline'],
+            "publication_viability": scorecard.get('publication_viability', {}),
+            "research_goals": scorecard.get('research_goals', [])[:3],  # Top 3
+            "next_steps": scorecard.get('critical_next_steps', [])[:5],  # Top 5
+            "html_path": f"/api/jobs/{job_id}/files/proof_scorecard_output/proof_readiness.html"
+        }
+    except Exception as e:
+        logger.error(f"Failed to read proof scorecard for job {job_id}: {e}")
+        return {
+            "available": False,
+            "message": f"Error reading proof scorecard: {str(e)}"
+        }
+
+@app.get("/api/jobs/{job_id}/cost-summary")
+async def get_cost_summary(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get API cost summary for a job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        Cost summary with total cost, budget usage, and module breakdown
+    """
+    verify_api_key(api_key)
+    
+    cost_file = JOBS_DIR / job_id / "outputs" / "cost_reports" / "api_usage_report.json"
+    
+    if not cost_file.exists():
+        return {
+            "available": False,
+            "total_cost": 0,
+            "message": "No cost data available"
+        }
+    
+    try:
+        with open(cost_file, 'r') as f:
+            cost_data = json.load(f)
+        
+        return {
+            "available": True,
+            "total_cost": cost_data.get("total_cost_usd", 0),
+            "budget_percent": cost_data.get("budget_percent_used", 0),
+            "per_paper_cost": cost_data.get("cost_per_paper", 0),
+            "module_breakdown": cost_data.get("module_breakdown", {}),
+            "cache_savings": cost_data.get("cache_savings_usd", 0),
+            "total_tokens": cost_data.get("total_tokens", 0),
+            "html_path": f"/api/jobs/{job_id}/files/cost_reports/api_usage_report.html"
+        }
+    except Exception as e:
+        logger.error(f"Failed to read cost summary for job {job_id}: {e}")
+        return {
+            "available": False,
+            "total_cost": 0,
+            "message": f"Error reading cost data: {str(e)}"
+        }
+
+@app.get("/api/jobs/{job_id}/sufficiency-summary")
+async def get_sufficiency_summary(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get evidence sufficiency summary for a job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        Sufficiency matrix summary with quadrant distribution
+    """
+    verify_api_key(api_key)
+    
+    sufficiency_file = JOBS_DIR / job_id / "outputs" / "gap_analysis_output" / "sufficiency_matrix.json"
+    
+    if not sufficiency_file.exists():
+        return {
+            "available": False,
+            "quadrants": {},
+            "message": "No sufficiency data available"
+        }
+    
+    try:
+        with open(sufficiency_file, 'r') as f:
+            data = json.load(f)
+        
+        # Summarize by quadrant
+        quadrant_summary = {}
+        for req in data.get("requirements", []):
+            quadrant = req.get("quadrant", "Unknown")
+            if quadrant not in quadrant_summary:
+                quadrant_summary[quadrant] = 0
+            quadrant_summary[quadrant] += 1
+        
+        return {
+            "available": True,
+            "quadrants": quadrant_summary,
+            "total_requirements": len(data.get("requirements", [])),
+            "recommendations": data.get("recommendations", [])[:5],
+            "html_path": f"/api/jobs/{job_id}/files/gap_analysis_output/sufficiency_matrix.html"
+        }
+    except Exception as e:
+        logger.error(f"Failed to read sufficiency summary for job {job_id}: {e}")
+        return {
+            "available": False,
+            "quadrants": {},
+            "message": f"Error reading sufficiency data: {str(e)}"
+        }
+
+@app.get("/api/jobs/{job_id}/files/{filepath:path}")
+async def get_job_output_file(
+    job_id: str,
+    filepath: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Serve output files from job directory
+    
+    Args:
+        job_id: Job identifier
+        filepath: Relative path to file within job outputs directory
+    
+    Returns:
+        Requested file
+    """
+    verify_api_key(api_key)
+    
+    # Construct safe path
+    full_path = JOBS_DIR / job_id / "outputs" / filepath
+    
+    # Security check: ensure path is within job directory
+    try:
+        full_path = full_path.resolve()
+        job_dir = (JOBS_DIR / job_id).resolve()
+        if not str(full_path).startswith(str(job_dir)):
+            raise HTTPException(status_code=403, detail="Access denied")
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid file path")
+    
+    if not full_path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+    
+    # Determine media type
+    media_type = "text/html" if filepath.endswith(".html") else "application/json"
+    
+    return FileResponse(
+        path=full_path,
+        media_type=media_type,
+        filename=full_path.name
+    )
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
