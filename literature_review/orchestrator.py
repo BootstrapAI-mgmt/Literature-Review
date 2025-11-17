@@ -280,14 +280,18 @@ class ProgressTracker:
     def calculate_percentage(self, stage: str, phase: str) -> float:
         """Calculate overall completion percentage"""
         total_weight = sum(self.stage_weights.values())
+        
+        # Calculate completed weight including the current stage if complete
         completed_weight = sum(
             self.stage_weights.get(s, 0) for s in self.stages_completed
         )
         
         if phase == "complete":
+            # Add this stage's weight if it's being completed
             if stage not in self.stages_completed:
-                self.stages_completed.append(stage)
                 completed_weight += self.stage_weights.get(stage, 0)
+                # Mark as completed for future calculations
+                self.stages_completed.append(stage)
         elif phase == "running":
             # Stage is partially complete (50%)
             completed_weight += self.stage_weights.get(stage, 0) * 0.5
