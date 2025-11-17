@@ -640,6 +640,85 @@ async def websocket_endpoint(websocket: WebSocket):
     except Exception:
         manager.disconnect(websocket)
 
+@app.websocket("/ws/jobs/{job_id}/progress")
+async def job_progress_stream(websocket: WebSocket, job_id: str):
+    """
+    WebSocket endpoint for real-time job progress updates
+    
+    Streams:
+    - Progress percentage
+    - Stage updates
+    - Log messages
+    - Iteration counts
+    
+    Args:
+        job_id: Unique job identifier
+    """
+    await websocket.accept()
+    
+    try:
+        # Send initial status
+        job_data = load_job(job_id)
+        if job_data:
+            await websocket.send_json({
+                "type": "initial_status",
+                "job": job_data
+            })
+        
+        # Watch for progress updates
+        progress_file = Path(f"workspace/status/{job_id}_progress.jsonl")
+        log_file = Path(f"workspace/logs/{job_id}.log")
+        
+        last_progress_pos = 0
+        last_log_pos = 0
+        
+        while True:
+            # Check if job is still active
+            current_job = load_job(job_id)
+            if current_job and current_job.get("status") in ["completed", "failed"]:
+                await websocket.send_json({
+                    "type": "job_complete",
+                    "status": current_job["status"]
+                })
+                break
+            
+            # Stream progress updates
+            if progress_file.exists():
+                with open(progress_file, 'r') as f:
+                    f.seek(last_progress_pos)
+                    new_lines = f.readlines()
+                    last_progress_pos = f.tell()
+                
+                for line in new_lines:
+                    try:
+                        event = json.loads(line)
+                        await websocket.send_json({
+                            "type": "progress",
+                            "event": event
+                        })
+                    except json.JSONDecodeError:
+                        pass
+            
+            # Stream log updates
+            if log_file.exists():
+                with open(log_file, 'r') as f:
+                    f.seek(last_log_pos)
+                    new_lines = f.readlines()
+                    last_log_pos = f.tell()
+                
+                if new_lines:
+                    await websocket.send_json({
+                        "type": "logs",
+                        "lines": new_lines
+                    })
+            
+            await asyncio.sleep(0.5)  # Poll every 500ms
+    
+    except WebSocketDisconnect:
+        pass
+    except Exception as e:
+        logger.error(f"WebSocket error for job {job_id}: {e}")
+
 @app.get("/api/jobs/{job_id}/proof-scorecard")
 async def get_proof_scorecard(
     job_id: str,
