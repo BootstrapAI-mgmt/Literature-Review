@@ -8,7 +8,7 @@ users via WebSocket, and resuming with user responses.
 import asyncio
 import uuid
 from typing import Any, Optional, Dict
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class PromptHandler:
         # Create future for response
         future = asyncio.Future()
         self.pending_prompts[prompt_id] = future
-        self.prompt_timeouts[prompt_id] = datetime.utcnow() + timedelta(seconds=timeout_seconds)
+        self.prompt_timeouts[prompt_id] = datetime.now(timezone.utc) + timedelta(seconds=timeout_seconds)
         self.prompt_job_ids[prompt_id] = job_id
         
         logger.info(f"Requesting user input for job {job_id}, prompt {prompt_id}, type {prompt_type}")
@@ -87,7 +87,7 @@ class PromptHandler:
             "prompt_id": prompt_id,
             "prompt_type": prompt_type,
             "prompt_data": prompt_data,
-            "timestamp": datetime.utcnow().isoformat()
+            "timestamp": datetime.now(timezone.utc).isoformat()
         })
     
     def submit_response(self, prompt_id: str, response: Any):
