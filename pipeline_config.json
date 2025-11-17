@@ -56,5 +56,12 @@
     "half_life_years": 5.0,
     "stale_threshold": 0.5,
     "weight_in_gap_analysis": true
+  },
+  "deduplication": {
+    "enabled": false,
+    "threshold": 0.90,
+    "batch_size": 50,
+    "run_before_gap_analysis": true,
+    "output_file": "review_log_deduped.json"
   }
 }
