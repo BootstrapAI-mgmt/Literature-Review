@@ -69,6 +69,8 @@ review_version_history.json
 neuromorphic-research_database.csv
 deep_coverage_database.json
 non-journal_database.csv
+test_review_log.json
+test_trigger_decisions.json
 
 # Pipeline checkpoint files
 pipeline_checkpoint.json

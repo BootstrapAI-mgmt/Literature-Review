@@ -393,6 +393,37 @@ class PipelineOrchestrator:
         }
         self._write_checkpoint()
 
+    def _run_deep_review_trigger_analysis(self):
+        """Run Deep Review Trigger Analysis to identify high-value papers."""
+        try:
+            from literature_review.triggers.deep_review_triggers import generate_trigger_report
+            
+            gap_file = 'gap_analysis_output/gap_analysis_report.json'
+            review_log = 'review_version_history.json'
+            output_file = 'deep_reviewer_cache/trigger_decisions.json'
+            
+            # Check if required files exist
+            if not Path(gap_file).exists():
+                self.log(f"Gap analysis file not found: {gap_file}, skipping trigger analysis", "WARNING")
+                return
+            
+            if not Path(review_log).exists():
+                self.log(f"Review log file not found: {review_log}, skipping trigger analysis", "WARNING")
+                return
+            
+            self.log("=" * 70, "INFO")
+            self.log("Running Deep Review Trigger Analysis...", "INFO")
+            
+            report = generate_trigger_report(gap_file, review_log, output_file)
+            
+            self.log(f"Trigger Analysis Complete: {report['triggered_papers']}/{report['total_papers']} papers triggered ({report['trigger_rate']:.0%})", "INFO")
+            self.log("=" * 70, "INFO")
+            
+        except ImportError as e:
+            self.log(f"Could not import trigger module: {e}", "WARNING")
+        except Exception as e:
+            self.log(f"Error running trigger analysis: {e}", "WARNING")
+
     def log(self, message: str, level: str = "INFO"):
         """Log message to console and optionally to file."""
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -648,6 +679,9 @@ class PipelineOrchestrator:
         
         # Stage 7: Evidence Sufficiency Matrix (NEW)
         self.run_stage("sufficiency_matrix", "literature_review.analysis.sufficiency_matrix", "Stage 7: Evidence Sufficiency Matrix", use_module=True)
+
+        # Stage 8: Deep Review Trigger Analysis (NEW)
+        self._run_deep_review_trigger_analysis()
 
         # Mark pipeline complete
         self.checkpoint_data["status"] = "completed"
