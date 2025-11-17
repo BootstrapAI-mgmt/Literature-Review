@@ -396,6 +396,140 @@
         .log-line.success {
             color: #4ec9b0;
         }
+        
+        /* Summary Cards Styles */
+        .job-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: box-shadow 0.2s;
+        }
+        
+        .job-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .job-header h5 {
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .job-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .job-summary-cards {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .summary-card {
+            flex: 1;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .summary-card .metric-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .summary-card .metric-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .summary-card .metric-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        /* Color-coded completeness */
+        .summary-card.completeness.bg-success {
+            background-color: #d4edda !important;
+            border-color: #28a745;
+        }
+
+        .summary-card.completeness.bg-warning {
+            background-color: #fff3cd !important;
+            border-color: #ffc107;
+        }
+
+        .summary-card.completeness.bg-danger {
+            background-color: #f8d7da !important;
+            border-color: #dc3545;
+        }
+
+        /* Critical gaps alert */
+        .summary-card.critical-gaps.has-alerts {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+
+        .summary-card.critical-gaps.has-alerts .metric-value {
+            color: #dc3545;
+        }
+
+        /* Recommendations preview */
+        .metric-preview {
+            display: none;
+            margin-top: 8px;
+            text-align: left;
+            font-size: 11px;
+            max-height: 80px;
+            overflow-y: auto;
+        }
+
+        .summary-card:hover .metric-preview {
+            display: block;
+        }
+
+        .metric-preview ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .metric-preview li {
+            padding: 2px 0;
+            color: #495057;
+        }
+
+        .summary-card.no-results {
+            flex: 1 1 100%;
+            font-style: italic;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -507,26 +641,10 @@
                         <h5 class="mb-0">📋 Jobs</h5>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Job ID</th>
-                                        <th>Filename</th>
-                                        <th>Status</th>
-                                        <th>Created</th>
-                                        <th>Duration</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="jobsTableBody">
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted">
-                                            No jobs yet. Upload a PDF to get started.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div id="jobsContainer">
+                            <div class="text-center text-muted p-4">
+                                No jobs yet. Upload a PDF to get started.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1320,38 +1438,108 @@
         
         // Update jobs table
         function updateJobsTable() {
-            const tbody = document.getElementById('jobsTableBody');
+            const container = document.getElementById('jobsContainer');
             
             if (jobs.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-muted">
-                            No jobs yet. Upload a PDF to get started.
-                        </td>
-                    </tr>
+                container.innerHTML = `
+                    <div class="text-center text-muted p-4">
+                        No jobs yet. Upload a PDF to get started.
+                    </div>
                 `;
                 return;
             }
             
-            tbody.innerHTML = jobs.map(job => `
-                <tr class="job-row" onclick="showJobDetail('${job.id}')">
-                    <td><code>${job.id.substring(0, 8)}</code></td>
-                    <td>${job.filename}</td>
-                    <td>${getStatusBadge(job.status)}</td>
-                    <td>${formatDateTime(job.created_at)}</td>
-                    <td>${calculateDuration(job.started_at || job.created_at, job.completed_at)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); showJobDetail('${job.id}')">
-                            View
-                        </button>
-                        ${job.status === 'completed' ? `
-                            <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); showJobResults('${job.id}')">
-                                📊 Results
-                            </button>
-                        ` : ''}
-                    </td>
-                </tr>
-            `).join('');
+            container.innerHTML = jobs.map(job => {
+                const summary = job.summary || {
+                    completeness: 0,
+                    critical_gaps: 0,
+                    paper_count: 0,
+                    recommendations_preview: [],
+                    has_results: false
+                };
+                
+                const summaryCardsHtml = summary.has_results ? `
+                    <div class="job-summary-cards">
+                        <div class="summary-card completeness ${getCompletenessClass(summary.completeness)}">
+                            <div class="metric-icon">📊</div>
+                            <div class="metric-value">${summary.completeness}%</div>
+                            <div class="metric-label">Coverage</div>
+                        </div>
+                        
+                        <div class="summary-card critical-gaps ${summary.critical_gaps > 0 ? 'has-alerts' : ''}">
+                            <div class="metric-icon">⚠️</div>
+                            <div class="metric-value">${summary.critical_gaps}</div>
+                            <div class="metric-label">Critical Gaps</div>
+                        </div>
+                        
+                        <div class="summary-card paper-count">
+                            <div class="metric-icon">📄</div>
+                            <div class="metric-value">${summary.paper_count}</div>
+                            <div class="metric-label">Papers</div>
+                        </div>
+                        
+                        <div class="summary-card recommendations">
+                            <div class="metric-icon">💡</div>
+                            <div class="metric-value">${summary.recommendations_preview.length}</div>
+                            <div class="metric-label">Recommendations</div>
+                            ${summary.recommendations_preview.length > 0 ? `
+                                <div class="metric-preview">
+                                    <ul>
+                                        ${summary.recommendations_preview.map(rec => `
+                                            <li>${rec.substring(0, 50)}...</li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="job-summary-cards">
+                        <div class="summary-card no-results">
+                            <span>Analysis pending or in progress</span>
+                        </div>
+                    </div>
+                `;
+                
+                return `
+                    <div class="job-item" data-job-id="${job.id}">
+                        <div class="job-header">
+                            <div>
+                                <h5><code>${job.id.substring(0, 8)}</code> - ${job.filename || 'Batch Upload'}</h5>
+                            </div>
+                            <div>
+                                ${getStatusBadge(job.status)}
+                            </div>
+                        </div>
+                        
+                        ${summaryCardsHtml}
+                        
+                        <div class="job-details">
+                            <small class="text-muted">
+                                Created: ${formatDateTime(job.created_at)} | 
+                                Duration: ${calculateDuration(job.started_at || job.created_at, job.completed_at)}
+                            </small>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="showJobDetail('${job.id}')">
+                                    View Details
+                                </button>
+                                ${job.status === 'completed' ? `
+                                    <button class="btn btn-sm btn-outline-success" onclick="showJobResults('${job.id}')">
+                                        📊 Full Results
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Helper function for completeness color coding
+        function getCompletenessClass(completeness) {
+            if (completeness >= 80) return 'bg-success';
+            if (completeness >= 60) return 'bg-warning';
+            return 'bg-danger';
         }
         
         // Helper methods for enhanced outputs

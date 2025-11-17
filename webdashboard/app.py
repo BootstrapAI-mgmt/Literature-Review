@@ -178,6 +178,100 @@ def save_job(job_id: str, job_data: dict):
     with open(job_file, 'w') as f:
         json.dump(job_data, f, indent=2)
 
+def extract_summary_metrics(job_data: dict) -> dict:
+    """
+    Extract key metrics for summary card display
+    
+    Args:
+        job_data: Complete job data dictionary
+    
+    Returns:
+        Dictionary with summary metrics:
+        - completeness: Overall completeness percentage
+        - critical_gaps: Count of critical gaps (severity >= 8)
+        - paper_count: Number of papers analyzed
+        - recommendations_preview: First 2 recommendations
+        - has_results: Whether analysis has completed with results
+    """
+    # Check if job has results
+    status = job_data.get("status", "")
+    if status != "completed":
+        return {
+            "completeness": 0,
+            "critical_gaps": 0,
+            "paper_count": 0,
+            "recommendations_preview": [],
+            "has_results": False
+        }
+    
+    # Try to load results from job outputs
+    job_id = job_data.get("id")
+    results = {}
+    
+    # Look for gap analysis results
+    gap_analysis_file = JOBS_DIR / job_id / "outputs" / "gap_analysis_output" / "gap_analysis.json"
+    if gap_analysis_file.exists():
+        try:
+            with open(gap_analysis_file, 'r') as f:
+                results = json.load(f)
+        except Exception:
+            pass
+    
+    # Calculate completeness
+    completeness = 0
+    if results:
+        # Try to get overall completeness from results
+        if "overall_completeness" in results:
+            completeness = results["overall_completeness"]
+        elif "completeness" in results:
+            completeness = results["completeness"]
+        elif "pillars" in results:
+            # Calculate average completeness across pillars
+            pillar_data = results["pillars"]
+            if isinstance(pillar_data, dict) and pillar_data:
+                completeness_values = []
+                for pillar_info in pillar_data.values():
+                    if isinstance(pillar_info, dict) and "completeness" in pillar_info:
+                        completeness_values.append(pillar_info["completeness"])
+                if completeness_values:
+                    completeness = sum(completeness_values) / len(completeness_values)
+    
+    # Count critical gaps (severity >= 8)
+    critical_gaps = 0
+    gaps = results.get("gaps", [])
+    if isinstance(gaps, list):
+        for gap in gaps:
+            if isinstance(gap, dict):
+                severity = gap.get("severity", 0)
+                if severity >= 8:
+                    critical_gaps += 1
+    
+    # Get paper count
+    paper_count = 0
+    if "papers" in job_data:
+        papers = job_data.get("papers", [])
+        paper_count = len(papers) if isinstance(papers, list) else 0
+    elif "files" in job_data:
+        files = job_data.get("files", [])
+        paper_count = len(files) if isinstance(files, list) else 0
+    elif "file_count" in job_data:
+        paper_count = job_data.get("file_count", 0)
+    
+    # Get recommendations preview (first 2)
+    recommendations = results.get("recommendations", [])
+    if isinstance(recommendations, list):
+        recommendations_preview = recommendations[:2]
+    else:
+        recommendations_preview = []
+    
+    return {
+        "completeness": round(completeness, 1) if completeness else 0,
+        "critical_gaps": critical_gaps,
+        "paper_count": paper_count,
+        "recommendations_preview": recommendations_preview,
+        "has_results": bool(results)
+    }
+
 # API Endpoints
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -443,10 +537,10 @@ async def list_jobs(
     api_key: str = Header(None, alias="X-API-KEY")
 ):
     """
-    List all jobs
+    List all jobs with summary metrics
     
     Returns:
-        List of all jobs with their current status
+        List of all jobs with their current status and summary metrics
     """
     verify_api_key(api_key)
     
@@ -455,6 +549,11 @@ async def list_jobs(
         try:
             with open(job_file, 'r') as f:
                 job_data = json.load(f)
+                
+                # Extract summary metrics for each job
+                summary = extract_summary_metrics(job_data)
+                job_data["summary"] = summary
+                
                 jobs.append(job_data)
         except Exception:
             continue
