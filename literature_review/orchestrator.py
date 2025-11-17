@@ -2071,6 +2071,35 @@ def main(config: Optional[OrchestratorConfig] = None):
             logger.error(error_msg)
             visualization_errors.append(error_msg)
             safe_print(f"  ⚠️ {error_msg}")
+    
+    # Generate evidence decay report
+    logger.info("Generating evidence decay report...")
+    try:
+        from literature_review.utils.evidence_decay import generate_decay_report
+        
+        # Load config to check if evidence decay is enabled
+        config_enabled = True
+        try:
+            with open('pipeline_config.json', 'r') as f:
+                config = json.load(f)
+                config_enabled = config.get('evidence_decay', {}).get('enabled', True)
+        except Exception:
+            pass
+        
+        if config_enabled:
+            decay_report = generate_decay_report(
+                review_log='review_log.json',
+                gap_analysis=os.path.join(OUTPUT_FOLDER, 'gap_analysis_report.json'),
+                output_file=os.path.join(OUTPUT_FOLDER, 'evidence_decay.json')
+            )
+            logger.info(f"  ✅ Evidence decay report saved")
+            safe_print("  ✅ Evidence decay analysis generated.")
+        else:
+            logger.info("  ℹ️  Evidence decay analysis disabled in config")
+    except Exception as e:
+        error_msg = f"Failed to generate evidence decay report: {e}"
+        logger.warning(error_msg)
+        safe_print(f"  ⚠️ {error_msg}")
 
     # Generate contribution markdown report
     logger.info("Generating contribution markdown report...")
@@ -2199,7 +2228,7 @@ def main(config: Optional[OrchestratorConfig] = None):
     expected_outputs = {
         'Pillar Waterfalls': [f"waterfall_{pname.split(':')[0]}.html" for pname in all_results.keys()],
         'Visualizations': ['_OVERALL_Research_Gap_Radar.html', '_Paper_Network.html', '_Research_Trends.html'],
-        'Reports': ['gap_analysis_report.json', 'executive_summary.md', 'suggested_searches.json', 'suggested_searches.md', 'optimized_search_plan.json', CONTRIBUTION_REPORT_FILE.split('/')[-1]]
+        'Reports': ['gap_analysis_report.json', 'executive_summary.md', 'suggested_searches.json', 'suggested_searches.md', 'evidence_decay.json', 'optimized_search_plan.json', CONTRIBUTION_REPORT_FILE.split('/')[-1]]
     }
     
     missing_files = []

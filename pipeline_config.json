@@ -50,5 +50,11 @@
       "enable_quota_management": true,
       "enable_smart_retry": true
     }
+  },
+  "evidence_decay": {
+    "enabled": true,
+    "half_life_years": 5.0,
+    "stale_threshold": 0.5,
+    "weight_in_gap_analysis": true
   }
 }

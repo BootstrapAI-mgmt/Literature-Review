@@ -1,0 +1,809 @@
+{
+  "analysis_date": "2025-11-17T01:49:31.998990",
+  "current_year": 2025,
+  "half_life_years": 3.0,
+  "requirement_analysis": {
+    "Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing": {
+      "requirement": "Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing",
+      "pillar": "Pillar 1: Biological Stimulus-Response",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.7,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "gk8110.pdf",
+          "contribution_summary": "The paper demonstrates that ventral stream neurons, including face neurons, selectively respond to specific visual features, providing evidence for sensory feature extraction.",
+          "estimated_contribution_percent": 70,
+          "year": 2022,
+          "title": "gk8110.pdf",
+          "alignment": 0.7,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-1.1.3: Understanding of population coding for complex stimuli": {
+      "requirement": "Sub-1.1.3: Understanding of population coding for complex stimuli",
+      "pillar": "Pillar 1: Biological Stimulus-Response",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.5,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "gk8110.pdf",
+          "contribution_summary": "The paper acknowledges that semantic information for complex stimuli may be encoded at the population level, indicating an understanding of its potential role.",
+          "estimated_contribution_percent": 50,
+          "year": 2022,
+          "title": "gk8110.pdf",
+          "alignment": 0.5,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-2.1.1: Event-based sensor integration with SNNs": {
+      "requirement": "Sub-2.1.1: Event-based sensor integration with SNNs",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "This paper generally mentions Spiking Neural Networks (SNNs) as biologically inspired, which is a foundational concept for event-based processing, but does not detail integration.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction": {
+      "requirement": "Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "paper_count": 2,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.15,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "gk8110.pdf",
+          "contribution_summary": "This paper discusses feature extraction in the context of face neurons and population coding, which is relevant to the concept of feature extraction, but not specifically efficient SNN algorithms.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "gk8110.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "This paper lists 'Feature Extraction' as a core concept for Deep Learning and mentions SNNs, providing a general context but no specific SNN algorithms for sparse feature extraction.",
+          "estimated_contribution_percent": 10,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.1,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-2.1.4: Adaptive sampling based on information content": {
+      "requirement": "Sub-2.1.4: Adaptive sampling based on information content",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.3,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "contribution_summary": "This paper introduces adaptive teaching methods that infer student priors and optimize example selection, which conceptually aligns with adaptive sampling based on information content, though not in the SNN domain.",
+          "estimated_contribution_percent": 30,
+          "year": 2022,
+          "title": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-2.2.1: Scalable training algorithms for deep SNNs": {
+      "requirement": "Sub-2.2.1: Scalable training algorithms for deep SNNs",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "This paper discusses Deep Neural Networks and SNNs, acknowledging SNNs as biologically inspired but also noting challenges, without detailing scalable training algorithms.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-2.2.2: SNN architecture for multi-sensory fusion": {
+      "requirement": "Sub-2.2.2: SNN architecture for multi-sensory fusion",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "gk8117.pdf",
+          "contribution_summary": "This paper mentions 'Multi-modal learning' as a core concept for enhancing AI models, which is a prerequisite for multi-sensory fusion, but does not specify SNN architectures.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "gk8117.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-2.2.3: SNN-based attentional mechanism": {
+      "requirement": "Sub-2.2.3: SNN-based attentional mechanism",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "paper_count": 2,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.15,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "gk8117.pdf",
+          "contribution_summary": "This paper lists 'Attention mechanisms' as a core concept related to AI models, providing a general context for the requirement.",
+          "estimated_contribution_percent": 15,
+          "year": 2022,
+          "title": "gk8117.pdf",
+          "alignment": 0.15,
+          "decay_weight": 0.5,
+          "age_years": 3
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "This paper mentions 'Attention Mechanisms' as a technique to improve interpretability in DL, but does not link them specifically to SNNs.",
+          "estimated_contribution_percent": 15,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.15,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-2.4.2: Event-driven vs clock-driven comparison (>10x improvement)": {
+      "requirement": "Sub-2.4.2: Event-driven vs clock-driven comparison (>10x improvement)",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "This paper mentions SNNs as biologically inspired, which inherently relates to event-driven processing, but does not provide a comparison or efficiency metrics.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-2.4.3: Energy-accuracy trade-off characterization": {
+      "requirement": "Sub-2.4.3: Energy-accuracy trade-off characterization",
+      "pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "paper_count": 2,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.3,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "The approved claim from this paper directly identifies the challenge of high computational cost for real-time performance, which is a core aspect of the energy-accuracy trade-off.",
+          "estimated_contribution_percent": 30,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.3,
+          "decay_weight": 0.5,
+          "age_years": 3
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "The second approved claim from this paper reiterates the identification of high computational cost for real-time performance, reinforcing the relevance to energy-accuracy trade-off.",
+          "estimated_contribution_percent": 30,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.3,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-3.4.2: Error-based learning signal propagation": {
+      "requirement": "Sub-3.4.2: Error-based learning signal propagation",
+      "pillar": "Pillar 3: Biological Skill Automatization",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.25,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "contribution_summary": "This paper mentions 'Error-based learning' as a core concept in the context of adaptive teaching, where a system infers student misconceptions and optimizes example selection.",
+          "estimated_contribution_percent": 25,
+          "year": 2022,
+          "title": "2024.acl-long.718.pdf",
+          "alignment": 0.25,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.1.1: AI equivalent of declarative learning with world models": {
+      "requirement": "Sub-4.1.1: AI equivalent of declarative learning with world models",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "This paper discusses neural-symbolic reasoning on knowledge graphs, which involves declarative knowledge representation, but does not explicitly link it to world models for exploration.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.1.2: Architecture showing exploration to exploitation shift": {
+      "requirement": "Sub-4.1.2: Architecture showing exploration to exploitation shift",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.75,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "Approved claims from this paper explicitly state that RL-based reasoning models like DeepPath and MINERVA exhibit an exploration-exploitation dynamic in their search strategies.",
+          "estimated_contribution_percent": 75,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.75,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.1.3: Uncertainty-guided exploration strategies": {
+      "requirement": "Sub-4.1.3: Uncertainty-guided exploration strategies",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 2,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "contribution_summary": "This paper introduces AT_O_M, a probabilistic method that infers student priors, which implicitly deals with uncertainty in a teaching context, but not directly as an exploration strategy for skill learning.",
+          "estimated_contribution_percent": 30,
+          "year": 2022,
+          "title": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "decay_weight": 0.5,
+          "age_years": 3
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "This paper mentions challenges with incorporating uncertainties in Spiking Neural Networks, indicating an awareness of uncertainty but not a solution for guided exploration.",
+          "estimated_contribution_percent": 10,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.1,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.2.1: Compiling model-based to model-free policy": {
+      "requirement": "Sub-4.2.1: Compiling model-based to model-free policy",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.4,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "This paper lists 'Policy Compilation' as a core concept, indicating relevance, but does not elaborate on the specific mechanism of compiling model-based to model-free policies.",
+          "estimated_contribution_percent": 40,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.4,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.2.2: Hierarchical task chunking framework": {
+      "requirement": "Sub-4.2.2: Hierarchical task chunking framework",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "This paper discusses multi-hop reasoning, which involves breaking down complex tasks, but does not present a formal 'hierarchical task chunking framework'.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.2.4: Progressive network pruning during consolidation": {
+      "requirement": "Sub-4.2.4: Progressive network pruning during consolidation",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 2,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.22,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "Approved claims from this paper mention AMIE+ achieving speedup through 'rule extending and pruning', which is a form of knowledge consolidation and reduction.",
+          "estimated_contribution_percent": 30,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.3,
+          "decay_weight": 0.5,
+          "age_years": 3
+        },
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "This paper discusses efforts to develop lightweight DL models and improve interpretability through techniques like knowledge distillation, which can involve pruning or simplification.",
+          "estimated_contribution_percent": 15,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.15,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.3.1: Reduced computational cost after learning (>90% reduction)": {
+      "requirement": "Sub-4.3.1: Reduced computational cost after learning (>90% reduction)",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.9,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "Approved claims from this paper explicitly state AMIE+ achieves a '100x speedup' through rule pruning and RLvLR reduces search space, directly meeting the >90% reduction target.",
+          "estimated_contribution_percent": 90,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.9,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.3.3: Hardware acceleration for compiled policies": {
+      "requirement": "Sub-4.3.3: Hardware acceleration for compiled policies",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "This paper discusses the computational cost of deep learning and efforts to develop lightweight models, which indirectly relates to the need for efficient execution that could benefit from hardware acceleration.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.4.1: Error signal propagation from motor output": {
+      "requirement": "Sub-4.4.1: Error signal propagation from motor output",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.3,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "contribution_summary": "This paper lists 'Error-based learning' as a core concept, indicating a general understanding of using errors for learning, but not specifically from motor output.",
+          "estimated_contribution_percent": 30,
+          "year": 2022,
+          "title": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.4.2: Credit assignment across temporal delays": {
+      "requirement": "Sub-4.4.2: Credit assignment across temporal delays",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.85,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "Approved claims from this paper explicitly state that SRN directly tackles delayed reward and uses intermediate rewards for credit assignment in multi-hop reasoning, directly addressing this requirement.",
+          "estimated_contribution_percent": 85,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.85,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.4.3: Online learning during execution": {
+      "requirement": "Sub-4.4.3: Online learning during execution",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.3,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "contribution_summary": "This paper discusses adaptive teaching methods (AT_O_M) that infer student priors and optimize example selection, which involves continuous adaptation that could be considered a form of online learning.",
+          "estimated_contribution_percent": 30,
+          "year": 2022,
+          "title": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.4.4: Adaptive learning rate based on performance": {
+      "requirement": "Sub-4.4.4: Adaptive learning rate based on performance",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.3,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "contribution_summary": "This paper describes adaptive teaching methods that adjust based on student performance, which is conceptually related to adapting learning based on performance, though not explicitly an 'adaptive learning rate'.",
+          "estimated_contribution_percent": 30,
+          "year": 2022,
+          "title": "2024.acl-long.718.pdf",
+          "alignment": 0.3,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.5.1: Cross-domain skill transfer metrics (>50% transfer efficiency)": {
+      "requirement": "Sub-4.5.1: Cross-domain skill transfer metrics (>50% transfer efficiency)",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 2,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2024.acl-long.718.pdf",
+          "contribution_summary": "This paper lists 'Transfer learning (implicit)' as a core concept, suggesting its relevance, but does not provide metrics or specific mechanisms for cross-domain skill transfer.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "2024.acl-long.718.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        },
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "This paper mentions few-shot learning and analogical reasoning as future directions, which are related to generalization and transfer, but does not define specific cross-domain transfer metrics.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.5.2: Noise robustness during automatization": {
+      "requirement": "Sub-4.5.2: Noise robustness during automatization",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.2,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "s10489-025-06259-x.pdf",
+          "contribution_summary": "This paper mentions challenges in incorporating uncertainties in SNNs, which is related to dealing with noisy inputs, but not specifically 'noise robustness during automatization'.",
+          "estimated_contribution_percent": 20,
+          "year": 2022,
+          "title": "s10489-025-06259-x.pdf",
+          "alignment": 0.2,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-4.5.4: Compositional skill combination": {
+      "requirement": "Sub-4.5.4: Compositional skill combination",
+      "pillar": "Pillar 4: AI Skill Automatization (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.3,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "This paper discusses multi-hop reasoning and the combination of symbolic and neural methods, which inherently involves compositional aspects, but not explicitly 'compositional skill combination' in the context of automatization.",
+          "estimated_contribution_percent": 30,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.3,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-6.1.3: Context-binding in memory networks": {
+      "requirement": "Sub-6.1.3: Context-binding in memory networks",
+      "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.7,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "Approved claims demonstrate that attention mechanisms in models like MULTIQUE and SRN perform context-binding by focusing on specific parts of questions in multi-hop reasoning.",
+          "estimated_contribution_percent": 70,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.7,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-6.2.1: Associative cued recall model": {
+      "requirement": "Sub-6.2.1: Associative cued recall model",
+      "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.8,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "Approved claims establish that KGC and KGQA tasks are direct examples of associative cued recall, where entities or answers are inferred based on cues.",
+          "estimated_contribution_percent": 80,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.8,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-6.2.2: Salience-based prioritization": {
+      "requirement": "Sub-6.2.2: Salience-based prioritization",
+      "pillar": "Pillar 6: AI Memory Systems (Bridge)",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.75,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "Approved claims confirm that attention mechanisms in models like ConvAt, IRN, and MULTIQUE demonstrate salience-based prioritization by emphasizing specific parts of questions or neighbors.",
+          "estimated_contribution_percent": 75,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.75,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-7.3.1: Hierarchical control with local autonomy": {
+      "requirement": "Sub-7.3.1: Hierarchical control with local autonomy",
+      "pillar": "Pillar 7: System Integration & Orchestration",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.65,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "2010.05446v5.pdf",
+          "contribution_summary": "The MULTIQUE method of breaking down complex questions into simpler partial queries and building sub-query graphs demonstrates a form of hierarchical control with local autonomy.",
+          "estimated_contribution_percent": 65,
+          "year": 2022,
+          "title": "2010.05446v5.pdf",
+          "alignment": 0.65,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-7.4.1: Metrics for emergent intelligence": {
+      "requirement": "Sub-7.4.1: Metrics for emergent intelligence",
+      "pillar": "Pillar 7: System Integration & Orchestration",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.7,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "gk8117.pdf",
+          "contribution_summary": "The use of Turing tests across various tasks serves as a metric for emergent intelligence by assessing whether AI output is indistinguishable from human behavior.",
+          "estimated_contribution_percent": 70,
+          "year": 2022,
+          "title": "gk8117.pdf",
+          "alignment": 0.7,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    },
+    "Sub-7.4.3: Novel situation adaptation": {
+      "requirement": "Sub-7.4.3: Novel situation adaptation",
+      "pillar": "Pillar 7: System Integration & Orchestration",
+      "paper_count": 1,
+      "avg_age_years": 3.0,
+      "oldest_paper_year": 2022,
+      "newest_paper_year": 2022,
+      "avg_decay_weight": 0.5,
+      "freshness_score": 0.4,
+      "needs_update": false,
+      "papers": [
+        {
+          "filename": "gk8117.pdf",
+          "contribution_summary": "Turing tests are mentioned as a form of 'Emergent Behavior Validation' that assesses novel situation adaptation by determining if AI output is indistinguishable from human behavior.",
+          "estimated_contribution_percent": 40,
+          "year": 2022,
+          "title": "gk8117.pdf",
+          "alignment": 0.4,
+          "decay_weight": 0.5,
+          "age_years": 3
+        }
+      ]
+    }
+  },
+  "summary": {
+    "total_requirements": 32,
+    "needs_update_count": 0,
+    "avg_evidence_age_years": 3.0,
+    "avg_freshness_score": 0.4
+  }
+}
