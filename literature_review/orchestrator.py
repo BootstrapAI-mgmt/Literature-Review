@@ -29,6 +29,7 @@ import subprocess  # To run external scripts
 from pathlib import Path  # For file state checking
 from literature_review.reviewers import deep_reviewer
 from literature_review.analysis import judge
+from literature_review.optimization.search_optimizer import generate_search_plan
 
 # Import global rate limiter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -1936,6 +1937,26 @@ def main(config: Optional[OrchestratorConfig] = None):
             
             logger.info(f"  ✅ Search recommendations markdown saved: {rec_md_path}")
             safe_print(f"  ✅ Gap-closing search recommendations generated ({len(recommendations)} gaps identified).")
+            
+            # Generate optimized search plan
+            logger.info("Optimizing search strategy based on ROI...")
+            try:
+                gap_file = os.path.join(OUTPUT_FOLDER, "gap_analysis_report.json")
+                optimized_plan_path = os.path.join(OUTPUT_FOLDER, "optimized_search_plan.json")
+                
+                # Only generate if gap report exists
+                if os.path.exists(gap_file):
+                    plan = generate_search_plan(
+                        gap_file=gap_file,
+                        searches_file=rec_json_path,
+                        output_file=optimized_plan_path
+                    )
+                    logger.info(f"  ✅ Optimized search plan saved: {optimized_plan_path}")
+                    safe_print(f"  ✅ ROI-optimized search plan generated ({plan['high_priority_searches']} high priority searches).")
+                else:
+                    logger.warning("  ⚠️ Gap analysis report not found, skipping search optimization")
+            except Exception as e:
+                logger.warning(f"  ⚠️ Failed to generate optimized search plan: {e}")
         else:
             logger.info("  ℹ️ No gap-closing recommendations generated (all areas >50% complete)")
             safe_print("  ℹ️ No critical gaps requiring additional searches.")
@@ -1964,7 +1985,7 @@ def main(config: Optional[OrchestratorConfig] = None):
     expected_outputs = {
         'Pillar Waterfalls': [f"waterfall_{pname.split(':')[0]}.html" for pname in all_results.keys()],
         'Visualizations': ['_OVERALL_Research_Gap_Radar.html', '_Paper_Network.html', '_Research_Trends.html'],
-        'Reports': ['gap_analysis_report.json', 'executive_summary.md', 'suggested_searches.json', 'suggested_searches.md', CONTRIBUTION_REPORT_FILE.split('/')[-1]]
+        'Reports': ['gap_analysis_report.json', 'executive_summary.md', 'suggested_searches.json', 'suggested_searches.md', 'optimized_search_plan.json', CONTRIBUTION_REPORT_FILE.split('/')[-1]]
     }
     
     missing_files = []
