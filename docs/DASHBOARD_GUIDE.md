@@ -81,6 +81,125 @@ docker run -d -p 8000:8000 \
   literature-review-dashboard
 ```
 
+## PDF Upload and Metadata Extraction
+
+### Overview
+
+When you upload a PDF, the system automatically extracts comprehensive metadata to help identify and organize research papers. The extraction process uses multiple strategies to ensure accuracy.
+
+### What Gets Extracted
+
+The system extracts the following metadata from uploaded PDFs:
+
+- **Title**: Paper title (from embedded metadata or first page)
+- **Authors**: Author names (multiple sources)
+- **Year**: Publication year
+- **Abstract**: Paper abstract (if available)
+- **DOI**: Digital Object Identifier (for citation tracking)
+- **Journal/Venue**: Publication venue (conference or journal)
+
+### Extraction Methods
+
+The system uses a multi-strategy approach with the following priority order:
+
+1. **Embedded PDF metadata** (most reliable)
+   - Extracts title, authors, and dates from PDF properties
+   - Highest confidence when available
+
+2. **First-page text parsing** (heuristic)
+   - Analyzes layout and text patterns
+   - Identifies title based on font size and position
+   - Detects author names using common patterns
+   - Locates abstract sections
+
+3. **Content analysis**
+   - Pattern matching for DOI identifiers
+   - Year detection from various formats (copyright notices, publication dates)
+   - Journal/venue extraction from headers
+
+### Confidence Scores
+
+Each extracted field has a confidence score (0.0-1.0) indicating extraction quality:
+
+- **0.9-1.0**: High confidence
+  - Verified via DOI or embedded metadata
+  - Strong pattern matches
+  - Example: DOI extracted from text, title from PDF metadata
+
+- **0.7-0.9**: Good confidence
+  - Strong heuristic match
+  - Multiple indicators agree
+  - Example: Title from first-page text with good formatting
+
+- **0.5-0.7**: Medium confidence
+  - Weak heuristic match
+  - Limited supporting evidence
+  - Example: Authors extracted from ambiguous text
+
+- **< 0.5**: Low confidence (flagged for review)
+  - Extraction uncertain
+  - Manual review recommended
+  - Example: No clear abstract boundary found
+
+### Quality Indicators
+
+Papers with low-confidence metadata are flagged in the system logs. You can identify potential issues by:
+
+- Checking the job logs for "Low confidence metadata" warnings
+- Reviewing extracted metadata before starting analysis
+- Manually correcting metadata if needed
+
+### Troubleshooting
+
+**Poor Extraction Quality:**
+
+- **Scanned PDFs (images)**: Text layer required for extraction
+  - Solution: Use OCR preprocessing or manually enter metadata
+  
+- **Non-standard formats**: Unusual layouts confuse heuristics
+  - Solution: Manually enter metadata or use standard PDF format
+  
+- **Missing DOI**: Cannot track citations or verify title
+  - Solution: Look up on Google Scholar and add manually
+
+**Improving Extraction:**
+
+- Use PDFs with text layers (not scanned images)
+- Prefer papers with embedded metadata
+- Choose papers with DOIs when available
+- Check PDF properties before upload (title, author fields should be filled)
+
+### Technical Details
+
+The system uses **PyMuPDF** for enhanced PDF processing, which provides:
+- Better text extraction than basic libraries
+- Access to embedded PDF metadata
+- Font and layout information for heuristics
+- Fast processing (typically under 1 second per PDF)
+
+### Example Metadata
+
+```json
+{
+  "title": "Deep Learning for Natural Language Processing",
+  "authors": ["John Smith", "Jane Doe"],
+  "year": 2023,
+  "abstract": "This paper presents a novel approach...",
+  "doi": "10.1234/example.2023.001",
+  "journal": "Nature Machine Intelligence",
+  "confidence": {
+    "title": 0.9,
+    "authors": 0.8,
+    "year": 0.9,
+    "abstract": 0.8,
+    "doi": 0.95,
+    "journal": 0.7
+  }
+}
+```
+
+---
+
 ## Using the Dashboard
 
 ### 1. Access the Dashboard
