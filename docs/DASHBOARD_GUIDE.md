@@ -303,6 +303,81 @@ The dashboard uses WebSockets for real-time updates:
 - Jobs automatically update when status changes
 - No need to refresh the page
 
+### 6. Understanding ETA (Estimated Time to Arrival)
+
+The dashboard provides intelligent ETA estimates that improve with each job run.
+
+#### How ETA is Calculated
+
+The dashboard learns from past job runs to provide accurate ETAs based on:
+
+1. **Historical stage durations**: Actual time taken for each pipeline stage in previous runs
+2. **Paper count scaling**: ETA scales linearly with the number of papers being processed
+3. **Current progress**: How fast the current job is progressing compared to historical averages
+
+**Factors Considered:**
+- Time per paper for each stage (normalized across different job sizes)
+- Number of papers in current job
+- Historical variance in execution times
+
+#### Confidence Levels
+
+ETAs are displayed with confidence indicators based on the amount of historical data:
+
+- **🟢 High Confidence**: 10+ past runs, ETA accurate to ±5%
+  - Example: "12-13 min remaining"
+  - Narrow confidence interval with precise estimates
+
+- **🟡 Medium Confidence**: 3-9 past runs, ETA accurate to ±10-20%
+  - Example: "10-15 min remaining"
+  - Moderate confidence interval with good estimates
+
+- **🔴 Low Confidence**: <3 past runs, ETA may vary significantly
+  - Example: "~15 min remaining (First run, estimate may vary)"
+  - Wide confidence interval (±30%) using fallback estimates
+
+#### First Run Behavior
+
+On your first job, the dashboard uses conservative fallback estimates:
+- Gap Analysis: 30 seconds per paper
+- Deep Review: 120 seconds per paper
+- Proof Generation: 45 seconds per paper
+- Final Report: 15 seconds per paper
+
+After a few runs, the system adapts to your actual hardware performance and ETAs become much more accurate.
+
+**Example Evolution:**
+```
+First run:  "~15 min remaining (low confidence)"
+After 3 runs:  "12-15 min remaining (medium confidence)"
+After 10 runs: "12-13 min remaining (high confidence)"
+```
+
+#### ETA Display Features
+
+- **Confidence Badge**: Color-coded indicator (green/yellow/red) showing estimate reliability
+- **Time Range**: For uncertain estimates, shows a range (e.g., "10-15 min")
+- **Auto-Update**: ETA refreshes every 10 seconds and on each progress event
+- **First Run Warning**: Special notice when historical data is limited
+- **Stage Breakdown**: Hover over ETA to see per-stage time estimates (coming soon)
+
+#### Improving ETA Accuracy
+
+To get the most accurate ETAs:
+1. Run a few jobs to build historical data
+2. Keep paper counts consistent when possible
+3. Allow jobs to complete (cancelled jobs don't contribute to history)
+4. Historical data is saved in `workspace/eta_history.json`
+
+#### Technical Details
+
+The ETA calculator uses:
+- **Median-based estimation**: Robust against outliers in execution time
+- **Paper count normalization**: Stores "time per paper" to handle variable job sizes
+- **Adaptive blending**: Combines historical data with fallback estimates for partial data
+- **Confidence intervals**: Statistical ranges based on data quality
+- **Automatic history management**: Keeps last 50 runs per stage to prevent unbounded growth
+
 ## API Integration
 
 ### For Pipeline Orchestrator
@@ -413,6 +488,39 @@ curl http://localhost:8000/api/logs/{job_id}?tail=100 \
   -H "X-API-KEY: your-key"
 ```
 
+#### Get job ETA (Estimated Time to Arrival)
+```bash
+curl http://localhost:8000/api/jobs/{job_id}/eta \
+  -H "X-API-KEY: your-key"
+```
+
+Response:
+```json
+{
+  "job_id": "abc-123",
+  "status": "running",
+  "current_stage": "deep_review",
+  "eta": {
+    "total_eta_seconds": 720,
+    "min_eta_seconds": 648,
+    "max_eta_seconds": 864,
+    "confidence": "medium",
+    "stage_breakdown": {
+      "proof_generation": 450,
+      "final_report": 150
+    },
+    "remaining_stages": ["proof_generation", "final_report"]
+  }
+}
+```
+
+The ETA information includes:
+- `total_eta_seconds`: Best estimate for remaining time
+- `min_eta_seconds` / `max_eta_seconds`: Confidence interval bounds
+- `confidence`: "high", "medium", or "low" based on historical data
+- `stage_breakdown`: Estimated time for each remaining stage
+- `remaining_stages`: List of stages yet to complete
+
 #### Retry a job
 ```bash
 curl -X POST http://localhost:8000/api/jobs/{job_id}/retry \
@@ -437,9 +545,11 @@ workspace/
 ├── jobs/            # Job metadata
 │   └── {job_id}.json
 ├── status/          # Status updates from orchestrator
-│   └── {job_id}.json
-└── logs/            # Job logs
-    └── {job_id}.log
+│   ├── {job_id}.json
+│   └── {job_id}_progress.jsonl  # Progress events stream
+├── logs/            # Job logs
+│   └── {job_id}.log
+└── eta_history.json  # Historical ETA data for accuracy
 ```
 
 ## Configuration
