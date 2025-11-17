@@ -275,3 +275,107 @@ async def test_multiple_concurrent_prompts():
     
     assert results == ["ALL", "ALL"]
     assert len(handler.pending_prompts) == 0
+
+
+@pytest.mark.asyncio
+async def test_run_mode_prompt_integration():
+    """Test run_mode prompt when starting job without config"""
+    from webdashboard.prompt_handler import PromptHandler
+    
+    handler = PromptHandler()
+    
+    # Track prompt IDs
+    prompt_id_holder = []
+    
+    async def capture_broadcast(job_id, prompt_id, prompt_type, prompt_data):
+        prompt_id_holder.append(prompt_id)
+        # Verify the prompt type and data
+        assert prompt_type == "run_mode"
+        assert "options" in prompt_data
+        assert "ONCE" in prompt_data["options"]
+        assert "DEEP_LOOP" in prompt_data["options"]
+    
+    handler._broadcast_prompt = capture_broadcast
+    
+    # Simulate a response being submitted after a short delay
+    async def respond_after_delay():
+        await asyncio.sleep(0.1)
+        if prompt_id_holder:
+            handler.submit_response(prompt_id_holder[0], "DEEP_LOOP")
+    
+    # Start response task
+    asyncio.create_task(respond_after_delay())
+    
+    # Request prompt (will block until response)
+    response = await handler.request_user_input(
+        job_id="test-job",
+        prompt_type="run_mode",
+        prompt_data={
+            "message": "Select analysis mode",
+            "options": ["ONCE", "DEEP_LOOP"],
+            "default": "ONCE"
+        },
+        timeout_seconds=5
+    )
+    
+    assert response == "DEEP_LOOP"
+    assert len(handler.pending_prompts) == 0  # Should be cleaned up
+
+
+@pytest.mark.asyncio
+async def test_continue_prompt_deep_loop():
+    """Test continue prompt in deep loop workflow"""
+    from webdashboard.prompt_handler import PromptHandler
+    
+    handler = PromptHandler()
+    
+    # Track prompt IDs and call count
+    prompt_ids = []
+    
+    async def capture_broadcast(job_id, prompt_id, prompt_type, prompt_data):
+        prompt_ids.append(prompt_id)
+        # Verify the prompt type and data
+        assert prompt_type == "continue"
+        assert "iteration" in prompt_data
+        assert "gap_count" in prompt_data
+        assert prompt_data["options"] == ["yes", "no"]
+    
+    handler._broadcast_prompt = capture_broadcast
+    
+    # Simulate multiple iterations
+    responses = ["yes", "yes", "no"]
+    response_index = [0]  # Use list to allow modification in nested function
+    
+    async def respond_after_delay():
+        await asyncio.sleep(0.1)
+        if prompt_ids and response_index[0] < len(responses):
+            handler.submit_response(prompt_ids[-1], responses[response_index[0]])
+            response_index[0] += 1
+    
+    # Simulate 3 iterations
+    for iteration in range(1, 4):
+        asyncio.create_task(respond_after_delay())
+        
+        response = await handler.request_user_input(
+            job_id="test-job",
+            prompt_type="continue",
+            prompt_data={
+                "message": f"Iteration {iteration} complete. Continue deep review loop?",
+                "iteration": iteration,
+                "gap_count": 5,
+                "options": ["yes", "no"],
+                "default": "yes",
+                "details": "Found 5 gaps to address. Continue with deep review?"
+            },
+            timeout_seconds=5
+        )
+        
+        assert response == responses[iteration - 1]
+        
+        # Break if user said no
+        if response == "no":
+            break
+    
+    # Should have been called 3 times (yes, yes, no)
+    assert len(prompt_ids) == 3
+    assert len(handler.pending_prompts) == 0  # Should be cleaned up
