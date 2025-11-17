@@ -396,6 +396,43 @@
         .log-line.success {
             color: #4ec9b0;
         }
+        
+        /* ETA Display Styles */
+        .eta-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .confidence-badge {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        
+        .confidence-badge.high {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .confidence-badge.medium {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .confidence-badge.low {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        
+        .eta-breakdown {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
@@ -1093,11 +1130,17 @@
         // Progress WebSocket for job-specific real-time updates
         let progressWebSocket = null;
         let autoScroll = true;
+        let etaUpdateInterval = null;
         
         function connectProgressWebSocket(jobId) {
             // Close existing connection
             if (progressWebSocket) {
                 progressWebSocket.close();
+            }
+            
+            // Clear existing ETA update interval
+            if (etaUpdateInterval) {
+                clearInterval(etaUpdateInterval);
             }
             
             // Connect to job-specific progress stream
@@ -1107,6 +1150,10 @@
             progressWebSocket.onopen = () => {
                 console.log('Progress WebSocket connected');
                 document.getElementById('progressContainer').style.display = 'block';
+                
+                // Start periodic ETA updates
+                updateJobETA(jobId);
+                etaUpdateInterval = setInterval(() => updateJobETA(jobId), 10000); // Update every 10 seconds
             };
             
             progressWebSocket.onmessage = (event) => {
@@ -1118,12 +1165,16 @@
                         break;
                     case 'progress':
                         handleProgressEvent(data.event);
+                        updateJobETA(jobId); // Update ETA on each progress event
                         break;
                     case 'logs':
                         handleLogLines(data.lines);
                         break;
                     case 'job_complete':
                         handleJobComplete(data.status);
+                        if (etaUpdateInterval) {
+                            clearInterval(etaUpdateInterval);
+                        }
                         break;
                 }
             };
@@ -1134,7 +1185,80 @@
             
             progressWebSocket.onclose = () => {
                 console.log('Progress WebSocket disconnected');
+                if (etaUpdateInterval) {
+                    clearInterval(etaUpdateInterval);
+                }
             };
+        }
+        
+        async function updateJobETA(jobId) {
+            try {
+                const currentApiKey = document.getElementById('apiKeyInput').value;
+                const response = await fetch(`${API_BASE}/api/jobs/${jobId}/eta`, {
+                    headers: {
+                        'X-API-KEY': currentApiKey
+                    }
+                });
+                
+                if (!response.ok) {
+                    console.warn('Failed to fetch ETA');
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.eta) {
+                    displayETA(data.eta);
+                }
+            } catch (error) {
+                console.error('Error fetching ETA:', error);
+            }
+        }
+        
+        function displayETA(eta) {
+            const etaElement = document.getElementById('etaDisplay');
+            if (!etaElement) return;
+            
+            const totalSeconds = eta.total_eta_seconds;
+            const confidence = eta.confidence;
+            
+            // Format time
+            const formatTime = (seconds) => {
+                const hours = Math.floor(seconds / 3600);
+                const mins = Math.floor((seconds % 3600) / 60);
+                const secs = Math.floor(seconds % 60);
+                
+                if (hours > 0) {
+                    return `${hours}h ${mins}m`;
+                } else if (mins > 0) {
+                    return `${mins}m ${secs}s`;
+                } else {
+                    return `${secs}s`;
+                }
+            };
+            
+            let etaText = '';
+            
+            if (confidence === 'high') {
+                etaText = `${formatTime(totalSeconds)} remaining`;
+            } else if (confidence === 'medium') {
+                const minTime = formatTime(eta.min_eta_seconds);
+                const maxTime = formatTime(eta.max_eta_seconds);
+                etaText = `${minTime} - ${maxTime} remaining`;
+            } else {
+                etaText = `~${formatTime(totalSeconds)} remaining`;
+            }
+            
+            // Add first run warning for low confidence
+            const firstRunWarning = confidence === 'low' ? '<br><small>(First run, estimate may vary)</small>' : '';
+            
+            etaElement.innerHTML = `
+                <div class="eta-container">
+                    <strong>ETA:</strong> ${etaText}
+                    <span class="confidence-badge ${confidence}">${confidence} confidence</span>
+                </div>
+                ${firstRunWarning}
+            `;
         }
         
         function handleInitialStatus(job) {
