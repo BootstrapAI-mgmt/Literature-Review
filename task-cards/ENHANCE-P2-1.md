@@ -1,11 +1,12 @@
 # ENHANCE-P2-1: Cross-Batch Duplicate Detection
 
-**Status:** NOT IMPLEMENTED  
+**Status:** ✅ IMPLEMENTED  
 **Priority:** 🟢 Low  
 **Effort Estimate:** 3 hours  
 **Category:** Phase 2 - Input Handling  
 **Created:** November 17, 2025  
-**Related PR:** #36 (Input Handling & PDF Upload)
+**Completed:** November 17, 2025  
+**Related PR:** #48 (Cross-Batch Duplicate Detection) - ✅ MERGED
 
 ---
 

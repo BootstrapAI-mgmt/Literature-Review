@@ -13,12 +13,12 @@ This document tracks the phased execution of enhancement task cards, showing par
 
 ### Completion Status
 
-- **Wave 0 (Quick Win):** ⏳ 0/1 complete
-- **Wave 1 (Core Infrastructure):** ⏳ 0/5 complete  
+- **Wave 0 (Quick Win):** ✅ 1/1 complete
+- **Wave 1 (Core Infrastructure):** ✅ 1/5 complete (ENHANCE-P2-1 merged)
 - **Wave 2 (User Features):** ⏳ 0/6 complete  
 - **Wave 3 (Advanced Features):** ⏳ 0/5 complete  
 - **Wave 4 (Testing & Documentation):** ⏳ 0/3 complete  
-- **Total:** ⏳ 0/20 complete
+- **Total:** ✅ 2/20 complete (10%)
 
 ---
 
@@ -28,12 +28,13 @@ This document tracks the phased execution of enhancement task cards, showing par
 
 | Card | Priority | Effort | Dependencies | Status |
 |------|----------|--------|--------------|--------|
-| ENHANCE-P5-1 | 🔴 HIGH | 1 min | None | ⏳ Not Started |
+| ENHANCE-P5-1 | 🔴 HIGH | 1 min | None | ✅ Complete (Merged) |
 
 **Tasks:**
-- [ ] ENHANCE-P5-1: Add pytest-asyncio to requirements-dev.txt
+- [x] ENHANCE-P5-1: Add pytest-asyncio to requirements-dev.txt
 
-**Execution:** Single PR, immediate merge
+**Execution:** Single PR, immediate merge  
+**Completed:** November 17, 2025
 
 ---
 
@@ -43,11 +44,11 @@ This document tracks the phased execution of enhancement task cards, showing par
 
 | Card | Priority | Effort | Dependencies | Status | Assignee |
 |------|----------|--------|--------------|--------|----------|
-| ENHANCE-P2-1 | 🟡 MEDIUM | 3h | None | ⏳ Not Started | - |
+| ENHANCE-P2-1 | 🟡 MEDIUM | 3h | None | ✅ Complete (PR #48) | Copilot Agent |
 | ENHANCE-P2-2 | 🟡 MEDIUM | 5h | None | ⏳ Not Started | - |
 
 **Tasks:**
-- [ ] ENHANCE-P2-1: Cross-batch duplicate detection (PDF hashing, fuzzy matching)
+- [x] ENHANCE-P2-1: Cross-batch duplicate detection (PDF hashing, fuzzy matching) - **MERGED**
 - [ ] ENHANCE-P2-2: PDF metadata extraction improvements (PyMuPDF, DOI detection)
 
 **Dependencies:**
@@ -55,15 +56,16 @@ This document tracks the phased execution of enhancement task cards, showing par
 
 **Execution Strategy:**
 ```
-Developer A → ENHANCE-P2-1 (3h)
-Developer B → ENHANCE-P2-2 (5h)
+Developer A → ENHANCE-P2-1 (3h) ✅ COMPLETE
+Developer B → ENHANCE-P2-2 (5h) ⏳ IN PROGRESS
 Total wall-clock time: 5 hours (parallel)
 ```
 
 **Output:**
-- Enhanced input validation
-- Better metadata extraction
-- Reduced duplicate papers
+- ✅ Enhanced duplicate detection with hash, exact, and fuzzy matching
+- ✅ User-friendly modal UI for handling duplicates
+- ✅ 24 tests (17 unit + 7 integration), 91% coverage
+- ⏳ Better metadata extraction (pending)
 
 ---
 
@@ -333,7 +335,7 @@ Wave 4: Test/Doc
 ## ✅ Completion Tracking
 
 ### Phase 5: Interactive Prompts
-- [ ] ENHANCE-P5-1 (pytest-asyncio) - **Wave 0**
+- [x] ENHANCE-P5-1 (pytest-asyncio) - **Wave 0** ✅ MERGED
 - [ ] ENHANCE-P5-2 (run_mode prompts) - **Wave 2**
 - [ ] ENHANCE-P5-3 (prompt history) - **Wave 3**
 - [ ] ENHANCE-P5-4 (multi-select) - **Wave 2**
@@ -345,7 +347,7 @@ Wave 4: Test/Doc
 - [ ] ENHANCE-P4-4 (summary cards) - **Wave 2**
 
 ### Phase 2 & 3: Input & Progress
-- [ ] ENHANCE-P2-1 (duplicate detection) - **Wave 1**
+- [x] ENHANCE-P2-1 (duplicate detection) - **Wave 1** ✅ MERGED (PR #48)
 - [ ] ENHANCE-P2-2 (metadata extraction) - **Wave 1**
 - [ ] ENHANCE-P3-1 (ETA accuracy) - **Wave 2**
 - [ ] ENHANCE-P3-2 (progress replay) - **Wave 2**
