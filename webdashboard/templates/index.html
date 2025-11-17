@@ -50,6 +50,293 @@
         .metric-card:hover {
             transform: translateY(-5px);
         }
+        
+        /* Enhanced Outputs Section */
+        .section-title {
+            font-size: 1.3em;
+            margin-bottom: 15px;
+            margin-top: 20px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .enhanced-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .enhanced-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .enhanced-card .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .enhanced-card .card-icon {
+            font-size: 1.3em;
+        }
+
+        .enhanced-card h4 {
+            margin: 0;
+            font-size: 1em;
+        }
+
+        .enhanced-card .card-body {
+            padding: 15px;
+        }
+
+        /* Proof Scorecard Styles */
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 15px auto;
+            border: 6px solid;
+        }
+
+        .score-circle.score-high {
+            border-color: #28a745;
+            color: #28a745;
+        }
+
+        .score-circle.score-medium {
+            border-color: #ffc107;
+            color: #ffc107;
+        }
+
+        .score-circle.score-low {
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .score-value {
+            font-size: 1.6em;
+            font-weight: bold;
+        }
+
+        .score-label {
+            font-size: 0.75em;
+            text-transform: uppercase;
+        }
+
+        .verdict-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-weight: bold;
+            margin: 8px 0;
+            font-size: 0.85em;
+        }
+
+        .verdict-strong { background: #d4edda; color: #155724; }
+        .verdict-moderate { background: #fff3cd; color: #856404; }
+        .verdict-weak { background: #f8d7da; color: #721c24; }
+        .verdict-insufficient { background: #f8d7da; color: #721c24; }
+
+        .headline {
+            font-style: italic;
+            color: #666;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        .next-steps {
+            margin-top: 12px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .next-steps ul {
+            margin: 5px 0 0 0;
+            padding-left: 18px;
+        }
+
+        .next-steps li {
+            margin: 4px 0;
+            font-size: 0.85em;
+        }
+
+        /* Cost Summary Styles */
+        .cost-metrics {
+            margin: 15px 0;
+        }
+
+        .metric-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metric-row:last-child {
+            border-bottom: none;
+        }
+
+        .metric-label {
+            font-weight: 500;
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .metric-value {
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .metric-value.cost-total {
+            color: #667eea;
+            font-size: 1.3em;
+        }
+
+        .metric-value.savings {
+            color: #28a745;
+        }
+
+        .progress-bar-container {
+            position: relative;
+            width: 130px;
+            height: 22px;
+            background: #e9ecef;
+            border-radius: 11px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            transition: width 0.3s ease;
+            border-radius: 11px;
+        }
+
+        .progress-bar.budget-low {
+            background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+        }
+
+        .progress-bar.budget-medium {
+            background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+        }
+
+        .progress-bar.budget-high {
+            background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.8em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        /* Sufficiency Matrix Styles */
+        .quadrant-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin: 15px 0;
+        }
+
+        .quadrant {
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .quadrant.q1 {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            border: 2px solid #28a745;
+        }
+
+        .quadrant.q2 {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            border: 2px solid #ffc107;
+        }
+
+        .quadrant.q3 {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            border: 2px solid #dc3545;
+        }
+
+        .quadrant.q4 {
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+            border: 2px solid #17a2b8;
+        }
+
+        .quadrant-name {
+            font-weight: 600;
+            font-size: 0.75em;
+            margin-bottom: 6px;
+        }
+
+        .quadrant-count {
+            font-size: 1.6em;
+            font-weight: bold;
+        }
+
+        .recommendations {
+            margin-top: 12px;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .recommendations ul {
+            margin: 5px 0 0 0;
+            padding-left: 18px;
+        }
+
+        .recommendations li {
+            margin: 4px 0;
+            font-size: 0.85em;
+        }
+
+        /* Button Styles */
+        .btn-full-report {
+            display: block;
+            width: 100%;
+            margin-top: 15px;
+            padding: 10px;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-full-report:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .enhanced-cards-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .quadrant-grid {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -348,6 +635,127 @@
                         <strong>Progress:</strong>
                         <div id="detailProgress"></div>
                     </div>
+                    
+                    <!-- Enhanced Analytical Outputs Section -->
+                    <div id="enhancedOutputsSection" style="display: none;">
+                        <h5 class="section-title">📊 Enhanced Analysis</h5>
+                        
+                        <div class="enhanced-cards-grid">
+                            
+                            <!-- Proof Scorecard Card -->
+                            <div id="proofScorecardCard" style="display: none;" class="enhanced-card proof-scorecard-card">
+                                <div class="card-header">
+                                    <span class="card-icon">🎯</span>
+                                    <h4>Proof Completeness Scorecard</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div id="scoreCircle" class="score-circle">
+                                        <div class="score-value" id="scoreValue">0%</div>
+                                        <div class="score-label">Ready</div>
+                                    </div>
+                                    <div id="verdictBadge" class="verdict-badge">
+                                        UNKNOWN
+                                    </div>
+                                    <p class="headline" id="scoreHeadline"></p>
+                                    
+                                    <div class="next-steps" id="nextStepsSection" style="display: none;">
+                                        <strong>Top Priorities:</strong>
+                                        <ul id="nextStepsList">
+                                        </ul>
+                                    </div>
+                                    
+                                    <a id="proofReportLink" href="#" target="_blank" class="btn btn-primary btn-full-report">
+                                        📄 View Full Report
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- Cost Summary Card -->
+                            <div id="costSummaryCard" style="display: none;" class="enhanced-card cost-summary-card">
+                                <div class="card-header">
+                                    <span class="card-icon">💰</span>
+                                    <h4>API Cost Summary</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="cost-metrics">
+                                        <div class="metric-row">
+                                            <span class="metric-label">Total Cost:</span>
+                                            <span class="metric-value cost-total" id="totalCost">
+                                                $0.00
+                                            </span>
+                                        </div>
+                                        <div class="metric-row">
+                                            <span class="metric-label">Per Paper:</span>
+                                            <span class="metric-value" id="perPaperCost">
+                                                $0.00
+                                            </span>
+                                        </div>
+                                        <div class="metric-row">
+                                            <span class="metric-label">Budget Used:</span>
+                                            <span class="metric-value">
+                                                <div class="progress-bar-container">
+                                                    <div class="progress-bar" id="budgetBar" style="width: 0%">
+                                                    </div>
+                                                    <span class="progress-text" id="budgetPercent">
+                                                        0.0%
+                                                    </span>
+                                                </div>
+                                            </span>
+                                        </div>
+                                        <div class="metric-row" id="cacheSavingsRow" style="display: none;">
+                                            <span class="metric-label">Cache Savings:</span>
+                                            <span class="metric-value savings" id="cacheSavings">
+                                                -$0.00
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <a id="costReportLink" href="#" target="_blank" class="btn btn-primary btn-full-report">
+                                        📊 View Breakdown
+                                    </a>
+                                </div>
+                            </div>
+                            
+                            <!-- Sufficiency Matrix Card -->
+                            <div id="sufficiencyCard" style="display: none;" class="enhanced-card sufficiency-card">
+                                <div class="card-header">
+                                    <span class="card-icon">📈</span>
+                                    <h4>Evidence Sufficiency Matrix</h4>
+                                </div>
+                                <div class="card-body">
+                                    <div class="quadrant-grid">
+                                        <div class="quadrant q1" id="quadrantQ1" style="display: none;">
+                                            <div class="quadrant-name">Strong Foundation</div>
+                                            <div class="quadrant-count" id="countQ1">0</div>
+                                        </div>
+                                        <div class="quadrant q2" id="quadrantQ2" style="display: none;">
+                                            <div class="quadrant-name">Promising Seeds</div>
+                                            <div class="quadrant-count" id="countQ2">0</div>
+                                        </div>
+                                        <div class="quadrant q3" id="quadrantQ3" style="display: none;">
+                                            <div class="quadrant-name">Hollow Coverage</div>
+                                            <div class="quadrant-count" id="countQ3">0</div>
+                                        </div>
+                                        <div class="quadrant q4" id="quadrantQ4" style="display: none;">
+                                            <div class="quadrant-name">Critical Gaps</div>
+                                            <div class="quadrant-count" id="countQ4">0</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="recommendations" id="recommendationsSection" style="display: none;">
+                                        <strong>Top Recommendations:</strong>
+                                        <ul id="recommendationsList">
+                                        </ul>
+                                    </div>
+                                    
+                                    <a id="sufficiencyReportLink" href="#" target="_blank" class="btn btn-primary btn-full-report">
+                                        🔍 View Interactive Matrix
+                                    </a>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -505,6 +913,175 @@
             `).join('');
         }
         
+        // Helper methods for enhanced outputs
+        function getScoreClass(score) {
+            if (score >= 60) return 'score-high';
+            if (score >= 40) return 'score-medium';
+            return 'score-low';
+        }
+
+        function getVerdictClass(verdict) {
+            const verdictMap = {
+                'STRONG': 'verdict-strong',
+                'MODERATE': 'verdict-moderate',
+                'WEAK': 'verdict-weak',
+                'INSUFFICIENT': 'verdict-insufficient'
+            };
+            return verdictMap[verdict] || 'verdict-unknown';
+        }
+
+        function getBudgetClass(percent) {
+            if (percent > 80) return 'budget-high';
+            if (percent > 50) return 'budget-medium';
+            return 'budget-low';
+        }
+
+        // Fetch enhanced outputs for a job
+        async function fetchEnhancedOutputs(jobId, apiKey) {
+            try {
+                const [proofRes, costRes, sufficiencyRes] = await Promise.all([
+                    fetch(`${API_BASE}/api/jobs/${jobId}/proof-scorecard`, {
+                        headers: {'X-API-KEY': apiKey}
+                    }),
+                    fetch(`${API_BASE}/api/jobs/${jobId}/cost-summary`, {
+                        headers: {'X-API-KEY': apiKey}
+                    }),
+                    fetch(`${API_BASE}/api/jobs/${jobId}/sufficiency-summary`, {
+                        headers: {'X-API-KEY': apiKey}
+                    })
+                ]);
+                
+                let hasAnyOutput = false;
+                
+                // Process proof scorecard
+                if (proofRes.ok) {
+                    const proofData = await proofRes.json();
+                    if (proofData.available) {
+                        hasAnyOutput = true;
+                        displayProofScorecard(proofData);
+                    }
+                }
+                
+                // Process cost summary
+                if (costRes.ok) {
+                    const costData = await costRes.json();
+                    if (costData.available) {
+                        hasAnyOutput = true;
+                        displayCostSummary(costData);
+                    }
+                }
+                
+                // Process sufficiency summary
+                if (sufficiencyRes.ok) {
+                    const sufficiencyData = await sufficiencyRes.json();
+                    if (sufficiencyData.available) {
+                        hasAnyOutput = true;
+                        displaySufficiencySummary(sufficiencyData);
+                    }
+                }
+                
+                // Show enhanced outputs section if any output is available
+                if (hasAnyOutput) {
+                    document.getElementById('enhancedOutputsSection').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Failed to fetch enhanced outputs:', error);
+            }
+        }
+
+        function displayProofScorecard(data) {
+            const card = document.getElementById('proofScorecardCard');
+            const scoreCircle = document.getElementById('scoreCircle');
+            const scoreValue = document.getElementById('scoreValue');
+            const verdictBadge = document.getElementById('verdictBadge');
+            const headline = document.getElementById('scoreHeadline');
+            const reportLink = document.getElementById('proofReportLink');
+            
+            // Update score
+            scoreValue.textContent = data.overall_score + '%';
+            scoreCircle.className = 'score-circle ' + getScoreClass(data.overall_score);
+            
+            // Update verdict
+            verdictBadge.textContent = data.verdict;
+            verdictBadge.className = 'verdict-badge ' + getVerdictClass(data.verdict);
+            
+            // Update headline
+            headline.textContent = data.headline;
+            
+            // Update next steps
+            if (data.next_steps && data.next_steps.length > 0) {
+                const nextStepsList = document.getElementById('nextStepsList');
+                nextStepsList.innerHTML = data.next_steps.slice(0, 3).map(step => 
+                    `<li>${step}</li>`
+                ).join('');
+                document.getElementById('nextStepsSection').style.display = 'block';
+            }
+            
+            // Update report link
+            reportLink.href = data.html_path;
+            
+            card.style.display = 'block';
+        }
+
+        function displayCostSummary(data) {
+            const card = document.getElementById('costSummaryCard');
+            
+            // Update costs
+            document.getElementById('totalCost').textContent = '$' + data.total_cost.toFixed(2);
+            document.getElementById('perPaperCost').textContent = '$' + data.per_paper_cost.toFixed(2);
+            
+            // Update budget bar
+            const budgetBar = document.getElementById('budgetBar');
+            const budgetPercent = document.getElementById('budgetPercent');
+            budgetBar.style.width = data.budget_percent + '%';
+            budgetBar.className = 'progress-bar ' + getBudgetClass(data.budget_percent);
+            budgetPercent.textContent = data.budget_percent.toFixed(1) + '%';
+            
+            // Show cache savings if > 0
+            if (data.cache_savings > 0) {
+                document.getElementById('cacheSavings').textContent = '-$' + data.cache_savings.toFixed(2);
+                document.getElementById('cacheSavingsRow').style.display = 'flex';
+            }
+            
+            // Update report link
+            document.getElementById('costReportLink').href = data.html_path;
+            
+            card.style.display = 'block';
+        }
+
+        function displaySufficiencySummary(data) {
+            const card = document.getElementById('sufficiencyCard');
+            
+            // Update quadrants
+            const quadrantMap = {
+                'Q1-Strong-Foundation': ['quadrantQ1', 'countQ1'],
+                'Q2-Promising-Seeds': ['quadrantQ2', 'countQ2'],
+                'Q3-Hollow-Coverage': ['quadrantQ3', 'countQ3'],
+                'Q4-Critical-Gaps': ['quadrantQ4', 'countQ4']
+            };
+            
+            for (const [quadrant, [quadrantId, countId]] of Object.entries(quadrantMap)) {
+                if (data.quadrants[quadrant] !== undefined) {
+                    document.getElementById(countId).textContent = data.quadrants[quadrant];
+                    document.getElementById(quadrantId).style.display = 'block';
+                }
+            }
+            
+            // Update recommendations
+            if (data.recommendations && data.recommendations.length > 0) {
+                const recList = document.getElementById('recommendationsList');
+                recList.innerHTML = data.recommendations.slice(0, 2).map(rec => 
+                    `<li>${rec}</li>`
+                ).join('');
+                document.getElementById('recommendationsSection').style.display = 'block';
+            }
+            
+            // Update report link
+            document.getElementById('sufficiencyReportLink').href = data.html_path;
+            
+            card.style.display = 'block';
+        }
+        
         // Show job detail modal
         async function showJobDetail(jobId) {
             currentJobId = jobId;
@@ -560,6 +1137,20 @@
                     document.getElementById('detailLogs').textContent = logsData.logs || 'No logs available';
                 } else {
                     document.getElementById('detailLogs').textContent = 'Failed to load logs';
+                }
+                
+                // Hide all enhanced output cards initially
+                document.getElementById('enhancedOutputsSection').style.display = 'none';
+                document.getElementById('proofScorecardCard').style.display = 'none';
+                document.getElementById('costSummaryCard').style.display = 'none';
+                document.getElementById('sufficiencyCard').style.display = 'none';
+                document.getElementById('nextStepsSection').style.display = 'none';
+                document.getElementById('cacheSavingsRow').style.display = 'none';
+                document.getElementById('recommendationsSection').style.display = 'none';
+                
+                // Fetch enhanced outputs if job is completed
+                if (job.status === 'completed') {
+                    await fetchEnhancedOutputs(jobId, currentApiKey);
                 }
                 
                 // Show modal
