@@ -21,7 +21,8 @@ def run_pipeline_for_job(
     pillar_selections: List[str],
     run_mode: str,
     progress_callback: Optional[Callable] = None,
-    log_callback: Optional[Callable] = None
+    log_callback: Optional[Callable] = None,
+    prompt_callback: Optional[Callable] = None
 ) -> Dict:
     """
     Execute orchestrator pipeline for a dashboard job
@@ -32,6 +33,7 @@ def run_pipeline_for_job(
         run_mode: "ONCE" (single pass) or "DEEP_LOOP" (iterative)
         progress_callback: Function to call with progress updates
         log_callback: Function to call with log messages
+        prompt_callback: Async function to call for user prompts
     
     Returns:
         Dict with execution results and output file paths
@@ -47,9 +49,10 @@ def run_pipeline_for_job(
         job_id=job_id,
         analysis_target=pillar_selections,
         run_mode=run_mode,
-        skip_user_prompts=True,
+        skip_user_prompts=(prompt_callback is None),
         progress_callback=progress_callback,
-        log_callback=log_callback
+        log_callback=log_callback,
+        prompt_callback=prompt_callback
     )
     
     # Execute pipeline

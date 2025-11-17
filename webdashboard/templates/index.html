@@ -949,6 +949,42 @@
         </div>
     </div>
 
+    <!-- Interactive Prompt Modal -->
+    <div class="modal fade" id="promptModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title">
+                        ⏸️ Job Paused - Input Required
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <strong>Job ID:</strong> <span id="promptJobId"></span>
+                    </div>
+                    
+                    <h6 id="promptMessage"></h6>
+                    
+                    <!-- Prompt content (varies by type) -->
+                    <div id="promptContent"></div>
+                    
+                    <!-- Timeout warning -->
+                    <div class="alert alert-warning mt-3">
+                        ⏰ Please respond within <span id="promptTimeout">5:00</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="cancelPrompt()">
+                        Cancel Job
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="submitPromptResponse()">
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
@@ -988,6 +1024,8 @@
                     updateMetrics();
                 } else if (data.type === 'job_created' || data.type === 'job_update' || data.type === 'job_retry') {
                     updateJob(data.job);
+                } else if (data.type === 'prompt_request') {
+                    showPrompt(data);
                 }
             };
             
@@ -1895,6 +1933,223 @@
         
         async function downloadAllResults() {
             window.open(`${API_BASE}/api/jobs/${currentJobId}/results/download/all`, '_blank');
+        }
+        
+        // === INTERACTIVE PROMPTS ===
+        let currentPromptId = null;
+        let promptTimeoutInterval = null;
+        
+        function showPrompt(promptData) {
+            currentPromptId = promptData.prompt_id;
+            
+            // Set job ID
+            document.getElementById('promptJobId').textContent = promptData.job_id;
+            
+            // Set message
+            document.getElementById('promptMessage').textContent = promptData.prompt_data.message;
+            
+            // Render prompt content based on type
+            const content = document.getElementById('promptContent');
+            
+            switch (promptData.prompt_type) {
+                case 'pillar_selection':
+                    content.innerHTML = renderPillarSelectionPrompt(promptData.prompt_data);
+                    break;
+                case 'run_mode':
+                    content.innerHTML = renderRunModePrompt(promptData.prompt_data);
+                    break;
+                case 'continue':
+                    content.innerHTML = renderContinuePrompt(promptData.prompt_data);
+                    break;
+                default:
+                    content.innerHTML = '<p>Unknown prompt type</p>';
+            }
+            
+            // Start timeout countdown
+            startTimeoutCountdown(300); // 5 minutes
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('promptModal'));
+            modal.show();
+        }
+        
+        function renderPillarSelectionPrompt(promptData) {
+            const pillars = promptData.options || [];
+            
+            let html = '<div class="mb-3">';
+            
+            if (promptData.allow_all) {
+                html += `
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="ALL" id="choice_all">
+                        <label class="form-check-label" for="choice_all">
+                            <strong>ALL</strong> - Analyze all pillars (single pass)
+                        </label>
+                    </div>
+                `;
+            }
+            
+            if (promptData.allow_deep) {
+                html += `
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="DEEP" id="choice_deep">
+                        <label class="form-check-label" for="choice_deep">
+                            <strong>DEEP</strong> - Run iterative deep-review loop
+                        </label>
+                    </div>
+                `;
+            }
+            
+            html += '<hr>';
+            
+            pillars.forEach((pillar, index) => {
+                const pillarName = pillar.split(':')[0];
+                html += `
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="${index + 1}" id="choice_${index}">
+                        <label class="form-check-label" for="choice_${index}">
+                            ${index + 1}. ${pillarName}
+                        </label>
+                    </div>
+                `;
+            });
+            
+            if (promptData.allow_none) {
+                html += `
+                    <hr>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="NONE" id="choice_none">
+                        <label class="form-check-label" for="choice_none">
+                            <strong>NONE</strong> - Cancel analysis
+                        </label>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            return html;
+        }
+        
+        function renderRunModePrompt(promptData) {
+            return `
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="ONCE" id="mode_once" checked>
+                        <label class="form-check-label" for="mode_once">
+                            <strong>ONCE</strong> - Single pass analysis
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="DEEP_LOOP" id="mode_deep_loop">
+                        <label class="form-check-label" for="mode_deep_loop">
+                            <strong>DEEP_LOOP</strong> - Iterative analysis until convergence
+                        </label>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function renderContinuePrompt(promptData) {
+            return `
+                <p>${promptData.details || 'Continue?'}</p>
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="yes" id="continue_yes" checked>
+                        <label class="form-check-label" for="continue_yes">
+                            Yes, continue
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="no" id="continue_no">
+                        <label class="form-check-label" for="continue_no">
+                            No, stop here
+                        </label>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function startTimeoutCountdown(seconds) {
+            const display = document.getElementById('promptTimeout');
+            let remaining = seconds;
+            
+            if (promptTimeoutInterval) {
+                clearInterval(promptTimeoutInterval);
+            }
+            
+            promptTimeoutInterval = setInterval(() => {
+                const minutes = Math.floor(remaining / 60);
+                const secs = remaining % 60;
+                display.textContent = `${minutes}:${secs.toString().padStart(2, '0')}`;
+                
+                if (remaining <= 0) {
+                    clearInterval(promptTimeoutInterval);
+                    alert('Prompt timed out. Job will be cancelled.');
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('promptModal'));
+                    if (modal) modal.hide();
+                }
+                
+                remaining--;
+            }, 1000);
+        }
+        
+        async function submitPromptResponse() {
+            const selected = document.querySelector('input[name="promptChoice"]:checked');
+            
+            if (!selected) {
+                alert('Please select an option');
+                return;
+            }
+            
+            const response = selected.value;
+            const apiKey = document.getElementById('apiKeyInput').value;
+            
+            try {
+                const result = await fetch(`${API_BASE}/api/prompts/${currentPromptId}/respond`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': apiKey
+                    },
+                    body: JSON.stringify({ response })
+                });
+                
+                if (!result.ok) {
+                    const errorData = await result.json();
+                    throw new Error(errorData.detail || 'Failed to submit response');
+                }
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('promptModal'));
+                if (modal) modal.hide();
+                
+                // Clear timeout
+                if (promptTimeoutInterval) {
+                    clearInterval(promptTimeoutInterval);
+                }
+                
+                // Show notification
+                console.log('Response submitted. Job will continue.');
+                
+            } catch (error) {
+                alert('Failed to submit response: ' + error.message);
+            }
+        }
+        
+        function cancelPrompt() {
+            // Submit "NONE" as cancellation response
+            const noneRadio = document.querySelector('input[name="promptChoice"][value="NONE"]');
+            if (noneRadio) {
+                noneRadio.checked = true;
+                submitPromptResponse();
+            } else {
+                // If no NONE option, just close the modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('promptModal'));
+                if (modal) modal.hide();
+                if (promptTimeoutInterval) {
+                    clearInterval(promptTimeoutInterval);
+                }
+            }
         }
         
         // Initialize
