@@ -7,6 +7,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+try:
+    from literature_review.utils.api_costs import CostEstimator
+except ImportError:
+    # Fallback if api_costs not available
+    CostEstimator = None
+
 
 class SearchOptimizer:
     """Optimize search strategy based on gap analysis."""
@@ -160,6 +166,17 @@ class AdaptiveSearchOptimizer(SearchOptimizer):
         self.batch_size = roi_config.get('batch_size', 5)
         self.min_roi_threshold = roi_config.get('min_roi_threshold', 0.1)
         self.convergence_threshold = roi_config.get('convergence_threshold', 0.8)
+        
+        # Cost-aware parameters
+        self.budget_limit = roi_config.get('budget_limit', None)  # USD
+        self.optimization_mode = roi_config.get('mode', 'balanced')  # 'coverage', 'cost', or 'balanced'
+        
+        # Initialize cost estimator if available
+        if CostEstimator is not None:
+            self.cost_estimator = CostEstimator()
+        else:
+            self.cost_estimator = None
+            logger.warning("CostEstimator not available, cost-aware features disabled")
         
         # State tracking
         self.roi_history = []  # Track ROI changes over time
@@ -400,6 +417,131 @@ class AdaptiveSearchOptimizer(SearchOptimizer):
             for i, search in enumerate(searches[:3]):
                 delta_str = f" (Δ{search.get('roi_delta', 0):+.2f})" if 'roi_delta' in search else ""
                 logger.info(f"  {i+1}. {search.get('query', 'N/A')} - ROI: {search.get('roi', 0):.2f}{delta_str}")
+    
+    def prioritize_searches_with_cost(self, searches: List[Dict]) -> List[Dict]:
+        """
+        Prioritize searches with cost-aware ROI calculation.
+        
+        Args:
+            searches: List of search configurations with query, api, max_results, etc.
+            
+        Returns:
+            List of searches with ROI and cost information, sorted by cost-aware ROI
+        """
+        if self.cost_estimator is None:
+            logger.warning("Cost estimator not available, using default ROI")
+            return searches
+        
+        prioritized = []
+        
+        for search in searches:
+            # Get gap severity and expected papers from search metadata
+            gap_severity = self._severity_to_numeric(search.get('gap_severity', 'Medium'))
+            expected_papers = search.get('papers_needed', 5)
+            
+            # Calculate cost
+            cost_info = self.cost_estimator.estimate_search_cost(search)
+            api_cost = cost_info['total_cost']
+            
+            # Calculate cost-adjusted ROI based on mode
+            if self.optimization_mode == 'coverage':
+                # Maximize coverage, ignore cost
+                roi = gap_severity * expected_papers
+                cost_weight = 0.0
+            
+            elif self.optimization_mode == 'cost':
+                # Minimize cost, still consider value
+                roi = (gap_severity * expected_papers) / max(api_cost + 0.01, 0.01)
+                cost_weight = 1.0
+            
+            else:  # 'balanced'
+                # Balance coverage and cost
+                base_roi = gap_severity * expected_papers
+                cost_penalty = 1.0 / (1.0 + api_cost)
+                roi = base_roi * cost_penalty
+                cost_weight = 0.5
+            
+            prioritized.append({
+                **search,
+                'roi': round(roi, 2),
+                'cost': api_cost,
+                'cost_weight': cost_weight,
+                'value_per_dollar': round((gap_severity * expected_papers) / max(api_cost, 0.01), 2) if api_cost > 0 else float('inf')
+            })
+        
+        # Sort by ROI
+        prioritized.sort(key=lambda x: x.get('roi', 0), reverse=True)
+        
+        # Apply budget constraint if set
+        if self.budget_limit is not None:
+            prioritized = self._apply_budget_constraint(prioritized, self.budget_limit)
+        
+        return prioritized
+    
+    def _severity_to_numeric(self, severity: str) -> float:
+        """Convert severity string to numeric value."""
+        severity_map = {
+            'Critical': 9.0,
+            'High': 7.0,
+            'Medium': 5.0,
+            'Low': 3.0,
+            'Covered': 1.0
+        }
+        return severity_map.get(severity, 5.0)
+    
+    def _apply_budget_constraint(self, searches: List[Dict], budget_limit: float) -> List[Dict]:
+        """
+        Filter searches to fit within budget.
+        
+        Args:
+            searches: List of searches sorted by ROI
+            budget_limit: Maximum budget in USD
+            
+        Returns:
+            List of searches that fit within budget
+        """
+        cumulative_cost = 0.0
+        constrained_searches = []
+        skipped_searches = []
+        
+        for search in searches:
+            search_cost = search.get('cost', 0.0)
+            
+            if cumulative_cost + search_cost <= budget_limit:
+                constrained_searches.append(search)
+                cumulative_cost += search_cost
+            else:
+                # Mark as skipped due to budget
+                search['skipped'] = True
+                search['skip_reason'] = f'Budget exceeded (${cumulative_cost + search_cost:.2f} > ${budget_limit})'
+                skipped_searches.append(search)
+        
+        logger.info(f"Budget constraint: {len(constrained_searches)}/{len(searches)} searches fit within ${budget_limit}")
+        if skipped_searches:
+            logger.info(f"Skipped {len(skipped_searches)} searches due to budget")
+        
+        return constrained_searches
+    
+    def estimate_total_cost(self, searches: List[Dict]) -> Dict:
+        """
+        Estimate total cost for a list of searches.
+        
+        Args:
+            searches: List of search configurations
+            
+        Returns:
+            Dict with total cost, breakdown, and statistics
+        """
+        if self.cost_estimator is None:
+            return {
+                'total_cost': 0.0,
+                'search_costs': [],
+                'num_searches': len(searches),
+                'avg_cost_per_search': 0.0,
+                'error': 'Cost estimator not available'
+            }
+        
+        return self.cost_estimator.estimate_job_cost(searches)
 
 
 def generate_search_plan(gap_file: str, searches_file: str, output_file: str = 'gap_analysis_output/optimized_search_plan.json'):
