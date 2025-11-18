@@ -202,14 +202,190 @@ These can be added in future iterations following the same pattern.
 **Files Modified**:
 1. `literature_review/orchestrator.py` - Added prompt integration logic
 2. `tests/integration/test_interactive_prompts.py` - Added comprehensive tests
+3. `webdashboard/prompt_handler.py` - Added configurable timeout support (ENHANCE-P5-5)
+4. `webdashboard/job_runner.py` - Updated to use configured timeouts (ENHANCE-P5-5)
+5. `pipeline_config.json` - Added prompts configuration section (ENHANCE-P5-5)
 
 **Files Used (No Changes)**:
-1. `webdashboard/prompt_handler.py` - Existing prompt infrastructure
-2. `webdashboard/templates/index.html` - Existing UI components
+1. `webdashboard/templates/index.html` - Existing UI components
 
-**Test Results**: 12 passed, 4 skipped, 0 failed
+**Test Results**: 14 passed, 7 skipped, 0 failed
 
 **Lines of Code**: 
 - Orchestrator: ~60 lines added
 - Tests: ~180 lines added
-- Total: ~240 lines
+- Prompt Handler timeout config: ~80 lines added
+- Tests for timeout config: ~380 lines added
+- Total: ~700 lines
+
+---
+
+## Configurable Prompt Timeouts (ENHANCE-P5-5)
+
+### Overview
+
+As of ENHANCE-P5-5, prompt timeouts are now configurable per prompt type via `pipeline_config.json`. Different prompts have different complexity levels and thus different appropriate timeout durations.
+
+### Configuration
+
+Add a `prompts` section to `pipeline_config.json`:
+
+```json
+{
+  "prompts": {
+    "default_timeout": 300,
+    "timeouts": {
+      "pillar_selection": 300,
+      "run_mode": 120,
+      "continue": 60,
+      "threshold_selection": 180,
+      "convergence_confirmation": 90
+    }
+  }
+}
+```
+
+### Timeout Ranges
+
+- **Minimum**: 10 seconds
+- **Maximum**: 3600 seconds (1 hour)
+- **Default**: 300 seconds (5 minutes) if not configured
+
+### Timeout Recommendations
+
+| Prompt Type | Recommended Timeout | Justification |
+|-------------|-------------------|---------------|
+| `pillar_selection` | 300s (5 min) | Complex choice, need to understand pillars |
+| `run_mode` | 120s (2 min) | Simple binary: ONCE vs DEEP_LOOP |
+| `continue` | 60s (1 min) | Simple yes/no decision |
+| `threshold_selection` | 180s (3 min) | Requires understanding gap threshold concept |
+| `convergence_confirmation` | 90s (1.5 min) | Review convergence data and decide |
+
+### Environment-Specific Examples
+
+#### Development (Relaxed Timeouts)
+```json
+{
+  "prompts": {
+    "default_timeout": 600,
+    "timeouts": {
+      "pillar_selection": 900
+    }
+  }
+}
+```
+
+#### Production (Aggressive Timeouts)
+```json
+{
+  "prompts": {
+    "default_timeout": 30,
+    "timeouts": {
+      "pillar_selection": 60,
+      "run_mode": 30,
+      "continue": 20
+    }
+  }
+}
+```
+
+### Programmatic Usage
+
+#### Using Configured Timeouts
+
+```python
+from webdashboard.prompt_handler import PromptHandler
+
+# Load from pipeline_config.json
+handler = PromptHandler("pipeline_config.json")
+
+# Request prompt with configured timeout
+response = await handler.request_user_input(
+    job_id="job-123",
+    prompt_type="run_mode",
+    prompt_data={"message": "Select mode", "options": ["ONCE", "DEEP_LOOP"]}
+    # No timeout_seconds → uses configured value (120s for run_mode)
+)
+```
+
+#### Explicit Timeout Override
+
+```python
+# Override config for this specific prompt
+response = await handler.request_user_input(
+    job_id="job-123",
+    prompt_type="pillar_selection",
+    prompt_data={"message": "Select pillars"},
+    timeout_seconds=600  # Explicit 10-minute timeout
+)
+```
+
+#### Getting Timeout for a Prompt Type
+
+```python
+handler = PromptHandler("pipeline_config.json")
+
+timeout = handler.get_timeout("run_mode")  # Returns 120 (or default 300)
+```
+
+### UI Integration
+
+The UI automatically receives the timeout value in `prompt_data.timeout_seconds` and displays an appropriate countdown timer. No UI changes are required.
+
+**JavaScript Example** (already implemented in `index.html`):
+```javascript
+function showPrompt(promptData) {
+    const timeoutSeconds = promptData.timeout_seconds || 300;
+    startCountdown(timeoutSeconds);
+}
+```
+
+### Backward Compatibility
+
+- **No Config**: If `pipeline_config.json` doesn't exist or lacks a `prompts` section, all prompts use 300s default
+- **Partial Config**: If only some prompt types are configured, others fall back to `default_timeout`
+- **Invalid Config**: If configuration is invalid (timeouts outside 10-3600 range), an error is raised at initialization
+- **Explicit Override**: Passing `timeout_seconds` to `request_user_input()` always takes precedence over config
+
+### Validation
+
+Configuration is validated on load:
+
+```python
+# Valid
+config = {
+    "prompts": {
+        "default_timeout": 300,  # ✓ 10-3600 range
+        "timeouts": {
+            "run_mode": 120      # ✓ 10-3600 range
+        }
+    }
+}
+
+# Invalid - raises ValueError
+config = {
+    "prompts": {
+        "default_timeout": 5,    # ✗ Too short (< 10)
+        "timeouts": {
+            "run_mode": 5000     # ✗ Too long (> 3600)
+        }
+    }
+}
+```
+
+### Testing
+
+Comprehensive tests are available in `tests/integration/test_prompt_timeouts.py`:
+
+```bash
+pytest tests/integration/test_prompt_timeouts.py -v
+```
+
+Test coverage includes:
+- Configuration loading and validation
+- Per-prompt-type timeout configuration
+- Explicit timeout overrides
+- Backward compatibility
+- Invalid configuration handling
+- UI timeout data propagation
+- Actual timeout behavior
