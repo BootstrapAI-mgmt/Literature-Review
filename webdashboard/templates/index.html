@@ -397,152 +397,138 @@
             color: #4ec9b0;
         }
         
-        /* Comparison Modal Styles */
-        .comparison-summary {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
+        /* Summary Cards Styles */
+        .job-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+            transition: box-shadow 0.2s;
+        }
+        
+        .job-item:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .job-header h5 {
+            margin: 0;
+            font-size: 1rem;
+        }
+        
+        .job-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .job-summary-cards {
+            display: flex;
+            gap: 12px;
+            margin: 12px 0;
+            padding: 12px;
+            background-color: #f8f9fa;
             border-radius: 8px;
         }
-        
-        .progress-comparison {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 15px;
-            margin-top: 10px;
-        }
-        
-        .comparison-metric {
-            text-align: center;
+
+        .summary-card {
+            flex: 1;
             padding: 12px;
-            background: white;
             border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+            background-color: white;
+            border: 1px solid #dee2e6;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
         }
-        
-        .comparison-metric .label {
-            font-size: 0.8em;
-            color: #666;
-            margin-bottom: 5px;
+
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        
-        .comparison-metric .value {
-            font-size: 1.5em;
+
+        .summary-card .metric-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+
+        .summary-card .metric-value {
+            font-size: 28px;
             font-weight: bold;
+            color: #333;
         }
-        
-        .delta {
-            font-size: 1.2em;
-            font-weight: bold;
+
+        .summary-card .metric-label {
+            font-size: 12px;
+            color: #6c757d;
+            text-transform: uppercase;
         }
-        
-        .delta.positive {
-            color: #28a745;
+
+        /* Color-coded completeness */
+        .summary-card.completeness.bg-success {
+            background-color: #d4edda !important;
+            border-color: #28a745;
         }
-        
-        .delta.negative {
+
+        .summary-card.completeness.bg-warning {
+            background-color: #fff3cd !important;
+            border-color: #ffc107;
+        }
+
+        .summary-card.completeness.bg-danger {
+            background-color: #f8d7da !important;
+            border-color: #dc3545;
+        }
+
+        /* Critical gaps alert */
+        .summary-card.critical-gaps.has-alerts {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+
+        .summary-card.critical-gaps.has-alerts .metric-value {
             color: #dc3545;
         }
-        
-        .delta.neutral {
-            color: #6c757d;
+
+        /* Recommendations preview */
+        .metric-preview {
+            display: none;
+            margin-top: 8px;
+            text-align: left;
+            font-size: 11px;
+            max-height: 80px;
+            overflow-y: auto;
         }
-        
-        .papers-diff, .gaps-diff {
-            margin-top: 20px;
+
+        .summary-card:hover .metric-preview {
+            display: block;
         }
-        
-        .papers-diff ul, .gaps-diff ul {
+
+        .metric-preview ul {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
-        
-        .papers-diff li, .gaps-diff li {
-            padding: 8px 12px;
-            margin: 5px 0;
-            border-radius: 4px;
-        }
-        
-        .papers-diff li.added {
-            background: #d4edda;
-            border-left: 4px solid #28a745;
-        }
-        
-        .papers-diff li.removed {
-            background: #f8d7da;
-            border-left: 4px solid #dc3545;
-        }
-        
-        .gaps-diff li.filled {
-            background: #d1ecf1;
-            border-left: 4px solid #17a2b8;
-        }
-        
-        .gaps-diff li.new-gap {
-            background: #fff3cd;
-            border-left: 4px solid #ffc107;
-        }
-        
-        .gap-improvement {
-            font-size: 0.85em;
-            color: #666;
-            margin-left: 10px;
-        /* Progress History Modal Styles */
-        #progressHistoryModal .table th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-        }
-        
-        #progressHistoryModal .table tbody tr:hover {
-            background-color: #f1f3f5;
-        }
-        
-        #progressHistoryModal .alert-info {
-            border-left: 4px solid #0dcaf0;
-        }
-        
-        #timeline-chart {
-            min-height: 150px;
-        }
-        
-        .stage-details tbody tr td:first-child {
-            font-family: 'Courier New', monospace;
+
+        .metric-preview li {
+            padding: 2px 0;
             color: #495057;
-        /* ETA Display Styles */
-        .eta-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
         }
-        
-        .confidence-badge {
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-        
-        .confidence-badge.high {
-            background-color: #d4edda;
-            color: #155724;
-        }
-        
-        .confidence-badge.medium {
-            background-color: #fff3cd;
-            color: #856404;
-        }
-        
-        .confidence-badge.low {
-            background-color: #f8d7da;
-            color: #721c24;
-        }
-        
-        .eta-breakdown {
-            font-size: 0.85rem;
+
+        .summary-card.no-results {
+            flex: 1 1 100%;
+            font-style: italic;
             color: #6c757d;
-            margin-top: 4px;
         }
     </style>
 </head>
@@ -651,33 +637,14 @@
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                    <div class="card-header bg-info text-white">
                         <h5 class="mb-0">📋 Jobs</h5>
-                        <button type="button" class="btn btn-light btn-sm" onclick="showComparisonModal()" id="compareButton" style="display: none;">
-                            📊 Compare Jobs
-                        </button>
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Job ID</th>
-                                        <th>Filename</th>
-                                        <th>Status</th>
-                                        <th>Created</th>
-                                        <th>Duration</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="jobsTableBody">
-                                    <tr>
-                                        <td colspan="6" class="text-center text-muted">
-                                            No jobs yet. Upload a PDF to get started.
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                        <div id="jobsContainer">
+                            <div class="text-center text-muted p-4">
+                                No jobs yet. Upload a PDF to get started.
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1041,9 +1008,6 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-info" id="viewProgressBtn" style="display: none;" onclick="viewProgressFromDetails()">
-                        ⏱️ View Progress History
-                    </button>
                     <button type="button" class="btn btn-primary" id="downloadBtn">
                         📥 Download PDF
                     </button>
@@ -1186,7 +1150,7 @@
         </div>
     </div>
 
-    <!-- Job Comparison Modal -->
+    <!-- Comparison Modal -->
     <div class="modal fade" id="comparisonModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -1228,6 +1192,10 @@
                         <!-- Error messages -->
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Progress History Modal -->
     <div class="modal fade" id="progressHistoryModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
@@ -1352,17 +1320,11 @@
         // Progress WebSocket for job-specific real-time updates
         let progressWebSocket = null;
         let autoScroll = true;
-        let etaUpdateInterval = null;
         
         function connectProgressWebSocket(jobId) {
             // Close existing connection
             if (progressWebSocket) {
                 progressWebSocket.close();
-            }
-            
-            // Clear existing ETA update interval
-            if (etaUpdateInterval) {
-                clearInterval(etaUpdateInterval);
             }
             
             // Connect to job-specific progress stream
@@ -1372,10 +1334,6 @@
             progressWebSocket.onopen = () => {
                 console.log('Progress WebSocket connected');
                 document.getElementById('progressContainer').style.display = 'block';
-                
-                // Start periodic ETA updates
-                updateJobETA(jobId);
-                etaUpdateInterval = setInterval(() => updateJobETA(jobId), 10000); // Update every 10 seconds
             };
             
             progressWebSocket.onmessage = (event) => {
@@ -1387,16 +1345,12 @@
                         break;
                     case 'progress':
                         handleProgressEvent(data.event);
-                        updateJobETA(jobId); // Update ETA on each progress event
                         break;
                     case 'logs':
                         handleLogLines(data.lines);
                         break;
                     case 'job_complete':
                         handleJobComplete(data.status);
-                        if (etaUpdateInterval) {
-                            clearInterval(etaUpdateInterval);
-                        }
                         break;
                 }
             };
@@ -1407,80 +1361,7 @@
             
             progressWebSocket.onclose = () => {
                 console.log('Progress WebSocket disconnected');
-                if (etaUpdateInterval) {
-                    clearInterval(etaUpdateInterval);
-                }
             };
-        }
-        
-        async function updateJobETA(jobId) {
-            try {
-                const currentApiKey = document.getElementById('apiKeyInput').value;
-                const response = await fetch(`${API_BASE}/api/jobs/${jobId}/eta`, {
-                    headers: {
-                        'X-API-KEY': currentApiKey
-                    }
-                });
-                
-                if (!response.ok) {
-                    console.warn('Failed to fetch ETA');
-                    return;
-                }
-                
-                const data = await response.json();
-                
-                if (data.eta) {
-                    displayETA(data.eta);
-                }
-            } catch (error) {
-                console.error('Error fetching ETA:', error);
-            }
-        }
-        
-        function displayETA(eta) {
-            const etaElement = document.getElementById('etaDisplay');
-            if (!etaElement) return;
-            
-            const totalSeconds = eta.total_eta_seconds;
-            const confidence = eta.confidence;
-            
-            // Format time
-            const formatTime = (seconds) => {
-                const hours = Math.floor(seconds / 3600);
-                const mins = Math.floor((seconds % 3600) / 60);
-                const secs = Math.floor(seconds % 60);
-                
-                if (hours > 0) {
-                    return `${hours}h ${mins}m`;
-                } else if (mins > 0) {
-                    return `${mins}m ${secs}s`;
-                } else {
-                    return `${secs}s`;
-                }
-            };
-            
-            let etaText = '';
-            
-            if (confidence === 'high') {
-                etaText = `${formatTime(totalSeconds)} remaining`;
-            } else if (confidence === 'medium') {
-                const minTime = formatTime(eta.min_eta_seconds);
-                const maxTime = formatTime(eta.max_eta_seconds);
-                etaText = `${minTime} - ${maxTime} remaining`;
-            } else {
-                etaText = `~${formatTime(totalSeconds)} remaining`;
-            }
-            
-            // Add first run warning for low confidence
-            const firstRunWarning = confidence === 'low' ? '<br><small>(First run, estimate may vary)</small>' : '';
-            
-            etaElement.innerHTML = `
-                <div class="eta-container">
-                    <strong>ETA:</strong> ${etaText}
-                    <span class="confidence-badge ${confidence}">${confidence} confidence</span>
-                </div>
-                ${firstRunWarning}
-            `;
         }
         
         function handleInitialStatus(job) {
@@ -1631,9 +1512,6 @@
             document.getElementById('completedJobs').textContent = completed;
             document.getElementById('runningJobs').textContent = running;
             document.getElementById('failedJobs').textContent = failed;
-            
-            // Update compare button visibility
-            updateCompareButtonVisibility();
         }
         
         // Format date/time
@@ -1669,38 +1547,108 @@
         
         // Update jobs table
         function updateJobsTable() {
-            const tbody = document.getElementById('jobsTableBody');
+            const container = document.getElementById('jobsContainer');
             
             if (jobs.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-muted">
-                            No jobs yet. Upload a PDF to get started.
-                        </td>
-                    </tr>
+                container.innerHTML = `
+                    <div class="text-center text-muted p-4">
+                        No jobs yet. Upload a PDF to get started.
+                    </div>
                 `;
                 return;
             }
             
-            tbody.innerHTML = jobs.map(job => `
-                <tr class="job-row" onclick="showJobDetail('${job.id}')">
-                    <td><code>${job.id.substring(0, 8)}</code></td>
-                    <td>${job.filename}</td>
-                    <td>${getStatusBadge(job.status)}</td>
-                    <td>${formatDateTime(job.created_at)}</td>
-                    <td>${calculateDuration(job.started_at || job.created_at, job.completed_at)}</td>
-                    <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); showJobDetail('${job.id}')">
-                            View
-                        </button>
-                        ${job.status === 'completed' ? `
-                            <button class="btn btn-sm btn-outline-success" onclick="event.stopPropagation(); showJobResults('${job.id}')">
-                                📊 Results
-                            </button>
-                        ` : ''}
-                    </td>
-                </tr>
-            `).join('');
+            container.innerHTML = jobs.map(job => {
+                const summary = job.summary || {
+                    completeness: 0,
+                    critical_gaps: 0,
+                    paper_count: 0,
+                    recommendations_preview: [],
+                    has_results: false
+                };
+                
+                const summaryCardsHtml = summary.has_results ? `
+                    <div class="job-summary-cards">
+                        <div class="summary-card completeness ${getCompletenessClass(summary.completeness)}">
+                            <div class="metric-icon">📊</div>
+                            <div class="metric-value">${summary.completeness}%</div>
+                            <div class="metric-label">Coverage</div>
+                        </div>
+                        
+                        <div class="summary-card critical-gaps ${summary.critical_gaps > 0 ? 'has-alerts' : ''}">
+                            <div class="metric-icon">⚠️</div>
+                            <div class="metric-value">${summary.critical_gaps}</div>
+                            <div class="metric-label">Critical Gaps</div>
+                        </div>
+                        
+                        <div class="summary-card paper-count">
+                            <div class="metric-icon">📄</div>
+                            <div class="metric-value">${summary.paper_count}</div>
+                            <div class="metric-label">Papers</div>
+                        </div>
+                        
+                        <div class="summary-card recommendations">
+                            <div class="metric-icon">💡</div>
+                            <div class="metric-value">${summary.recommendations_preview.length}</div>
+                            <div class="metric-label">Recommendations</div>
+                            ${summary.recommendations_preview.length > 0 ? `
+                                <div class="metric-preview">
+                                    <ul>
+                                        ${summary.recommendations_preview.map(rec => `
+                                            <li>${rec.substring(0, 50)}...</li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                ` : `
+                    <div class="job-summary-cards">
+                        <div class="summary-card no-results">
+                            <span>Analysis pending or in progress</span>
+                        </div>
+                    </div>
+                `;
+                
+                return `
+                    <div class="job-item" data-job-id="${job.id}">
+                        <div class="job-header">
+                            <div>
+                                <h5><code>${job.id.substring(0, 8)}</code> - ${job.filename || 'Batch Upload'}</h5>
+                            </div>
+                            <div>
+                                ${getStatusBadge(job.status)}
+                            </div>
+                        </div>
+                        
+                        ${summaryCardsHtml}
+                        
+                        <div class="job-details">
+                            <small class="text-muted">
+                                Created: ${formatDateTime(job.created_at)} | 
+                                Duration: ${calculateDuration(job.started_at || job.created_at, job.completed_at)}
+                            </small>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary" onclick="showJobDetail('${job.id}')">
+                                    View Details
+                                </button>
+                                ${job.status === 'completed' ? `
+                                    <button class="btn btn-sm btn-outline-success" onclick="showJobResults('${job.id}')">
+                                        📊 Full Results
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // Helper function for completeness color coding
+        function getCompletenessClass(completeness) {
+            if (completeness >= 80) return 'bg-success';
+            if (completeness >= 60) return 'bg-warning';
+            return 'bg-danger';
         }
         
         // Helper methods for enhanced outputs
@@ -1941,11 +1889,6 @@
                 // Fetch enhanced outputs if job is completed
                 if (job.status === 'completed') {
                     await fetchEnhancedOutputs(jobId, currentApiKey);
-                    // Show progress history button for completed jobs
-                    document.getElementById('viewProgressBtn').style.display = 'inline-block';
-                } else {
-                    // Hide progress history button for non-completed jobs
-                    document.getElementById('viewProgressBtn').style.display = 'none';
                 }
                 
                 // Connect to progress stream if job is running or queued
@@ -2457,12 +2400,10 @@
         
         // === INTERACTIVE PROMPTS ===
         let currentPromptId = null;
-        let currentPromptType = null;
         let promptTimeoutInterval = null;
         
         function showPrompt(promptData) {
             currentPromptId = promptData.prompt_id;
-            currentPromptType = promptData.prompt_type;
             
             // Set job ID
             document.getElementById('promptJobId').textContent = promptData.job_id;
@@ -2500,31 +2441,12 @@
             
             let html = '<div class="mb-3">';
             
-            // Helper buttons and count badge
-            html += `
-                <div class="d-flex justify-content-between mb-3">
-                    <div>
-                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="selectAllPillars()">
-                            ✓ Select All
-                        </button>
-                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearAllPillars()">
-                            ✕ Clear All
-                        </button>
-                    </div>
-                    <div>
-                        <span id="pillar-count" class="badge bg-secondary">0 selected</span>
-                    </div>
-                </div>
-                <hr>
-            `;
-            
-            // Special options (mutually exclusive with individual pillars)
             if (promptData.allow_all) {
                 html += `
                     <div class="form-check">
-                        <input class="form-check-input special-option" type="checkbox" value="ALL" id="choice_all" onchange="handleSpecialOption('ALL')">
-                        <label class="form-check-label fw-bold" for="choice_all">
-                            ALL - Analyze all pillars (single pass)
+                        <input class="form-check-input" type="radio" name="promptChoice" value="ALL" id="choice_all">
+                        <label class="form-check-label" for="choice_all">
+                            <strong>ALL</strong> - Analyze all pillars (single pass)
                         </label>
                     </div>
                 `;
@@ -2533,20 +2455,9 @@
             if (promptData.allow_deep) {
                 html += `
                     <div class="form-check">
-                        <input class="form-check-input special-option" type="checkbox" value="DEEP" id="choice_deep" onchange="handleSpecialOption('DEEP')">
-                        <label class="form-check-label fw-bold" for="choice_deep">
-                            DEEP - Run iterative deep-review loop
-                        </label>
-                    </div>
-                `;
-            }
-            
-            if (promptData.allow_none) {
-                html += `
-                    <div class="form-check mb-2">
-                        <input class="form-check-input special-option" type="checkbox" value="NONE" id="choice_none" onchange="handleSpecialOption('NONE')">
-                        <label class="form-check-label fw-bold" for="choice_none">
-                            NONE - Cancel analysis
+                        <input class="form-check-input" type="radio" name="promptChoice" value="DEEP" id="choice_deep">
+                        <label class="form-check-label" for="choice_deep">
+                            <strong>DEEP</strong> - Run iterative deep-review loop
                         </label>
                     </div>
                 `;
@@ -2554,20 +2465,29 @@
             
             html += '<hr>';
             
-            // Individual pillars (checkbox multi-select)
-            html += '<div id="individual-pillars">';
             pillars.forEach((pillar, index) => {
                 const pillarName = pillar.split(':')[0];
                 html += `
                     <div class="form-check">
-                        <input class="form-check-input pillar-checkbox" type="checkbox" value="${pillar}" id="choice_${index}" onchange="updatePillarCount()">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="${index + 1}" id="choice_${index}">
                         <label class="form-check-label" for="choice_${index}">
                             ${index + 1}. ${pillarName}
                         </label>
                     </div>
                 `;
             });
-            html += '</div>';
+            
+            if (promptData.allow_none) {
+                html += `
+                    <hr>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="promptChoice" value="NONE" id="choice_none">
+                        <label class="form-check-label" for="choice_none">
+                            <strong>NONE</strong> - Cancel analysis
+                        </label>
+                    </div>
+                `;
+            }
             
             html += '</div>';
             return html;
@@ -2612,79 +2532,6 @@
             `;
         }
         
-        function selectAllPillars() {
-            // Uncheck special options
-            document.querySelectorAll('.special-option').forEach(cb => cb.checked = false);
-            
-            // Check all individual pillars
-            document.querySelectorAll('.pillar-checkbox').forEach(cb => cb.checked = true);
-            updatePillarCount();
-        }
-        
-        function clearAllPillars() {
-            // Uncheck everything
-            document.querySelectorAll('.special-option, .pillar-checkbox').forEach(cb => cb.checked = false);
-            updatePillarCount();
-        }
-        
-        function handleSpecialOption(option) {
-            const checkbox = document.getElementById(`choice_${option.toLowerCase()}`);
-            
-            if (checkbox && checkbox.checked) {
-                // Uncheck all other options (special and individual)
-                document.querySelectorAll('.special-option, .pillar-checkbox').forEach(cb => {
-                    if (cb !== checkbox) {
-                        cb.checked = false;
-                    }
-                });
-            }
-            
-            updatePillarCount();
-        }
-        
-        function updatePillarCount() {
-            // Count selected individual pillars
-            const selectedPillars = document.querySelectorAll('.pillar-checkbox:checked').length;
-            
-            // Check if special option selected
-            const specialSelected = document.querySelector('.special-option:checked');
-            const countBadge = document.getElementById('pillar-count');
-            
-            if (!countBadge) return; // Not in pillar selection prompt
-            
-            if (specialSelected) {
-                countBadge.textContent = specialSelected.value;
-                countBadge.className = 'badge bg-primary';
-            } else if (selectedPillars > 0) {
-                countBadge.textContent = `${selectedPillars} selected`;
-                countBadge.className = 'badge bg-info';
-            } else {
-                countBadge.textContent = '0 selected';
-                countBadge.className = 'badge bg-secondary';
-            }
-        }
-        
-        function getSelectedPillars() {
-            // Check for special options first
-            const specialOption = document.querySelector('.special-option:checked');
-            if (specialOption) {
-                return specialOption.value;  // Return "ALL", "DEEP", or "NONE"
-            }
-            
-            // Otherwise, return array of selected individual pillars
-            const selected = [];
-            document.querySelectorAll('.pillar-checkbox:checked').forEach(cb => {
-                selected.push(cb.value);
-            });
-            
-            // Validation
-            if (selected.length === 0) {
-                return null;  // Indicates validation failure
-            }
-            
-            return selected;  // Returns array like ["P1: Pillar 1", "P3: Pillar 3"]
-        }
-        
         function startTimeoutCountdown(seconds) {
             const display = document.getElementById('promptTimeout');
             let remaining = seconds;
@@ -2710,27 +2557,14 @@
         }
         
         async function submitPromptResponse() {
-            let response;
+            const selected = document.querySelector('input[name="promptChoice"]:checked');
             
-            // Handle different prompt types
-            if (currentPromptType === 'pillar_selection') {
-                response = getSelectedPillars();
-                if (response === null) {
-                    alert('Please select at least one pillar or choose a special option (ALL, DEEP, NONE)');
-                    return;
-                }
-            } else {
-                // Other prompt types use radio buttons
-                const selected = document.querySelector('input[name="promptChoice"]:checked');
-                
-                if (!selected) {
-                    alert('Please select an option');
-                    return;
-                }
-                
-                response = selected.value;
+            if (!selected) {
+                alert('Please select an option');
+                return;
             }
             
+            const response = selected.value;
             const apiKey = document.getElementById('apiKeyInput').value;
             
             try {
@@ -2778,390 +2612,6 @@
                 if (promptTimeoutInterval) {
                     clearInterval(promptTimeoutInterval);
                 }
-            }
-        }
-        
-        // Job Comparison Functions
-        function showComparisonModal() {
-            // Populate job selectors with completed jobs
-            const completedJobs = jobs.filter(job => job.status === 'completed');
-            
-            if (completedJobs.length < 2) {
-                alert('At least 2 completed jobs are required for comparison.');
-                return;
-            }
-            
-            const baseline = document.getElementById('baseline-job');
-            const comparison = document.getElementById('comparison-job');
-            
-            // Clear existing options
-            baseline.innerHTML = '<option value="">-- Select a job --</option>';
-            comparison.innerHTML = '<option value="">-- Select a job --</option>';
-            
-            // Sort jobs by creation date (oldest first for baseline, newest first for comparison)
-            const sortedJobs = [...completedJobs].sort((a, b) => {
-                return new Date(a.created_at) - new Date(b.created_at);
-            });
-            
-            // Populate dropdowns
-            sortedJobs.forEach((job, index) => {
-                const createdDate = new Date(job.created_at).toLocaleString();
-                const fileCount = job.file_count || (job.files ? job.files.length : 1);
-                const optionText = `${job.id.substring(0, 8)} - ${fileCount} papers (${createdDate})`;
-                
-                baseline.innerHTML += `<option value="${job.id}">${optionText}</option>`;
-                comparison.innerHTML += `<option value="${job.id}">${optionText}</option>`;
-                
-                // Pre-select first job as baseline and last as comparison
-                if (index === 0) {
-                    baseline.value = job.id;
-                } else if (index === sortedJobs.length - 1) {
-                    comparison.value = job.id;
-                }
-            });
-            
-            // Clear previous results
-            document.getElementById('comparison-results').style.display = 'none';
-            document.getElementById('comparison-error').style.display = 'none';
-            
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('comparisonModal'));
-            modal.show();
-        }
-        
-        async function loadComparison() {
-            const baselineJobId = document.getElementById('baseline-job').value;
-            const comparisonJobId = document.getElementById('comparison-job').value;
-            
-            // Validate selections
-            if (!baselineJobId || !comparisonJobId) {
-                showComparisonError('Please select both baseline and comparison jobs.');
-                return;
-            }
-            
-            if (baselineJobId === comparisonJobId) {
-                showComparisonError('Please select different jobs for comparison.');
-                return;
-            }
-            
-            // Hide previous results/errors
-            document.getElementById('comparison-results').style.display = 'none';
-            document.getElementById('comparison-error').style.display = 'none';
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/compare-jobs/${baselineJobId}/${comparisonJobId}`, {
-        // Progress History Functions
-        async function viewProgressHistory(jobId) {
-            const apiKey = document.getElementById('apiKeyInput').value;
-            
-            try {
-                const response = await fetch(`${API_BASE}/api/jobs/${jobId}/progress-history`, {
-                    headers: {
-                        'X-API-KEY': apiKey
-                    }
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.detail || 'Comparison failed');
-                }
-                
-                const data = await response.json();
-                renderComparison(data);
-            } catch (error) {
-                console.error('Comparison error:', error);
-                showComparisonError(error.message);
-            }
-        }
-        
-        function renderComparison(data) {
-            const resultsDiv = document.getElementById('comparison-results');
-            
-            // Determine delta class
-            const deltaClass = data.delta.completeness_change > 0 ? 'positive' : 
-                              data.delta.completeness_change < 0 ? 'negative' : 'neutral';
-            const deltaSymbol = data.delta.completeness_change > 0 ? '+' : '';
-            
-            let html = `
-                <div class="comparison-summary">
-                    <h6><strong>Completeness Comparison</strong></h6>
-                    <div class="progress-comparison">
-                        <div class="comparison-metric">
-                            <div class="label">Baseline</div>
-                            <div class="value">${data.job1.completeness}%</div>
-                            <small class="text-muted">${data.job1.paper_count} papers</small>
-                        </div>
-                        <div class="comparison-metric">
-                            <div class="label">Current</div>
-                            <div class="value">${data.job2.completeness}%</div>
-                            <small class="text-muted">${data.job2.paper_count} papers</small>
-                        </div>
-                        <div class="comparison-metric">
-                            <div class="label">Change</div>
-                            <div class="value delta ${deltaClass}">
-                                ${deltaSymbol}${data.delta.completeness_change}%
-                            </div>
-                            <small class="text-muted">
-                                ${data.delta.completeness_change > 0 ? '📈 Improved' : 
-                                  data.delta.completeness_change < 0 ? '📉 Decreased' : '➡️ Unchanged'}
-                            </small>
-                        </div>
-                    </div>
-                </div>
-            `;
-            
-            // Papers differential
-            if (data.delta.papers_added_count > 0 || data.delta.papers_removed_count > 0) {
-                html += `
-                    <div class="papers-diff">
-                        <h6><strong>Papers Changed</strong></h6>
-                        <ul>
-                `;
-                
-                data.delta.papers_added.forEach(paper => {
-                    html += `<li class="added">➕ ${paper}</li>`;
-                });
-                
-                data.delta.papers_removed.forEach(paper => {
-                    html += `<li class="removed">➖ ${paper}</li>`;
-                });
-                
-                html += `
-                        </ul>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div class="papers-diff">
-                        <p class="text-muted">No papers added or removed between these jobs.</p>
-                    </div>
-                `;
-            }
-            
-            // Gaps filled
-            if (data.delta.gaps_filled_count > 0) {
-                html += `
-                    <div class="gaps-diff">
-                        <h6><strong>Gaps Filled (${data.delta.gaps_filled_count})</strong></h6>
-                        <ul>
-                `;
-                
-                // Show up to 10 gaps filled
-                const displayGaps = data.delta.gaps_filled.slice(0, 10);
-                displayGaps.forEach(gap => {
-                    html += `
-                        <li class="filled">
-                            ✓ ${gap.gap}
-                            <span class="gap-improvement">
-                                ${gap.old_completeness}% → ${gap.new_completeness}% 
-                                (+${gap.improvement.toFixed(1)}%)
-                            </span>
-                        </li>
-                    `;
-                });
-                
-                if (data.delta.gaps_filled_count > 10) {
-                    html += `<li class="text-muted">... and ${data.delta.gaps_filled_count - 10} more gaps improved</li>`;
-                }
-                
-                html += `
-                        </ul>
-                    </div>
-                `;
-            } else {
-                html += `
-                    <div class="gaps-diff">
-                        <p class="text-muted">No gaps were filled between these jobs.</p>
-                    </div>
-                `;
-            }
-            
-            // New gaps (if any)
-            if (data.delta.new_gaps_count > 0) {
-                html += `
-                    <div class="gaps-diff mt-3">
-                        <h6><strong>New Gaps (${data.delta.new_gaps_count})</strong></h6>
-                        <ul>
-                `;
-                
-                // Show up to 5 new gaps
-                const displayNewGaps = data.delta.new_gaps.slice(0, 5);
-                displayNewGaps.forEach(gap => {
-                    html += `
-                        <li class="new-gap">
-                            ⚠️ ${gap.gap}
-                            <span class="gap-improvement">(${gap.completeness}% complete)</span>
-                        </li>
-                    `;
-                });
-                
-                if (data.delta.new_gaps_count > 5) {
-                    html += `<li class="text-muted">... and ${data.delta.new_gaps_count - 5} more new gaps</li>`;
-                }
-                
-                html += `
-                        </ul>
-                    </div>
-                `;
-            }
-            
-            resultsDiv.innerHTML = html;
-            resultsDiv.style.display = 'block';
-        }
-        
-        function showComparisonError(message) {
-            const errorDiv = document.getElementById('comparison-error');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
-        
-        // Update jobs table to show/hide compare button
-        function updateCompareButtonVisibility() {
-            const completedJobsCount = jobs.filter(job => job.status === 'completed').length;
-            const compareButton = document.getElementById('compareButton');
-            
-            if (completedJobsCount >= 2) {
-                compareButton.style.display = 'inline-block';
-            } else {
-                compareButton.style.display = 'none';
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || 'Failed to load progress history');
-                }
-                
-                const data = await response.json();
-                
-                // Populate modal
-                document.getElementById('history-job-id').textContent = jobId;
-                document.getElementById('total-duration').textContent = data.total_duration_human;
-                document.getElementById('slowest-stage').textContent = data.slowest_stage || 'N/A';
-                
-                // Render timeline chart
-                renderTimelineChart(data.timeline);
-                
-                // Populate stage details table
-                const tbody = document.getElementById('stage-details');
-                tbody.innerHTML = '';
-                
-                for (let stage of data.timeline) {
-                    const startTime = new Date(stage.start_time).toLocaleString();
-                    const endTime = new Date(stage.end_time).toLocaleString();
-                    const statusBadge = getStageStatusBadge(stage.status);
-                    
-                    const row = `
-                        <tr>
-                            <td><strong>${stage.stage}</strong></td>
-                            <td><small>${startTime}</small></td>
-                            <td><small>${endTime}</small></td>
-                            <td>${stage.duration_human}</td>
-                            <td>
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar" role="progressbar" 
-                                         style="width: ${stage.percentage}%"
-                                         aria-valuenow="${stage.percentage}" 
-                                         aria-valuemin="0" aria-valuemax="100">
-                                        ${stage.percentage}%
-                                    </div>
-                                </div>
-                            </td>
-                            <td>${statusBadge}</td>
-                        </tr>
-                    `;
-                    tbody.innerHTML += row;
-                }
-                
-                // Show modal
-                const modal = new bootstrap.Modal(document.getElementById('progressHistoryModal'));
-                modal.show();
-                
-            } catch (error) {
-                alert('Failed to load progress history: ' + error.message);
-            }
-        }
-        
-        function renderTimelineChart(timeline) {
-            const ctx = document.getElementById('timeline-chart').getContext('2d');
-            
-            // Destroy existing chart if any
-            if (window.progressTimelineChart) {
-                window.progressTimelineChart.destroy();
-            }
-            
-            // Prepare data for horizontal bar chart
-            const labels = timeline.map(stage => stage.stage);
-            const durations = timeline.map(stage => stage.duration_seconds);
-            const colors = timeline.map(stage => {
-                if (stage.status === 'completed') return '#28a745';
-                if (stage.status === 'error') return '#dc3545';
-                return '#6c757d';
-            });
-            
-            window.progressTimelineChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Duration (seconds)',
-                        data: durations,
-                        backgroundColor: colors,
-                        borderColor: colors.map(c => c),
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    indexAxis: 'y',
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const seconds = context.parsed.x;
-                                    const minutes = Math.floor(seconds / 60);
-                                    const secs = seconds % 60;
-                                    return `${minutes}min ${secs}s`;
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        x: {
-                            beginAtZero: true,
-                            title: {
-                                display: true,
-                                text: 'Duration (seconds)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        function getStageStatusBadge(status) {
-            if (status === 'completed') {
-                return '<span class="badge bg-success">Completed</span>';
-            } else if (status === 'error') {
-                return '<span class="badge bg-danger">Error</span>';
-            } else {
-                return '<span class="badge bg-secondary">Unknown</span>';
-            }
-        }
-        
-        async function exportProgressReport() {
-            const jobId = document.getElementById('history-job-id').textContent;
-            const apiKey = document.getElementById('apiKeyInput').value;
-            
-            // Trigger CSV download
-            window.location.href = `${API_BASE}/api/jobs/${jobId}/progress-history.csv?api_key=${apiKey}`;
-        }
-        
-        function viewProgressFromDetails() {
-            // Get current job ID and call viewProgressHistory
-            const jobId = currentJobId || document.getElementById('detailJobId').textContent;
-            if (jobId) {
-                viewProgressHistory(jobId);
             }
         }
         

@@ -259,6 +259,100 @@ def extract_gaps(job_data: dict) -> list:
     except Exception:
         return []
 
+def extract_summary_metrics(job_data: dict) -> dict:
+    """
+    Extract key metrics for summary card display
+    
+    Args:
+        job_data: Complete job data dictionary
+    
+    Returns:
+        Dictionary with summary metrics:
+        - completeness: Overall completeness percentage
+        - critical_gaps: Count of critical gaps (severity >= 8)
+        - paper_count: Number of papers analyzed
+        - recommendations_preview: First 2 recommendations
+        - has_results: Whether analysis has completed with results
+    """
+    # Check if job has results
+    status = job_data.get("status", "")
+    if status != "completed":
+        return {
+            "completeness": 0,
+            "critical_gaps": 0,
+            "paper_count": 0,
+            "recommendations_preview": [],
+            "has_results": False
+        }
+    
+    # Try to load results from job outputs
+    job_id = job_data.get("id")
+    results = {}
+    
+    # Look for gap analysis results
+    gap_analysis_file = JOBS_DIR / job_id / "outputs" / "gap_analysis_output" / "gap_analysis.json"
+    if gap_analysis_file.exists():
+        try:
+            with open(gap_analysis_file, 'r') as f:
+                results = json.load(f)
+        except Exception:
+            pass
+    
+    # Calculate completeness
+    completeness = 0
+    if results:
+        # Try to get overall completeness from results
+        if "overall_completeness" in results:
+            completeness = results["overall_completeness"]
+        elif "completeness" in results:
+            completeness = results["completeness"]
+        elif "pillars" in results:
+            # Calculate average completeness across pillars
+            pillar_data = results["pillars"]
+            if isinstance(pillar_data, dict) and pillar_data:
+                completeness_values = []
+                for pillar_info in pillar_data.values():
+                    if isinstance(pillar_info, dict) and "completeness" in pillar_info:
+                        completeness_values.append(pillar_info["completeness"])
+                if completeness_values:
+                    completeness = sum(completeness_values) / len(completeness_values)
+    
+    # Count critical gaps (severity >= 8)
+    critical_gaps = 0
+    gaps = results.get("gaps", [])
+    if isinstance(gaps, list):
+        for gap in gaps:
+            if isinstance(gap, dict):
+                severity = gap.get("severity", 0)
+                if severity >= 8:
+                    critical_gaps += 1
+    
+    # Get paper count
+    paper_count = 0
+    if "papers" in job_data:
+        papers = job_data.get("papers", [])
+        paper_count = len(papers) if isinstance(papers, list) else 0
+    elif "files" in job_data:
+        files = job_data.get("files", [])
+        paper_count = len(files) if isinstance(files, list) else 0
+    elif "file_count" in job_data:
+        paper_count = job_data.get("file_count", 0)
+    
+    # Get recommendations preview (first 2)
+    recommendations = results.get("recommendations", [])
+    if isinstance(recommendations, list):
+        recommendations_preview = recommendations[:2]
+    else:
+        recommendations_preview = []
+    
+    return {
+        "completeness": round(completeness, 1) if completeness else 0,
+        "critical_gaps": critical_gaps,
+        "paper_count": paper_count,
+        "recommendations_preview": recommendations_preview,
+        "has_results": bool(results)
+    }
+
 # API Endpoints
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -524,10 +618,10 @@ async def list_jobs(
     api_key: str = Header(None, alias="X-API-KEY")
 ):
     """
-    List all jobs
+    List all jobs with summary metrics
     
     Returns:
-        List of all jobs with their current status
+        List of all jobs with their current status and summary metrics
     """
     verify_api_key(api_key)
     
@@ -536,6 +630,11 @@ async def list_jobs(
         try:
             with open(job_file, 'r') as f:
                 job_data = json.load(f)
+                
+                # Extract summary metrics for each job
+                summary = extract_summary_metrics(job_data)
+                job_data["summary"] = summary
+                
                 jobs.append(job_data)
         except Exception:
             continue
@@ -576,68 +675,6 @@ async def get_job(
             pass
     
     return job_data
-
-@app.get("/api/jobs/{job_id}/eta")
-async def get_job_eta(
-    job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
-):
-    """
-    Get ETA (Estimated Time to Arrival) for a running job
-    
-    Args:
-        job_id: Job identifier
-    
-    Returns:
-        ETA information with confidence intervals and stage breakdown
-    """
-    verify_api_key(api_key)
-    
-    job_data = load_job(job_id)
-    if not job_data:
-        raise HTTPException(status_code=404, detail="Job not found")
-    
-    # Check if job is running
-    if job_data.get("status") != "running":
-        return {
-            "job_id": job_id,
-            "status": job_data.get("status"),
-            "eta": None,
-            "message": "Job is not currently running"
-        }
-    
-    # Get current stage from progress file
-    progress_file = Path(f"workspace/status/{job_id}_progress.jsonl")
-    current_stage = "gap_analysis"  # Default
-    
-    if progress_file.exists():
-        try:
-            # Read last line to get current stage
-            with open(progress_file, 'r') as f:
-                lines = f.readlines()
-                if lines:
-                    last_event = json.loads(lines[-1])
-                    current_stage = last_event.get('stage', 'gap_analysis')
-        except Exception as e:
-            logger.warning(f"Could not read progress file for {job_id}: {e}")
-    
-    # Get ETA from job runner
-    if job_runner:
-        eta_data = job_runner.get_job_eta(job_id, current_stage)
-        return {
-            "job_id": job_id,
-            "status": "running",
-            "current_stage": current_stage,
-            "eta": eta_data
-        }
-    
-    return {
-        "job_id": job_id,
-        "status": "running",
-        "current_stage": current_stage,
-        "eta": None,
-        "message": "Job runner not available"
-    }
 
 @app.post("/api/jobs/{job_id}/retry")
 async def retry_job(
@@ -793,6 +830,34 @@ async def start_job(
         "message": "Job queued for execution"
     }
 
+@app.post("/api/prompts/{prompt_id}/respond")
+async def respond_to_prompt(
+    prompt_id: str,
+    response: PromptResponse,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Submit user response to a prompt
+    
+    Args:
+        prompt_id: Prompt identifier
+        response: User's response
+    
+    Returns:
+        Confirmation of response submission
+    """
+    verify_api_key(api_key)
+    
+    try:
+        from webdashboard.prompt_handler import prompt_handler
+        prompt_handler.submit_response(prompt_id, response.response)
+        return {"status": "success", "prompt_id": prompt_id}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        logger.error(f"Error submitting prompt response: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
 @app.get("/api/compare-jobs/{job_id_1}/{job_id_2}")
 async def compare_jobs(
     job_id_1: str,
@@ -923,6 +988,20 @@ async def compare_jobs(
     }
     
     return comparison
+
+def format_duration(seconds: int) -> str:
+    """Format seconds as human-readable duration"""
+    if seconds < 60:
+        return f"{seconds}s"
+    elif seconds < 3600:
+        minutes = seconds // 60
+        secs = seconds % 60
+        return f"{minutes}min {secs}s"
+    else:
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        return f"{hours}h {minutes}min"
+
 @app.get("/api/jobs/{job_id}/progress-history")
 async def get_progress_history(
     job_id: str,
@@ -1044,19 +1123,6 @@ async def get_progress_history(
         'end_time': job_data.get('completed_at')
     }
 
-def format_duration(seconds: int) -> str:
-    """Format seconds as human-readable duration"""
-    if seconds < 60:
-        return f"{seconds}s"
-    elif seconds < 3600:
-        minutes = seconds // 60
-        secs = seconds % 60
-        return f"{minutes}min {secs}s"
-    else:
-        hours = seconds // 3600
-        minutes = (seconds % 3600) // 60
-        return f"{hours}h {minutes}min"
-
 @app.get("/api/jobs/{job_id}/progress-history.csv")
 async def export_progress_history_csv(
     job_id: str,
@@ -1121,43 +1187,17 @@ async def export_progress_history_csv(
         ''
     ])
     
+    csv_content = output.getvalue()
+    
     # Return as downloadable file
-    output.seek(0)
-    return StreamingResponse(
-        iter([output.getvalue()]),
-        media_type='text/csv',
+    from fastapi.responses import Response
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
         headers={
-            'Content-Disposition': f'attachment; filename=job_{job_id}_progress.csv'
+            "Content-Disposition": f"attachment; filename=progress_history_{job_id}.csv"
         }
     )
-
-@app.post("/api/prompts/{prompt_id}/respond")
-async def respond_to_prompt(
-    prompt_id: str,
-    response: PromptResponse,
-    api_key: str = Header(None, alias="X-API-KEY")
-):
-    """
-    Submit user response to a prompt
-    
-    Args:
-        prompt_id: Prompt identifier
-        response: User's response
-    
-    Returns:
-        Confirmation of response submission
-    """
-    verify_api_key(api_key)
-    
-    try:
-        from webdashboard.prompt_handler import prompt_handler
-        prompt_handler.submit_response(prompt_id, response.response)
-        return {"status": "success", "prompt_id": prompt_id}
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error submitting prompt response: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/logs/{job_id}")
 async def get_job_logs(

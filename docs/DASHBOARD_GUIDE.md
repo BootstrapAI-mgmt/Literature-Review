@@ -264,6 +264,102 @@ Action: Skip Duplicates → Only uploads paper2, paper4, paper5
 - Maintains database cleanliness
 - Clear visibility into what's already in your database
 
+### 3. Monitor Jobs
+
+The jobs table shows:
+- **Job ID**: Shortened UUID (first 8 characters)
+- **Filename**: Original PDF filename
+- **Status**: Current job status (QUEUED, RUNNING, COMPLETED, FAILED)
+- **Created**: Timestamp when job was created
+- **Duration**: Elapsed time
+- **Actions**: View button for details
+
+Status badges are color-coded:
+- 🟦 QUEUED (gray)
+- 🔵 RUNNING (blue)
+- 🟢 COMPLETED (green)
+- 🔴 FAILED (red)
+
+### 4. Understanding Summary Cards
+
+Each job in the list displays quick-view summary cards showing key metrics at a glance:
+
+![Summary Cards Demo](https://github.com/user-attachments/assets/4a28deb1-9991-4ce2-a470-3d66a1982f03)
+
+#### Metrics Displayed
+
+**📊 Coverage (Completeness Percentage)**
+- Shows percentage of requirements covered by the analyzed papers
+- Color-coded for quick assessment:
+  - 🟢 **Green (≥80%)**: Good coverage - most requirements addressed
+  - 🟡 **Yellow (60-79%)**: Medium coverage - some gaps exist
+  - 🔴 **Red (<60%)**: Poor coverage - significant gaps need addressing
+
+**⚠️ Critical Gaps**
+- Count of high-severity gaps (severity ≥8 out of 10)
+- Red border appears if any critical gaps exist
+- Helps prioritize which jobs need immediate attention
+
+**📄 Papers**
+- Total number of research papers analyzed in this job
+- Useful for comparing analysis depth across jobs
+
+**💡 Recommendations**
+- Number of actionable recommendations generated
+- Hover over the card to preview the top 2 recommendations
+- Click "Full Results" to see complete recommendations list
+
+#### Using Summary Cards
+
+**Quick Comparison:** Scan multiple jobs to find the best analysis run without opening each one
+
+**At-a-Glance Status:** Immediately see job health and completeness
+
+**Prioritization:** Identify jobs with critical gaps that need attention first
+
+**Example Workflow:**
+```
+Scenario: You ran analyses on 3 different paper sets
+
+Job 1: 87.5% coverage, 2 critical gaps, 8 papers
+→ Good coverage but has critical issues to address
+
+Job 2: 65.3% coverage, 4 critical gaps, 12 papers  
+→ More papers but lower coverage, more critical work needed
+
+Job 3: Running...
+→ Analysis still in progress, no results yet
+
+Decision: Start with Job 1 (best coverage) to address critical gaps,
+then improve Job 2's coverage by adding targeted papers
+```
+
+#### Pending Analysis Jobs
+
+Jobs that are in "draft", "queued", or "running" status show:
+```
+Analysis pending or in progress
+```
+
+Summary cards only appear for completed jobs that have generated results.
+
+### 5. View Job Details
+
+Click "View Details" button to see:
+- Full Job ID
+- Current Status
+- Filename
+- Created timestamp
+- Error message (if failed)
+- Progress information (if available)
+- Job logs
+
+Actions available in detail view:
+- **Download PDF**: Download the original uploaded file
+- **Retry Job**: Retry a failed job
+- **View Progress History**: View timeline for completed jobs (see below)
+- **Close**: Close the detail modal
+
 ## Comparing Gap Analysis Results
 
 ### Overview
@@ -393,53 +489,20 @@ The comparison feature:
 - Other gaps may have decreased
 - Check individual pillar comparisons for details
 
-### 3. Monitor Jobs
-
-The jobs table shows:
-- **Job ID**: Shortened UUID (first 8 characters)
-- **Filename**: Original PDF filename
-- **Status**: Current job status (QUEUED, RUNNING, COMPLETED, FAILED)
-- **Created**: Timestamp when job was created
-- **Duration**: Elapsed time
-- **Actions**: View button for details
-
-Status badges are color-coded:
-- 🟦 QUEUED (gray)
-- 🔵 RUNNING (blue)
-- 🟢 COMPLETED (green)
-- 🔴 FAILED (red)
-
-### 4. View Job Details
-
-Click "View" or click on a job row to see:
-- Full Job ID
-- Current Status
-- Filename
-- Created timestamp
-- Error message (if failed)
-- Progress information (if available)
-- Job logs
-
-Actions available in detail view:
-- **Download PDF**: Download the original uploaded file
-- **Retry Job**: Retry a failed job
-- **View Progress History**: View timeline for completed jobs (see below)
-- **Close**: Close the detail modal
-
-### 5. Viewing Historical Job Progress
+## Viewing Historical Job Progress
 
 For completed jobs, you can view a detailed timeline showing how long each stage took. This is useful for:
 - **Debugging slow jobs**: Identify which stage took longer than expected
 - **Performance analysis**: Compare job durations over time
 - **Understanding bottlenecks**: See which stages consume the most time
 
-#### Accessing Progress History
+### Accessing Progress History
 
 1. Click on a completed job in the jobs table
 2. In the job details modal, click the **"⏱️ View Progress History"** button
 3. A new modal will open showing the progress timeline
 
-#### What You'll See
+### What You'll See
 
 The Progress Timeline modal displays:
 
@@ -462,7 +525,7 @@ The Progress Timeline modal displays:
 - **% of Total**: Percentage of total job time consumed by this stage
 - **Status**: Completion status (Completed, Error, Unknown)
 
-#### Example Timeline
+### Example Timeline
 
 ```
 Job #abc-123 took 15min 30s (expected 10min)
@@ -477,7 +540,7 @@ Stage Breakdown:
 Slowest Stage: Deep Review (5min 30s)
 ```
 
-#### Interpreting Results
+### Interpreting Results
 
 **Debugging Slow Jobs:**
 If a job took longer than expected, check:
@@ -490,7 +553,7 @@ If a job took longer than expected, check:
 - **Gap Analysis**: Depends on number of requirements and evidence triangulation
 - **Judge Validation**: Usually fast unless there are many validation errors
 
-#### Exporting Progress Reports
+### Exporting Progress Reports
 
 Click the **"📥 Export CSV"** button to download the progress timeline as a CSV file.
 
@@ -519,24 +582,17 @@ finalization,2025-11-17T10:13:30Z,2025-11-17T10:15:30Z,120,2min 0s,13.3%,complet
 TOTAL,,,900,15min 0s,100%,
 ```
 
-#### Limitations
+### Limitations
 
 - Progress history is only available for **completed jobs**
 - Jobs must have been run with progress tracking enabled (standard in v2.0+)
 - If a job was run before progress tracking was implemented, you'll see "No progress data available"
 
-### 6. Real-time Updates
-
-The dashboard uses WebSockets for real-time updates:
-- Connection status shown in top-right corner
-- Jobs automatically update when status changes
-- No need to refresh the page
-
-### 6. Understanding ETA (Estimated Time to Arrival)
+## Understanding ETA (Estimated Time to Arrival)
 
 The dashboard provides intelligent ETA estimates that improve with each job run.
 
-#### How ETA is Calculated
+### How ETA is Calculated
 
 The dashboard learns from past job runs to provide accurate ETAs based on:
 
@@ -549,63 +605,69 @@ The dashboard learns from past job runs to provide accurate ETAs based on:
 - Number of papers in current job
 - Historical variance in execution times
 
-#### Confidence Levels
+### Confidence Levels
 
 ETAs are displayed with confidence indicators based on the amount of historical data:
 
-- **🟢 High Confidence**: 10+ past runs, ETA accurate to ±5%
-  - Example: "12-13 min remaining"
-  - Narrow confidence interval with precise estimates
+**🟢 High Confidence (10+ historical runs)**
+- Precise estimates with ±5% confidence interval
+- Based on median time per paper across many runs
+- Example: "15min remaining (14min - 16min)"
 
-- **🟡 Medium Confidence**: 3-9 past runs, ETA accurate to ±10-20%
-  - Example: "10-15 min remaining"
-  - Moderate confidence interval with good estimates
+**🟡 Medium Confidence (3-9 historical runs)**
+- Good estimates with ±20% confidence interval
+- Enough data for reasonable predictions
+- Example: "15min remaining (12min - 18min)"
 
-- **🔴 Low Confidence**: <3 past runs, ETA may vary significantly
-  - Example: "~15 min remaining (First run, estimate may vary)"
-  - Wide confidence interval (±30%) using fallback estimates
+**🔴 Low Confidence (0-2 historical runs)**
+- First-run estimates with ±70% confidence interval
+- Based on conservative fallback estimates
+- Example: "~15min remaining (first run, estimate may vary)"
 
-#### First Run Behavior
+### First Run Behavior
 
-On your first job, the dashboard uses conservative fallback estimates:
-- Gap Analysis: 30 seconds per paper
-- Deep Review: 120 seconds per paper
-- Proof Generation: 45 seconds per paper
-- Final Report: 15 seconds per paper
+On the first job run, the dashboard:
+- Uses conservative fallback estimates based on typical job times
+- Shows a "First run, estimate may vary" warning
+- Displays a wider confidence interval
 
-After a few runs, the system adapts to your actual hardware performance and ETAs become much more accurate.
+**After each subsequent run:**
+- Historical data accumulates
+- Estimates become more accurate
+- Confidence intervals narrow
+- ETA adapts to your specific workload
 
-**Example Evolution:**
-```
-First run:  "~15 min remaining (low confidence)"
-After 3 runs:  "12-15 min remaining (medium confidence)"
-After 10 runs: "12-13 min remaining (high confidence)"
-```
+### Tips for Improving Accuracy
 
-#### ETA Display Features
+1. **Run multiple jobs**: More historical data = better estimates
+2. **Consistent paper counts**: Jobs with similar paper counts improve scaling accuracy
+3. **Monitor progress**: Watch how estimates evolve during execution
+4. **Check ETA details**: Hover over ETA to see stage-by-stage breakdown
 
-- **Confidence Badge**: Color-coded indicator (green/yellow/red) showing estimate reliability
-- **Time Range**: For uncertain estimates, shows a range (e.g., "10-15 min")
-- **Auto-Update**: ETA refreshes every 10 seconds and on each progress event
-- **First Run Warning**: Special notice when historical data is limited
-- **Stage Breakdown**: Hover over ETA to see per-stage time estimates (coming soon)
+### Technical Details
 
-#### Improving ETA Accuracy
+**How it works:**
+- Tracks actual duration for each pipeline stage
+- Normalizes by paper count (time per paper)
+- Uses median for outlier robustness
+- Blends historical data (70%) with fallback estimates (30%) for partial data
+- Stores last 50 runs per stage in `workspace/eta_history.json`
 
-To get the most accurate ETAs:
-1. Run a few jobs to build historical data
-2. Keep paper counts consistent when possible
-3. Allow jobs to complete (cancelled jobs don't contribute to history)
-4. Historical data is saved in `workspace/eta_history.json`
+**Stage-by-stage estimation:**
+Each pipeline stage has its own learning curve:
+- Gap Analysis: ~30s per paper
+- Deep Review: ~120s per paper (most time-consuming)
+- Proof Generation: ~45s per paper
+- Final Report: ~15s per paper
 
-#### Technical Details
+These estimates improve as you run more jobs.
 
-The ETA calculator uses:
-- **Median-based estimation**: Robust against outliers in execution time
-- **Paper count normalization**: Stores "time per paper" to handle variable job sizes
-- **Adaptive blending**: Combines historical data with fallback estimates for partial data
-- **Confidence intervals**: Statistical ranges based on data quality
-- **Automatic history management**: Keeps last 50 runs per stage to prevent unbounded growth
+### 6. Real-time Updates
+
+The dashboard uses WebSockets for real-time updates:
+- Connection status shown in top-right corner
+- Jobs automatically update when status changes
+- No need to refresh the page
 
 ## API Integration
 
@@ -717,92 +779,12 @@ curl http://localhost:8000/api/logs/{job_id}?tail=100 \
   -H "X-API-KEY: your-key"
 ```
 
-#### Get job ETA (Estimated Time to Arrival)
-```bash
-curl http://localhost:8000/api/jobs/{job_id}/eta \
-  -H "X-API-KEY: your-key"
-```
-
-Response:
-```json
-{
-  "job_id": "abc-123",
-  "status": "running",
-  "current_stage": "deep_review",
-  "eta": {
-    "total_eta_seconds": 720,
-    "min_eta_seconds": 648,
-    "max_eta_seconds": 864,
-    "confidence": "medium",
-    "stage_breakdown": {
-      "proof_generation": 450,
-      "final_report": 150
-    },
-    "remaining_stages": ["proof_generation", "final_report"]
-  }
-}
-```
-
-The ETA information includes:
-- `total_eta_seconds`: Best estimate for remaining time
-- `min_eta_seconds` / `max_eta_seconds`: Confidence interval bounds
-- `confidence`: "high", "medium", or "low" based on historical data
-- `stage_breakdown`: Estimated time for each remaining stage
-- `remaining_stages`: List of stages yet to complete
-
 #### Retry a job
 ```bash
 curl -X POST http://localhost:8000/api/jobs/{job_id}/retry \
   -H "X-API-KEY: your-key" \
   -H "Content-Type: application/json" \
   -d '{"force": false}'
-```
-
-#### Compare two jobs
-```bash
-curl http://localhost:8000/api/compare-jobs/{job_id_1}/{job_id_2} \
-  -H "X-API-KEY: your-key"
-```
-
-Response:
-```json
-{
-  "job1": {
-    "id": "abc-123",
-    "timestamp": "2025-01-01T00:00:00",
-    "completeness": 60.0,
-    "papers": ["paper1.pdf", "paper2.pdf"],
-    "paper_count": 2,
-    "gap_count": 15
-  },
-  "job2": {
-    "id": "def-456",
-    "timestamp": "2025-01-15T00:00:00",
-    "completeness": 75.0,
-    "papers": ["paper1.pdf", "paper2.pdf", "paper3.pdf"],
-    "paper_count": 3,
-    "gap_count": 10
-  },
-  "delta": {
-    "completeness_change": 15.0,
-    "papers_added": ["paper3.pdf"],
-    "papers_removed": [],
-    "papers_added_count": 1,
-    "papers_removed_count": 0,
-    "gaps_filled": [
-      {
-        "gap": "REQ-B1.2 - Neural Integration",
-        "pillar": "Pillar 1: Biological",
-        "improvement": 40.0,
-        "old_completeness": 50.0,
-        "new_completeness": 90.0
-      }
-    ],
-    "gaps_filled_count": 5,
-    "new_gaps": [],
-    "new_gaps_count": 0
-  }
-}
 ```
 
 #### Download a file
@@ -821,11 +803,9 @@ workspace/
 ├── jobs/            # Job metadata
 │   └── {job_id}.json
 ├── status/          # Status updates from orchestrator
-│   ├── {job_id}.json
-│   └── {job_id}_progress.jsonl  # Progress events stream
-├── logs/            # Job logs
-│   └── {job_id}.log
-└── eta_history.json  # Historical ETA data for accuracy
+│   └── {job_id}.json
+└── logs/            # Job logs
+    └── {job_id}.log
 ```
 
 ## Configuration
