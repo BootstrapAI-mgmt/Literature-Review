@@ -264,6 +264,135 @@ Action: Skip Duplicates → Only uploads paper2, paper4, paper5
 - Maintains database cleanliness
 - Clear visibility into what's already in your database
 
+## Comparing Gap Analysis Results
+
+### Overview
+
+The comparison feature allows you to track research progress by comparing two gap analysis runs side-by-side. This helps you understand how adding new papers improves completeness and which gaps were filled.
+
+### Why Compare Jobs?
+
+When conducting literature review, you often add papers incrementally:
+1. Run initial gap analysis with 10 papers → 60% complete
+2. Add 5 more targeted papers
+3. Re-run gap analysis → 75% complete
+4. Compare runs → see which gaps were filled by new papers
+5. Identify remaining gaps → target next paper search
+
+### How to Compare
+
+1. **Navigate to Jobs List**: Ensure you have at least 2 completed jobs
+2. **Click "Compare Jobs" Button**: Visible in the Jobs section header when ≥2 completed jobs exist
+3. **Select Baseline Job**: Choose the earlier run to use as reference
+4. **Select Comparison Job**: Choose the later run to compare against
+5. **Click "Compare Jobs"**: View the comparison results
+
+### What You'll See
+
+The comparison view shows:
+
+#### Completeness Improvement
+- **Baseline**: Completeness percentage of the first job
+- **Current**: Completeness percentage of the second job
+- **Change**: Delta showing improvement or regression
+  - 📈 **Green** = Improvement (positive change)
+  - 📉 **Red** = Regression (negative change)
+  - ➡️ **Gray** = No change
+
+#### Papers Changed
+- **Papers Added**: New papers in the second job (➕ green highlight)
+- **Papers Removed**: Papers that were in the first but not second job (➖ red highlight)
+
+#### Gaps Filled
+Shows which research gaps improved or were completely filled:
+- Gap name and requirement
+- Completeness improvement (e.g., 50% → 80% = +30%)
+- Up to 10 most improved gaps shown
+
+#### New Gaps
+Shows any new gaps that appeared in the second job:
+- Typically occurs when stricter criteria are applied
+- Or when new requirements are added to pillar definitions
+
+### Example Comparison
+
+```
+Baseline Job (10 papers, 2025-01-01)
+└── Completeness: 60.0%
+
+Current Job (15 papers, 2025-01-15)
+└── Completeness: 75.0%
+
+Change: +15.0% 📈
+
+Papers Added:
+  ➕ neural_networks_2024.pdf
+  ➕ cognitive_architecture.pdf
+  ➕ attention_mechanisms.pdf
+  ➕ memory_systems.pdf
+  ➕ learning_algorithms.pdf
+
+Gaps Filled (3):
+  ✓ REQ-B1.2 - Neural Integration
+    50% → 90% (+40%)
+  ✓ REQ-B2.1 - Memory Formation
+    30% → 75% (+45%)
+  ✓ REQ-B3.3 - Learning Mechanisms
+    60% → 100% (+40%)
+```
+
+### Interpreting Results
+
+**Positive Delta (Green)**
+- Completeness improved ✅
+- New papers successfully filled research gaps
+- Progress toward comprehensive review
+
+**Negative Delta (Red)**
+- Completeness decreased ⚠️
+- Possible causes:
+  - Stricter pillar definitions applied
+  - Papers removed from analysis
+  - New requirements added
+
+**Zero Delta (Gray)**
+- No change in overall completeness
+- Papers may have been added but didn't address gaps
+- Consider targeting different research areas
+
+### Best Practices
+
+1. **Compare Sequential Runs**: Compare jobs in chronological order for meaningful trends
+2. **Document Changes**: Note which papers you added between runs
+3. **Track Targeting Success**: See if new papers addressed intended gaps
+4. **Identify Stubborn Gaps**: Gaps that persist across multiple runs need different approach
+5. **Use for Planning**: Let comparison guide which papers to search for next
+
+### Technical Details
+
+The comparison feature:
+- Extracts completeness from gap analysis reports
+- Calculates deltas for all metrics
+- Identifies gaps by unique requirement path
+- Tracks improvements at the sub-requirement level
+- Requires both jobs to have completed successfully
+
+### Troubleshooting
+
+**"At least 2 completed jobs required"**
+- Wait for at least 2 jobs to complete successfully
+- Comparison requires full gap analysis results
+
+**Jobs have same papers but different completeness**
+- Pillar definitions may have changed
+- Analysis parameters may differ (e.g., deep review iterations)
+- Different quality thresholds applied
+
+**Gaps filled but completeness didn't improve**
+- Some gaps improved but not enough to raise overall percentage
+- Other gaps may have decreased
+- Check individual pillar comparisons for details
+
 ### 3. Monitor Jobs
 
 The jobs table shows:
@@ -294,14 +423,189 @@ Click "View" or click on a job row to see:
 Actions available in detail view:
 - **Download PDF**: Download the original uploaded file
 - **Retry Job**: Retry a failed job
+- **View Progress History**: View timeline for completed jobs (see below)
 - **Close**: Close the detail modal
 
-### 5. Real-time Updates
+### 5. Viewing Historical Job Progress
+
+For completed jobs, you can view a detailed timeline showing how long each stage took. This is useful for:
+- **Debugging slow jobs**: Identify which stage took longer than expected
+- **Performance analysis**: Compare job durations over time
+- **Understanding bottlenecks**: See which stages consume the most time
+
+#### Accessing Progress History
+
+1. Click on a completed job in the jobs table
+2. In the job details modal, click the **"⏱️ View Progress History"** button
+3. A new modal will open showing the progress timeline
+
+#### What You'll See
+
+The Progress Timeline modal displays:
+
+**Total Duration Summary:**
+- Total job duration (human-readable format: e.g., "15min 30s")
+- Slowest stage identification
+
+**Timeline Visualization:**
+- Horizontal bar chart showing duration of each stage
+- Color-coded bars:
+  - 🟢 Green: Completed successfully
+  - 🔴 Red: Completed with error
+  - ⚪ Gray: Unknown status
+
+**Stage Breakdown Table:**
+- **Stage**: Pipeline stage name (e.g., "initialization", "judge", "deep_review")
+- **Start Time**: When the stage began
+- **End Time**: When the stage finished
+- **Duration**: How long the stage took (human-readable)
+- **% of Total**: Percentage of total job time consumed by this stage
+- **Status**: Completion status (Completed, Error, Unknown)
+
+#### Example Timeline
+
+```
+Job #abc-123 took 15min 30s (expected 10min)
+
+Stage Breakdown:
+- Initialization:   2min 0s   (13% of total) ✓ Completed
+- Judge Validation: 3min 0s   (19% of total) ✓ Completed  
+- Deep Review:      5min 30s  (35% of total) ✓ Completed
+- Gap Analysis:     3min 0s   (19% of total) ✓ Completed
+- Finalization:     2min 0s   (13% of total) ✓ Completed
+
+Slowest Stage: Deep Review (5min 30s)
+```
+
+#### Interpreting Results
+
+**Debugging Slow Jobs:**
+If a job took longer than expected, check:
+1. **Which stage was slowest?** The progress bar will highlight it
+2. **Compare to other jobs:** Run the same analysis and compare timelines
+3. **Check for outliers:** A stage taking 3x longer than usual may indicate an issue
+
+**Common Bottlenecks:**
+- **Deep Review**: Scales with number of papers and pillar complexity
+- **Gap Analysis**: Depends on number of requirements and evidence triangulation
+- **Judge Validation**: Usually fast unless there are many validation errors
+
+#### Exporting Progress Reports
+
+Click the **"📥 Export CSV"** button to download the progress timeline as a CSV file.
+
+The CSV includes:
+- Stage name
+- Start and end timestamps
+- Duration (seconds and human-readable)
+- Percentage of total time
+- Status
+
+**Use Cases for CSV Export:**
+- Performance tracking across multiple jobs
+- Billing/time tracking
+- Historical analysis
+- Importing into spreadsheets for further analysis
+
+**Example CSV:**
+```csv
+Stage,Start Time,End Time,Duration (seconds),Duration (human),% of Total,Status
+initialization,2025-11-17T10:00:00Z,2025-11-17T10:02:00Z,120,2min 0s,13.3%,completed
+judge,2025-11-17T10:02:00Z,2025-11-17T10:05:00Z,180,3min 0s,20.0%,completed
+deep_review,2025-11-17T10:05:00Z,2025-11-17T10:10:30Z,330,5min 30s,36.7%,completed
+gap_analysis,2025-11-17T10:10:30Z,2025-11-17T10:13:30Z,180,3min 0s,20.0%,completed
+finalization,2025-11-17T10:13:30Z,2025-11-17T10:15:30Z,120,2min 0s,13.3%,completed
+
+TOTAL,,,900,15min 0s,100%,
+```
+
+#### Limitations
+
+- Progress history is only available for **completed jobs**
+- Jobs must have been run with progress tracking enabled (standard in v2.0+)
+- If a job was run before progress tracking was implemented, you'll see "No progress data available"
+
+### 6. Real-time Updates
 
 The dashboard uses WebSockets for real-time updates:
 - Connection status shown in top-right corner
 - Jobs automatically update when status changes
 - No need to refresh the page
+
+### 6. Understanding ETA (Estimated Time to Arrival)
+
+The dashboard provides intelligent ETA estimates that improve with each job run.
+
+#### How ETA is Calculated
+
+The dashboard learns from past job runs to provide accurate ETAs based on:
+
+1. **Historical stage durations**: Actual time taken for each pipeline stage in previous runs
+2. **Paper count scaling**: ETA scales linearly with the number of papers being processed
+3. **Current progress**: How fast the current job is progressing compared to historical averages
+
+**Factors Considered:**
+- Time per paper for each stage (normalized across different job sizes)
+- Number of papers in current job
+- Historical variance in execution times
+
+#### Confidence Levels
+
+ETAs are displayed with confidence indicators based on the amount of historical data:
+
+- **🟢 High Confidence**: 10+ past runs, ETA accurate to ±5%
+  - Example: "12-13 min remaining"
+  - Narrow confidence interval with precise estimates
+
+- **🟡 Medium Confidence**: 3-9 past runs, ETA accurate to ±10-20%
+  - Example: "10-15 min remaining"
+  - Moderate confidence interval with good estimates
+
+- **🔴 Low Confidence**: <3 past runs, ETA may vary significantly
+  - Example: "~15 min remaining (First run, estimate may vary)"
+  - Wide confidence interval (±30%) using fallback estimates
+
+#### First Run Behavior
+
+On your first job, the dashboard uses conservative fallback estimates:
+- Gap Analysis: 30 seconds per paper
+- Deep Review: 120 seconds per paper
+- Proof Generation: 45 seconds per paper
+- Final Report: 15 seconds per paper
+
+After a few runs, the system adapts to your actual hardware performance and ETAs become much more accurate.
+
+**Example Evolution:**
+```
+First run:  "~15 min remaining (low confidence)"
+After 3 runs:  "12-15 min remaining (medium confidence)"
+After 10 runs: "12-13 min remaining (high confidence)"
+```
+
+#### ETA Display Features
+
+- **Confidence Badge**: Color-coded indicator (green/yellow/red) showing estimate reliability
+- **Time Range**: For uncertain estimates, shows a range (e.g., "10-15 min")
+- **Auto-Update**: ETA refreshes every 10 seconds and on each progress event
+- **First Run Warning**: Special notice when historical data is limited
+- **Stage Breakdown**: Hover over ETA to see per-stage time estimates (coming soon)
+
+#### Improving ETA Accuracy
+
+To get the most accurate ETAs:
+1. Run a few jobs to build historical data
+2. Keep paper counts consistent when possible
+3. Allow jobs to complete (cancelled jobs don't contribute to history)
+4. Historical data is saved in `workspace/eta_history.json`
+
+#### Technical Details
+
+The ETA calculator uses:
+- **Median-based estimation**: Robust against outliers in execution time
+- **Paper count normalization**: Stores "time per paper" to handle variable job sizes
+- **Adaptive blending**: Combines historical data with fallback estimates for partial data
+- **Confidence intervals**: Statistical ranges based on data quality
+- **Automatic history management**: Keeps last 50 runs per stage to prevent unbounded growth
 
 ## API Integration
 
@@ -413,12 +717,92 @@ curl http://localhost:8000/api/logs/{job_id}?tail=100 \
   -H "X-API-KEY: your-key"
 ```
 
+#### Get job ETA (Estimated Time to Arrival)
+```bash
+curl http://localhost:8000/api/jobs/{job_id}/eta \
+  -H "X-API-KEY: your-key"
+```
+
+Response:
+```json
+{
+  "job_id": "abc-123",
+  "status": "running",
+  "current_stage": "deep_review",
+  "eta": {
+    "total_eta_seconds": 720,
+    "min_eta_seconds": 648,
+    "max_eta_seconds": 864,
+    "confidence": "medium",
+    "stage_breakdown": {
+      "proof_generation": 450,
+      "final_report": 150
+    },
+    "remaining_stages": ["proof_generation", "final_report"]
+  }
+}
+```
+
+The ETA information includes:
+- `total_eta_seconds`: Best estimate for remaining time
+- `min_eta_seconds` / `max_eta_seconds`: Confidence interval bounds
+- `confidence`: "high", "medium", or "low" based on historical data
+- `stage_breakdown`: Estimated time for each remaining stage
+- `remaining_stages`: List of stages yet to complete
+
 #### Retry a job
 ```bash
 curl -X POST http://localhost:8000/api/jobs/{job_id}/retry \
   -H "X-API-KEY: your-key" \
   -H "Content-Type: application/json" \
   -d '{"force": false}'
+```
+
+#### Compare two jobs
+```bash
+curl http://localhost:8000/api/compare-jobs/{job_id_1}/{job_id_2} \
+  -H "X-API-KEY: your-key"
+```
+
+Response:
+```json
+{
+  "job1": {
+    "id": "abc-123",
+    "timestamp": "2025-01-01T00:00:00",
+    "completeness": 60.0,
+    "papers": ["paper1.pdf", "paper2.pdf"],
+    "paper_count": 2,
+    "gap_count": 15
+  },
+  "job2": {
+    "id": "def-456",
+    "timestamp": "2025-01-15T00:00:00",
+    "completeness": 75.0,
+    "papers": ["paper1.pdf", "paper2.pdf", "paper3.pdf"],
+    "paper_count": 3,
+    "gap_count": 10
+  },
+  "delta": {
+    "completeness_change": 15.0,
+    "papers_added": ["paper3.pdf"],
+    "papers_removed": [],
+    "papers_added_count": 1,
+    "papers_removed_count": 0,
+    "gaps_filled": [
+      {
+        "gap": "REQ-B1.2 - Neural Integration",
+        "pillar": "Pillar 1: Biological",
+        "improvement": 40.0,
+        "old_completeness": 50.0,
+        "new_completeness": 90.0
+      }
+    ],
+    "gaps_filled_count": 5,
+    "new_gaps": [],
+    "new_gaps_count": 0
+  }
+}
 ```
 
 #### Download a file
@@ -437,9 +821,11 @@ workspace/
 ├── jobs/            # Job metadata
 │   └── {job_id}.json
 ├── status/          # Status updates from orchestrator
-│   └── {job_id}.json
-└── logs/            # Job logs
-    └── {job_id}.log
+│   ├── {job_id}.json
+│   └── {job_id}_progress.jsonl  # Progress events stream
+├── logs/            # Job logs
+│   └── {job_id}.log
+└── eta_history.json  # Historical ETA data for accuracy
 ```
 
 ## Configuration
