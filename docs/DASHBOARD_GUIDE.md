@@ -294,9 +294,109 @@ Click "View" or click on a job row to see:
 Actions available in detail view:
 - **Download PDF**: Download the original uploaded file
 - **Retry Job**: Retry a failed job
+- **View Progress History**: View timeline for completed jobs (see below)
 - **Close**: Close the detail modal
 
-### 5. Real-time Updates
+### 5. Viewing Historical Job Progress
+
+For completed jobs, you can view a detailed timeline showing how long each stage took. This is useful for:
+- **Debugging slow jobs**: Identify which stage took longer than expected
+- **Performance analysis**: Compare job durations over time
+- **Understanding bottlenecks**: See which stages consume the most time
+
+#### Accessing Progress History
+
+1. Click on a completed job in the jobs table
+2. In the job details modal, click the **"⏱️ View Progress History"** button
+3. A new modal will open showing the progress timeline
+
+#### What You'll See
+
+The Progress Timeline modal displays:
+
+**Total Duration Summary:**
+- Total job duration (human-readable format: e.g., "15min 30s")
+- Slowest stage identification
+
+**Timeline Visualization:**
+- Horizontal bar chart showing duration of each stage
+- Color-coded bars:
+  - 🟢 Green: Completed successfully
+  - 🔴 Red: Completed with error
+  - ⚪ Gray: Unknown status
+
+**Stage Breakdown Table:**
+- **Stage**: Pipeline stage name (e.g., "initialization", "judge", "deep_review")
+- **Start Time**: When the stage began
+- **End Time**: When the stage finished
+- **Duration**: How long the stage took (human-readable)
+- **% of Total**: Percentage of total job time consumed by this stage
+- **Status**: Completion status (Completed, Error, Unknown)
+
+#### Example Timeline
+
+```
+Job #abc-123 took 15min 30s (expected 10min)
+
+Stage Breakdown:
+- Initialization:   2min 0s   (13% of total) ✓ Completed
+- Judge Validation: 3min 0s   (19% of total) ✓ Completed  
+- Deep Review:      5min 30s  (35% of total) ✓ Completed
+- Gap Analysis:     3min 0s   (19% of total) ✓ Completed
+- Finalization:     2min 0s   (13% of total) ✓ Completed
+
+Slowest Stage: Deep Review (5min 30s)
+```
+
+#### Interpreting Results
+
+**Debugging Slow Jobs:**
+If a job took longer than expected, check:
+1. **Which stage was slowest?** The progress bar will highlight it
+2. **Compare to other jobs:** Run the same analysis and compare timelines
+3. **Check for outliers:** A stage taking 3x longer than usual may indicate an issue
+
+**Common Bottlenecks:**
+- **Deep Review**: Scales with number of papers and pillar complexity
+- **Gap Analysis**: Depends on number of requirements and evidence triangulation
+- **Judge Validation**: Usually fast unless there are many validation errors
+
+#### Exporting Progress Reports
+
+Click the **"📥 Export CSV"** button to download the progress timeline as a CSV file.
+
+The CSV includes:
+- Stage name
+- Start and end timestamps
+- Duration (seconds and human-readable)
+- Percentage of total time
+- Status
+
+**Use Cases for CSV Export:**
+- Performance tracking across multiple jobs
+- Billing/time tracking
+- Historical analysis
+- Importing into spreadsheets for further analysis
+
+**Example CSV:**
+```csv
+Stage,Start Time,End Time,Duration (seconds),Duration (human),% of Total,Status
+initialization,2025-11-17T10:00:00Z,2025-11-17T10:02:00Z,120,2min 0s,13.3%,completed
+judge,2025-11-17T10:02:00Z,2025-11-17T10:05:00Z,180,3min 0s,20.0%,completed
+deep_review,2025-11-17T10:05:00Z,2025-11-17T10:10:30Z,330,5min 30s,36.7%,completed
+gap_analysis,2025-11-17T10:10:30Z,2025-11-17T10:13:30Z,180,3min 0s,20.0%,completed
+finalization,2025-11-17T10:13:30Z,2025-11-17T10:15:30Z,120,2min 0s,13.3%,completed
+
+TOTAL,,,900,15min 0s,100%,
+```
+
+#### Limitations
+
+- Progress history is only available for **completed jobs**
+- Jobs must have been run with progress tracking enabled (standard in v2.0+)
+- If a job was run before progress tracking was implemented, you'll see "No progress data available"
+
+### 6. Real-time Updates
 
 The dashboard uses WebSockets for real-time updates:
 - Connection status shown in top-right corner
