@@ -885,6 +885,25 @@
                         <div id="detailProgress"></div>
                     </div>
                     
+                    <!-- Prompt History Section -->
+                    <div class="mb-3" id="promptHistorySection" style="display: none;">
+                        <h6>User Decisions</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Prompt Type</th>
+                                        <th>Response</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="promptHistoryTable">
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
                     <!-- Enhanced Analytical Outputs Section -->
                     <div id="enhancedOutputsSection" style="display: none;">
                         <h5 class="section-title">📊 Enhanced Analysis</h5>
@@ -1861,6 +1880,36 @@
                     progressSection.style.display = 'block';
                 } else {
                     progressSection.style.display = 'none';
+                }
+                
+                // Show prompt history if exists
+                const promptHistorySection = document.getElementById('promptHistorySection');
+                if (job.prompts && job.prompts.length > 0) {
+                    const tbody = document.getElementById('promptHistoryTable');
+                    tbody.innerHTML = job.prompts.map(p => {
+                        const timestamp = new Date(p.timestamp).toLocaleString();
+                        const statusBadge = p.timed_out 
+                            ? '<span class="badge bg-danger">Timed Out</span>' 
+                            : '<span class="badge bg-success">Responded</span>';
+                        
+                        return `
+                            <tr>
+                                <td>${timestamp}</td>
+                                <td><span class="badge bg-info">${p.type}</span></td>
+                                <td><strong>${p.response || 'N/A'}</strong></td>
+                                <td>${statusBadge}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-muted small">
+                                    ${p.prompt_data.message || ''}
+                                    ${p.timed_out ? ` (${p.timeout_seconds}s timeout)` : ''}
+                                </td>
+                            </tr>
+                        `;
+                    }).join('');
+                    promptHistorySection.style.display = 'block';
+                } else {
+                    promptHistorySection.style.display = 'none';
                 }
                 
                 // Fetch logs
