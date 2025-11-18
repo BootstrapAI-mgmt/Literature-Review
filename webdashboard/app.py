@@ -496,6 +496,68 @@ async def get_job(
     
     return job_data
 
+@app.get("/api/jobs/{job_id}/eta")
+async def get_job_eta(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get ETA (Estimated Time to Arrival) for a running job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        ETA information with confidence intervals and stage breakdown
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Check if job is running
+    if job_data.get("status") != "running":
+        return {
+            "job_id": job_id,
+            "status": job_data.get("status"),
+            "eta": None,
+            "message": "Job is not currently running"
+        }
+    
+    # Get current stage from progress file
+    progress_file = Path(f"workspace/status/{job_id}_progress.jsonl")
+    current_stage = "gap_analysis"  # Default
+    
+    if progress_file.exists():
+        try:
+            # Read last line to get current stage
+            with open(progress_file, 'r') as f:
+                lines = f.readlines()
+                if lines:
+                    last_event = json.loads(lines[-1])
+                    current_stage = last_event.get('stage', 'gap_analysis')
+        except Exception as e:
+            logger.warning(f"Could not read progress file for {job_id}: {e}")
+    
+    # Get ETA from job runner
+    if job_runner:
+        eta_data = job_runner.get_job_eta(job_id, current_stage)
+        return {
+            "job_id": job_id,
+            "status": "running",
+            "current_stage": current_stage,
+            "eta": eta_data
+        }
+    
+    return {
+        "job_id": job_id,
+        "status": "running",
+        "current_stage": current_stage,
+        "eta": None,
+        "message": "Job runner not available"
+    }
+
 @app.post("/api/jobs/{job_id}/retry")
 async def retry_job(
     job_id: str,
