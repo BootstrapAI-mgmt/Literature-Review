@@ -86,6 +86,7 @@ class GapAnalyzer:
             }
         
         # Find the best contributing paper (highest contribution)
+        # We use the paper with the highest estimated contribution as the basis for freshness
         best_paper = max(papers, key=lambda p: p.get('estimated_contribution_percent', 0))
         
         # Calculate freshness for the best paper
