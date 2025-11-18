@@ -39,7 +39,7 @@ python webdashboard/app.py
 
 **Running Dashboard Tests:**
 ```bash
-# All dashboard E2E tests
+# All dashboard E2E tests (dashboard must be running on localhost:8000)
 pytest tests/e2e/test_dashboard_workflows.py -m e2e_dashboard -v
 
 # With visible browser (debug mode)

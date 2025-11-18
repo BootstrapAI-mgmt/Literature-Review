@@ -144,7 +144,7 @@ Dashboard E2E tests use Playwright to automate browser interactions and test ful
 
 2. **Verify Dashboard is Running**:
    ```bash
-   curl http://localhost:5001/health
+   curl http://localhost:8000/health
    ```
 
 ### Running Dashboard E2E Tests
@@ -190,10 +190,10 @@ Current dashboard E2E tests cover:
 
 ### Configuring Dashboard URL
 
-By default, tests use `http://localhost:5001`. To use a different URL:
+By default, tests use `http://localhost:8000`. To use a different URL:
 
 ```bash
-export DASHBOARD_URL=http://localhost:8080
+export DASHBOARD_URL=http://localhost:5001
 pytest tests/e2e/test_dashboard_workflows.py -m e2e_dashboard
 ```
 
@@ -337,14 +337,14 @@ playwright install-deps
 **Solution**:
 1. Verify dashboard is running:
    ```bash
-   curl http://localhost:5001/health
+   curl http://localhost:8000/health
    ```
 
 2. Check dashboard logs for errors
 
-3. Verify port 5001 is not in use:
+3. Verify port 8000 is not in use:
    ```bash
-   lsof -i :5001
+   lsof -i :8000
    ```
 
 4. Try restarting the dashboard:

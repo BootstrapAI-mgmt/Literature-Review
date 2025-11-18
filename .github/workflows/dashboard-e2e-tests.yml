@@ -57,7 +57,7 @@ jobs:
           # Wait for dashboard to be ready (up to 30 seconds)
           echo "Waiting for dashboard to start..."
           for i in {1..30}; do
-            if curl -s http://localhost:5001/health > /dev/null; then
+            if curl -s http://localhost:8000/health > /dev/null; then
               echo "Dashboard is ready!"
               break
             fi
@@ -69,14 +69,14 @@ jobs:
       
       - name: Verify Dashboard is running
         run: |
-          curl -f http://localhost:5001/health || (echo "Dashboard failed to start" && exit 1)
+          curl -f http://localhost:8000/health || (echo "Dashboard failed to start" && exit 1)
           echo "Dashboard health check passed"
       
       - name: Run Dashboard E2E tests
         run: |
           pytest tests/e2e/test_dashboard_workflows.py -m e2e_dashboard -v --tb=short
         env:
-          DASHBOARD_URL: http://localhost:5001
+          DASHBOARD_URL: http://localhost:8000
           DASHBOARD_API_KEY: test-api-key
       
       - name: Upload test screenshots (on failure)
