@@ -14,11 +14,11 @@ This document tracks the phased execution of enhancement task cards, showing par
 ### Completion Status
 
 - **Wave 0 (Quick Win):** ✅ 1/1 complete (100%)
-- **Wave 1 (Core Infrastructure):** ✅ 1/2 complete (50%)
-- **Wave 2 (User Features):** ✅ 1/6 complete (17%)
+- **Wave 1 (Core Infrastructure):** ✅ 2/2 complete (100%)
+- **Wave 2 (User Features):** ✅ 6/6 complete (100%)
 - **Wave 3 (Advanced Features):** ⏳ 0/5 complete (0%)
 - **Wave 4 (Testing & Documentation):** ⏳ 0/3 complete (0%)
-- **Total:** ✅ 3/20 complete (15%)
+- **Total:** ✅ 9/20 complete (45%)
 
 ---
 
@@ -45,11 +45,11 @@ This document tracks the phased execution of enhancement task cards, showing par
 | Card | Priority | Effort | Dependencies | Status | Assignee |
 |------|----------|--------|--------------|--------|----------|
 | ENHANCE-P2-1 | 🟡 MEDIUM | 3h | None | ✅ Complete (PR #48) | Copilot Agent |
-| ENHANCE-P2-2 | 🟡 MEDIUM | 5h | None | ⏳ Not Started | - |
+| ENHANCE-P2-2 | 🟡 MEDIUM | 5h | None | ✅ Complete (PR #49) | Copilot Agent |
 
 **Tasks:**
-- [x] ENHANCE-P2-1: Cross-batch duplicate detection (PDF hashing, fuzzy matching) - **MERGED**
-- [ ] ENHANCE-P2-2: PDF metadata extraction improvements (PyMuPDF, DOI detection)
+- [x] ENHANCE-P2-1: Cross-batch duplicate detection (PDF hashing, fuzzy matching) - **MERGED PR #48**
+- [x] ENHANCE-P2-2: PDF metadata extraction improvements (PyMuPDF, DOI detection) - **MERGED PR #49**
 
 **Dependencies:**
 - None - can work in parallel
@@ -65,7 +65,7 @@ Total wall-clock time: 5 hours (parallel)
 - ✅ Enhanced duplicate detection with hash, exact, and fuzzy matching
 - ✅ User-friendly modal UI for handling duplicates
 - ✅ 24 tests (17 unit + 7 integration), 91% coverage
-- ⏳ Better metadata extraction (pending)
+- ✅ Better metadata extraction with PyMuPDF and DOI detection
 
 ---
 
@@ -75,20 +75,20 @@ Total wall-clock time: 5 hours (parallel)
 
 | Card | Priority | Effort | Dependencies | Status | Assignee |
 |------|----------|--------|--------------|--------|----------|
-| ENHANCE-P3-1 | 🟡 MEDIUM | 2h | None | ⏳ Not Started | - |
+| ENHANCE-P3-1 | 🟡 MEDIUM | 2h | None | ✅ Complete (PR #50) | Copilot Agent |
 | ENHANCE-P3-2 | 🟡 MEDIUM | 4h | None | ✅ Complete (PR #51) | Copilot Agent |
-| ENHANCE-P4-3 | 🟡 MEDIUM | 5h | None | ⏳ Not Started | - |
-| ENHANCE-P4-4 | 🟡 MEDIUM | 3h | None | ⏳ Not Started | - |
-| ENHANCE-P5-2 | 🟡 MEDIUM | 2h | ENHANCE-P5-1 ✅ | ⏳ Not Started | - |
-| ENHANCE-P5-4 | 🟡 MEDIUM | 2h | ENHANCE-P5-1 ✅ | ⏳ Not Started | - |
+| ENHANCE-P4-3 | 🟡 MEDIUM | 5h | None | ✅ Complete (PR #52) | Copilot Agent |
+| ENHANCE-P4-4 | 🟡 MEDIUM | 3h | None | ✅ Complete (PR #53) | Copilot Agent |
+| ENHANCE-P5-2 | 🟡 MEDIUM | 2h | ENHANCE-P5-1 ✅ | ✅ Complete (PR #54) | Copilot Agent |
+| ENHANCE-P5-4 | 🟡 MEDIUM | 2h | ENHANCE-P5-1 ✅ | ✅ Complete (PR #55) | Copilot Agent |
 
 **Tasks:**
-- [ ] ENHANCE-P3-1: Improve ETA accuracy (historical tracking, confidence intervals)
-- [x] ENHANCE-P3-2: Progress replay for historical jobs (timeline reconstruction) - **MERGED**
-- [ ] ENHANCE-P4-3: Results comparison view (side-by-side job comparison)
-- [ ] ENHANCE-P4-4: Results summary cards (quick-view metrics)
-- [ ] ENHANCE-P5-2: Integrate run_mode and continue prompts
-- [ ] ENHANCE-P5-4: Multi-select pillar support
+- [x] ENHANCE-P3-1: Improve ETA accuracy (historical tracking, confidence intervals) - **MERGED PR #50**
+- [x] ENHANCE-P3-2: Progress replay for historical jobs (timeline reconstruction) - **MERGED PR #51**
+- [x] ENHANCE-P4-3: Results comparison view (side-by-side job comparison) - **MERGED PR #52**
+- [x] ENHANCE-P4-4: Results summary cards (quick-view metrics) - **MERGED PR #53**
+- [x] ENHANCE-P5-2: Integrate run_mode and continue prompts - **MERGED PR #54**
+- [x] ENHANCE-P5-4: Multi-select pillar support - **MERGED PR #55**
 
 **Dependencies:**
 - ENHANCE-P5-2 & P5-4 require ENHANCE-P5-1 (pytest-asyncio) to be merged first
@@ -109,9 +109,11 @@ Total wall-clock time: 8 hours (parallel)
 ```
 
 **Output:**
-- Better progress tracking
-- Job comparison tools
-- Enhanced interactive prompts
+- ✅ Better progress tracking with ETA accuracy and historical replay
+- ✅ Job comparison tools with side-by-side analysis
+- ✅ Enhanced interactive prompts with run_mode integration
+- ✅ Multi-select pillar support for flexible gap analysis
+- ✅ Summary cards for at-a-glance job metrics
 
 ---
 
@@ -336,21 +338,21 @@ Wave 4: Test/Doc
 
 ### Phase 5: Interactive Prompts
 - [x] ENHANCE-P5-1 (pytest-asyncio) - **Wave 0** ✅ MERGED
-- [ ] ENHANCE-P5-2 (run_mode prompts) - **Wave 2**
+- [x] ENHANCE-P5-2 (run_mode prompts) - **Wave 2** ✅ MERGED PR #54
 - [ ] ENHANCE-P5-3 (prompt history) - **Wave 3**
-- [ ] ENHANCE-P5-4 (multi-select) - **Wave 2**
+- [x] ENHANCE-P5-4 (multi-select) - **Wave 2** ✅ MERGED PR #55
 - [ ] ENHANCE-P5-5 (timeout config) - **Wave 3**
 - [ ] ENHANCE-P5-6 (documentation) - **Wave 3**
 
 ### Phase 4: Results Visualization
-- [ ] ENHANCE-P4-3 (comparison view) - **Wave 2**
-- [ ] ENHANCE-P4-4 (summary cards) - **Wave 2**
+- [x] ENHANCE-P4-3 (comparison view) - **Wave 2** ✅ MERGED PR #52
+- [x] ENHANCE-P4-4 (summary cards) - **Wave 2** ✅ MERGED PR #53
 
 ### Phase 2 & 3: Input & Progress
-- [x] ENHANCE-P2-1 (duplicate detection) - **Wave 1** ✅ MERGED (PR #48)
-- [ ] ENHANCE-P2-2 (metadata extraction) - **Wave 1**
-- [ ] ENHANCE-P3-1 (ETA accuracy) - **Wave 2**
-- [ ] ENHANCE-P3-2 (progress replay) - **Wave 2**
+- [x] ENHANCE-P2-1 (duplicate detection) - **Wave 1** ✅ MERGED PR #48
+- [x] ENHANCE-P2-2 (metadata extraction) - **Wave 1** ✅ MERGED PR #49
+- [x] ENHANCE-P3-1 (ETA accuracy) - **Wave 2** ✅ MERGED PR #50
+- [x] ENHANCE-P3-2 (progress replay) - **Wave 2** ✅ MERGED PR #51
 
 ### Wave 3: Enhancements
 - [ ] ENHANCE-W3-4A (evidence decay) - **Wave 3**
@@ -369,8 +371,8 @@ Wave 4: Test/Doc
 
 ### Velocity Tracking
 - **Target:** 1-2 PRs merged per day
-- **Current:** 0 PRs merged
-- **On Track:** Yes/No
+- **Current:** 9 PRs merged (PR #48-55 + pytest-asyncio)
+- **On Track:** ✅ Yes - Wave 0, Wave 1, and Wave 2 complete (45% total progress)
 
 ### Quality Gates
 - [ ] All PRs have ≥90% test coverage
@@ -386,6 +388,15 @@ Wave 4: Test/Doc
 ---
 
 ## 📝 Notes
+
+### Additional PRs Merged
+
+Two additional PRs were merged that support the Wave 1 and Wave 2 features but weren't explicitly tracked as separate task cards:
+
+- **PR #46:** Interactive prompt system (WebSocket-based job control) - Foundation for ENHANCE-P5-2 and P5-4
+- **PR #47:** Enhanced cross-batch deduplication - Refinement of ENHANCE-P2-1
+
+These PRs strengthened the implementation of existing task cards rather than representing separate enhancement cards.
 
 ### Execution Recommendations
 

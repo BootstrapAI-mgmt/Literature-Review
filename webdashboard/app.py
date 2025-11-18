@@ -1708,6 +1708,24 @@ async def download_all_results(
                 # Add file to ZIP with relative path
                 arcname = file_path.relative_to(output_dir)
                 zip_file.write(file_path, arcname=arcname)
+        
+        # Add prompt history if available
+        if 'prompts' in job_data and job_data['prompts']:
+            # Add prompt_history.json
+            prompt_history_json = json.dumps(job_data['prompts'], indent=2)
+            zip_file.writestr('prompt_history.json', prompt_history_json)
+            
+            # Add human-readable summary
+            summary = "Prompt History Summary\n" + "="*50 + "\n\n"
+            for p in job_data['prompts']:
+                summary += f"[{p['timestamp']}] {p['type']}\n"
+                summary += f"  Response: {p.get('response', 'N/A')}\n"
+                summary += f"  Status: {'TIMED OUT' if p['timed_out'] else 'OK'}\n"
+                if 'prompt_data' in p and 'message' in p['prompt_data']:
+                    summary += f"  Message: {p['prompt_data']['message']}\n"
+                summary += "\n"
+            
+            zip_file.writestr('prompt_history.txt', summary)
     
     zip_buffer.seek(0)
     

@@ -29,6 +29,7 @@ class PromptHandler:
         self.pending_prompts: Dict[str, asyncio.Future] = {}
         self.prompt_timeouts: Dict[str, datetime] = {}
         self.prompt_job_ids: Dict[str, str] = {}  # Track job_id for each prompt
+        self.prompt_metadata: Dict[str, Dict[str, Any]] = {}  # Track prompt metadata for history
         
         # Load timeout configuration
         self.config = self._load_config(config_file)
@@ -135,6 +136,14 @@ class PromptHandler:
         self.prompt_timeouts[prompt_id] = datetime.now(timezone.utc) + timedelta(seconds=timeout_seconds)
         self.prompt_job_ids[prompt_id] = job_id
         
+        # Store prompt metadata for history tracking
+        self.prompt_metadata[prompt_id] = {
+            'prompt_type': prompt_type,
+            'prompt_data': prompt_data,
+            'timeout_seconds': timeout_seconds,
+            'job_id': job_id
+        }
+        
         logger.info(f"Requesting user input for job {job_id}, prompt {prompt_id}, type {prompt_type}, timeout {timeout_seconds}s")
         
         # Broadcast prompt to WebSocket clients
@@ -146,10 +155,24 @@ class PromptHandler:
             logger.info(f"Received response for prompt {prompt_id}: {response}")
             return response
         except asyncio.TimeoutError:
+            # Save timeout to history before cleanup
+            metadata = self.prompt_metadata.get(prompt_id)
+            if metadata:
+                await self._save_prompt_to_history(
+                    job_id=job_id,
+                    prompt_id=prompt_id,
+                    prompt_type=metadata['prompt_type'],
+                    response=None,
+                    prompt_data=metadata['prompt_data'],
+                    timeout_seconds=metadata['timeout_seconds'],
+                    timed_out=True
+                )
+            
             # Clean up
             self.pending_prompts.pop(prompt_id, None)
             self.prompt_timeouts.pop(prompt_id, None)
             self.prompt_job_ids.pop(prompt_id, None)
+            self.prompt_metadata.pop(prompt_id, None)
             
             logger.error(f"Prompt {prompt_id} timed out after {timeout_seconds} seconds")
             raise TimeoutError(f"User did not respond to prompt within {timeout_seconds} seconds")
@@ -191,6 +214,20 @@ class PromptHandler:
         
         logger.info(f"Submitting response for prompt {prompt_id}: {response}")
         
+        # Save to history before resolving (use asyncio.create_task to not block)
+        metadata = self.prompt_metadata.get(prompt_id)
+        if metadata:
+            job_id = metadata['job_id']
+            asyncio.create_task(self._save_prompt_to_history(
+                job_id=job_id,
+                prompt_id=prompt_id,
+                prompt_type=metadata['prompt_type'],
+                response=response,
+                prompt_data=metadata['prompt_data'],
+                timeout_seconds=metadata['timeout_seconds'],
+                timed_out=False
+            ))
+        
         # Resolve future with response
         future.set_result(response)
         
@@ -198,6 +235,7 @@ class PromptHandler:
         self.pending_prompts.pop(prompt_id, None)
         self.prompt_timeouts.pop(prompt_id, None)
         self.prompt_job_ids.pop(prompt_id, None)
+        self.prompt_metadata.pop(prompt_id, None)
     
     def get_pending_prompts(self, job_id: Optional[str] = None) -> list:
         """
@@ -216,6 +254,67 @@ class PromptHandler:
             prompt_id for prompt_id, jid in self.prompt_job_ids.items()
             if jid == job_id
         ]
+    
+    async def _save_prompt_to_history(
+        self,
+        job_id: str,
+        prompt_id: str,
+        prompt_type: str,
+        response: Any,
+        prompt_data: Dict[str, Any],
+        timeout_seconds: int,
+        timed_out: bool
+    ):
+        """
+        Save prompt response to job metadata
+        
+        Args:
+            job_id: Job identifier
+            prompt_id: Prompt identifier
+            prompt_type: Type of prompt
+            response: User's response (None if timed out)
+            prompt_data: Original prompt data
+            timeout_seconds: Configured timeout
+            timed_out: Whether the prompt timed out
+        """
+        import json
+        from pathlib import Path
+        
+        try:
+            # Construct job file path
+            job_file = Path(f"workspace/jobs/{job_id}.json")
+            
+            if not job_file.exists():
+                logger.warning(f"Job file not found for job {job_id}, cannot save prompt history")
+                return
+            
+            # Load existing job data
+            with open(job_file, 'r') as f:
+                job_data = json.load(f)
+            
+            # Initialize prompts array if not exists
+            if 'prompts' not in job_data:
+                job_data['prompts'] = []
+            
+            # Append prompt record
+            job_data['prompts'].append({
+                'prompt_id': prompt_id,
+                'type': prompt_type,
+                'response': response,
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'timeout_seconds': timeout_seconds,
+                'timed_out': timed_out,
+                'prompt_data': prompt_data
+            })
+            
+            # Save back to file
+            with open(job_file, 'w') as f:
+                json.dump(job_data, f, indent=2)
+            
+            logger.info(f"Saved prompt {prompt_id} to job {job_id} history")
+            
+        except Exception as e:
+            logger.error(f"Failed to save prompt history for job {job_id}: {e}")
 
 
 # Global instance
