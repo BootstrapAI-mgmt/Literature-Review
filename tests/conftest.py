@@ -192,5 +192,32 @@ def cleanup_test_files():
 # - component: Component tests with mocks
 # - integration: Integration tests (may be slow)
 # - e2e: End-to-end tests (slowest)
+# - e2e_dashboard: E2E dashboard tests with Playwright
 # - slow: Tests that take >5 seconds
 # - requires_api: Tests requiring Gemini API access
+
+
+# Playwright configuration for E2E dashboard tests
+def pytest_configure(config):
+    """Configure pytest with custom settings"""
+    # Playwright will be configured through pytest-playwright plugin
+    # Default browser: chromium
+    # Headless mode: true (can be overridden with --headed flag)
+    pass
+
+
+@pytest.fixture(scope="session")
+def browser_context_args(browser_context_args):
+    """
+    Configure browser context for Playwright tests.
+    
+    Sets default viewport size and other browser context options.
+    """
+    return {
+        **browser_context_args,
+        "viewport": {
+            "width": 1920,
+            "height": 1080,
+        },
+        "ignore_https_errors": True,
+    }
