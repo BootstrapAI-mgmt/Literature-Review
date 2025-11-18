@@ -577,6 +577,68 @@ async def get_job(
     
     return job_data
 
+@app.get("/api/jobs/{job_id}/eta")
+async def get_job_eta(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get ETA (Estimated Time to Arrival) for a running job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        ETA information with confidence intervals and stage breakdown
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Check if job is running
+    if job_data.get("status") != "running":
+        return {
+            "job_id": job_id,
+            "status": job_data.get("status"),
+            "eta": None,
+            "message": "Job is not currently running"
+        }
+    
+    # Get current stage from progress file
+    progress_file = Path(f"workspace/status/{job_id}_progress.jsonl")
+    current_stage = "gap_analysis"  # Default
+    
+    if progress_file.exists():
+        try:
+            # Read last line to get current stage
+            with open(progress_file, 'r') as f:
+                lines = f.readlines()
+                if lines:
+                    last_event = json.loads(lines[-1])
+                    current_stage = last_event.get('stage', 'gap_analysis')
+        except Exception as e:
+            logger.warning(f"Could not read progress file for {job_id}: {e}")
+    
+    # Get ETA from job runner
+    if job_runner:
+        eta_data = job_runner.get_job_eta(job_id, current_stage)
+        return {
+            "job_id": job_id,
+            "status": "running",
+            "current_stage": current_stage,
+            "eta": eta_data
+        }
+    
+    return {
+        "job_id": job_id,
+        "status": "running",
+        "current_stage": current_stage,
+        "eta": None,
+        "message": "Job runner not available"
+    }
+
 @app.post("/api/jobs/{job_id}/retry")
 async def retry_job(
     job_id: str,
@@ -861,6 +923,213 @@ async def compare_jobs(
     }
     
     return comparison
+@app.get("/api/jobs/{job_id}/progress-history")
+async def get_progress_history(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get historical progress timeline for completed job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        Progress timeline with stage durations and performance metrics
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job_data.get('status') != 'completed':
+        raise HTTPException(
+            status_code=400,
+            detail="Job not completed. Progress history only available for completed jobs."
+        )
+    
+    # Read progress events from JSONL file
+    progress_file = STATUS_DIR / f"{job_id}_progress.jsonl"
+    if not progress_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="No progress data available for this job"
+        )
+    
+    # Parse progress events
+    events = []
+    try:
+        with open(progress_file, 'r') as f:
+            for line in f:
+                if line.strip():
+                    events.append(json.loads(line))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to parse progress data: {str(e)}"
+        )
+    
+    # Group events by stage and calculate durations
+    stages = {}
+    for event in events:
+        stage = event.get('stage')
+        phase = event.get('phase')
+        timestamp = event.get('timestamp')
+        
+        if not stage or not phase or not timestamp:
+            continue
+        
+        if stage not in stages:
+            stages[stage] = {
+                'stage': stage,
+                'start_time': None,
+                'end_time': None,
+                'status': 'unknown'
+            }
+        
+        # Track start and end times
+        if phase == 'starting':
+            stages[stage]['start_time'] = timestamp
+            stages[stage]['status'] = 'started'
+        elif phase == 'complete':
+            stages[stage]['end_time'] = timestamp
+            stages[stage]['status'] = 'completed'
+        elif phase == 'error':
+            stages[stage]['end_time'] = timestamp
+            stages[stage]['status'] = 'error'
+    
+    # Calculate durations
+    timeline = []
+    total_duration = 0
+    
+    for stage_name, stage_data in stages.items():
+        if stage_data['start_time'] and stage_data['end_time']:
+            try:
+                start = datetime.fromisoformat(stage_data['start_time'])
+                end = datetime.fromisoformat(stage_data['end_time'])
+                duration_seconds = int((end - start).total_seconds())
+                
+                timeline.append({
+                    'stage': stage_name,
+                    'start_time': stage_data['start_time'],
+                    'end_time': stage_data['end_time'],
+                    'duration_seconds': duration_seconds,
+                    'duration_human': format_duration(duration_seconds),
+                    'status': stage_data['status'],
+                    'percentage': 0  # Will be calculated later
+                })
+                
+                total_duration += duration_seconds
+            except Exception:
+                continue
+    
+    # Calculate percentages
+    for item in timeline:
+        if total_duration > 0:
+            item['percentage'] = round((item['duration_seconds'] / total_duration) * 100, 1)
+        else:
+            item['percentage'] = 0
+    
+    # Find slowest stage
+    slowest_stage = max(timeline, key=lambda x: x['duration_seconds'])['stage'] if timeline else None
+    
+    return {
+        'job_id': job_id,
+        'total_duration_seconds': total_duration,
+        'total_duration_human': format_duration(total_duration),
+        'timeline': timeline,
+        'slowest_stage': slowest_stage,
+        'start_time': job_data.get('started_at'),
+        'end_time': job_data.get('completed_at')
+    }
+
+def format_duration(seconds: int) -> str:
+    """Format seconds as human-readable duration"""
+    if seconds < 60:
+        return f"{seconds}s"
+    elif seconds < 3600:
+        minutes = seconds // 60
+        secs = seconds % 60
+        return f"{minutes}min {secs}s"
+    else:
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        return f"{hours}h {minutes}min"
+
+@app.get("/api/jobs/{job_id}/progress-history.csv")
+async def export_progress_history_csv(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Export progress history as CSV file
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        CSV file download
+    """
+    verify_api_key(api_key)
+    
+    # Get progress data using the existing endpoint logic
+    try:
+        progress_data = await get_progress_history(job_id, api_key)
+    except HTTPException as e:
+        raise e
+    
+    # Create CSV content
+    import csv
+    from io import StringIO
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow([
+        'Stage',
+        'Start Time',
+        'End Time',
+        'Duration (seconds)',
+        'Duration (human)',
+        '% of Total',
+        'Status'
+    ])
+    
+    # Rows
+    for stage in progress_data['timeline']:
+        writer.writerow([
+            stage['stage'],
+            stage['start_time'],
+            stage['end_time'],
+            stage['duration_seconds'],
+            stage['duration_human'],
+            f"{stage['percentage']}%",
+            stage['status']
+        ])
+    
+    # Total row
+    writer.writerow([])
+    writer.writerow([
+        'TOTAL',
+        '',
+        '',
+        progress_data['total_duration_seconds'],
+        progress_data['total_duration_human'],
+        '100%',
+        ''
+    ])
+    
+    # Return as downloadable file
+    output.seek(0)
+    return StreamingResponse(
+        iter([output.getvalue()]),
+        media_type='text/csv',
+        headers={
+            'Content-Disposition': f'attachment; filename=job_{job_id}_progress.csv'
+        }
+    )
 
 @app.post("/api/prompts/{prompt_id}/respond")
 async def respond_to_prompt(

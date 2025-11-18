@@ -13,12 +13,12 @@ This document tracks the phased execution of enhancement task cards, showing par
 
 ### Completion Status
 
-- **Wave 0 (Quick Win):** ✅ 1/1 complete
-- **Wave 1 (Core Infrastructure):** ✅ 1/5 complete (ENHANCE-P2-1 merged)
-- **Wave 2 (User Features):** ⏳ 0/6 complete  
-- **Wave 3 (Advanced Features):** ⏳ 0/5 complete  
-- **Wave 4 (Testing & Documentation):** ⏳ 0/3 complete  
-- **Total:** ✅ 2/20 complete (10%)
+- **Wave 0 (Quick Win):** ✅ 1/1 complete (100%)
+- **Wave 1 (Core Infrastructure):** ✅ 1/2 complete (50%)
+- **Wave 2 (User Features):** ✅ 1/6 complete (17%)
+- **Wave 3 (Advanced Features):** ⏳ 0/5 complete (0%)
+- **Wave 4 (Testing & Documentation):** ⏳ 0/3 complete (0%)
+- **Total:** ✅ 3/20 complete (15%)
 
 ---
 
@@ -76,7 +76,7 @@ Total wall-clock time: 5 hours (parallel)
 | Card | Priority | Effort | Dependencies | Status | Assignee |
 |------|----------|--------|--------------|--------|----------|
 | ENHANCE-P3-1 | 🟡 MEDIUM | 2h | None | ⏳ Not Started | - |
-| ENHANCE-P3-2 | 🟡 MEDIUM | 4h | None | ⏳ Not Started | - |
+| ENHANCE-P3-2 | 🟡 MEDIUM | 4h | None | ✅ Complete (PR #51) | Copilot Agent |
 | ENHANCE-P4-3 | 🟡 MEDIUM | 5h | None | ⏳ Not Started | - |
 | ENHANCE-P4-4 | 🟡 MEDIUM | 3h | None | ⏳ Not Started | - |
 | ENHANCE-P5-2 | 🟡 MEDIUM | 2h | ENHANCE-P5-1 ✅ | ⏳ Not Started | - |
@@ -84,7 +84,7 @@ Total wall-clock time: 5 hours (parallel)
 
 **Tasks:**
 - [ ] ENHANCE-P3-1: Improve ETA accuracy (historical tracking, confidence intervals)
-- [ ] ENHANCE-P3-2: Progress replay for historical jobs (timeline reconstruction)
+- [x] ENHANCE-P3-2: Progress replay for historical jobs (timeline reconstruction) - **MERGED**
 - [ ] ENHANCE-P4-3: Results comparison view (side-by-side job comparison)
 - [ ] ENHANCE-P4-4: Results summary cards (quick-view metrics)
 - [ ] ENHANCE-P5-2: Integrate run_mode and continue prompts
