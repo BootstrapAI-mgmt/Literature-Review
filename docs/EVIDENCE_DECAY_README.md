@@ -37,6 +37,72 @@ With a 5-year half-life:
 
 ## Configuration
 
+### Research Field Presets (Recommended)
+
+The easiest way to configure evidence decay is to use a research field preset. This automatically sets an appropriate half-life based on typical publication cycles for your field:
+
+```json
+{
+  "evidence_decay": {
+    "enabled": true,
+    "research_field": "ai_ml",
+    "half_life_years": null
+  }
+}
+```
+
+**Available Presets:**
+
+| Field Key | Field Name | Half-Life | Characteristics |
+|-----------|------------|-----------|-----------------|
+| `ai_ml` | AI & Machine Learning | 3 years | Rapidly evolving. Papers older than 3 years may be outdated. |
+| `software_engineering` | Software Engineering | 5 years | Moderate pace. Practices evolve but core principles remain valid. |
+| `computer_science` | Computer Science (General) | 7 years | Broad field with varied sub-areas. Moderate decay rate. |
+| `mathematics` | Mathematics | 10 years | Slow-changing field. Theorems and proofs remain valid indefinitely. |
+| `medicine` | Medicine & Healthcare | 5 years | Clinical guidelines update regularly. Moderate decay. |
+| `biology` | Biology & Life Sciences | 6 years | Research builds incrementally. Moderate-slow decay. |
+| `physics` | Physics | 8 years | Foundational science. Discoveries endure. |
+| `chemistry` | Chemistry | 7 years | Established field with ongoing discoveries. |
+| `custom` | Custom | 5 years | Set your own half-life value (see below). |
+
+**Example Configurations:**
+
+```json
+// AI/ML Research (3-year half-life)
+{
+  "evidence_decay": {
+    "enabled": true,
+    "research_field": "ai_ml",
+    "half_life_years": null  // Use preset
+  }
+}
+
+// Mathematics Research (10-year half-life)
+{
+  "evidence_decay": {
+    "enabled": true,
+    "research_field": "mathematics",
+    "half_life_years": null
+  }
+}
+
+// Custom Override (use your own value)
+{
+  "evidence_decay": {
+    "enabled": true,
+    "research_field": "ai_ml",  // Will be ignored
+    "half_life_years": 4.5  // Custom: 4.5 years
+  }
+}
+```
+
+**How Presets Work:**
+- When `half_life_years` is `null`, the system uses the preset value for the specified `research_field`
+- When `half_life_years` is a number, it overrides the preset (custom mode)
+- If `research_field` is omitted, defaults to `"custom"` preset (5 years)
+
+### Manual Configuration (Legacy)
+
 Edit `pipeline_config.json`:
 
 ```json
@@ -52,20 +118,38 @@ Edit `pipeline_config.json`:
 
 **Parameters:**
 - `enabled`: Enable/disable decay tracking (default: true)
-- `half_life_years`: Years for evidence value to decay to 50% (default: 5.0)
+- `research_field`: Preset key for research field (e.g., "ai_ml", "mathematics") (default: "custom")
+- `half_life_years`: Years for evidence value to decay to 50%. If `null`, uses preset value. If a number, overrides preset. (default: null)
 - `stale_threshold`: Threshold for marking evidence as stale (default: 0.5)
 - `weight_in_gap_analysis`: Apply decay weighting to gap analysis scores (default: true)
 - `decay_weight`: Blend factor for decay weighting, 0.0-1.0 (default: 0.7)
 - `apply_to_pillars`: Which pillars to apply decay to, or ["all"] (default: ["all"])
 - `min_freshness_threshold`: Alert threshold for stale evidence (default: 0.3)
 
-### Half-Life by Field
+### Auto-Detection of Research Field
 
-Choose based on your research domain:
-- **AI/ML**: 3-4 years (fast-moving)
-- **Engineering**: 5-7 years (moderate)
-- **Mathematics**: 10+ years (slow-moving)
-- **Medicine**: 5 years (guidelines-driven)
+You can also use the Python API to auto-detect the research field from your papers:
+
+```python
+from literature_review.utils.decay_presets import suggest_field_from_papers
+
+# Load your papers
+papers = [
+    {'title': 'Deep Learning for Image Recognition', 'abstract': 'Neural networks...'},
+    {'title': 'Attention Mechanisms in NLP', 'abstract': 'Machine learning...'}
+]
+
+# Auto-suggest field
+suggested_field = suggest_field_from_papers(papers)
+print(f"Suggested field: {suggested_field}")  # Output: "ai_ml"
+
+# Get preset for that field
+from literature_review.utils.decay_presets import get_preset
+preset = get_preset(suggested_field)
+print(f"Half-life: {preset['half_life_years']} years")  # Output: "3.0 years"
+```
+
+The auto-detection function analyzes paper titles and abstracts to identify keywords associated with different research fields, then suggests the field with the highest keyword match count.
 
 ## CLI Options
 
@@ -98,9 +182,22 @@ The tracker automatically runs during gap analysis if enabled in config. You can
 ```python
 from literature_review.utils.evidence_decay import EvidenceDecayTracker, generate_decay_report
 
+# Using a preset
+config = {
+    'evidence_decay': {
+        'research_field': 'ai_ml',
+        'half_life_years': None  # Use preset
+    }
+}
+tracker = EvidenceDecayTracker(config=config)
+print(f"Using {tracker.field_name} preset with {tracker.half_life} year half-life")
+
 # Calculate decay weight for a specific year
-tracker = EvidenceDecayTracker(half_life_years=5.0)
 weight = tracker.calculate_decay_weight(2020)  # Returns 0.5
+
+# Using custom half-life (legacy mode)
+tracker_custom = EvidenceDecayTracker(half_life_years=5.0)
+weight_custom = tracker_custom.calculate_decay_weight(2020)
 
 # Generate full report
 report = generate_decay_report(
@@ -112,6 +209,33 @@ report = generate_decay_report(
 
 # Access summary
 print(f"Requirements needing update: {report['summary']['needs_update_count']}")
+```
+
+### Working with Presets
+
+```python
+from literature_review.utils.decay_presets import (
+    get_preset, 
+    suggest_field_from_papers,
+    list_all_presets,
+    FIELD_PRESETS
+)
+
+# Get a specific preset
+ai_preset = get_preset('ai_ml')
+print(f"{ai_preset['name']}: {ai_preset['half_life_years']} years")
+print(f"Description: {ai_preset['description']}")
+
+# List all available presets
+all_presets = list_all_presets()
+for field_key, preset in all_presets.items():
+    print(f"{preset['name']}: {preset['half_life_years']} years")
+
+# Auto-detect field from papers
+papers = load_papers()  # Your papers list
+suggested_field = suggest_field_from_papers(papers)
+preset = get_preset(suggested_field)
+print(f"Suggested: {preset['name']} ({preset['half_life_years']} years)")
 ```
 
 ## Interpreting Results
