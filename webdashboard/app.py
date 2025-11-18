@@ -1790,6 +1790,73 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+
+@app.post("/api/suggest-field")
+async def suggest_research_field(request: dict):
+    """
+    Auto-suggest research field based on paper titles and abstracts.
+    
+    Request body:
+        {
+            "papers": [
+                {"title": "...", "abstract": "..."},
+                ...
+            ]
+        }
+    
+    Response:
+        {
+            "suggested_field": "ai_ml",
+            "field_name": "AI & Machine Learning",
+            "half_life_years": 3.0,
+            "description": "...",
+            "confidence": "high|medium|low"
+        }
+    """
+    from literature_review.utils.decay_presets import suggest_field_from_papers, get_preset
+    
+    papers = request.get('papers', [])
+    
+    if not papers:
+        raise HTTPException(status_code=400, detail="No papers provided")
+    
+    # Analyze papers and suggest field
+    suggested_field_key = suggest_field_from_papers(papers)
+    preset = get_preset(suggested_field_key)
+    
+    # Determine confidence based on whether we got a specific field or fell back to custom
+    confidence = "low" if suggested_field_key == 'custom' else "high"
+    
+    return {
+        "suggested_field": suggested_field_key,
+        "field_name": preset['name'],
+        "half_life_years": preset['half_life_years'],
+        "description": preset['description'],
+        "examples": preset['examples'],
+        "confidence": confidence
+    }
+
+
+@app.get("/api/field-presets")
+async def get_field_presets():
+    """
+    Get all available research field presets.
+    
+    Response:
+        {
+            "presets": {
+                "ai_ml": {...},
+                "mathematics": {...},
+                ...
+            }
+        }
+    """
+    from literature_review.utils.decay_presets import list_all_presets
+    
+    return {
+        "presets": list_all_presets()
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)

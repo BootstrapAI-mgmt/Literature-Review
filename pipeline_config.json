@@ -69,7 +69,8 @@
   },
   "evidence_decay": {
     "enabled": true,
-    "half_life_years": 5.0,
+    "research_field": "software_engineering",
+    "half_life_years": null,
     "stale_threshold": 0.5,
     "weight_in_gap_analysis": false,
     "decay_weight": 0.7,

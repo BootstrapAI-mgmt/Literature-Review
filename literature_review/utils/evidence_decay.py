@@ -7,6 +7,8 @@ import math
 import logging
 import os
 
+from literature_review.utils.decay_presets import get_preset, FIELD_PRESETS
+
 logger = logging.getLogger(__name__)
 
 
@@ -23,14 +25,35 @@ class EvidenceDecayTracker:
         """
         if config and 'evidence_decay' in config:
             decay_config = config['evidence_decay']
-            self.half_life = decay_config.get('half_life_years', half_life_years)
+            
+            # Load field preset or custom half-life
+            field_key = decay_config.get('research_field', 'custom')
+            custom_half_life = decay_config.get('half_life_years')
+            
+            if custom_half_life is not None:
+                # User override: use custom half-life value
+                self.half_life = custom_half_life
+                self.field_name = 'Custom'
+                self.research_field = 'custom'
+            else:
+                # Use preset from research field
+                preset = get_preset(field_key)
+                self.half_life = preset['half_life_years']
+                self.field_name = preset['name']
+                self.research_field = field_key
+            
             self.enabled = decay_config.get('enabled', True)
             self.weight_in_gap_analysis = decay_config.get('weight_in_gap_analysis', False)
             self.decay_weight = decay_config.get('decay_weight', 0.7)
             self.apply_to_pillars = decay_config.get('apply_to_pillars', ['all'])
             self.min_freshness_threshold = decay_config.get('min_freshness_threshold', 0.3)
+            
+            if self.enabled:
+                logger.info(f"Evidence Decay: Using {self.field_name} preset (half-life: {self.half_life} years)")
         else:
             self.half_life = half_life_years
+            self.field_name = 'Custom'
+            self.research_field = 'custom'
             self.enabled = True
             self.weight_in_gap_analysis = False
             self.decay_weight = 0.7
