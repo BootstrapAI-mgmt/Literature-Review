@@ -178,6 +178,87 @@ def save_job(job_id: str, job_data: dict):
     with open(job_file, 'w') as f:
         json.dump(job_data, f, indent=2)
 
+def extract_completeness(job_data: dict) -> float:
+    """Extract overall completeness percentage from job results"""
+    try:
+        # Try to load gap_analysis_report.json from job outputs
+        job_id = job_data.get("id")
+        if not job_id:
+            return 0.0
+        
+        report_file = JOBS_DIR / job_id / "outputs" / "gap_analysis_output" / "gap_analysis_report.json"
+        if not report_file.exists():
+            return 0.0
+        
+        with open(report_file, 'r') as f:
+            report = json.load(f)
+        
+        # Calculate average completeness across all pillars
+        total_completeness = 0.0
+        pillar_count = 0
+        
+        for pillar_name, pillar_data in report.items():
+            if isinstance(pillar_data, dict) and "completeness" in pillar_data:
+                total_completeness += pillar_data["completeness"]
+                pillar_count += 1
+        
+        return total_completeness / pillar_count if pillar_count > 0 else 0.0
+    except Exception:
+        return 0.0
+
+def extract_papers(job_data: dict) -> list:
+    """Extract list of papers from job data"""
+    try:
+        # Get papers from uploaded files
+        files = job_data.get("files", [])
+        if files:
+            return [f.get("original_name", f.get("filename", "")) for f in files]
+        
+        # Single file upload
+        filename = job_data.get("filename", "")
+        if filename:
+            return [filename]
+        
+        return []
+    except Exception:
+        return []
+
+def extract_gaps(job_data: dict) -> list:
+    """Extract list of gaps from job results"""
+    try:
+        job_id = job_data.get("id")
+        if not job_id:
+            return []
+        
+        report_file = JOBS_DIR / job_id / "outputs" / "gap_analysis_output" / "gap_analysis_report.json"
+        if not report_file.exists():
+            return []
+        
+        with open(report_file, 'r') as f:
+            report = json.load(f)
+        
+        gaps = []
+        for pillar_name, pillar_data in report.items():
+            if isinstance(pillar_data, dict) and "analysis" in pillar_data:
+                for req_name, req_data in pillar_data["analysis"].items():
+                    if isinstance(req_data, dict):
+                        for sub_req_name, sub_req_data in req_data.items():
+                            if isinstance(sub_req_data, dict):
+                                completeness = sub_req_data.get("completeness_percent", 0)
+                                # Consider anything below 100% as a gap
+                                if completeness < 100:
+                                    gaps.append({
+                                        "pillar": pillar_name,
+                                        "requirement": req_name,
+                                        "sub_requirement": sub_req_name,
+                                        "completeness": completeness,
+                                        "gap_analysis": sub_req_data.get("gap_analysis", "")
+                                    })
+        
+        return gaps
+    except Exception:
+        return []
+
 # API Endpoints
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -712,6 +793,136 @@ async def start_job(
         "message": "Job queued for execution"
     }
 
+@app.get("/api/compare-jobs/{job_id_1}/{job_id_2}")
+async def compare_jobs(
+    job_id_1: str,
+    job_id_2: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Compare two gap analysis jobs
+    
+    Args:
+        job_id_1: First job identifier (baseline)
+        job_id_2: Second job identifier (comparison)
+    
+    Returns:
+        Comparison data with deltas and improvements
+    """
+    verify_api_key(api_key)
+    
+    # Load both jobs
+    job1 = load_job(job_id_1)
+    job2 = load_job(job_id_2)
+    
+    if not job1:
+        raise HTTPException(status_code=404, detail=f"Job {job_id_1} not found")
+    if not job2:
+        raise HTTPException(status_code=404, detail=f"Job {job_id_2} not found")
+    
+    # Verify both jobs are completed
+    if job1.get("status") != "completed":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job {job_id_1} has not completed (status: {job1.get('status')})"
+        )
+    if job2.get("status") != "completed":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job {job_id_2} has not completed (status: {job2.get('status')})"
+        )
+    
+    # Extract data from both jobs
+    job1_completeness = extract_completeness(job1)
+    job2_completeness = extract_completeness(job2)
+    job1_papers = extract_papers(job1)
+    job2_papers = extract_papers(job2)
+    job1_gaps = extract_gaps(job1)
+    job2_gaps = extract_gaps(job2)
+    
+    # Calculate papers differential
+    papers_added = [p for p in job2_papers if p not in job1_papers]
+    papers_removed = [p for p in job1_papers if p not in job2_papers]
+    
+    # Calculate gaps differential
+    # A gap is "filled" if it existed in job1 but not in job2 (or has higher completeness)
+    gaps_filled = []
+    new_gaps = []
+    
+    # Create dictionaries for easier comparison
+    job1_gap_dict = {
+        f"{g['pillar']}|{g['requirement']}|{g['sub_requirement']}": g
+        for g in job1_gaps
+    }
+    job2_gap_dict = {
+        f"{g['pillar']}|{g['requirement']}|{g['sub_requirement']}": g
+        for g in job2_gaps
+    }
+    
+    # Find gaps that were filled
+    for gap_key, gap1 in job1_gap_dict.items():
+        if gap_key in job2_gap_dict:
+            gap2 = job2_gap_dict[gap_key]
+            # Check if completeness improved
+            if gap2['completeness'] > gap1['completeness']:
+                gaps_filled.append({
+                    "gap": f"{gap1['requirement']} - {gap1['sub_requirement']}",
+                    "pillar": gap1['pillar'],
+                    "improvement": gap2['completeness'] - gap1['completeness'],
+                    "old_completeness": gap1['completeness'],
+                    "new_completeness": gap2['completeness']
+                })
+        else:
+            # Gap completely filled (100% in job2)
+            gaps_filled.append({
+                "gap": f"{gap1['requirement']} - {gap1['sub_requirement']}",
+                "pillar": gap1['pillar'],
+                "improvement": 100 - gap1['completeness'],
+                "old_completeness": gap1['completeness'],
+                "new_completeness": 100
+            })
+    
+    # Find new gaps that appeared in job2
+    for gap_key, gap2 in job2_gap_dict.items():
+        if gap_key not in job1_gap_dict:
+            new_gaps.append({
+                "gap": f"{gap2['requirement']} - {gap2['sub_requirement']}",
+                "pillar": gap2['pillar'],
+                "completeness": gap2['completeness']
+            })
+    
+    # Build comparison response
+    comparison = {
+        "job1": {
+            "id": job_id_1,
+            "timestamp": job1.get("created_at", ""),
+            "completeness": round(job1_completeness, 2),
+            "papers": job1_papers,
+            "paper_count": len(job1_papers),
+            "gap_count": len(job1_gaps)
+        },
+        "job2": {
+            "id": job_id_2,
+            "timestamp": job2.get("created_at", ""),
+            "completeness": round(job2_completeness, 2),
+            "papers": job2_papers,
+            "paper_count": len(job2_papers),
+            "gap_count": len(job2_gaps)
+        },
+        "delta": {
+            "completeness_change": round(job2_completeness - job1_completeness, 2),
+            "papers_added": papers_added,
+            "papers_removed": papers_removed,
+            "papers_added_count": len(papers_added),
+            "papers_removed_count": len(papers_removed),
+            "gaps_filled": gaps_filled,
+            "gaps_filled_count": len(gaps_filled),
+            "new_gaps": new_gaps,
+            "new_gaps_count": len(new_gaps)
+        }
+    }
+    
+    return comparison
 @app.get("/api/jobs/{job_id}/progress-history")
 async def get_progress_history(
     job_id: str,

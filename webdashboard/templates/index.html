@@ -397,6 +397,96 @@
             color: #4ec9b0;
         }
         
+        /* Comparison Modal Styles */
+        .comparison-summary {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .progress-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .comparison-metric {
+            text-align: center;
+            padding: 12px;
+            background: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-metric .label {
+            font-size: 0.8em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .comparison-metric .value {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        .delta {
+            font-size: 1.2em;
+            font-weight: bold;
+        }
+        
+        .delta.positive {
+            color: #28a745;
+        }
+        
+        .delta.negative {
+            color: #dc3545;
+        }
+        
+        .delta.neutral {
+            color: #6c757d;
+        }
+        
+        .papers-diff, .gaps-diff {
+            margin-top: 20px;
+        }
+        
+        .papers-diff ul, .gaps-diff ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .papers-diff li, .gaps-diff li {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 4px;
+        }
+        
+        .papers-diff li.added {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        
+        .papers-diff li.removed {
+            background: #f8d7da;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .gaps-diff li.filled {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .gaps-diff li.new-gap {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .gap-improvement {
+            font-size: 0.85em;
+            color: #666;
+            margin-left: 10px;
         /* Progress History Modal Styles */
         #progressHistoryModal .table th {
             background-color: #f8f9fa;
@@ -561,8 +651,11 @@
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card">
-                    <div class="card-header bg-info text-white">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
                         <h5 class="mb-0">📋 Jobs</h5>
+                        <button type="button" class="btn btn-light btn-sm" onclick="showComparisonModal()" id="compareButton" style="display: none;">
+                            📊 Compare Jobs
+                        </button>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -1093,6 +1186,48 @@
         </div>
     </div>
 
+    <!-- Job Comparison Modal -->
+    <div class="modal fade" id="comparisonModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">📊 Compare Gap Analysis Results</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Job Selector -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="baseline-job" class="form-label"><strong>Baseline Job (Earlier Run)</strong></label>
+                            <select id="baseline-job" class="form-select">
+                                <option value="">-- Select a job --</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="comparison-job" class="form-label"><strong>Comparison Job (Later Run)</strong></label>
+                            <select id="comparison-job" class="form-select">
+                                <option value="">-- Select a job --</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-12">
+                            <button type="button" class="btn btn-primary" onclick="loadComparison()">
+                                Compare Jobs
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Comparison Results -->
+                    <div id="comparison-results" style="display: none;">
+                        <!-- Populated via JavaScript -->
+                    </div>
+                    
+                    <div id="comparison-error" class="alert alert-danger" style="display: none;">
+                        <!-- Error messages -->
+                    </div>
+                </div>
     <!-- Progress History Modal -->
     <div class="modal fade" id="progressHistoryModal" tabindex="-1">
         <div class="modal-dialog modal-xl">
@@ -1496,6 +1631,9 @@
             document.getElementById('completedJobs').textContent = completed;
             document.getElementById('runningJobs').textContent = running;
             document.getElementById('failedJobs').textContent = failed;
+            
+            // Update compare button visibility
+            updateCompareButtonVisibility();
         }
         
         // Format date/time
@@ -2534,6 +2672,75 @@
             }
         }
         
+        // Job Comparison Functions
+        function showComparisonModal() {
+            // Populate job selectors with completed jobs
+            const completedJobs = jobs.filter(job => job.status === 'completed');
+            
+            if (completedJobs.length < 2) {
+                alert('At least 2 completed jobs are required for comparison.');
+                return;
+            }
+            
+            const baseline = document.getElementById('baseline-job');
+            const comparison = document.getElementById('comparison-job');
+            
+            // Clear existing options
+            baseline.innerHTML = '<option value="">-- Select a job --</option>';
+            comparison.innerHTML = '<option value="">-- Select a job --</option>';
+            
+            // Sort jobs by creation date (oldest first for baseline, newest first for comparison)
+            const sortedJobs = [...completedJobs].sort((a, b) => {
+                return new Date(a.created_at) - new Date(b.created_at);
+            });
+            
+            // Populate dropdowns
+            sortedJobs.forEach((job, index) => {
+                const createdDate = new Date(job.created_at).toLocaleString();
+                const fileCount = job.file_count || (job.files ? job.files.length : 1);
+                const optionText = `${job.id.substring(0, 8)} - ${fileCount} papers (${createdDate})`;
+                
+                baseline.innerHTML += `<option value="${job.id}">${optionText}</option>`;
+                comparison.innerHTML += `<option value="${job.id}">${optionText}</option>`;
+                
+                // Pre-select first job as baseline and last as comparison
+                if (index === 0) {
+                    baseline.value = job.id;
+                } else if (index === sortedJobs.length - 1) {
+                    comparison.value = job.id;
+                }
+            });
+            
+            // Clear previous results
+            document.getElementById('comparison-results').style.display = 'none';
+            document.getElementById('comparison-error').style.display = 'none';
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('comparisonModal'));
+            modal.show();
+        }
+        
+        async function loadComparison() {
+            const baselineJobId = document.getElementById('baseline-job').value;
+            const comparisonJobId = document.getElementById('comparison-job').value;
+            
+            // Validate selections
+            if (!baselineJobId || !comparisonJobId) {
+                showComparisonError('Please select both baseline and comparison jobs.');
+                return;
+            }
+            
+            if (baselineJobId === comparisonJobId) {
+                showComparisonError('Please select different jobs for comparison.');
+                return;
+            }
+            
+            // Hide previous results/errors
+            document.getElementById('comparison-results').style.display = 'none';
+            document.getElementById('comparison-error').style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/compare-jobs/${baselineJobId}/${comparisonJobId}`, {
         // Progress History Functions
         async function viewProgressHistory(jobId) {
             const apiKey = document.getElementById('apiKeyInput').value;
@@ -2546,6 +2753,168 @@
                 });
                 
                 if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Comparison failed');
+                }
+                
+                const data = await response.json();
+                renderComparison(data);
+            } catch (error) {
+                console.error('Comparison error:', error);
+                showComparisonError(error.message);
+            }
+        }
+        
+        function renderComparison(data) {
+            const resultsDiv = document.getElementById('comparison-results');
+            
+            // Determine delta class
+            const deltaClass = data.delta.completeness_change > 0 ? 'positive' : 
+                              data.delta.completeness_change < 0 ? 'negative' : 'neutral';
+            const deltaSymbol = data.delta.completeness_change > 0 ? '+' : '';
+            
+            let html = `
+                <div class="comparison-summary">
+                    <h6><strong>Completeness Comparison</strong></h6>
+                    <div class="progress-comparison">
+                        <div class="comparison-metric">
+                            <div class="label">Baseline</div>
+                            <div class="value">${data.job1.completeness}%</div>
+                            <small class="text-muted">${data.job1.paper_count} papers</small>
+                        </div>
+                        <div class="comparison-metric">
+                            <div class="label">Current</div>
+                            <div class="value">${data.job2.completeness}%</div>
+                            <small class="text-muted">${data.job2.paper_count} papers</small>
+                        </div>
+                        <div class="comparison-metric">
+                            <div class="label">Change</div>
+                            <div class="value delta ${deltaClass}">
+                                ${deltaSymbol}${data.delta.completeness_change}%
+                            </div>
+                            <small class="text-muted">
+                                ${data.delta.completeness_change > 0 ? '📈 Improved' : 
+                                  data.delta.completeness_change < 0 ? '📉 Decreased' : '➡️ Unchanged'}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Papers differential
+            if (data.delta.papers_added_count > 0 || data.delta.papers_removed_count > 0) {
+                html += `
+                    <div class="papers-diff">
+                        <h6><strong>Papers Changed</strong></h6>
+                        <ul>
+                `;
+                
+                data.delta.papers_added.forEach(paper => {
+                    html += `<li class="added">➕ ${paper}</li>`;
+                });
+                
+                data.delta.papers_removed.forEach(paper => {
+                    html += `<li class="removed">➖ ${paper}</li>`;
+                });
+                
+                html += `
+                        </ul>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="papers-diff">
+                        <p class="text-muted">No papers added or removed between these jobs.</p>
+                    </div>
+                `;
+            }
+            
+            // Gaps filled
+            if (data.delta.gaps_filled_count > 0) {
+                html += `
+                    <div class="gaps-diff">
+                        <h6><strong>Gaps Filled (${data.delta.gaps_filled_count})</strong></h6>
+                        <ul>
+                `;
+                
+                // Show up to 10 gaps filled
+                const displayGaps = data.delta.gaps_filled.slice(0, 10);
+                displayGaps.forEach(gap => {
+                    html += `
+                        <li class="filled">
+                            ✓ ${gap.gap}
+                            <span class="gap-improvement">
+                                ${gap.old_completeness}% → ${gap.new_completeness}% 
+                                (+${gap.improvement.toFixed(1)}%)
+                            </span>
+                        </li>
+                    `;
+                });
+                
+                if (data.delta.gaps_filled_count > 10) {
+                    html += `<li class="text-muted">... and ${data.delta.gaps_filled_count - 10} more gaps improved</li>`;
+                }
+                
+                html += `
+                        </ul>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="gaps-diff">
+                        <p class="text-muted">No gaps were filled between these jobs.</p>
+                    </div>
+                `;
+            }
+            
+            // New gaps (if any)
+            if (data.delta.new_gaps_count > 0) {
+                html += `
+                    <div class="gaps-diff mt-3">
+                        <h6><strong>New Gaps (${data.delta.new_gaps_count})</strong></h6>
+                        <ul>
+                `;
+                
+                // Show up to 5 new gaps
+                const displayNewGaps = data.delta.new_gaps.slice(0, 5);
+                displayNewGaps.forEach(gap => {
+                    html += `
+                        <li class="new-gap">
+                            ⚠️ ${gap.gap}
+                            <span class="gap-improvement">(${gap.completeness}% complete)</span>
+                        </li>
+                    `;
+                });
+                
+                if (data.delta.new_gaps_count > 5) {
+                    html += `<li class="text-muted">... and ${data.delta.new_gaps_count - 5} more new gaps</li>`;
+                }
+                
+                html += `
+                        </ul>
+                    </div>
+                `;
+            }
+            
+            resultsDiv.innerHTML = html;
+            resultsDiv.style.display = 'block';
+        }
+        
+        function showComparisonError(message) {
+            const errorDiv = document.getElementById('comparison-error');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+        
+        // Update jobs table to show/hide compare button
+        function updateCompareButtonVisibility() {
+            const completedJobsCount = jobs.filter(job => job.status === 'completed').length;
+            const compareButton = document.getElementById('compareButton');
+            
+            if (completedJobsCount >= 2) {
+                compareButton.style.display = 'inline-block';
+            } else {
+                compareButton.style.display = 'none';
                     const errorData = await response.json();
                     throw new Error(errorData.detail || 'Failed to load progress history');
                 }
