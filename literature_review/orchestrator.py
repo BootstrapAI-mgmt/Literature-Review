@@ -560,13 +560,22 @@ class PillarAnalyzer:
     # --- MODIFIED: Now takes parsed CSV data and approved deep claims ---
     def __init__(self, definitions: Dict, database: ResearchDatabase,
                  api_manager: APIManager, all_db_records: List[Dict],
-                 approved_deep_claims: List[Dict]):
+                 approved_deep_claims: List[Dict], config: Optional[Dict] = None):
         self.definitions = definitions
         self.database = database # The ResearchDatabase object
         self.all_db_records = all_db_records # The raw list of dicts from CSV
         self.api_manager = api_manager
         self.approved_deep_claims = approved_deep_claims # Approved claims from JSON DB
         self.cache = {}
+        self.config = config or {}
+        
+        # Initialize gap analyzer for decay weighting
+        from literature_review.analysis.gap_analyzer import GapAnalyzer
+        self.gap_analyzer = GapAnalyzer(config=self.config)
+        
+        # Load version history for decay calculations
+        self.version_history = self._load_version_history()
+        
         self.load_cache()
 
     def load_cache(self):
@@ -585,6 +594,17 @@ class PillarAnalyzer:
             with open(CACHE_FILE, 'wb') as f: pickle.dump(self.cache, f)
         except Exception as e:
             logger.warning(f"Could not save cache: {e}")
+    
+    def _load_version_history(self) -> Dict:
+        """Load version history for publication years."""
+        version_file = self.config.get('version_history_path', VERSION_HISTORY_FILE)
+        if os.path.exists(version_file):
+            try:
+                with open(version_file, 'r') as f:
+                    return json.load(f)
+            except Exception as e:
+                logger.warning(f"Could not load version history from {version_file}: {e}")
+        return {}
 
     # --- MODIFIED: build_expert_prompt (to include ALL approved claims) ---
     def build_expert_prompt(self, pillar_name: str, pillar_data: Dict,
@@ -746,6 +766,10 @@ Return ONLY a JSON object with the exact structure:
                 raise Exception("API call returned None")
 
             analysis_results = self._validate_results(analysis_results, pillar_data['requirements'])
+            
+            # Apply decay weighting if enabled
+            analysis_results = self._apply_decay_weighting(analysis_results, pillar_name)
+            
             completeness, waterfall = self._calculate_weighted_completeness(
                 pillar_data['requirements'],
                 analysis_results,
@@ -803,6 +827,40 @@ Return ONLY a JSON object with the exact structure:
                 except Exception:
                     validated[req_key][sub_req] = default_sub_req
         return validated
+    
+    def _apply_decay_weighting(self, analysis_results: Dict, pillar_name: str) -> Dict:
+        """Apply evidence decay weighting to completeness scores."""
+        if not self.gap_analyzer.decay_enabled:
+            return analysis_results
+        
+        logger.info(f"   Applying evidence decay weighting for {pillar_name}...")
+        
+        for req_key, req_data in analysis_results.items():
+            for sub_req, sub_req_data in req_data.items():
+                raw_score = sub_req_data.get('completeness_percent', 0)
+                papers = sub_req_data.get('contributing_papers', [])
+                
+                if papers:
+                    # Apply decay weighting
+                    final_score, metadata = self.gap_analyzer.apply_decay_weighting(
+                        raw_score, papers, pillar_name, self.version_history
+                    )
+                    
+                    # Update the score
+                    sub_req_data['completeness_percent'] = final_score
+                    
+                    # Store metadata
+                    sub_req_data['evidence_metadata'] = metadata
+                else:
+                    # No papers, no decay applied
+                    sub_req_data['evidence_metadata'] = {
+                        'raw_score': raw_score,
+                        'final_score': raw_score,
+                        'decay_applied': False,
+                        'reason': 'no_papers'
+                    }
+        
+        return analysis_results
 
     def _calculate_weighted_completeness(self, requirements_def: Dict,
                                          analysis_results: Dict,
@@ -1858,6 +1916,15 @@ def main(config: Optional[OrchestratorConfig] = None):
         return
 
     last_run_state, previous_results, score_history = load_orchestrator_state(ORCHESTRATOR_STATE_FILE)
+    
+    # Load pipeline configuration for decay weighting
+    pipeline_config = {}
+    try:
+        with open('pipeline_config.json', 'r') as f:
+            pipeline_config = json.load(f)
+        logger.info("[SUCCESS] Loaded pipeline configuration")
+    except Exception as e:
+        logger.warning(f"Could not load pipeline_config.json: {e}. Using defaults.")
 
     # --- 2. Determine Run Mode & Run Initial Judge ---
     has_new_data = check_for_new_data(last_run_state)
@@ -1999,7 +2066,7 @@ def main(config: Optional[OrchestratorConfig] = None):
         # Initialize analyzer with fresh data
         analyzer = PillarAnalyzer(
             definitions, database_df_obj, api_manager,
-            all_db_records, approved_deep_claims
+            all_db_records, approved_deep_claims, pipeline_config
         )
 
         if ANALYSIS_CONFIG['ENABLE_TREND_ANALYSIS'] and trend_analyzer is None:

@@ -50,6 +50,15 @@ Edit `pipeline_config.json`:
 }
 ```
 
+**Parameters:**
+- `enabled`: Enable/disable decay tracking (default: true)
+- `half_life_years`: Years for evidence value to decay to 50% (default: 5.0)
+- `stale_threshold`: Threshold for marking evidence as stale (default: 0.5)
+- `weight_in_gap_analysis`: Apply decay weighting to gap analysis scores (default: true)
+- `decay_weight`: Blend factor for decay weighting, 0.0-1.0 (default: 0.7)
+- `apply_to_pillars`: Which pillars to apply decay to, or ["all"] (default: ["all"])
+- `min_freshness_threshold`: Alert threshold for stale evidence (default: 0.3)
+
 ### Half-Life by Field
 
 Choose based on your research domain:
@@ -146,3 +155,204 @@ python -m pytest tests/unit/test_evidence_decay.py -v
 ```
 
 All 8 tests should pass with 93%+ coverage.
+
+## Gap Analysis Integration
+
+### Overview
+
+When enabled, evidence decay weighting is automatically applied to gap analysis completeness scores. This penalizes requirements supported by old evidence and boosts those with recent evidence.
+
+### How It Works
+
+**Without Decay:**
+```
+Requirement: "System must support X"
+Old Paper (2015): 90% alignment → 90% completeness
+New Paper (2024): 90% alignment → 90% completeness
+```
+
+**With Decay (5-year half-life, 0.7 weight):**
+```
+Requirement: "System must support X"
+Old Paper (2015): 90% alignment × 25% freshness → ~45% final completeness
+New Paper (2024): 90% alignment × 87% freshness → ~87% final completeness
+```
+
+### Blended Scoring Formula
+
+The decay weight parameter (0.0-1.0) controls how much to trust the decay adjustment:
+
+```
+final_score = (1 - decay_weight) × raw_score + decay_weight × (raw_score × freshness)
+```
+
+- `decay_weight = 0.0`: No decay applied (same as disabled)
+- `decay_weight = 0.7`: 70% decay, 30% raw score (default)
+- `decay_weight = 1.0`: Full decay weighting
+
+### When to Enable
+
+**Enable decay weighting if:**
+- Research field changes rapidly (AI/ML, medicine, semiconductors)
+- Recent evidence is more trustworthy than old evidence
+- You want to prioritize finding fresh papers
+- Standards or best practices have evolved
+
+**Disable decay weighting if:**
+- Research field changes slowly (mathematics, physics, theoretical CS)
+- Historical evidence is equally valid (foundational results)
+- Paper age doesn't correlate with relevance
+- You're doing historical analysis
+
+### Configuration Examples
+
+**Fast-Moving Field (AI/ML):**
+```json
+{
+  "evidence_decay": {
+    "enabled": true,
+    "half_life_years": 3.0,
+    "weight_in_gap_analysis": true,
+    "decay_weight": 0.8,
+    "apply_to_pillars": ["all"]
+  }
+}
+```
+
+**Pillar-Specific Decay:**
+```json
+{
+  "evidence_decay": {
+    "enabled": true,
+    "half_life_years": 5.0,
+    "weight_in_gap_analysis": true,
+    "decay_weight": 0.7,
+    "apply_to_pillars": ["Security", "Performance"],
+    "min_freshness_threshold": 0.3
+  }
+}
+```
+
+### Interpreting Results
+
+The gap analysis report includes evidence metadata for each requirement:
+
+```json
+{
+  "Sub-1.1": {
+    "completeness_percent": 45.2,
+    "evidence_metadata": {
+      "raw_score": 90.0,
+      "freshness_score": 0.25,
+      "final_score": 45.2,
+      "best_paper": "old_paper.pdf",
+      "best_paper_year": 2015,
+      "decay_applied": true,
+      "decay_weight": 0.7
+    }
+  }
+}
+```
+
+**Freshness Score Interpretation:**
+- 🟢 **>70%**: Recent evidence (last 3 years)
+- 🟡 **40-70%**: Moderate age (3-7 years)
+- 🔴 **<40%**: Stale evidence (>7 years)
+
+### A/B Comparison Reports
+
+Generate side-by-side comparison showing decay impact:
+
+```python
+from literature_review.analysis.gap_analyzer import GapAnalyzer
+
+analyzer = GapAnalyzer(config=pipeline_config)
+report = analyzer.generate_decay_impact_report(
+    pillar_name='Security',
+    requirements=requirements,
+    analysis_results=analysis_results,
+    version_history=version_history
+)
+
+# Report includes:
+# - per-requirement comparison (with vs without decay)
+# - delta and delta_pct for each requirement
+# - impact classification (decreased/increased/minimal)
+# - summary statistics
+```
+
+**Sample A/B Report:**
+```
+Decay Impact Report for Pillar: Security
+=========================================
+Total Requirements: 15
+Average Delta: -8.5%
+Significant Changes: 5
+
+Requirements:
+1. "Authentication required" 
+   - Without Decay: 85%
+   - With Decay: 45% (-40%)
+   - Freshness: 30% (evidence from 2016)
+   - Impact: DECREASED
+
+2. "Encryption standard"
+   - Without Decay: 92%
+   - With Decay: 88% (-4%)
+   - Freshness: 82% (evidence from 2023)
+   - Impact: MINIMAL
+```
+
+### Python API
+
+```python
+from literature_review.analysis.gap_analyzer import GapAnalyzer
+
+# Initialize with config
+config = {
+    'evidence_decay': {
+        'enabled': True,
+        'half_life_years': 5.0,
+        'weight_in_gap_analysis': True,
+        'decay_weight': 0.7,
+        'apply_to_pillars': ['all']
+    }
+}
+
+analyzer = GapAnalyzer(config=config)
+
+# Apply decay to a completeness score
+papers = [
+    {
+        'filename': 'paper.pdf',
+        'contribution_summary': 'Main contribution',
+        'estimated_contribution_percent': 80,
+        'year': 2020
+    }
+]
+
+final_score, metadata = analyzer.apply_decay_weighting(
+    completeness_score=80.0,
+    papers=papers,
+    pillar_name='Security',
+    version_history=version_history
+)
+
+print(f"Raw score: {metadata['raw_score']}")
+print(f"Freshness: {metadata['freshness_score']}")
+print(f"Final score: {metadata['final_score']}")
+```
+
+### Testing
+
+Run integration tests:
+```bash
+python -m pytest tests/unit/test_decay_integration.py -v
+```
+
+All 14 tests should pass with 100% coverage.
+
+### Backward Compatibility
+
+Decay weighting is **disabled by default** to preserve backward compatibility. Existing gap analysis scores remain unchanged unless you explicitly enable `weight_in_gap_analysis: true` in the config.
+

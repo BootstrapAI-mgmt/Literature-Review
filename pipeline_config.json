@@ -64,7 +64,10 @@
     "enabled": true,
     "half_life_years": 5.0,
     "stale_threshold": 0.5,
-    "weight_in_gap_analysis": true
+    "weight_in_gap_analysis": false,
+    "decay_weight": 0.7,
+    "apply_to_pillars": ["all"],
+    "min_freshness_threshold": 0.3
   },
   "deduplication": {
     "enabled": false,
