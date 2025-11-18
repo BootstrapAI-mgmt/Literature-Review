@@ -58,7 +58,14 @@
     "batch_size": 5,
     "min_roi_threshold": 0.1,
     "convergence_threshold": 0.8,
-    "diminishing_returns_threshold": 0.5
+    "diminishing_returns_threshold": 0.5,
+    "mode": "balanced",
+    "budget_limit": null,
+    "show_cost_estimates": true,
+    "cost_tracking": {
+      "enabled": true,
+      "alert_threshold": 0.8
+    }
   },
   "evidence_decay": {
     "enabled": true,
