@@ -96,7 +96,7 @@ SEMANTIC_SCHOLAR_API_KEY=...
 # Application Settings
 FLASK_ENV=production
 FLASK_DEBUG=0
-SECRET_KEY=$(openssl rand -hex 32)  # Generate secure key
+SECRET_KEY=  # FILL THIS: Run 'openssl rand -hex 32' and paste result here
 PORT=8000
 HOST=127.0.0.1  # Only localhost (Nginx will proxy)
 
@@ -246,8 +246,8 @@ sudo certbot --nginx -d literature-review.yourdomain.com
 
 # Auto-renewal (cron job)
 sudo crontab -e
-# Add:
-0 3 * * * certbot renew --quiet --post-hook "systemctl reload nginx"
+# Add (using absolute paths for security):
+0 3 * * * /usr/bin/certbot renew --quiet --post-hook "/bin/systemctl reload nginx"
 ```
 
 ---
@@ -464,8 +464,9 @@ pip install prometheus-fastapi-instrumentator
 ```bash
 #!/bin/bash
 USAGE=$(df -h /var/lib/literature-review | awk 'NR==2 {print $5}' | sed 's/%//')
+ADMIN_EMAIL="${ADMIN_EMAIL:-admin@example.com}"  # Set ADMIN_EMAIL env var
 if [ $USAGE -gt 80 ]; then
-  echo "Disk usage ${USAGE}% on /var/lib/literature-review" | mail -s "ALERT: Disk Space" admin@example.com
+  echo "Disk usage ${USAGE}% on /var/lib/literature-review" | mail -s "ALERT: Disk Space" "$ADMIN_EMAIL"
 fi
 ```
 
@@ -770,6 +771,7 @@ curl http://localhost:8000/health
 #!/bin/bash
 
 HEALTH_URL="http://localhost:8000/health"
+ADMIN_EMAIL="${ADMIN_EMAIL:-admin@example.com}"  # Set ADMIN_EMAIL env var
 RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $HEALTH_URL)
 
 if [ $RESPONSE != "200" ]; then
@@ -777,7 +779,7 @@ if [ $RESPONSE != "200" ]; then
     # Restart service
     sudo systemctl restart literature-review
     # Send alert
-    echo "Dashboard health check failed. Service restarted." | mail -s "ALERT: Dashboard Down" admin@example.com
+    echo "Dashboard health check failed. Service restarted." | mail -s "ALERT: Dashboard Down" "$ADMIN_EMAIL"
 else
     echo "Health check passed"
 fi

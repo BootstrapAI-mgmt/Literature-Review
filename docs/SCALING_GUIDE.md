@@ -201,12 +201,13 @@ sudo nano /etc/fstab
 # Install boto3
 pip install boto3
 
-# Configure S3 storage
+# Configure S3 storage using environment variables (recommended)
 import boto3
+import os
 
 s3 = boto3.client('s3',
-    aws_access_key_id='YOUR_ACCESS_KEY',
-    aws_secret_access_key='YOUR_SECRET_KEY'
+    aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY')
 )
 
 # Upload/download files
@@ -300,6 +301,8 @@ pip install redis
 **Cache configuration:**
 ```python
 import redis
+import hashlib
+import json
 from functools import wraps
 
 cache = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
@@ -308,7 +311,9 @@ def cache_response(ttl=3600):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            cache_key = f"{func.__name__}:{str(args)}:{str(kwargs)}"
+            # Create consistent cache key using hash
+            key_data = json.dumps({'args': args, 'kwargs': kwargs}, sort_keys=True)
+            cache_key = f"{func.__name__}:{hashlib.md5(key_data.encode()).hexdigest()}"
             cached = cache.get(cache_key)
             if cached:
                 return cached
@@ -397,8 +402,16 @@ uvloop.install()
 
 2. **Launch EC2 instances**
    ```bash
+   # Find latest Ubuntu 22.04 AMI for your region
+   aws ec2 describe-images \
+     --owners 099720109477 \
+     --filters "Name=name,Values=ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*" \
+     --query 'Images | sort_by(@, &CreationDate) | [-1].ImageId' \
+     --output text
+   
+   # Launch instances using the AMI ID from above
    aws ec2 run-instances \
-     --image-id ami-0c55b159cbfafe1f0 \
+     --image-id ami-xxxxxxxxxxxxxxxxx \  # Replace with AMI from above command
      --instance-type t3.medium \
      --count 2
    ```
