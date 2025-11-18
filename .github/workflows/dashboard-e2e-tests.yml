@@ -1,0 +1,109 @@
+name: Dashboard E2E Tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'webdashboard/**'
+      - 'tests/e2e/test_dashboard_workflows.py'
+      - 'tests/webui/**'
+      - '.github/workflows/dashboard-e2e-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'webdashboard/**'
+      - 'tests/e2e/test_dashboard_workflows.py'
+      - 'tests/webui/**'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  dashboard-e2e-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r requirements-dev.txt
+      
+      - name: Install Playwright browsers
+        run: |
+          playwright install chromium
+          playwright install-deps chromium
+      
+      - name: Start Dashboard in background
+        run: |
+          # Start dashboard in background
+          python webdashboard/app.py &
+          DASHBOARD_PID=$!
+          echo "DASHBOARD_PID=$DASHBOARD_PID" >> $GITHUB_ENV
+          
+          # Wait for dashboard to be ready (up to 30 seconds)
+          echo "Waiting for dashboard to start..."
+          for i in {1..30}; do
+            if curl -s http://localhost:5001/health > /dev/null; then
+              echo "Dashboard is ready!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 1
+          done
+        env:
+          DASHBOARD_API_KEY: test-api-key
+      
+      - name: Verify Dashboard is running
+        run: |
+          curl -f http://localhost:5001/health || (echo "Dashboard failed to start" && exit 1)
+          echo "Dashboard health check passed"
+      
+      - name: Run Dashboard E2E tests
+        run: |
+          pytest tests/e2e/test_dashboard_workflows.py -m e2e_dashboard -v --tb=short
+        env:
+          DASHBOARD_URL: http://localhost:5001
+          DASHBOARD_API_KEY: test-api-key
+      
+      - name: Upload test screenshots (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-screenshots
+          path: |
+            test-results/
+            *.png
+          retention-days: 7
+      
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: dashboard-e2e-reports
+          path: |
+            htmlcov/
+            .pytest_cache/
+          retention-days: 7
+      
+      - name: Stop Dashboard
+        if: always()
+        run: |
+          # Stop dashboard if it's still running
+          if [ ! -z "$DASHBOARD_PID" ]; then
+            kill $DASHBOARD_PID || true
+          fi
+          pkill -f "python webdashboard/app.py" || true

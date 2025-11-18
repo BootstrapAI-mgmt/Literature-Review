@@ -1,8 +1,55 @@
 # End-to-End (E2E) Tests
 
-This directory contains end-to-end tests that validate the complete literature review pipeline from PDF ingestion to CSV export.
+This directory contains end-to-end tests that validate:
+1. Complete literature review pipeline from PDF ingestion to CSV export
+2. Web dashboard workflows using browser automation
 
 ## Test Files
+
+### test_dashboard_workflows.py ⭐ NEW
+Browser-based E2E tests for the web dashboard using Playwright.
+
+**Test Classes:**
+
+1. **TestDashboardWorkflows** - Basic dashboard functionality
+   - `test_dashboard_loads`: Verifies dashboard home page loads
+   - `test_upload_pdf_workflow`: Tests PDF upload flow
+   - `test_jobs_list_visible`: Validates jobs section renders
+   - `test_api_health_check`: Tests health endpoint via browser
+   - `test_navigation_elements`: Verifies UI elements are present
+
+2. **TestDashboardAdvancedWorkflows** - Advanced features
+   - `test_multiple_page_loads`: Performance testing for page loads
+   - `test_console_errors`: Detects JavaScript errors
+   - `test_responsive_layout`: Tests different screen sizes
+
+3. **TestDashboardPerformance** - Performance benchmarks
+   - `test_page_load_performance`: Measures DOM load times
+   - `test_api_response_time`: Tests API endpoint speed
+
+**Prerequisites:**
+```bash
+# Install Playwright
+pip install -r requirements-dev.txt
+playwright install chromium
+
+# Start dashboard
+python webdashboard/app.py
+```
+
+**Running Dashboard Tests:**
+```bash
+# All dashboard E2E tests
+pytest tests/e2e/test_dashboard_workflows.py -m e2e_dashboard -v
+
+# With visible browser (debug mode)
+pytest tests/e2e/test_dashboard_workflows.py -m e2e_dashboard --headed --slowmo=1000
+
+# Performance tests only
+pytest tests/e2e/test_dashboard_workflows.py -m performance -v
+```
+
+See [Testing Guide](../../docs/TESTING_GUIDE.md) for detailed dashboard testing documentation.
 
 ### test_full_pipeline.py
 Comprehensive E2E tests for the complete literature review workflow (Task Card #10: E2E-001).
@@ -79,10 +126,23 @@ pytest tests/e2e/test_full_pipeline.py -v --durations=10
 
 ## Test Markers
 
-All E2E tests are marked with `@pytest.mark.e2e`. You can run only E2E tests using:
+E2E tests use the following markers:
 
+- `@pytest.mark.e2e`: Full pipeline E2E tests
+- `@pytest.mark.e2e_dashboard`: Dashboard browser-based E2E tests
+- `@pytest.mark.slow`: Tests that take >5 seconds
+- `@pytest.mark.performance`: Performance benchmark tests
+
+**Run E2E tests by marker:**
 ```bash
-pytest -m e2e -v
+# Pipeline E2E tests only
+pytest -m "e2e and not e2e_dashboard" -v
+
+# Dashboard E2E tests only
+pytest -m e2e_dashboard -v
+
+# All E2E tests
+pytest -m "e2e or e2e_dashboard" -v
 ```
 
 ## Test Fixtures
@@ -91,6 +151,8 @@ E2E tests use the following fixtures defined in `conftest.py`:
 
 - **e2e_workspace**: Creates a complete workspace with all required directories and file paths
 - **e2e_sample_papers**: Creates sample PDF files for testing
+- **dashboard_test_pdf**: Creates a minimal test PDF for dashboard upload tests
+- **browser_context_args**: Configures Playwright browser context (viewport, HTTPS settings)
 - **test_data_generator**: Provides utilities for generating test data
 - **temp_dir**: Provides a temporary directory (auto-cleanup after test)
 
@@ -125,9 +187,15 @@ All E2E tests validate:
 ## Dependencies
 
 E2E tests require:
+
+**Pipeline Tests:**
 - pytest>=7.4.0
 - pytest-cov>=4.1.0
 - pandas>=2.0.0
+
+**Dashboard Tests:**
+- playwright>=1.40.0
+- pytest-playwright>=0.4.3
 
 All dependencies are listed in `requirements-dev.txt`.
 
