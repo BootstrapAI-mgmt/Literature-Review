@@ -63,5 +63,15 @@
     "batch_size": 50,
     "run_before_gap_analysis": true,
     "output_file": "review_log_deduped.json"
+  },
+  "prompts": {
+    "default_timeout": 300,
+    "timeouts": {
+      "pillar_selection": 300,
+      "run_mode": 120,
+      "continue": 60,
+      "threshold_selection": 180,
+      "convergence_confirmation": 90
+    }
   }
 }

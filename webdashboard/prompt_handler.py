@@ -10,6 +10,8 @@ import uuid
 from typing import Any, Optional, Dict
 from datetime import datetime, timedelta, timezone
 import logging
+import json
+import os
 
 logger = logging.getLogger(__name__)
 
@@ -17,17 +19,88 @@ logger = logging.getLogger(__name__)
 class PromptHandler:
     """Handles interactive prompts for jobs"""
     
-    def __init__(self):
+    def __init__(self, config_file: str = "pipeline_config.json"):
+        """
+        Initialize PromptHandler
+        
+        Args:
+            config_file: Path to pipeline configuration file
+        """
         self.pending_prompts: Dict[str, asyncio.Future] = {}
         self.prompt_timeouts: Dict[str, datetime] = {}
         self.prompt_job_ids: Dict[str, str] = {}  # Track job_id for each prompt
+        
+        # Load timeout configuration
+        self.config = self._load_config(config_file)
+        self.default_timeout = self.config.get('prompts', {}).get('default_timeout', 300)
+        self.prompt_timeouts_config = self.config.get('prompts', {}).get('timeouts', {})
+    
+    def _load_config(self, config_file: str) -> dict:
+        """
+        Load and validate pipeline configuration
+        
+        Args:
+            config_file: Path to configuration file
+            
+        Returns:
+            Configuration dictionary
+            
+        Raises:
+            ValueError: If configuration is invalid
+        """
+        if not os.path.exists(config_file):
+            logger.warning(f"Configuration file {config_file} not found, using defaults")
+            return {}
+        
+        try:
+            with open(config_file, 'r') as f:
+                config = json.load(f)
+        except (json.JSONDecodeError, IOError) as e:
+            logger.warning(f"Failed to load configuration file {config_file}: {e}, using defaults")
+            return {}
+        
+        # Validate prompt timeout configuration
+        if 'prompts' in config:
+            default = config['prompts'].get('default_timeout', 300)
+            
+            # Validate default timeout
+            if not isinstance(default, int) or default < 10 or default > 3600:
+                raise ValueError(f"Invalid default_timeout: {default} (must be 10-3600 seconds)")
+            
+            # Validate per-prompt timeouts
+            timeouts = config['prompts'].get('timeouts', {})
+            for prompt_type, timeout in timeouts.items():
+                if not isinstance(timeout, int) or timeout < 10 or timeout > 3600:
+                    raise ValueError(
+                        f"Invalid timeout for {prompt_type}: {timeout} (must be 10-3600 seconds)"
+                    )
+        
+        return config
+    
+    def get_timeout(self, prompt_type: str) -> int:
+        """
+        Get timeout for specific prompt type
+        
+        Args:
+            prompt_type: Type of prompt (pillar_selection, run_mode, etc.)
+        
+        Returns:
+            Timeout in seconds
+        
+        Examples:
+            >>> handler.get_timeout("run_mode")
+            120  # 2 minutes
+            >>> handler.get_timeout("unknown_type")
+            300  # default
+        """
+        return self.prompt_timeouts_config.get(prompt_type, self.default_timeout)
     
     async def request_user_input(
         self,
         job_id: str,
         prompt_type: str,
         prompt_data: Dict[str, Any],
-        timeout_seconds: int = 300
+        timeout_seconds: Optional[int] = None
     ) -> Any:
         """
         Request input from user via WebSocket
@@ -36,7 +109,7 @@ class PromptHandler:
             job_id: Job identifier
             prompt_type: Type of prompt ('pillar_selection', 'run_mode', 'continue')
             prompt_data: Data for the prompt (options, message, etc.)
-            timeout_seconds: How long to wait for response (default: 300 = 5 minutes)
+            timeout_seconds: Optional timeout override. If None, uses config.
         
         Returns:
             User's response. For pillar_selection, can be:
@@ -47,7 +120,14 @@ class PromptHandler:
         Raises:
             TimeoutError: If user doesn't respond in time
         """
+        # Use configured timeout if not explicitly provided
+        if timeout_seconds is None:
+            timeout_seconds = self.get_timeout(prompt_type)
+        
         prompt_id = str(uuid.uuid4())
+        
+        # Add timeout to prompt_data for UI display
+        prompt_data['timeout_seconds'] = timeout_seconds
         
         # Create future for response
         future = asyncio.Future()
@@ -55,7 +135,7 @@ class PromptHandler:
         self.prompt_timeouts[prompt_id] = datetime.now(timezone.utc) + timedelta(seconds=timeout_seconds)
         self.prompt_job_ids[prompt_id] = job_id
         
-        logger.info(f"Requesting user input for job {job_id}, prompt {prompt_id}, type {prompt_type}")
+        logger.info(f"Requesting user input for job {job_id}, prompt {prompt_id}, type {prompt_type}, timeout {timeout_seconds}s")
         
         # Broadcast prompt to WebSocket clients
         await self._broadcast_prompt(job_id, prompt_id, prompt_type, prompt_data)
