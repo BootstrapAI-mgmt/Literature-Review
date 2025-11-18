@@ -509,7 +509,13 @@ def extract_summary_metrics(job_data: dict) -> dict:
     }
 
 # API Endpoints
-@app.get("/", response_class=HTMLResponse)
+@app.get(
+    "/",
+    response_class=HTMLResponse,
+    tags=["System"],
+    summary="Dashboard homepage",
+    include_in_schema=False  # Hide from API docs (it's a web page)
+)
 async def root():
     """Serve the main dashboard page"""
     template_file = Path(__file__).parent / "templates" / "index.html"
@@ -620,21 +626,59 @@ async def upload_file(
     
     return {"job_id": job_id, "status": "queued", "filename": file.filename}
 
-@app.post("/api/upload/batch")
+@app.post(
+    "/api/upload/batch",
+    tags=["Papers"],
+    summary="Upload multiple PDFs (batch)",
+    responses={
+        200: {
+            "description": "PDFs uploaded successfully (may include duplicate warning)",
+        },
+        400: {
+            "description": "Invalid file type (not PDF)",
+            "model": ErrorResponse
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        500: {
+            "description": "Server error during upload",
+            "model": ErrorResponse
+        }
+    }
+)
 async def upload_batch(
-    files: List[UploadFile] = File(...),
-    api_key: str = Header(None, alias="X-API-KEY")
+    files: List[UploadFile] = File(..., description="List of PDF files to upload"),
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Upload multiple PDF files for a single analysis job
+    Upload multiple PDF files for a single analysis job with duplicate detection.
     
-    Includes duplicate detection across existing papers in review_log.json
+    This endpoint:
+    1. Validates all files are PDFs
+    2. Creates a job directory
+    3. Saves uploaded files
+    4. Checks for duplicates against existing papers in review_log.json
+    5. Returns duplicate warning if matches found
     
-    Args:
-        files: List of PDF files to upload
+    **Duplicate Handling:**
+    - If duplicates detected, response includes `status: "duplicates_found"`
+    - Use `/api/upload/confirm` to choose action:
+      - `skip_duplicates`: Upload only new papers
+      - `overwrite_all`: Upload all papers including duplicates
     
-    Returns:
-        Job ID and file count, or duplicate warning if duplicates detected
+    **Requirements:**
+    - All files must be PDF format
+    - Valid API key required in X-API-KEY header
+    
+    **Returns:**
+    - job_id: Unique identifier for the job
+    - status: "draft" (no duplicates) or "duplicates_found"
+    - file_count: Number of files uploaded
+    - files: List of uploaded file metadata
+    - duplicates: List of duplicate files (if any)
+    - new: List of new files (if duplicates found)
     """
     verify_api_key(api_key)
     
@@ -722,19 +766,57 @@ async def upload_batch(
             "files": uploaded_files
         }
 
-@app.post("/api/upload/confirm")
+@app.post(
+    "/api/upload/confirm",
+    tags=["Papers"],
+    summary="Confirm batch upload after duplicate detection",
+    responses={
+        200: {
+            "description": "Upload confirmed and processed",
+        },
+        400: {
+            "description": "Invalid action or no duplicate check results",
+            "model": ErrorResponse
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Job not found",
+            "model": ErrorResponse
+        }
+    }
+)
 async def confirm_upload(
     request: UploadConfirmRequest,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Confirm upload after duplicate warning
+    Confirm batch upload after receiving duplicate detection warning.
     
-    Args:
-        request: Confirmation request with action and job_id
+    **Actions:**
+    - `skip_duplicates`: Remove duplicate files from job, upload only new papers
+    - `overwrite_all`: Keep all files including duplicates
     
-    Returns:
-        Updated job status
+    This endpoint:
+    1. Validates job exists with duplicate check results
+    2. Processes action (skip or overwrite)
+    3. Updates job data accordingly
+    4. Broadcasts update to WebSocket clients
+    
+    **Use Case:**
+    1. POST /api/upload/batch returns `status: "duplicates_found"`
+    2. User reviews duplicates list
+    3. User calls this endpoint with chosen action
+    4. Job proceeds with final file list
+    
+    **Returns:**
+    - status: "success"
+    - job_id: Job identifier
+    - uploaded: Number of files kept
+    - skipped: Number of duplicates removed (if skip_duplicates)
+    - message: Human-readable confirmation
     """
     verify_api_key(api_key)
     
@@ -925,21 +1007,54 @@ async def get_job(
     
     return job_data
 
-@app.post("/api/jobs/{job_id}/retry")
+@app.post(
+    "/api/jobs/{job_id}/retry",
+    tags=["Jobs"],
+    summary="Retry a failed job",
+    responses={
+        200: {
+            "description": "Job retry initiated",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Job not found",
+            "model": ErrorResponse
+        }
+    }
+)
 async def retry_job(
     job_id: str,
     retry_req: RetryRequest,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Trigger a retry for a failed job
+    Retry a failed job.
     
-    Args:
-        job_id: Job identifier
-        retry_req: Retry request parameters
+    This endpoint:
+    1. Updates job status to "queued"
+    2. Clears error information
+    3. Removes old status file
+    4. Re-queues job for processing
+    5. Broadcasts update to WebSocket clients
     
-    Returns:
-        Updated job status
+    **Use Cases:**
+    - Job failed due to temporary error (network, API rate limit, etc.)
+    - Job failed due to invalid configuration (after fixing config)
+    - Force retry a job for debugging purposes
+    
+    **Parameters:**
+    - force: Force retry even if job is not in failed state (default: false)
+    
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Returns:**
+    - job_id: Job identifier
+    - status: New status (always "queued")
+    - message: Confirmation message
     """
     verify_api_key(api_key)
     
@@ -967,21 +1082,58 @@ async def retry_job(
     
     return {"job_id": job_id, "status": "queued", "message": "Retry requested"}
 
-@app.post("/api/jobs/{job_id}/configure")
+@app.post(
+    "/api/jobs/{job_id}/configure",
+    tags=["Jobs"],
+    summary="Configure job parameters",
+    responses={
+        200: {
+            "description": "Job configured successfully",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Job not found",
+            "model": ErrorResponse
+        }
+    }
+)
 async def configure_job(
     job_id: str,
     config: JobConfig,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Configure job parameters before execution
+    Configure job parameters before execution.
     
-    Args:
-        job_id: Job identifier
-        config: Job configuration (pillar selections and run mode)
+    **Configuration Options:**
     
-    Returns:
-        Updated job configuration
+    **Pillar Selections:**
+    - `["ALL"]`: Analyze all available pillars
+    - Specific pillars: `["Technical Foundation", "Methodology", ...]`
+    
+    **Run Modes:**
+    - `ONCE`: Single-pass analysis (faster, recommended for most cases)
+    - `DEEP_LOOP`: Iterative analysis until convergence (thorough but slower)
+    
+    **Convergence Threshold:**
+    - Only applies to DEEP_LOOP mode
+    - Percentage change threshold to stop iterations (default: 5.0)
+    - Lower values = more iterations, higher precision
+    
+    **Workflow:**
+    1. Upload PDFs (via /api/upload or /api/upload/batch)
+    2. Call this endpoint to configure the job
+    3. Call /api/jobs/{job_id}/start to begin processing
+    
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Returns:**
+    - job_id: Job identifier
+    - config: Configured parameters
     """
     verify_api_key(api_key)
     
@@ -1118,21 +1270,51 @@ async def start_job(
         "message": "Job queued for execution"
     }
 
-@app.post("/api/prompts/{prompt_id}/respond")
+@app.post(
+    "/api/prompts/{prompt_id}/respond",
+    tags=["Interactive"],
+    summary="Respond to interactive prompt",
+    responses={
+        200: {"description": "Response submitted successfully"},
+        404: {"description": "Prompt not found", "model": ErrorResponse},
+        500: {"description": "Error submitting response", "model": ErrorResponse}
+    }
+)
 async def respond_to_prompt(
     prompt_id: str,
     response: PromptResponse,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Submit user response to a prompt
+    Submit user response to an interactive prompt.
     
-    Args:
-        prompt_id: Prompt identifier
-        response: User's response
+    During job execution, the system may pause to request user input
+    (e.g., paper selection, configuration confirmation). This endpoint
+    allows you to respond to those prompts.
     
-    Returns:
-        Confirmation of response submission
+    **Workflow:**
+    1. Job execution pauses and emits prompt via WebSocket
+    2. Prompt includes unique `prompt_id`
+    3. User reviews prompt and makes decision
+    4. User calls this endpoint with response
+    5. Job execution resumes
+    
+    **Path Parameters:**
+    - prompt_id: Unique prompt identifier (from WebSocket message)
+    
+    **Request Body:**
+    - response: User's response (type varies by prompt)
+      - Boolean: true/false
+      - String: user input text
+      - Number: numeric selection
+      - Array: multi-select options
+    
+    **Returns:**
+    - status: "success"
+    - prompt_id: Prompt identifier
+    
+    **Note:** Prompts have a timeout (default: 5 minutes). If no response
+    is received, the job may continue with default behavior or fail.
     """
     verify_api_key(api_key)
     
@@ -1146,21 +1328,51 @@ async def respond_to_prompt(
         logger.error(f"Error submitting prompt response: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.get("/api/compare-jobs/{job_id_1}/{job_id_2}")
+@app.get(
+    "/api/compare-jobs/{job_id_1}/{job_id_2}",
+    tags=["Analysis"],
+    summary="Compare two jobs",
+    responses={
+        200: {"description": "Job comparison data"},
+        400: {"description": "One or both jobs not completed", "model": ErrorResponse},
+        404: {"description": "One or both jobs not found", "model": ErrorResponse}
+    }
+)
 async def compare_jobs(
     job_id_1: str,
     job_id_2: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Compare two gap analysis jobs
+    Compare two gap analysis jobs to identify improvements and changes.
     
-    Args:
-        job_id_1: First job identifier (baseline)
-        job_id_2: Second job identifier (comparison)
+    Analyzes differences between two literature review runs to track:
+    - Overall completeness improvements
+    - Papers added or removed
+    - Gaps filled (requirements that improved)
+    - New gaps discovered
     
-    Returns:
-        Comparison data with deltas and improvements
+    **Use Cases:**
+    - Track progress after adding new papers
+    - Measure impact of methodology changes
+    - Identify regression in completeness
+    - Audit literature review evolution
+    
+    **Path Parameters:**
+    - job_id_1: First job identifier (baseline/earlier)
+    - job_id_2: Second job identifier (comparison/later)
+    
+    **Prerequisites:**
+    - Both jobs must be in "completed" status
+    
+    **Returns:**
+    - job1: Baseline job summary
+    - job2: Comparison job summary
+    - delta: Detailed differences
+      - completeness_change: Percentage point change
+      - papers_added/removed: Paper differences
+      - gaps_filled: Requirements that improved
+      - new_gaps: New requirements needing attention
     """
     verify_api_key(api_key)
     
@@ -1290,19 +1502,54 @@ def format_duration(seconds: int) -> str:
         minutes = (seconds % 3600) // 60
         return f"{hours}h {minutes}min"
 
-@app.get("/api/jobs/{job_id}/progress-history")
+@app.get(
+    "/api/jobs/{job_id}/progress-history",
+    tags=["Jobs"],
+    summary="Get progress history timeline",
+    responses={
+        200: {"description": "Progress history with stage durations"},
+        400: {"description": "Job not completed", "model": ErrorResponse},
+        404: {"description": "Job not found or no progress data", "model": ErrorResponse}
+    }
+)
 async def get_progress_history(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Get historical progress timeline for completed job
+    Get historical progress timeline for completed job with stage durations.
     
-    Args:
-        job_id: Job identifier
+    Returns detailed breakdown of time spent in each processing stage,
+    useful for performance analysis and optimization.
     
-    Returns:
-        Progress timeline with stage durations and performance metrics
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Prerequisites:**
+    - Job must be in "completed" status
+    - Progress tracking must have been enabled
+    
+    **Returns:**
+    - job_id: Job identifier
+    - total_duration_seconds: Total job runtime in seconds
+    - total_duration_human: Human-readable format (e.g., "1h 23min")
+    - timeline: Array of stage objects with durations
+    - slowest_stage: Name of stage that took longest
+    - start_time/end_time: Job timestamps
+    
+    **Stage Information:**
+    - stage: Stage name (e.g., "deep_review", "gap_analysis")
+    - start_time/end_time: ISO timestamps
+    - duration_seconds: Time in seconds
+    - duration_human: Human-readable format
+    - status: "completed" or "error"
+    - percentage: Percentage of total runtime
+    
+    **Use Cases:**
+    - Performance analysis
+    - Identify bottlenecks
+    - Estimate future job durations
+    - Optimize processing configuration
     """
     verify_api_key(api_key)
     
@@ -1411,19 +1658,47 @@ async def get_progress_history(
         'end_time': job_data.get('completed_at')
     }
 
-@app.get("/api/jobs/{job_id}/progress-history.csv")
+@app.get(
+    "/api/jobs/{job_id}/progress-history.csv",
+    tags=["Jobs"],
+    summary="Export progress history as CSV",
+    responses={
+        200: {"description": "CSV file download"},
+        400: {"description": "Job not completed", "model": ErrorResponse},
+        404: {"description": "Job not found or no progress data", "model": ErrorResponse}
+    }
+)
 async def export_progress_history_csv(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Export progress history as CSV file
+    Export progress history as CSV file for analysis in spreadsheet tools.
     
-    Args:
-        job_id: Job identifier
+    Downloads the same data as /api/jobs/{job_id}/progress-history
+    but in CSV format for easier analysis in Excel, Google Sheets, etc.
     
-    Returns:
-        CSV file download
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Prerequisites:**
+    - Job must be in "completed" status
+    
+    **Returns:**
+    CSV file with columns:
+    - Stage
+    - Start Time
+    - End Time
+    - Duration (seconds)
+    - Duration (human)
+    - % of Total
+    - Status
+    
+    **Use Cases:**
+    - Import into spreadsheet for analysis
+    - Create custom visualizations
+    - Compare multiple job runs
+    - Generate performance reports
     """
     verify_api_key(api_key)
     
@@ -1487,21 +1762,59 @@ async def export_progress_history_csv(
         }
     )
 
-@app.get("/api/logs/{job_id}")
+@app.get(
+    "/api/logs/{job_id}",
+    tags=["Logs"],
+    summary="Get job logs",
+    responses={
+        200: {
+            "description": "Job logs retrieved successfully",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        }
+    }
+)
 async def get_job_logs(
     job_id: str,
     tail: int = 100,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Get logs for a specific job
+    Get logs for a specific job.
     
-    Args:
-        job_id: Job identifier
-        tail: Number of lines to return from end of log
+    Returns the most recent log lines for debugging and monitoring purposes.
     
-    Returns:
-        Log content
+    **Query Parameters:**
+    - tail: Number of lines to return from end of log (default: 100)
+      - Set to 0 or negative value for entire log
+      - Maximum practical limit: ~10000 lines
+    
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Returns:**
+    - job_id: Job identifier
+    - logs: Log content as string (newline-separated)
+    - line_count: Number of lines returned
+    - message: Info message if no logs available
+    
+    **Log Format:**
+    ```
+    [2024-11-17 12:01:00] Starting deep review...
+    [2024-11-17 12:05:00] Processing paper 1/5...
+    [2024-11-17 12:10:00] Gap analysis starting...
+    ```
+    
+    **Use Cases:**
+    - Monitor job progress in real-time
+    - Debug failed jobs
+    - Audit job execution
+    - Track resource usage
+    
+    **Note:** For real-time log streaming, use WebSocket endpoint:
+    `ws://localhost:5001/ws/jobs/{job_id}/progress`
     """
     verify_api_key(api_key)
     
@@ -1520,19 +1833,32 @@ async def get_job_logs(
     
     return {"job_id": job_id, "logs": log_content, "line_count": len(lines)}
 
-@app.get("/api/download/{job_id}")
+@app.get(
+    "/api/download/{job_id}",
+    tags=["Papers"],
+    summary="Download uploaded PDF",
+    responses={
+        200: {"description": "PDF file download"},
+        404: {"description": "Job or file not found", "model": ErrorResponse}
+    }
+)
 async def download_job_file(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Download the uploaded PDF file for a job
+    Download the original uploaded PDF file for a job.
     
-    Args:
-        job_id: Job identifier
+    **Path Parameters:**
+    - job_id: Unique job identifier
     
-    Returns:
-        PDF file
+    **Returns:**
+    PDF file with original filename
+    
+    **Use Cases:**
+    - Retrieve original papers for reference
+    - Backup uploaded files
+    - Verify uploaded content
     """
     verify_api_key(api_key)
     
@@ -1687,13 +2013,20 @@ async def job_progress_stream(websocket: WebSocket, job_id: str):
     except Exception as e:
         logger.error(f"WebSocket error for job {job_id}: {e}")
 
-@app.get("/api/jobs/{job_id}/proof-scorecard")
+@app.get(
+    "/api/jobs/{job_id}/proof-scorecard",
+    tags=["Results"],
+    summary="Get proof scorecard summary",
+    responses={
+        200: {"description": "Proof scorecard summary or not available message"}
+    }
+)
 async def get_proof_scorecard(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Get proof scorecard summary for a job
+    Get proof scorecard summary with overall score and recommendations.
     
     Args:
         job_id: Job identifier
@@ -1733,13 +2066,20 @@ async def get_proof_scorecard(
             "message": f"Error reading proof scorecard: {str(e)}"
         }
 
-@app.get("/api/jobs/{job_id}/cost-summary")
+@app.get(
+    "/api/jobs/{job_id}/cost-summary",
+    tags=["Results"],
+    summary="Get API cost summary",
+    responses={
+        200: {"description": "Cost summary or not available message"}
+    }
+)
 async def get_cost_summary(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Get API cost summary for a job
+    Get API cost summary with total cost and module breakdown.
     
     Args:
         job_id: Job identifier
@@ -1780,13 +2120,20 @@ async def get_cost_summary(
             "message": f"Error reading cost data: {str(e)}"
         }
 
-@app.get("/api/jobs/{job_id}/sufficiency-summary")
+@app.get(
+    "/api/jobs/{job_id}/sufficiency-summary",
+    tags=["Results"],
+    summary="Get evidence sufficiency summary",
+    responses={
+        200: {"description": "Sufficiency summary or not available message"}
+    }
+)
 async def get_sufficiency_summary(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Get evidence sufficiency summary for a job
+    Get evidence sufficiency summary with quadrant distribution.
     
     Args:
         job_id: Job identifier
@@ -1832,14 +2179,24 @@ async def get_sufficiency_summary(
             "message": f"Error reading sufficiency data: {str(e)}"
         }
 
-@app.get("/api/jobs/{job_id}/files/{filepath:path}")
+@app.get(
+    "/api/jobs/{job_id}/files/{filepath:path}",
+    tags=["Results"],
+    summary="Get job output file",
+    responses={
+        200: {"description": "File content"},
+        400: {"description": "Invalid file path", "model": ErrorResponse},
+        403: {"description": "Access denied", "model": ErrorResponse},
+        404: {"description": "File not found", "model": ErrorResponse}
+    }
+)
 async def get_job_output_file(
     job_id: str,
     filepath: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Serve output files from job directory
+    Serve output files from job directory (e.g., HTML reports).
     
     Args:
         job_id: Job identifier
@@ -1897,19 +2254,64 @@ def categorize_output_file(filename: str) -> str:
     else:
         return "other"
 
-@app.get("/api/jobs/{job_id}/results")
+@app.get(
+    "/api/jobs/{job_id}/results",
+    tags=["Results"],
+    summary="Get list of result files",
+    responses={
+        200: {
+            "description": "List of output files with metadata",
+        },
+        400: {
+            "description": "Job not completed",
+            "model": ErrorResponse
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Job not found",
+            "model": ErrorResponse
+        }
+    }
+)
 async def get_job_results(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Get list of all output files for a job
+    Get list of all output files for a completed job.
     
-    Args:
-        job_id: Job identifier
+    Returns metadata for all generated files including:
+    - JSON data files (gap analysis, scores, etc.)
+    - HTML visualizations (charts, reports, etc.)
+    - Markdown reports
+    - Waterfall charts per pillar
     
-    Returns:
-        List of output files with metadata
+    **File Categories:**
+    - `data`: JSON files with raw analysis data
+    - `reports`: Markdown reports
+    - `visualizations`: HTML charts and graphs
+    - `pillar_waterfalls`: Waterfall charts per pillar
+    - `other`: Miscellaneous files
+    
+    **Prerequisites:**
+    - Job must be in "completed" status
+    
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Returns:**
+    - job_id: Job identifier
+    - output_count: Total number of files
+    - outputs: Array of file metadata objects
+    - output_dir: Path to output directory
+    
+    **Use this data to:**
+    - Browse available result files
+    - Download specific files via /api/jobs/{job_id}/results/{file_path}
+    - Download all files via /api/jobs/{job_id}/results/download/all
     """
     verify_api_key(api_key)
     
@@ -1959,19 +2361,36 @@ async def get_job_results(
         "output_dir": str(output_dir)
     }
 
-@app.get("/api/jobs/{job_id}/results/download/all")
+@app.get(
+    "/api/jobs/{job_id}/results/download/all",
+    tags=["Results"],
+    summary="Download all results as ZIP",
+    responses={
+        200: {"description": "ZIP archive download"},
+        400: {"description": "Job not completed", "model": ErrorResponse},
+        404: {"description": "Job not found or no results", "model": ErrorResponse}
+    }
+)
 async def download_all_results(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Download all job results as a ZIP file
+    Download all job results as a ZIP archive.
     
-    Args:
-        job_id: Job identifier
+    **Path Parameters:**
+    - job_id: Unique job identifier
     
-    Returns:
-        ZIP archive of all output files
+    **Prerequisites:**
+    - Job must be in "completed" status
+    
+    **ZIP Contents:**
+    - All output files from gap_analysis_output/
+    - prompt_history.json (if prompts were used)
+    - prompt_history.txt (human-readable summary)
+    
+    **Returns:**
+    application/zip file named `job_{job_id}_results.zip`
     """
     verify_api_key(api_key)
     
@@ -2025,21 +2444,38 @@ async def download_all_results(
         }
     )
 
-@app.get("/api/jobs/{job_id}/results/{file_path:path}")
+@app.get(
+    "/api/jobs/{job_id}/results/{file_path:path}",
+    tags=["Results"],
+    summary="Download specific result file",
+    responses={
+        200: {"description": "File content"},
+        400: {"description": "Job not completed", "model": ErrorResponse},
+        403: {"description": "Access denied", "model": ErrorResponse},
+        404: {"description": "File not found", "model": ErrorResponse}
+    }
+)
 async def get_job_result_file(
     job_id: str,
     file_path: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Get a specific output file
+    Download a specific output file from job results.
     
-    Args:
-        job_id: Job identifier
-        file_path: Relative path to file within output directory
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    - file_path: Relative path to file (from /api/jobs/{job_id}/results)
     
-    Returns:
-        File content
+    **Prerequisites:**
+    - Job must be in "completed" status
+    
+    **Security:**
+    - Path traversal attempts are blocked
+    - Access limited to job's output directory
+    
+    **Returns:**
+    File content with appropriate MIME type
     """
     verify_api_key(api_key)
     
@@ -2069,37 +2505,115 @@ async def get_job_result_file(
         filename=full_path.name
     )
 
-@app.get("/health")
+@app.get(
+    "/health",
+    tags=["System"],
+    summary="Health check endpoint",
+    responses={
+        200: {
+            "description": "Service is healthy",
+        }
+    }
+)
 async def health_check():
-    """Health check endpoint"""
+    """
+    Health check endpoint for monitoring and load balancers.
+    
+    Returns basic service status and version information.
+    
+    **Use Cases:**
+    - Kubernetes/Docker health probes
+    - Load balancer health checks
+    - Service monitoring and alerting
+    - Uptime monitoring
+    
+    **Returns:**
+    - status: "healthy" (always if service is running)
+    - version: API version
+    - timestamp: Current server time (UTC ISO format)
+    
+    **Example Response:**
+    ```json
+    {
+      "status": "healthy",
+      "version": "2.0.0",
+      "timestamp": "2024-11-17T12:00:00.000000"
+    }
+    ```
+    
+    **Note:** This endpoint does not require API key authentication.
+    """
     return {
         "status": "healthy",
-        "version": "1.0.0",
+        "version": "2.0.0",
         "timestamp": datetime.utcnow().isoformat()
     }
 
 
-@app.post("/api/suggest-field")
+@app.post(
+    "/api/suggest-field",
+    tags=["Analysis"],
+    summary="Auto-suggest research field",
+    responses={
+        200: {
+            "description": "Research field suggestion",
+        },
+        400: {
+            "description": "No papers provided",
+            "model": ErrorResponse
+        }
+    }
+)
 async def suggest_research_field(request: dict):
     """
     Auto-suggest research field based on paper titles and abstracts.
     
-    Request body:
-        {
-            "papers": [
-                {"title": "...", "abstract": "..."},
-                ...
-            ]
-        }
+    Uses AI to analyze paper content and suggest the most appropriate
+    research field configuration for evidence decay settings.
     
-    Response:
+    **Request Body:**
+    ```json
+    {
+      "papers": [
         {
-            "suggested_field": "ai_ml",
-            "field_name": "AI & Machine Learning",
-            "half_life_years": 3.0,
-            "description": "...",
-            "confidence": "high|medium|low"
+          "title": "Deep Learning for Natural Language Processing",
+          "abstract": "This paper explores transformer architectures..."
         }
+      ]
+    }
+    ```
+    
+    **Response:**
+    ```json
+    {
+      "suggested_field": "ai_ml",
+      "field_name": "AI & Machine Learning",
+      "half_life_years": 3.0,
+      "description": "Fast-moving field with rapid innovation",
+      "examples": ["neural networks", "transformers", "LLMs"],
+      "confidence": "high"
+    }
+    ```
+    
+    **Confidence Levels:**
+    - `high`: Strong match to known research field
+    - `medium`: Partial match, consider reviewing suggestion
+    - `low`: Fallback to custom field, manual configuration recommended
+    
+    **Supported Fields:**
+    - AI & Machine Learning (3 year half-life)
+    - Computer Science (7 year half-life)
+    - Mathematics (50 year half-life)
+    - Biology & Life Sciences (10 year half-life)
+    - Physics (15 year half-life)
+    - And more...
+    
+    **Use Cases:**
+    - Configure evidence decay for new literature review
+    - Validate field selection
+    - Explore field characteristics
+    
+    **Note:** This endpoint does not require API key authentication.
     """
     from literature_review.utils.decay_presets import suggest_field_from_papers, get_preset
     
@@ -2125,19 +2639,67 @@ async def suggest_research_field(request: dict):
     }
 
 
-@app.get("/api/field-presets")
+@app.get(
+    "/api/field-presets",
+    tags=["Analysis"],
+    summary="Get research field presets",
+    responses={
+        200: {
+            "description": "All available field presets",
+        }
+    }
+)
 async def get_field_presets():
     """
-    Get all available research field presets.
+    Get all available research field presets for evidence decay configuration.
     
-    Response:
-        {
-            "presets": {
-                "ai_ml": {...},
-                "mathematics": {...},
-                ...
-            }
+    Returns complete catalog of pre-configured research fields with their
+    evidence decay parameters (half-life), descriptions, and examples.
+    
+    **Response Structure:**
+    ```json
+    {
+      "presets": {
+        "ai_ml": {
+          "name": "AI & Machine Learning",
+          "half_life_years": 3.0,
+          "description": "Fast-moving field with rapid innovation cycles",
+          "examples": ["neural networks", "deep learning", "transformers"]
+        },
+        "mathematics": {
+          "name": "Pure Mathematics",
+          "half_life_years": 50.0,
+          "description": "Theoretical field with long-lasting foundational work",
+          "examples": ["number theory", "topology", "algebra"]
         }
+      }
+    }
+    ```
+    
+    **Half-Life Explanation:**
+    - Number of years for evidence to decay to 50% relevance
+    - Lower values = faster-moving fields (e.g., AI/ML: 3 years)
+    - Higher values = slower-moving fields (e.g., Mathematics: 50 years)
+    
+    **Available Presets:**
+    - ai_ml: AI & Machine Learning (3 years)
+    - computer_science: Computer Science (7 years)
+    - biology: Biology & Life Sciences (10 years)
+    - physics: Physics (15 years)
+    - chemistry: Chemistry (12 years)
+    - medicine: Medicine & Healthcare (8 years)
+    - mathematics: Pure Mathematics (50 years)
+    - engineering: Engineering (12 years)
+    - social_sciences: Social Sciences (15 years)
+    - custom: Custom field (configure manually)
+    
+    **Use Cases:**
+    - Browse available research fields
+    - Select appropriate field for literature review
+    - Understand evidence decay characteristics
+    - Configure custom half-life based on similar field
+    
+    **Note:** This endpoint does not require API key authentication.
     """
     from literature_review.utils.decay_presets import list_all_presets
     
