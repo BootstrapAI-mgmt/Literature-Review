@@ -51,6 +51,15 @@
       "enable_smart_retry": true
     }
   },
+  "roi_optimizer": {
+    "enabled": true,
+    "adaptive_recalculation": true,
+    "recalculation_frequency": "per_batch",
+    "batch_size": 5,
+    "min_roi_threshold": 0.1,
+    "convergence_threshold": 0.8,
+    "diminishing_returns_threshold": 0.5
+  },
   "evidence_decay": {
     "enabled": true,
     "half_life_years": 5.0,
