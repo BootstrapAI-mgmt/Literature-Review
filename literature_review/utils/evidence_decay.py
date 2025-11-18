@@ -13,14 +13,30 @@ logger = logging.getLogger(__name__)
 class EvidenceDecayTracker:
     """Track and weight evidence based on publication age."""
     
-    def __init__(self, half_life_years: float = 5.0):
+    def __init__(self, half_life_years: float = 5.0, config: Optional[Dict] = None):
         """
         Initialize decay tracker.
         
         Args:
             half_life_years: Years for evidence value to decay to 50%
+            config: Optional configuration dictionary with evidence_decay settings
         """
-        self.half_life = half_life_years
+        if config and 'evidence_decay' in config:
+            decay_config = config['evidence_decay']
+            self.half_life = decay_config.get('half_life_years', half_life_years)
+            self.enabled = decay_config.get('enabled', True)
+            self.weight_in_gap_analysis = decay_config.get('weight_in_gap_analysis', False)
+            self.decay_weight = decay_config.get('decay_weight', 0.7)
+            self.apply_to_pillars = decay_config.get('apply_to_pillars', ['all'])
+            self.min_freshness_threshold = decay_config.get('min_freshness_threshold', 0.3)
+        else:
+            self.half_life = half_life_years
+            self.enabled = True
+            self.weight_in_gap_analysis = False
+            self.decay_weight = 0.7
+            self.apply_to_pillars = ['all']
+            self.min_freshness_threshold = 0.3
+        
         self.current_year = datetime.now().year
     
     def calculate_decay_weight(self, publication_year: int) -> float:
@@ -45,6 +61,53 @@ class EvidenceDecayTracker:
         weight = math.pow(2, -age_years / self.half_life)
         
         return round(weight, 3)
+    
+    def calculate_freshness_for_paper(self, paper: Dict, version_history: Optional[Dict] = None) -> float:
+        """
+        Calculate freshness score for a single paper.
+        
+        Args:
+            paper: Paper dictionary with 'filename' or 'year' field
+            version_history: Optional version history to look up publication years
+        
+        Returns:
+            Freshness score (0-1, where 1 = current year)
+        """
+        year = paper.get('year')
+        
+        # Try to get year from version history if not provided
+        if not year and version_history:
+            filename = paper.get('filename', '')
+            if filename in version_history:
+                versions = version_history[filename]
+                if versions and isinstance(versions, list):
+                    latest_version = versions[-1]
+                    if 'review' in latest_version:
+                        year = latest_version['review'].get('PUBLICATION_YEAR')
+        
+        # Use neutral freshness if year is unknown
+        if not year:
+            return 0.5
+        
+        return self.calculate_decay_weight(year)
+    
+    def should_apply_decay(self, pillar_name: Optional[str] = None) -> bool:
+        """
+        Check if decay should be applied to a given pillar.
+        
+        Args:
+            pillar_name: Name of the pillar (optional)
+        
+        Returns:
+            True if decay should be applied, False otherwise
+        """
+        if not self.enabled or not self.weight_in_gap_analysis:
+            return False
+        
+        if 'all' in self.apply_to_pillars:
+            return True
+        
+        return pillar_name in self.apply_to_pillars if pillar_name else True
     
     def analyze_evidence_freshness(self, review_log_file: str, gap_analysis_file: str) -> Dict:
         """Analyze freshness of evidence for each requirement."""
