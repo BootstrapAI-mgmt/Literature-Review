@@ -305,12 +305,12 @@ class PipelineJobRunner:
             """Async callback for user prompts"""
             from webdashboard.prompt_handler import prompt_handler
             
-            # Request user input via PromptHandler
+            # Request user input via PromptHandler (uses configured timeout)
             response = await prompt_handler.request_user_input(
                 job_id=job_id,
                 prompt_type=prompt_type,
-                prompt_data=prompt_data,
-                timeout_seconds=300
+                prompt_data=prompt_data
+                # No timeout_seconds arg → uses config
             )
             return response
         
