@@ -858,6 +858,347 @@ async def respond_to_prompt(
         logger.error(f"Error submitting prompt response: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
+@app.get("/api/compare-jobs/{job_id_1}/{job_id_2}")
+async def compare_jobs(
+    job_id_1: str,
+    job_id_2: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Compare two gap analysis jobs
+    
+    Args:
+        job_id_1: First job identifier (baseline)
+        job_id_2: Second job identifier (comparison)
+    
+    Returns:
+        Comparison data with deltas and improvements
+    """
+    verify_api_key(api_key)
+    
+    # Load both jobs
+    job1 = load_job(job_id_1)
+    job2 = load_job(job_id_2)
+    
+    if not job1:
+        raise HTTPException(status_code=404, detail=f"Job {job_id_1} not found")
+    if not job2:
+        raise HTTPException(status_code=404, detail=f"Job {job_id_2} not found")
+    
+    # Verify both jobs are completed
+    if job1.get("status") != "completed":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job {job_id_1} has not completed (status: {job1.get('status')})"
+        )
+    if job2.get("status") != "completed":
+        raise HTTPException(
+            status_code=400,
+            detail=f"Job {job_id_2} has not completed (status: {job2.get('status')})"
+        )
+    
+    # Extract data from both jobs
+    job1_completeness = extract_completeness(job1)
+    job2_completeness = extract_completeness(job2)
+    job1_papers = extract_papers(job1)
+    job2_papers = extract_papers(job2)
+    job1_gaps = extract_gaps(job1)
+    job2_gaps = extract_gaps(job2)
+    
+    # Calculate papers differential
+    papers_added = [p for p in job2_papers if p not in job1_papers]
+    papers_removed = [p for p in job1_papers if p not in job2_papers]
+    
+    # Calculate gaps differential
+    # A gap is "filled" if it existed in job1 but not in job2 (or has higher completeness)
+    gaps_filled = []
+    new_gaps = []
+    
+    # Create dictionaries for easier comparison
+    job1_gap_dict = {
+        f"{g['pillar']}|{g['requirement']}|{g['sub_requirement']}": g
+        for g in job1_gaps
+    }
+    job2_gap_dict = {
+        f"{g['pillar']}|{g['requirement']}|{g['sub_requirement']}": g
+        for g in job2_gaps
+    }
+    
+    # Find gaps that were filled
+    for gap_key, gap1 in job1_gap_dict.items():
+        if gap_key in job2_gap_dict:
+            gap2 = job2_gap_dict[gap_key]
+            # Check if completeness improved
+            if gap2['completeness'] > gap1['completeness']:
+                gaps_filled.append({
+                    "gap": f"{gap1['requirement']} - {gap1['sub_requirement']}",
+                    "pillar": gap1['pillar'],
+                    "improvement": gap2['completeness'] - gap1['completeness'],
+                    "old_completeness": gap1['completeness'],
+                    "new_completeness": gap2['completeness']
+                })
+        else:
+            # Gap completely filled (100% in job2)
+            gaps_filled.append({
+                "gap": f"{gap1['requirement']} - {gap1['sub_requirement']}",
+                "pillar": gap1['pillar'],
+                "improvement": 100 - gap1['completeness'],
+                "old_completeness": gap1['completeness'],
+                "new_completeness": 100
+            })
+    
+    # Find new gaps that appeared in job2
+    for gap_key, gap2 in job2_gap_dict.items():
+        if gap_key not in job1_gap_dict:
+            new_gaps.append({
+                "gap": f"{gap2['requirement']} - {gap2['sub_requirement']}",
+                "pillar": gap2['pillar'],
+                "completeness": gap2['completeness']
+            })
+    
+    # Build comparison response
+    comparison = {
+        "job1": {
+            "id": job_id_1,
+            "timestamp": job1.get("created_at", ""),
+            "completeness": round(job1_completeness, 2),
+            "papers": job1_papers,
+            "paper_count": len(job1_papers),
+            "gap_count": len(job1_gaps)
+        },
+        "job2": {
+            "id": job_id_2,
+            "timestamp": job2.get("created_at", ""),
+            "completeness": round(job2_completeness, 2),
+            "papers": job2_papers,
+            "paper_count": len(job2_papers),
+            "gap_count": len(job2_gaps)
+        },
+        "delta": {
+            "completeness_change": round(job2_completeness - job1_completeness, 2),
+            "papers_added": papers_added,
+            "papers_removed": papers_removed,
+            "papers_added_count": len(papers_added),
+            "papers_removed_count": len(papers_removed),
+            "gaps_filled": gaps_filled,
+            "gaps_filled_count": len(gaps_filled),
+            "new_gaps": new_gaps,
+            "new_gaps_count": len(new_gaps)
+        }
+    }
+    
+    return comparison
+
+def format_duration(seconds: int) -> str:
+    """Format seconds as human-readable duration"""
+    if seconds < 60:
+        return f"{seconds}s"
+    elif seconds < 3600:
+        minutes = seconds // 60
+        secs = seconds % 60
+        return f"{minutes}min {secs}s"
+    else:
+        hours = seconds // 3600
+        minutes = (seconds % 3600) // 60
+        return f"{hours}h {minutes}min"
+
+@app.get("/api/jobs/{job_id}/progress-history")
+async def get_progress_history(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Get historical progress timeline for completed job
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        Progress timeline with stage durations and performance metrics
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    if job_data.get('status') != 'completed':
+        raise HTTPException(
+            status_code=400,
+            detail="Job not completed. Progress history only available for completed jobs."
+        )
+    
+    # Read progress events from JSONL file
+    progress_file = STATUS_DIR / f"{job_id}_progress.jsonl"
+    if not progress_file.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="No progress data available for this job"
+        )
+    
+    # Parse progress events
+    events = []
+    try:
+        with open(progress_file, 'r') as f:
+            for line in f:
+                if line.strip():
+                    events.append(json.loads(line))
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to parse progress data: {str(e)}"
+        )
+    
+    # Group events by stage and calculate durations
+    stages = {}
+    for event in events:
+        stage = event.get('stage')
+        phase = event.get('phase')
+        timestamp = event.get('timestamp')
+        
+        if not stage or not phase or not timestamp:
+            continue
+        
+        if stage not in stages:
+            stages[stage] = {
+                'stage': stage,
+                'start_time': None,
+                'end_time': None,
+                'status': 'unknown'
+            }
+        
+        # Track start and end times
+        if phase == 'starting':
+            stages[stage]['start_time'] = timestamp
+            stages[stage]['status'] = 'started'
+        elif phase == 'complete':
+            stages[stage]['end_time'] = timestamp
+            stages[stage]['status'] = 'completed'
+        elif phase == 'error':
+            stages[stage]['end_time'] = timestamp
+            stages[stage]['status'] = 'error'
+    
+    # Calculate durations
+    timeline = []
+    total_duration = 0
+    
+    for stage_name, stage_data in stages.items():
+        if stage_data['start_time'] and stage_data['end_time']:
+            try:
+                start = datetime.fromisoformat(stage_data['start_time'])
+                end = datetime.fromisoformat(stage_data['end_time'])
+                duration_seconds = int((end - start).total_seconds())
+                
+                timeline.append({
+                    'stage': stage_name,
+                    'start_time': stage_data['start_time'],
+                    'end_time': stage_data['end_time'],
+                    'duration_seconds': duration_seconds,
+                    'duration_human': format_duration(duration_seconds),
+                    'status': stage_data['status'],
+                    'percentage': 0  # Will be calculated later
+                })
+                
+                total_duration += duration_seconds
+            except Exception:
+                continue
+    
+    # Calculate percentages
+    for item in timeline:
+        if total_duration > 0:
+            item['percentage'] = round((item['duration_seconds'] / total_duration) * 100, 1)
+        else:
+            item['percentage'] = 0
+    
+    # Find slowest stage
+    slowest_stage = max(timeline, key=lambda x: x['duration_seconds'])['stage'] if timeline else None
+    
+    return {
+        'job_id': job_id,
+        'total_duration_seconds': total_duration,
+        'total_duration_human': format_duration(total_duration),
+        'timeline': timeline,
+        'slowest_stage': slowest_stage,
+        'start_time': job_data.get('started_at'),
+        'end_time': job_data.get('completed_at')
+    }
+
+@app.get("/api/jobs/{job_id}/progress-history.csv")
+async def export_progress_history_csv(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Export progress history as CSV file
+    
+    Args:
+        job_id: Job identifier
+    
+    Returns:
+        CSV file download
+    """
+    verify_api_key(api_key)
+    
+    # Get progress data using the existing endpoint logic
+    try:
+        progress_data = await get_progress_history(job_id, api_key)
+    except HTTPException as e:
+        raise e
+    
+    # Create CSV content
+    import csv
+    from io import StringIO
+    
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Header
+    writer.writerow([
+        'Stage',
+        'Start Time',
+        'End Time',
+        'Duration (seconds)',
+        'Duration (human)',
+        '% of Total',
+        'Status'
+    ])
+    
+    # Rows
+    for stage in progress_data['timeline']:
+        writer.writerow([
+            stage['stage'],
+            stage['start_time'],
+            stage['end_time'],
+            stage['duration_seconds'],
+            stage['duration_human'],
+            f"{stage['percentage']}%",
+            stage['status']
+        ])
+    
+    # Total row
+    writer.writerow([])
+    writer.writerow([
+        'TOTAL',
+        '',
+        '',
+        progress_data['total_duration_seconds'],
+        progress_data['total_duration_human'],
+        '100%',
+        ''
+    ])
+    
+    csv_content = output.getvalue()
+    
+    # Return as downloadable file
+    from fastapi.responses import Response
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={
+            "Content-Disposition": f"attachment; filename=progress_history_{job_id}.csv"
+        }
+    )
+
 @app.get("/api/logs/{job_id}")
 async def get_job_logs(
     job_id: str,
