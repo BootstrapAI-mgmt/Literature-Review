@@ -17,8 +17,8 @@ This document tracks the phased execution of enhancement task cards, showing par
 - **Wave 1 (Core Infrastructure):** ✅ 2/2 complete (100%)
 - **Wave 2 (User Features):** ✅ 6/6 complete (100%)
 - **Wave 3 (Advanced Features):** ⏳ 0/5 complete (0%)
-- **Wave 4 (Testing & Documentation):** ⏳ 0/3 complete (0%)
-- **Total:** ✅ 9/20 complete (45%)
+- **Wave 4 (Testing & Documentation):** ✅ 1/3 complete (33%)
+- **Total:** ✅ 10/20 complete (50%)
 
 ---
 
@@ -173,14 +173,14 @@ Total wall-clock time: 9 hours (parallel)
 
 | Card | Priority | Effort | Dependencies | Status | Assignee |
 |------|----------|--------|--------------|--------|----------|
-| ENHANCE-TEST-1 | 🟡 MEDIUM | 4h | All features ✅ | ⏳ Not Started | - |
-| ENHANCE-DOC-1 | 🟡 MEDIUM | 3h | None | ⏳ Not Started | - |
-| ENHANCE-DOC-2 | 🟢 LOW | 2h | None | ⏳ Not Started | - |
+| ENHANCE-TEST-1 | 🟡 MEDIUM | 5h | All features | ⏳ Not Started | - |
+| ENHANCE-DOC-1 | 🟢 LOW | 3h | None | ⏳ Not Started | - |
+| ENHANCE-DOC-2 | 🟢 LOW | 2h | None | ✅ Complete (PR #64) | Copilot Agent |
 
 **Tasks:**
 - [ ] ENHANCE-TEST-1: End-to-end dashboard tests (Playwright/Selenium)
 - [ ] ENHANCE-DOC-1: Production deployment guide
-- [ ] ENHANCE-DOC-2: API reference documentation (OpenAPI/Swagger)
+- [x] ENHANCE-DOC-2: API reference documentation (OpenAPI/Swagger) - **MERGED**
 
 **Dependencies:**
 - ENHANCE-TEST-1 should ideally run after all features implemented
@@ -363,7 +363,7 @@ Wave 4: Test/Doc
 ### Testing & Documentation
 - [ ] ENHANCE-TEST-1 (E2E tests) - **Wave 4**
 - [ ] ENHANCE-DOC-1 (deployment) - **Wave 4**
-- [ ] ENHANCE-DOC-2 (API reference) - **Wave 4**
+- [x] ENHANCE-DOC-2 (API reference) - **Wave 4** ✅ MERGED PR #64
 
 ---
 
