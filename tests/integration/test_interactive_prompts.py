@@ -278,6 +278,8 @@ async def test_multiple_concurrent_prompts():
 
 
 @pytest.mark.asyncio
+async def test_multi_select_pillars():
+    """Test multi-select pillar selection"""
 async def test_run_mode_prompt_integration():
     """Test run_mode prompt when starting job without config"""
     from webdashboard.prompt_handler import PromptHandler
@@ -285,6 +287,45 @@ async def test_run_mode_prompt_integration():
     handler = PromptHandler()
     
     # Track prompt IDs
+    prompt_ids = []
+    
+    async def capture_broadcast(job_id, prompt_id, prompt_type, prompt_data):
+        prompt_ids.append(prompt_id)
+    
+    handler._broadcast_prompt = capture_broadcast
+    
+    # Request pillar selection
+    task = asyncio.create_task(
+        handler.request_user_input(
+            job_id="test_job",
+            prompt_type="pillar_selection",
+            prompt_data={
+                "message": "Select pillars",
+                "options": ["P1: Pillar 1", "P2: Pillar 2", "P3: Pillar 3"]
+            },
+            timeout_seconds=3
+        )
+    )
+    
+    # Wait for prompt to be created
+    await asyncio.sleep(0.1)
+    
+    # Simulate user selecting multiple pillars
+    prompt_id = prompt_ids[0]
+    handler.submit_response(prompt_id, ["P1: Pillar 1", "P3: Pillar 3"])
+    
+    result = await task
+    
+    # Verify multi-select response
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert "P1: Pillar 1" in result
+    assert "P3: Pillar 3" in result
+
+
+@pytest.mark.asyncio
+async def test_special_option_all_with_multi_select():
+    """Test ALL special option still works with multi-select UI"""
     prompt_id_holder = []
     
     async def capture_broadcast(job_id, prompt_id, prompt_type, prompt_data):
@@ -334,6 +375,107 @@ async def test_continue_prompt_deep_loop():
     
     async def capture_broadcast(job_id, prompt_id, prompt_type, prompt_data):
         prompt_ids.append(prompt_id)
+    
+    handler._broadcast_prompt = capture_broadcast
+    
+    task = asyncio.create_task(
+        handler.request_user_input(
+            job_id="test_job",
+            prompt_type="pillar_selection",
+            prompt_data={"message": "Select pillars"},
+            timeout_seconds=3
+        )
+    )
+    
+    await asyncio.sleep(0.1)
+    
+    prompt_id = prompt_ids[0]
+    handler.submit_response(prompt_id, "ALL")
+    
+    result = await task
+    
+    # Verify ALL option returns string (not list)
+    assert isinstance(result, str)
+    assert result == "ALL"
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_multi_select_pillars():
+    """Test orchestrator handles multi-select pillar selection"""
+    try:
+        from literature_review.orchestrator import get_user_analysis_target_async
+    except ImportError:
+        pytest.skip("Orchestrator dependencies not available")
+    
+    async def mock_prompt_callback(prompt_type, prompt_data):
+        # Simulate user selecting pillars 1 and 3
+        return ["P1: Pillar 1", "P3: Pillar 3"]
+    
+    pillars, mode = await get_user_analysis_target_async(
+        pillar_definitions={
+            "P1: Pillar 1": {},
+            "P2: Pillar 2": {},
+            "P3: Pillar 3": {},
+            "Framework_Overview": {}  # Should be filtered out
+        },
+        prompt_callback=mock_prompt_callback
+    )
+    
+    assert mode == "ONCE"
+    assert len(pillars) == 2
+    assert "P1: Pillar 1" in pillars
+    assert "P3: Pillar 3" in pillars
+    assert "P2: Pillar 2" not in pillars
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_multi_select_validation():
+    """Test orchestrator handles invalid multi-select gracefully"""
+    try:
+        from literature_review.orchestrator import get_user_analysis_target_async
+    except ImportError:
+        pytest.skip("Orchestrator dependencies not available")
+    
+    async def mock_prompt_callback(prompt_type, prompt_data):
+        # Simulate user selecting invalid pillars
+        return ["Invalid Pillar", "Another Invalid"]
+    
+    pillars, mode = await get_user_analysis_target_async(
+        pillar_definitions={
+            "P1: Pillar 1": {},
+            "P2: Pillar 2": {}
+        },
+        prompt_callback=mock_prompt_callback
+    )
+    
+    # Should return EXIT mode when no valid selections
+    assert mode == "EXIT"
+    assert len(pillars) == 0
+
+
+@pytest.mark.asyncio
+async def test_orchestrator_backward_compatibility():
+    """Test orchestrator still handles single pillar string selection"""
+    try:
+        from literature_review.orchestrator import get_user_analysis_target_async
+    except ImportError:
+        pytest.skip("Orchestrator dependencies not available")
+    
+    # Test with numeric string (old format)
+    async def mock_prompt_callback(prompt_type, prompt_data):
+        return "1"  # Select first pillar
+    
+    pillars, mode = await get_user_analysis_target_async(
+        pillar_definitions={
+            "P1: Pillar 1": {},
+            "P2: Pillar 2": {}
+        },
+        prompt_callback=mock_prompt_callback
+    )
+    
+    assert mode == "ONCE"
+    assert len(pillars) == 1
+    assert "P1: Pillar 1" in pillars
         # Verify the prompt type and data
         assert prompt_type == "continue"
         assert "iteration" in prompt_data

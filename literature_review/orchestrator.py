@@ -1274,7 +1274,17 @@ async def get_user_analysis_target_async(
             }
         )
     
-    # Parse response (same logic for both modes)
+    # Parse response - handle both string and list responses
+    if isinstance(choice, list):
+        # Multi-select: ["P1: Pillar 1", "P3: Pillar 3", "P5: Pillar 5"]
+        # Validate that all selected pillars exist
+        valid_selections = [p for p in choice if p in analyzable_pillars]
+        if not valid_selections:
+            safe_print("Invalid pillar selection. Exiting.")
+            return [], "EXIT"
+        return valid_selections, "ONCE"
+    
+    # String responses (special options or single pillar)
     if not choice or choice == "NONE":
         return [], "EXIT"
     if choice == "ALL":
