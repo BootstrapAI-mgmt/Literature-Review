@@ -38,9 +38,43 @@ logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI(
-    title="Literature Review Dashboard",
-    description="Web dashboard for monitoring and managing literature review pipeline jobs",
-    version="1.0.0"
+    title="Literature Review Dashboard API",
+    description="""
+## REST API for Managing Literature Review Pipeline
+
+This API enables you to:
+* **Upload PDFs** - Single or batch upload of academic papers
+* **Create Jobs** - Configure and start literature review analysis jobs
+* **Monitor Progress** - Real-time job status and progress tracking
+* **View Results** - Access gap analysis, proof scorecards, and cost summaries
+* **Download Reports** - Export results as ZIP archives
+
+### Authentication
+API endpoints require an API key passed via the `X-API-KEY` header.
+
+**Example:**
+```bash
+curl -H "X-API-KEY: your-api-key" http://localhost:5001/api/jobs
+```
+
+### Base URL
+- Development: `http://localhost:5001`
+- Production: Configure via environment variables
+
+### WebSocket Support
+Real-time updates available via WebSocket endpoints at `/ws/jobs` and `/ws/jobs/{job_id}/progress`
+    """,
+    version="2.0.0",
+    contact={
+        "name": "Literature Review Team",
+        "email": "support@example.com",
+    },
+    license_info={
+        "name": "MIT",
+    },
+    docs_url="/api/docs",
+    redoc_url="/api/redoc",
+    openapi_url="/api/openapi.json"
 )
 
 # Base paths
@@ -110,9 +144,13 @@ async def startup_event():
     
     print("Dashboard started with background job runner")
 
-# Pydantic models
+# Pydantic models with enhanced documentation
 class JobStatus(BaseModel):
-    """Job status information"""
+    """
+    Job status information
+    
+    Represents the current state of a literature review job.
+    """
     id: str
     status: str  # queued, running, completed, failed
     filename: str
@@ -121,25 +159,142 @@ class JobStatus(BaseModel):
     completed_at: Optional[str] = None
     error: Optional[str] = None
     progress: Optional[Dict] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": "550e8400-e29b-41d4-a716-446655440000",
+                "status": "completed",
+                "filename": "research_paper.pdf",
+                "created_at": "2024-11-17T12:00:00Z",
+                "started_at": "2024-11-17T12:01:00Z",
+                "completed_at": "2024-11-17T13:00:00Z",
+                "error": None,
+                "progress": {"percentage": 100, "stage": "complete"}
+            }
+        }
 
 class RetryRequest(BaseModel):
-    """Request to retry a job"""
+    """
+    Request to retry a failed job
+    
+    Args:
+        force: Force retry even if job is not in failed state
+    """
     force: bool = False
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "force": False
+            }
+        }
 
 class JobConfig(BaseModel):
-    """Job configuration parameters"""
+    """
+    Job configuration parameters
+    
+    Defines how the literature review analysis should be performed.
+    
+    Args:
+        pillar_selections: List of analysis pillars to include (use ["ALL"] for all pillars)
+        run_mode: Execution mode - "ONCE" for single pass, "DEEP_LOOP" for iterative analysis
+        convergence_threshold: Threshold percentage for convergence in DEEP_LOOP mode (default: 5.0)
+    """
     pillar_selections: List[str]
     run_mode: str  # "ONCE" or "DEEP_LOOP"
-    convergence_threshold: float = 5.0  # Default convergence threshold
+    convergence_threshold: float = 5.0
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "pillar_selections": ["ALL"],
+                "run_mode": "ONCE",
+                "convergence_threshold": 5.0
+            }
+        }
 
 class PromptResponse(BaseModel):
-    """User response to a prompt"""
+    """
+    User response to an interactive prompt
+    
+    Args:
+        response: The user's response value (type varies by prompt)
+    """
     response: Any
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "response": "yes"
+            }
+        }
 
 class UploadConfirmRequest(BaseModel):
-    """Request to confirm upload after duplicate detection"""
+    """
+    Request to confirm upload after duplicate detection
+    
+    Args:
+        action: Action to take - "skip_duplicates" to exclude duplicates, "overwrite_all" to include all
+        job_id: Job identifier returned from batch upload
+    """
     action: str  # "skip_duplicates" or "overwrite_all"
     job_id: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "action": "skip_duplicates",
+                "job_id": "550e8400-e29b-41d4-a716-446655440000"
+            }
+        }
+
+class UploadResponse(BaseModel):
+    """Response from file upload"""
+    job_id: str
+    status: str
+    filename: Optional[str] = None
+    file_count: Optional[int] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "job_id": "550e8400-e29b-41d4-a716-446655440000",
+                "status": "queued",
+                "filename": "research_paper.pdf"
+            }
+        }
+
+class JobListResponse(BaseModel):
+    """Response containing list of jobs"""
+    jobs: List[Dict]
+    count: int
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "jobs": [
+                    {
+                        "id": "550e8400-e29b-41d4-a716-446655440000",
+                        "status": "completed",
+                        "filename": "paper.pdf",
+                        "created_at": "2024-11-17T12:00:00Z"
+                    }
+                ],
+                "count": 1
+            }
+        }
+
+class ErrorResponse(BaseModel):
+    """Standard error response"""
+    detail: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detail": "Job not found"
+            }
+        }
 
 # Helper functions
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
@@ -362,16 +517,60 @@ async def root():
         return template_file.read_text()
     return "<h1>Literature Review Dashboard</h1><p>Template not found. Please check installation.</p>"
 
-@app.post("/api/upload")
+@app.post(
+    "/api/upload",
+    response_model=UploadResponse,
+    tags=["Papers"],
+    summary="Upload a PDF file",
+    responses={
+        200: {
+            "description": "PDF uploaded successfully and job created",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "job_id": "550e8400-e29b-41d4-a716-446655440000",
+                        "status": "queued",
+                        "filename": "research_paper.pdf"
+                    }
+                }
+            }
+        },
+        400: {
+            "description": "Invalid file type (not PDF)",
+            "model": ErrorResponse
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        500: {
+            "description": "Server error during file upload",
+            "model": ErrorResponse
+        }
+    }
+)
 async def upload_file(
-    file: UploadFile = File(...),
-    api_key: str = Header(None, alias="X-API-KEY")
+    file: UploadFile = File(..., description="PDF file to upload"),
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Upload a PDF file and create a new job
+    Upload a single PDF file and create a new analysis job.
     
-    Returns:
-        Job ID and status
+    This endpoint:
+    1. Validates the uploaded file is a PDF
+    2. Creates a unique job ID
+    3. Saves the file to the uploads directory
+    4. Queues the job for processing
+    5. Broadcasts the update to WebSocket clients
+    
+    **Requirements:**
+    - File must be in PDF format
+    - Valid API key required in X-API-KEY header
+    
+    **Returns:**
+    - job_id: Unique identifier for tracking the job
+    - status: Initial status (always "queued")
+    - filename: Original filename of uploaded PDF
     """
     verify_api_key(api_key)
     
@@ -613,15 +812,41 @@ async def confirm_upload(
             detail=f"Invalid action: {action}. Must be 'skip_duplicates' or 'overwrite_all'"
         )
 
-@app.get("/api/jobs")
+@app.get(
+    "/api/jobs",
+    response_model=JobListResponse,
+    tags=["Jobs"],
+    summary="List all jobs",
+    responses={
+        200: {
+            "description": "List of all jobs with summary metrics",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        }
+    }
+)
 async def list_jobs(
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    List all jobs with summary metrics
+    List all jobs with summary metrics.
     
-    Returns:
-        List of all jobs with their current status and summary metrics
+    Returns all jobs sorted by creation time (newest first) with:
+    - Basic job information (ID, status, timestamps)
+    - Summary metrics (completeness, critical gaps, paper count)
+    - Progress indicators
+    
+    **Response includes:**
+    - jobs: Array of job objects with full details
+    - count: Total number of jobs
+    
+    **Summary metrics for each job:**
+    - completeness: Overall analysis completeness percentage (0-100)
+    - critical_gaps: Number of critical gaps identified
+    - paper_count: Number of papers in the analysis
+    - recommendations_preview: First 2 recommendations
     """
     verify_api_key(api_key)
     
@@ -644,19 +869,43 @@ async def list_jobs(
     
     return {"jobs": jobs, "count": len(jobs)}
 
-@app.get("/api/jobs/{job_id}")
+@app.get(
+    "/api/jobs/{job_id}",
+    tags=["Jobs"],
+    summary="Get job details",
+    responses={
+        200: {
+            "description": "Job details including status and progress",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Job not found",
+            "model": ErrorResponse
+        }
+    }
+)
 async def get_job(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Get details for a specific job
+    Get detailed information for a specific job.
     
-    Args:
-        job_id: Job identifier
+    Retrieves comprehensive job information including:
+    - Job configuration (pillar selections, run mode)
+    - Current status and progress
+    - Timestamps (created, started, completed)
+    - Error information (if failed)
+    - Latest status updates
     
-    Returns:
-        Job details including status and progress
+    **Path Parameters:**
+    - job_id: Unique job identifier (UUID format)
+    
+    **Returns:**
+    Complete job object with all metadata and status information
     """
     verify_api_key(api_key)
     
@@ -746,19 +995,58 @@ async def configure_job(
     
     return {"job_id": job_id, "config": config.dict()}
 
-@app.post("/api/jobs/{job_id}/start")
+@app.post(
+    "/api/jobs/{job_id}/start",
+    tags=["Jobs"],
+    summary="Start a configured job",
+    responses={
+        200: {
+            "description": "Job started successfully",
+        },
+        400: {
+            "description": "Job cannot be started (invalid status or missing configuration)",
+            "model": ErrorResponse
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Job not found",
+            "model": ErrorResponse
+        },
+        500: {
+            "description": "Failed to build research database",
+            "model": ErrorResponse
+        }
+    }
+)
 async def start_job(
     job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY")
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
-    Start execution of a configured job
+    Start execution of a configured job.
     
-    Args:
-        job_id: Job identifier
+    This endpoint:
+    1. Validates job exists and is in 'draft' or 'failed' status
+    2. Verifies job configuration is complete
+    3. Builds research database from uploaded PDFs
+    4. Queues job for processing
+    5. Broadcasts update to WebSocket clients
     
-    Returns:
-        Confirmation with job status
+    **Prerequisites:**
+    - Job must be in 'draft' or 'failed' status
+    - Job configuration must be set (via /api/jobs/{job_id}/configure)
+    - At least one PDF file must be uploaded for the job
+    
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Returns:**
+    - job_id: Job identifier
+    - status: New status (always "queued")
+    - message: Confirmation message
     """
     verify_api_key(api_key)
     
