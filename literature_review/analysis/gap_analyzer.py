@@ -10,7 +10,20 @@ logger = logging.getLogger(__name__)
 
 
 class GapAnalyzer:
-    """Analyzes gaps with optional evidence decay weighting."""
+    """
+    Analyzes gaps with optional evidence decay weighting.
+    
+    This class integrates temporal evidence freshness into gap analysis completeness
+    scoring. When enabled, it applies exponential decay weighting based on publication
+    age, penalizing requirements supported by stale evidence.
+    
+    Example:
+        >>> config = {'evidence_decay': {'weight_in_gap_analysis': True, 'decay_weight': 0.7}}
+        >>> analyzer = GapAnalyzer(config=config)
+        >>> papers = [{'filename': 'old.pdf', 'year': 2015, 'estimated_contribution_percent': 80}]
+        >>> final_score, metadata = analyzer.apply_decay_weighting(80.0, papers)
+        >>> print(f"Raw: {metadata['raw_score']}, Final: {metadata['final_score']}")
+    """
     
     def __init__(self, config: Optional[Dict] = None):
         """
