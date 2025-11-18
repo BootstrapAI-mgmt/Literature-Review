@@ -1274,7 +1274,17 @@ async def get_user_analysis_target_async(
             }
         )
     
-    # Parse response (same logic for both modes)
+    # Parse response - handle both string and list responses
+    if isinstance(choice, list):
+        # Multi-select: ["P1: Pillar 1", "P3: Pillar 3", "P5: Pillar 5"]
+        # Validate that all selected pillars exist
+        valid_selections = [p for p in choice if p in analyzable_pillars]
+        if not valid_selections:
+            safe_print("Invalid pillar selection. Exiting.")
+            return [], "EXIT"
+        return valid_selections, "ONCE"
+    
+    # String responses (special options or single pillar)
     if not choice or choice == "NONE":
         return [], "EXIT"
     if choice == "ALL":
@@ -1870,6 +1880,42 @@ def main(config: Optional[OrchestratorConfig] = None):
             run_initial_judge = True
         
         logger.info(f"Running in programmatic mode: job_id={config.job_id}, mode={run_mode}, pillars={analysis_target_pillars}")
+    elif config is not None and not config.skip_user_prompts and config.prompt_callback:
+        # Dashboard mode with prompts enabled
+        analysis_target_pillars = config.analysis_target
+        
+        # Prompt for run_mode if not set in config
+        if not config.run_mode or config.run_mode == "":
+            import asyncio
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            try:
+                run_mode_str = loop.run_until_complete(
+                    config.prompt_callback(
+                        prompt_type="run_mode",
+                        prompt_data={
+                            "message": "Select analysis mode",
+                            "options": ["ONCE", "DEEP_LOOP"],
+                            "default": "ONCE"
+                        }
+                    )
+                )
+                run_mode = run_mode_str.upper()
+                logger.info(f"User selected run_mode: {run_mode}")
+            finally:
+                loop.close()
+        else:
+            run_mode = config.run_mode
+        
+        # Log via callback if available
+        if config.log_callback:
+            config.log_callback(f"Starting job {config.job_id} with mode {run_mode}")
+        
+        # For dashboard mode, run initial judge if there's new data
+        if has_new_data:
+            run_initial_judge = True
+        
+        logger.info(f"Running in dashboard mode with prompts: job_id={config.job_id}, mode={run_mode}, pillars={analysis_target_pillars}")
     elif has_new_data:
         safe_print("📬 New data detected in CSV or JSON. Running Judge to validate claims before analysis.")
         run_initial_judge = True
@@ -2023,6 +2069,40 @@ def main(config: Optional[OrchestratorConfig] = None):
             break
 
         if needs_new_loop:
+            # Ask user if they want to continue (if prompt callback is available)
+            should_continue = True
+            if config and config.prompt_callback and not config.skip_user_prompts:
+                import asyncio
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                try:
+                    # Count gaps to show user
+                    gap_count = len(directions) if isinstance(directions, dict) else 0
+                    
+                    continue_response = loop.run_until_complete(
+                        config.prompt_callback(
+                            prompt_type="continue",
+                            prompt_data={
+                                "message": f"Iteration {iteration_count} complete. Continue deep review loop?",
+                                "iteration": iteration_count,
+                                "gap_count": gap_count,
+                                "options": ["yes", "no"],
+                                "default": "yes",
+                                "details": f"Found {gap_count} gaps to address. Continue with deep review?"
+                            }
+                        )
+                    )
+                    should_continue = continue_response.lower() in ["yes", "y", "true"]
+                    logger.info(f"User continue decision: {continue_response} -> {should_continue}")
+                finally:
+                    loop.close()
+            
+            if not should_continue:
+                safe_print("\n⏸️ User chose to stop deep loop")
+                logger.info("Deep loop stopped by user choice")
+                progress_tracker.emit("gap_analysis", "complete", "Deep loop stopped by user")
+                break
+            
             safe_print("\nConvergence not met. Running new Deep Review loop...")
             write_deep_review_directions(DEEP_REVIEW_DIRECTIONS_FILE, directions)
 

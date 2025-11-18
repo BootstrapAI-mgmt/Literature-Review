@@ -178,6 +178,87 @@ def save_job(job_id: str, job_data: dict):
     with open(job_file, 'w') as f:
         json.dump(job_data, f, indent=2)
 
+def extract_completeness(job_data: dict) -> float:
+    """Extract overall completeness percentage from job results"""
+    try:
+        # Try to load gap_analysis_report.json from job outputs
+        job_id = job_data.get("id")
+        if not job_id:
+            return 0.0
+        
+        report_file = JOBS_DIR / job_id / "outputs" / "gap_analysis_output" / "gap_analysis_report.json"
+        if not report_file.exists():
+            return 0.0
+        
+        with open(report_file, 'r') as f:
+            report = json.load(f)
+        
+        # Calculate average completeness across all pillars
+        total_completeness = 0.0
+        pillar_count = 0
+        
+        for pillar_name, pillar_data in report.items():
+            if isinstance(pillar_data, dict) and "completeness" in pillar_data:
+                total_completeness += pillar_data["completeness"]
+                pillar_count += 1
+        
+        return total_completeness / pillar_count if pillar_count > 0 else 0.0
+    except Exception:
+        return 0.0
+
+def extract_papers(job_data: dict) -> list:
+    """Extract list of papers from job data"""
+    try:
+        # Get papers from uploaded files
+        files = job_data.get("files", [])
+        if files:
+            return [f.get("original_name", f.get("filename", "")) for f in files]
+        
+        # Single file upload
+        filename = job_data.get("filename", "")
+        if filename:
+            return [filename]
+        
+        return []
+    except Exception:
+        return []
+
+def extract_gaps(job_data: dict) -> list:
+    """Extract list of gaps from job results"""
+    try:
+        job_id = job_data.get("id")
+        if not job_id:
+            return []
+        
+        report_file = JOBS_DIR / job_id / "outputs" / "gap_analysis_output" / "gap_analysis_report.json"
+        if not report_file.exists():
+            return []
+        
+        with open(report_file, 'r') as f:
+            report = json.load(f)
+        
+        gaps = []
+        for pillar_name, pillar_data in report.items():
+            if isinstance(pillar_data, dict) and "analysis" in pillar_data:
+                for req_name, req_data in pillar_data["analysis"].items():
+                    if isinstance(req_data, dict):
+                        for sub_req_name, sub_req_data in req_data.items():
+                            if isinstance(sub_req_data, dict):
+                                completeness = sub_req_data.get("completeness_percent", 0)
+                                # Consider anything below 100% as a gap
+                                if completeness < 100:
+                                    gaps.append({
+                                        "pillar": pillar_name,
+                                        "requirement": req_name,
+                                        "sub_requirement": sub_req_name,
+                                        "completeness": completeness,
+                                        "gap_analysis": sub_req_data.get("gap_analysis", "")
+                                    })
+        
+        return gaps
+    except Exception:
+        return []
+
 def extract_summary_metrics(job_data: dict) -> dict:
     """
     Extract key metrics for summary card display
