@@ -290,6 +290,49 @@ The pipeline automatically retries transient failures:
 - Attempt 2: Fails with "Rate limit" → Wait 4s, retry
 - Attempt 3: Succeeds → Continue to next stage
 
+## Output Files
+
+The pipeline generates analysis results in the following directories:
+
+```
+gap_analysis_output/          # Research gap analysis results (CLI)
+proof_scorecard_output/       # Proof scorecard outputs (CLI)
+workspace/                    # Dashboard job data and results
+```
+
+**Note:** These directories are gitignored as they contain generated artifacts. Run the pipeline to regenerate outputs locally.
+
+**Complete Output Reference:**
+- **[docs/OUTPUT_FILE_REFERENCE.md](docs/OUTPUT_FILE_REFERENCE.md)** - Comprehensive list of all output files (CLI & Dashboard)
+- **[docs/OUTPUT_MANAGEMENT_STRATEGY.md](docs/OUTPUT_MANAGEMENT_STRATEGY.md)** - Git policy and rationale
+- **[docs/DASHBOARD_CLI_PARITY.md](docs/DASHBOARD_CLI_PARITY.md)** - Feature comparison
+
+**Typical Output Structure:**
+```
+gap_analysis_output/
+├── gap_analysis_report.json              # Master analysis report
+├── executive_summary.md                  # Human-readable summary
+├── waterfall_Pillar_1-7.html             # Pillar visualizations (7 files)
+├── _OVERALL_Research_Gap_Radar.html      # Overall radar chart
+├── _Paper_Network.html                   # Paper network graph
+├── _Research_Trends.html                 # Trend analysis
+├── proof_chain.html/json                 # Evidence proof chains
+├── sufficiency_matrix.html/json          # Evidence sufficiency
+├── triangulation.html/json               # Multi-source verification
+└── suggested_searches.json/md            # Research recommendations
+```
+
+**Regenerate Outputs:**
+```bash
+# CLI
+python pipeline_orchestrator.py path/to/paper.pdf
+
+# Dashboard
+# Use "Re-run Analysis" button or "Import Existing Results" feature
+```
+
+See [docs/OUTPUT_FILE_REFERENCE.md](docs/OUTPUT_FILE_REFERENCE.md) for complete file descriptions, sizes, and formats.
+
 ## Testing
 
 Run the test suite:

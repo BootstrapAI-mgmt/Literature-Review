@@ -88,3 +88,11 @@ cost_reports/
 workspace/
 orchestrator_state_backup_*.json
 test_output/
+
+# Analysis outputs (generated artifacts - not tracked)
+# Run pipeline to regenerate locally
+# See docs/OUTPUT_MANAGEMENT_STRATEGY.md for details
+gap_analysis_output/
+proof_scorecard_output/
+outputs/
+*_output/
