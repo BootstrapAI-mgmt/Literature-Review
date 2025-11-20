@@ -10,6 +10,15 @@ import os
 import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
+import sys
+
+# Create a mock orchestrator module to avoid import errors
+mock_orchestrator = MagicMock()
+mock_orchestrator.main = Mock(return_value=None)
+mock_orchestrator.OUTPUT_FOLDER = "gap_analysis_output"
+mock_orchestrator.OrchestratorConfig = Mock
+sys.modules['literature_review.orchestrator'] = mock_orchestrator
+
 from pipeline_orchestrator import PipelineOrchestrator
 
 
