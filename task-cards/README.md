@@ -82,9 +82,34 @@ This folder contains all implementation task cards organized by category and wav
 
 ---
 
+### `/incremental-review/` - Incremental Review & CLI/Dashboard Parity (16 cards) ⭐ NEW
+**Incremental review logic and dashboard/CLI feature parity improvements**
+
+**Files:**
+- **[README.md](incremental-review/README.md)** - Task card index and progress tracking
+- **[INCR-W1-1-Gap-Extraction-Engine.md](incremental-review/INCR-W1-1-Gap-Extraction-Engine.md)** - Gap extraction engine (6-8h) - 🟢 Ready
+- 15 additional task cards (pending specification)
+
+**Master Plan:**
+- **[INCREMENTAL_REVIEW_WAVE_PLAN.md](INCREMENTAL_REVIEW_WAVE_PLAN.md)** - Complete wave implementation roadmap
+
+**Waves:** 4 waves (Foundation → Integration → UX → Advanced)  
+**Effort:** 85-110 hours (10-14 developer-days)  
+**Status:** 1/16 Complete (6% specified)  
+**Priority:** 🔴 Critical for production readiness
+
+**Wave Breakdown:**
+- **Wave 1 (Foundation):** 6 tasks, 28-36 hours
+- **Wave 2 (Integration):** 5 tasks, 32-42 hours
+- **Wave 3 (UX):** 3 tasks, 14-18 hours
+- **Wave 4 (Advanced):** 2 tasks, 11-14 hours (optional)
+
+---
+
 ## 📄 Root Task Card Files
 
 - **`INDIVIDUAL_TASK_CARDS_SUMMARY.md`** - Summary of all individual integration task cards with implementation guide
+- **`INCREMENTAL_REVIEW_WAVE_PLAN.md`** ⭐ NEW - Master wave plan for incremental review implementation
 
 ---
 
@@ -97,7 +122,8 @@ This folder contains all implementation task cards organized by category and wav
 | Integration | 5 | 0 | 0 | 5 | 0% |
 | E2E | 2 | 0 | 0 | 2 | 0% |
 | Evidence Enhancement | 8 | 0 | 0 | 8 | 0% |
-| **TOTAL** | **23** | **2** | **0** | **21** | **9%** |
+| **Incremental Review** ⭐ | **16** | **0** | **0** | **1** | **6%** |
+| **TOTAL** | **39** | **2** | **0** | **22** | **6%** |
 
 ---
 
