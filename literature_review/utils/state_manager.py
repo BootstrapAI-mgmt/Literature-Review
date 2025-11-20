@@ -130,7 +130,7 @@ class StateManager:
     Manages orchestrator state with atomic operations and validation.
     
     Features:
-    - Schema versioning (v1 → v2 migration)
+    - Schema versioning (v1 -> v2 migration)
     - Atomic read/write with file locking
     - Validation and error recovery
     - Gap metrics tracking
@@ -323,7 +323,7 @@ class StateManager:
     
     def _migrate_v1_to_v2(self, v1_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Migrate schema v1 → v2.
+        Migrate schema v1 -> v2.
         
         Handles both old orchestrator state formats:
         1. Simple format with timestamp, database_hash, etc.
@@ -446,11 +446,11 @@ class StateManager:
                 }
             }
         
-        print(f"✅ Migrated state from v1.0 → v2.0 ({'nested' if is_nested else 'simple'} format)")
+        print(f"✅ Migrated state from v1.0 -> v2.0 ({'nested' if is_nested else 'simple'} format)")
         return v2_data
     
     def _serialize_state(self, state: OrchestratorState) -> Dict[str, Any]:
-        """Convert OrchestratorState → JSON dict."""
+        """Convert OrchestratorState -> JSON dict."""
         data = asdict(state)
         
         # Convert enums
@@ -464,7 +464,7 @@ class StateManager:
         return data
     
     def _deserialize_state(self, data: Dict[str, Any]) -> OrchestratorState:
-        """Convert JSON dict → OrchestratorState."""
+        """Convert JSON dict -> OrchestratorState."""
         # Parse gap details
         gap_details = [
             GapDetail(**gap_dict)
