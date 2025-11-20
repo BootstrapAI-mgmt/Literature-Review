@@ -177,7 +177,9 @@ class TestIncrementalMode:
         
         result = orch._check_incremental_prerequisites()
         assert result == True
-        assert orch.parent_job_id == "old_job_123"
+        # When migrating v1 -> v2, a new job ID is created that starts with "migrated_"
+        assert orch.parent_job_id is not None
+        assert orch.parent_job_id.startswith("migrated_")
     
     def test_force_overrides_incremental(self):
         """Test that --force flag disables incremental mode."""
@@ -253,6 +255,12 @@ class TestIncrementalMode:
                 'remaining': 50.0,
                 'percent_used': 0.0
             }
+            orch.cost_tracker.generate_report.return_value = {
+                'session_summary': {'total_cost': 0.0, 'total_calls': 0},
+                'total_summary': {'total_cost': 0.0, 'total_calls': 0},
+                'budget_status': {'remaining': 50.0},
+                'recommendations': []
+            }
             
             orch.run()
             
@@ -282,6 +290,12 @@ class TestIncrementalMode:
                 'budget': 50.0,
                 'remaining': 50.0,
                 'percent_used': 0.0
+            }
+            orch.cost_tracker.generate_report.return_value = {
+                'session_summary': {'total_cost': 0.0, 'total_calls': 0},
+                'total_summary': {'total_cost': 0.0, 'total_calls': 0},
+                'budget_status': {'remaining': 50.0},
+                'recommendations': []
             }
             
             # Mock incremental analyzer to return no changes
