@@ -40,17 +40,28 @@ def temp_workspace():
 @pytest.fixture
 def test_client(temp_workspace, monkeypatch):
     """Create a test client with temporary workspace"""
-    # Import app after monkeypatching paths
-    monkeypatch.setattr("webdashboard.app.WORKSPACE_DIR", temp_workspace)
-    monkeypatch.setattr("webdashboard.app.UPLOADS_DIR", temp_workspace / "uploads")
-    monkeypatch.setattr("webdashboard.app.JOBS_DIR", temp_workspace / "jobs")
-    monkeypatch.setattr("webdashboard.app.STATUS_DIR", temp_workspace / "status")
-    monkeypatch.setattr("webdashboard.app.LOGS_DIR", temp_workspace / "logs")
+    # Patch paths BEFORE importing app module
+    import sys
+    # Remove app module if already imported
+    if 'webdashboard.app' in sys.modules:
+        del sys.modules['webdashboard.app']
     
-    from webdashboard.app import app
+    # Patch the Path resolution at the module level
+    monkeypatch.setenv("LITERATURE_REVIEW_WORKSPACE", str(temp_workspace))
+    
+    # Now import app - directory creation will use temp_workspace
+    from webdashboard import app as app_module
+    
+    # Patch the already-created directory paths
+    app_module.WORKSPACE_DIR = temp_workspace
+    app_module.UPLOADS_DIR = temp_workspace / "uploads"
+    app_module.JOBS_DIR = temp_workspace / "jobs"
+    app_module.STATUS_DIR = temp_workspace / "status"
+    app_module.LOGS_DIR = temp_workspace / "logs"
+    app_module.BASE_DIR = temp_workspace.parent
     
     # Use raise_server_exceptions=False to allow async handling
-    return TestClient(app, raise_server_exceptions=False)
+    return TestClient(app_module.app, raise_server_exceptions=False)
 
 
 @pytest.fixture

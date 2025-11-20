@@ -86,16 +86,24 @@ def completed_job(temp_workspace):
 @pytest.fixture
 def test_client(temp_workspace, monkeypatch):
     """Create a test client with mocked workspace directories."""
-    # Monkeypatch the workspace directories in app.py
-    monkeypatch.setattr('webdashboard.app.WORKSPACE_DIR', temp_workspace)
-    monkeypatch.setattr('webdashboard.app.JOBS_DIR', temp_workspace / "jobs")
-    monkeypatch.setattr('webdashboard.app.UPLOADS_DIR', temp_workspace / "uploads")
-    monkeypatch.setattr('webdashboard.app.STATUS_DIR', temp_workspace / "status")
-    monkeypatch.setattr('webdashboard.app.LOGS_DIR', temp_workspace / "logs")
+    # Remove app module if already imported to ensure clean state
+    import sys
+    if 'webdashboard.app' in sys.modules:
+        del sys.modules['webdashboard.app']
     
-    from webdashboard.app import app
+    # Import and patch the app module
+    from webdashboard import app as app_module
+    
+    # Patch all directory paths including BASE_DIR
+    app_module.WORKSPACE_DIR = temp_workspace
+    app_module.JOBS_DIR = temp_workspace / "jobs"
+    app_module.UPLOADS_DIR = temp_workspace / "uploads"
+    app_module.STATUS_DIR = temp_workspace / "status"
+    app_module.LOGS_DIR = temp_workspace / "logs"
+    app_module.BASE_DIR = temp_workspace.parent
+    
     # Use raise_server_exceptions=False to allow async handling
-    return TestClient(app, raise_server_exceptions=False)
+    return TestClient(app_module.app, raise_server_exceptions=False)
 
 
 @pytest.mark.integration
