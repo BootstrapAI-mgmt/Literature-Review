@@ -28,6 +28,11 @@
       }
     }
   },
+  "prefilter": {
+    "enabled": true,
+    "threshold": 0.50,
+    "mode": "auto"
+  },
   "v2_features": {
     "max_workers": 4,
     "enable_parallel": false,
