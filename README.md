@@ -186,6 +186,8 @@ The pipeline automatically retries transient failures like network timeouts and 
 
 ## Requirements
 
+**Python Version:** 3.12+
+
 **Pipeline:**
 ```bash
 pip install -r requirements-dev.txt
