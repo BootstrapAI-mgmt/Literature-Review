@@ -8,7 +8,6 @@ from typing import Dict, List, Tuple, Optional, Set
 from dataclasses import dataclass
 import re
 import logging
-from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +34,7 @@ class RelevanceScore:
 
 class RelevanceAssessor:
     """Assesses whether papers are relevant to closing research gaps."""
-    
+
     def __init__(
         self,
         relevance_threshold: float = 0.3,
@@ -44,7 +43,7 @@ class RelevanceAssessor:
     ):
         """
         Initialize relevance assessor.
-        
+
         Args:
             relevance_threshold: Minimum score to consider paper relevant (0.0-1.0)
             use_semantic: Enable semantic similarity scoring (requires sentence-transformers)
@@ -52,7 +51,7 @@ class RelevanceAssessor:
         """
         self.relevance_threshold = relevance_threshold
         self.use_semantic = use_semantic and SEMANTIC_AVAILABLE
-        
+
         # Load semantic model if enabled
         self.semantic_model = None
         if self.use_semantic:
@@ -62,11 +61,11 @@ class RelevanceAssessor:
             except Exception as e:
                 logger.warning(f"Failed to load semantic model: {e}. Falling back to keyword-only.")
                 self.use_semantic = False
-        
+
         # Weights for hybrid scoring
         self.keyword_weight = 0.7
         self.semantic_weight = 0.3
-    
+
     def assess_gap_closing_potential(
         self,
         paper_text: str,
@@ -75,15 +74,15 @@ class RelevanceAssessor:
     ) -> RelevanceScore:
         """
         Assess if paper is relevant to closing a specific gap.
-        
+
         Args:
             paper_text: Paper title + abstract (or full text)
             gap_text: Gap requirement text
             gap_id: Optional gap identifier for logging
-        
+
         Returns:
             RelevanceScore with is_relevant flag and confidence
-        
+
         Example:
             >>> assessor = RelevanceAssessor()
             >>> paper_text = "Spike-timing dependent plasticity in spiking neural networks"
@@ -96,12 +95,12 @@ class RelevanceAssessor:
         """
         # Keyword-based scoring
         keyword_score = self._keyword_overlap_score(paper_text, gap_text)
-        
+
         # Semantic scoring (if enabled)
         semantic_score = 0.0
         if self.use_semantic and self.semantic_model:
             semantic_score = self._semantic_similarity_score(paper_text, gap_text)
-        
+
         # Combine scores
         if self.use_semantic:
             combined_score = (
@@ -112,12 +111,12 @@ class RelevanceAssessor:
         else:
             combined_score = keyword_score
             method = "keyword"
-        
+
         # Determine relevance
         is_relevant = combined_score >= self.relevance_threshold
-        
+
         matched_reqs = [gap_id] if is_relevant and gap_id else []
-        
+
         return RelevanceScore(
             is_relevant=is_relevant,
             matched_requirements=matched_reqs,
@@ -126,7 +125,7 @@ class RelevanceAssessor:
             semantic_score=semantic_score,
             method_used=method
         )
-    
+
     def assess_paper_to_gaps(
         self,
         paper_text: str,
@@ -134,14 +133,14 @@ class RelevanceAssessor:
     ) -> Tuple[bool, List[str], float]:
         """
         Assess paper relevance against multiple gaps.
-        
+
         Args:
             paper_text: Paper title + abstract
             gaps: List of gap dictionaries with 'gap_id' and 'requirement_text'
-        
+
         Returns:
             (is_relevant, matched_gap_ids, avg_confidence)
-        
+
         Example:
             >>> gaps = [
             ...     {'gap_id': 'REQ-001-SUB-001', 'requirement_text': 'STDP learning'},
@@ -151,96 +150,95 @@ class RelevanceAssessor:
         """
         matched_gaps = []
         confidences = []
-        
+
         for gap in gaps:
             gap_id = gap.get('gap_id', 'unknown')
             gap_text = gap.get('requirement_text', '')
-            
+
             score = self.assess_gap_closing_potential(paper_text, gap_text, gap_id)
-            
+
             if score.is_relevant:
                 matched_gaps.append(gap_id)
                 confidences.append(score.confidence)
-        
+
         if matched_gaps:
             avg_confidence = sum(confidences) / len(confidences)
             return (True, matched_gaps, avg_confidence)
         else:
             return (False, [], 0.0)
-    
+
     def _keyword_overlap_score(self, paper_text: str, gap_text: str) -> float:
         """
         Calculate keyword overlap score.
-        
+
         Score = |intersection| / |gap_keywords|
-        
+
         Args:
             paper_text: Paper text (title + abstract)
             gap_text: Gap requirement text
-        
+
         Returns:
             Overlap score (0.0-1.0)
         """
         # Normalize and tokenize
         paper_keywords = self._extract_keywords(paper_text)
         gap_keywords = self._extract_keywords(gap_text)
-        
+
         if not gap_keywords:
             return 0.0
-        
+
         # Calculate overlap
         intersection = paper_keywords & gap_keywords
         overlap_score = len(intersection) / len(gap_keywords)
-        
+
         return min(overlap_score, 1.0)  # Cap at 1.0
-    
+
     def _semantic_similarity_score(self, paper_text: str, gap_text: str) -> float:
         """
         Calculate semantic similarity using sentence embeddings.
-        
+
         Args:
             paper_text: Paper text
             gap_text: Gap text
-        
+
         Returns:
             Cosine similarity score (0.0-1.0)
         """
         if not self.semantic_model:
             return 0.0
-        
+
         try:
             # Generate embeddings
             paper_embedding = self.semantic_model.encode(paper_text, convert_to_tensor=False)
             gap_embedding = self.semantic_model.encode(gap_text, convert_to_tensor=False)
-            
+
             # Cosine similarity
-            import numpy as np
             similarity = np.dot(paper_embedding, gap_embedding) / (
                 np.linalg.norm(paper_embedding) * np.linalg.norm(gap_embedding)
             )
-            
+
             # Normalize to 0-1 (cosine can be -1 to 1)
             normalized = (similarity + 1) / 2
-            
+
             return float(normalized)
         except Exception as e:
             logger.error(f"Semantic similarity failed: {e}")
             return 0.0
-    
+
     def _extract_keywords(self, text: str) -> Set[str]:
         """
         Extract keywords from text (lowercase, alphanumeric, length > 2).
-        
+
         Args:
             text: Input text
-        
+
         Returns:
             Set of keywords
         """
         # Lowercase and remove non-alphanumeric
         text = text.lower()
         words = re.findall(r'\b\w+\b', text)
-        
+
         # Filter short words and common stopwords
         stopwords = {
             'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for',
@@ -249,14 +247,14 @@ class RelevanceAssessor:
             'would', 'should', 'could', 'may', 'might', 'must', 'can', 'this',
             'that', 'these', 'those', 'it', 'its', 'we', 'our', 'you', 'your'
         }
-        
+
         keywords = {
             word for word in words
             if len(word) > 2 and word not in stopwords
         }
-        
+
         return keywords
-    
+
     def batch_assess(
         self,
         papers: List[Dict],
@@ -264,14 +262,14 @@ class RelevanceAssessor:
     ) -> List[Dict]:
         """
         Assess multiple papers against multiple gaps (batch processing).
-        
+
         Args:
             papers: List of paper dicts with 'filename', 'title', 'abstract'
             gaps: List of gap dicts with 'gap_id', 'requirement_text'
-        
+
         Returns:
             List of assessment results
-        
+
         Example:
             >>> papers = [
             ...     {'filename': 'paper1.pdf', 'title': 'STDP in SNNs', 'abstract': '...'},
@@ -281,14 +279,14 @@ class RelevanceAssessor:
             >>> relevant_papers = [r for r in results if r['is_relevant']]
         """
         results = []
-        
+
         for paper in papers:
             paper_text = f"{paper.get('title', '')} {paper.get('abstract', '')}"
-            
+
             is_relevant, matched_gaps, confidence = self.assess_paper_to_gaps(
                 paper_text, gaps
             )
-            
+
             results.append({
                 'filename': paper.get('filename', 'unknown'),
                 'is_relevant': is_relevant,
@@ -296,7 +294,7 @@ class RelevanceAssessor:
                 'confidence': confidence,
                 'gap_count': len(matched_gaps)
             })
-        
+
         return results
 
 
@@ -309,13 +307,13 @@ def assess_paper_relevance(
 ) -> RelevanceScore:
     """
     Convenience function for one-off relevance assessment.
-    
+
     Args:
         paper_text: Paper title + abstract
         gap_text: Gap requirement text
         threshold: Relevance threshold (default: 0.3)
         use_semantic: Enable semantic scoring (default: False)
-    
+
     Returns:
         RelevanceScore
     """
