@@ -305,6 +305,10 @@ class StateManager:
         """
         Migrate schema v1 → v2.
         
+        Handles both old orchestrator state formats:
+        1. Simple format with timestamp, database_hash, etc.
+        2. Nested format with last_run_state, previous_results, score_history
+        
         Args:
             v1_data: Old state format
         
@@ -313,50 +317,116 @@ class StateManager:
         """
         now = datetime.now().isoformat()
         
-        v2_data = {
-            'schema_version': '2.0',
-            'job_id': f"migrated_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-            'parent_job_id': None,
-            'job_type': 'full',
-            'created_at': v1_data.get('timestamp', now),
-            'updated_at': now,
-            'completed_at': v1_data.get('analysis_timestamp'),
-            'database_hash': v1_data.get('database_hash', ''),
-            'database_size': v1_data.get('database_size', 0),
-            'database_path': 'neuromorphic-research_database.csv',  # Default
-            'analysis_completed': v1_data.get('analysis_completed', False),
-            'analysis_timestamp': v1_data.get('analysis_timestamp', ''),
-            'total_papers': v1_data.get('total_papers', 0),
-            'papers_analyzed': v1_data.get('total_papers', 0),
-            'papers_skipped': 0,
-            'total_pillars': v1_data.get('total_pillars', 0),
-            'overall_coverage': v1_data.get('overall_coverage', 0.0),
-            'coverage_by_pillar': {},
-            'gap_metrics': {
-                'total_gaps': 0,
-                'total_requirements': 0,
-                'gap_threshold': 0.7,
-                'gaps_by_pillar': {},
-                'gap_details': []
-            },
-            'incremental_state': {
-                'is_continuation': False,
-                'parent_job_id': None,
-                'gap_extraction_mode': 'full',
-                'papers_added_since_parent': 0,
-                'gaps_closed_since_parent': 0,
-                'new_gaps_identified': 0
-            },
-            'execution_metrics': {
-                'duration_seconds': 0.0,
-                'api_calls': 0,
-                'api_cost_usd': 0.0,
-                'cache_hit_rate': 0.0,
-                'error_count': 0
-            }
-        }
+        # Check if this is the nested format (current orchestrator.py format)
+        is_nested = 'last_run_state' in v1_data or 'previous_results' in v1_data
         
-        print(f"✅ Migrated state from v1.0 → v2.0")
+        if is_nested:
+            # Extract from nested structure
+            last_run = v1_data.get('last_run_state', {})
+            file_states = last_run.get('file_states', {})
+            previous_results = v1_data.get('previous_results', {})
+            
+            # Calculate overall coverage from previous results
+            overall_coverage = 0.0
+            total_pillars = len(previous_results)
+            if total_pillars > 0:
+                coverage_sum = sum(p.get('completeness', 0) for p in previous_results.values())
+                overall_coverage = coverage_sum / total_pillars
+            
+            # Extract coverage by pillar
+            coverage_by_pillar = {
+                pillar_name: pillar_data.get('completeness', 0.0)
+                for pillar_name, pillar_data in previous_results.items()
+            }
+            
+            v2_data = {
+                'schema_version': '2.0',
+                'job_id': f"migrated_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                'parent_job_id': None,
+                'job_type': 'full',
+                'created_at': v1_data.get('last_run_timestamp', now),
+                'updated_at': now,
+                'completed_at': v1_data.get('last_run_timestamp'),
+                'database_hash': '',  # Not available in nested format
+                'database_size': 0,  # Not available in nested format
+                'database_path': 'neuromorphic-research_database.csv',  # Default
+                'analysis_completed': v1_data.get('last_completed_stage') == 'final',
+                'analysis_timestamp': v1_data.get('last_run_timestamp', ''),
+                'total_papers': 0,  # Not available in nested format
+                'papers_analyzed': 0,
+                'papers_skipped': 0,
+                'total_pillars': total_pillars,
+                'overall_coverage': overall_coverage,
+                'coverage_by_pillar': coverage_by_pillar,
+                'gap_metrics': {
+                    'total_gaps': 0,
+                    'total_requirements': 0,
+                    'gap_threshold': 0.7,
+                    'gaps_by_pillar': {},
+                    'gap_details': []
+                },
+                'incremental_state': {
+                    'is_continuation': False,
+                    'parent_job_id': None,
+                    'gap_extraction_mode': 'full',
+                    'papers_added_since_parent': 0,
+                    'gaps_closed_since_parent': 0,
+                    'new_gaps_identified': 0
+                },
+                'execution_metrics': {
+                    'duration_seconds': 0.0,
+                    'api_calls': 0,
+                    'api_cost_usd': 0.0,
+                    'cache_hit_rate': 0.0,
+                    'error_count': 0
+                }
+            }
+        else:
+            # Simple format
+            v2_data = {
+                'schema_version': '2.0',
+                'job_id': f"migrated_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
+                'parent_job_id': None,
+                'job_type': 'full',
+                'created_at': v1_data.get('timestamp', now),
+                'updated_at': now,
+                'completed_at': v1_data.get('analysis_timestamp'),
+                'database_hash': v1_data.get('database_hash', ''),
+                'database_size': v1_data.get('database_size', 0),
+                'database_path': 'neuromorphic-research_database.csv',  # Default
+                'analysis_completed': v1_data.get('analysis_completed', False),
+                'analysis_timestamp': v1_data.get('analysis_timestamp', ''),
+                'total_papers': v1_data.get('total_papers', 0),
+                'papers_analyzed': v1_data.get('total_papers', 0),
+                'papers_skipped': 0,
+                'total_pillars': v1_data.get('total_pillars', 0),
+                'overall_coverage': v1_data.get('overall_coverage', 0.0),
+                'coverage_by_pillar': {},
+                'gap_metrics': {
+                    'total_gaps': 0,
+                    'total_requirements': 0,
+                    'gap_threshold': 0.7,
+                    'gaps_by_pillar': {},
+                    'gap_details': []
+                },
+                'incremental_state': {
+                    'is_continuation': False,
+                    'parent_job_id': None,
+                    'gap_extraction_mode': 'full',
+                    'papers_added_since_parent': 0,
+                    'gaps_closed_since_parent': 0,
+                    'new_gaps_identified': 0
+                },
+                'execution_metrics': {
+                    'duration_seconds': 0.0,
+                    'api_calls': 0,
+                    'api_cost_usd': 0.0,
+                    'cache_hit_rate': 0.0,
+                    'error_count': 0
+                }
+            }
+        
+        print(f"✅ Migrated state from v1.0 → v2.0 ({'nested' if is_nested else 'simple'} format)")
         return v2_data
     
     def _serialize_state(self, state: OrchestratorState) -> Dict[str, Any]:

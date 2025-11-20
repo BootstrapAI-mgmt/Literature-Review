@@ -149,7 +149,7 @@ class TestStateManager:
         with tempfile.TemporaryDirectory() as tmp_dir:
             state_file = Path(tmp_dir) / "state.json"
             
-            # Create v1 state file
+            # Create v1 state file (simple format)
             v1_state = {
                 "timestamp": "2025-01-15T10:00:00",
                 "database_hash": "old_hash",
@@ -176,6 +176,50 @@ class TestStateManager:
             assert state.overall_coverage == 65.0
             assert state.job_type == JobType.FULL
             assert state.incremental_state.is_continuation == False
+    
+    def test_schema_migration_v1_nested_format(self):
+        """Test migrating old nested state format (current orchestrator.py format)."""
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            state_file = Path(tmp_dir) / "state.json"
+            
+            # Create v1 nested state file (current orchestrator format)
+            v1_nested_state = {
+                "last_run_timestamp": "2025-01-15T10:30:00",
+                "last_completed_stage": "final",
+                "last_run_state": {
+                    "file_states": {
+                        "neuromorphic-research_database.csv": 1234567890.123,
+                        "review_version_history.json": 1234567890.456
+                    }
+                },
+                "previous_results": {
+                    "Pillar 1": {"completeness": 75.0},
+                    "Pillar 2": {"completeness": 65.5},
+                    "Pillar 3": {"completeness": 80.2}
+                },
+                "score_history": {
+                    "iteration_timestamps": [],
+                    "sub_req_scores": {}
+                }
+            }
+            
+            with open(state_file, 'w') as f:
+                json.dump(v1_nested_state, f)
+            
+            # Load and migrate
+            manager = StateManager(str(state_file))
+            state = manager.load_state()
+            
+            assert state is not None
+            assert state.schema_version == "2.0"
+            assert state.analysis_completed == True  # last_completed_stage == "final"
+            assert state.total_pillars == 3
+            # Average of 75.0, 65.5, 80.2 = 73.57
+            assert abs(state.overall_coverage - 73.57) < 0.1
+            assert len(state.coverage_by_pillar) == 3
+            assert state.coverage_by_pillar["Pillar 1"] == 75.0
+            assert state.coverage_by_pillar["Pillar 2"] == 65.5
+            assert state.coverage_by_pillar["Pillar 3"] == 80.2
     
     def test_incremental_state_tracking(self):
         """Test incremental job lineage."""
