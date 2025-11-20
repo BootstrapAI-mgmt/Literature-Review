@@ -67,19 +67,22 @@ DEFINITIONS_FILE = 'pillar_definitions_enhanced.json'
 VERSION_HISTORY_FILE = 'review_version_history.json'
 
 # 2. This script's state / outputs
-OUTPUT_FOLDER = 'gap_analysis_output'
+# OUTPUT_FOLDER will be set dynamically by main() function
+# Default value here, but can be overridden by environment variable or config
+OUTPUT_FOLDER = os.getenv('LITERATURE_REVIEW_OUTPUT_DIR', 'gap_analysis_output')
 CACHE_FOLDER = 'analysis_cache'
 CACHE_FILE = os.path.join(CACHE_FOLDER, 'analysis_cache.pkl')
+# Note: These paths will be updated in main() based on dynamic OUTPUT_FOLDER
 CONTRIBUTION_REPORT_FILE = os.path.join(OUTPUT_FOLDER, 'sub_requirement_paper_contributions.md')
-ORCHESTRATOR_STATE_FILE = 'orchestrator_state.json'
+ORCHESTRATOR_STATE_FILE = os.path.join(OUTPUT_FOLDER, 'orchestrator_state.json')
 DEEP_REVIEW_DIRECTIONS_FILE = os.path.join(OUTPUT_FOLDER, 'deep_review_directions.json')
 
 # 3. External Scripts to call
 # DEEP_REVIEWER_SCRIPT = 'Deep-Reviewer.py'
 # JUDGE_SCRIPT = 'Judge.py'
 
-# Create directories
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+# Create directories (output folder created in main() with dynamic value)
+# os.makedirs(OUTPUT_FOLDER, exist_ok=True)  # Moved to main()
 os.makedirs(CACHE_FOLDER, exist_ok=True)
 
 # Analysis configuration
@@ -112,6 +115,7 @@ class OrchestratorConfig:
         progress_callback: Optional[callable] = None,
         log_callback: Optional[callable] = None,
         prompt_callback: Optional[callable] = None,
+        output_dir: Optional[str] = None
         prefilter_enabled: bool = True,
         relevance_threshold: float = 0.50,
         prefilter_mode: str = 'auto'
@@ -127,6 +131,7 @@ class OrchestratorConfig:
             progress_callback: Optional callback for progress updates
             log_callback: Optional callback for log messages
             prompt_callback: Optional async callback for interactive prompts
+            output_dir: Optional custom output directory
             prefilter_enabled: Enable gap-targeted pre-filtering (default: True)
             relevance_threshold: Min relevance score for analysis (0.0-1.0, default: 0.50)
             prefilter_mode: Preset mode - 'auto' (50%), 'aggressive' (30%), 'conservative' (70%)
@@ -138,6 +143,7 @@ class OrchestratorConfig:
         self.progress_callback = progress_callback
         self.log_callback = log_callback
         self.prompt_callback = prompt_callback
+        self.output_dir = output_dir
         
         # Pre-filter configuration
         self.prefilter_enabled = prefilter_enabled
@@ -1976,16 +1982,43 @@ def compute_database_hash() -> str:
 
 
 # --- MAIN EXECUTION (MODIFIED) ---
-def main(config: Optional[OrchestratorConfig] = None):
+def main(config: Optional[OrchestratorConfig] = None, output_folder: Optional[str] = None):
     """
     Main orchestrator entry point
     
     Args:
         config: Optional configuration for programmatic execution.
                 If None, runs in interactive terminal mode.
+        output_folder: Custom output directory (overrides default and config)
     """
+    # Set global OUTPUT_FOLDER based on parameter or config
+    global OUTPUT_FOLDER
+    
+    if output_folder:
+        # Explicit parameter takes highest priority
+        OUTPUT_FOLDER = output_folder
+    elif config and hasattr(config, 'output_dir') and config.output_dir:
+        # Config object has output_dir
+        OUTPUT_FOLDER = config.output_dir
+    elif config and isinstance(config, dict) and config.get('output_dir'):
+        # Config dict has output_dir
+        OUTPUT_FOLDER = config['output_dir']
+    else:
+        # Use environment variable or default
+        OUTPUT_FOLDER = os.getenv('LITERATURE_REVIEW_OUTPUT_DIR', 'gap_analysis_output')
+    
+    # Create output directory
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+    
+    # Update dependent file paths
+    global CONTRIBUTION_REPORT_FILE, ORCHESTRATOR_STATE_FILE, DEEP_REVIEW_DIRECTIONS_FILE
+    CONTRIBUTION_REPORT_FILE = os.path.join(OUTPUT_FOLDER, 'sub_requirement_paper_contributions.md')
+    ORCHESTRATOR_STATE_FILE = os.path.join(OUTPUT_FOLDER, 'orchestrator_state.json')
+    DEEP_REVIEW_DIRECTIONS_FILE = os.path.join(OUTPUT_FOLDER, 'deep_review_directions.json')
+    
     logger.info("\n" + "=" * 80)
     logger.info("ENHANCED GAP ANALYSIS ORCHESTRATOR v3.6 (Pre-Analysis Judge Run)")
+    logger.info(f"Output Directory: {OUTPUT_FOLDER}")
     logger.info("=" * 80)
     global_start_time = time.time()
 

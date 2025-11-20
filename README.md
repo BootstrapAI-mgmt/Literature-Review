@@ -52,6 +52,22 @@ python pipeline_orchestrator.py --resume
 python pipeline_orchestrator.py --resume-from judge
 ```
 
+**Custom output directory:**
+```bash
+# Use custom output directory for gap analysis results
+python pipeline_orchestrator.py --output-dir reviews/my_review
+
+# Use environment variable
+export LITERATURE_REVIEW_OUTPUT_DIR=reviews/my_review
+python pipeline_orchestrator.py
+
+# Multiple reviews in separate directories
+python pipeline_orchestrator.py --output-dir reviews/baseline
+python pipeline_orchestrator.py --output-dir reviews/update_jan_2025
+```
+
+**Priority:** CLI argument > Environment variable > Config file > Default (`gap_analysis_output`)
+
 ### Manual Execution
 
 For step-by-step control, run each stage individually:
@@ -90,6 +106,7 @@ Create a `pipeline_config.json` file:
 {
   "version": "1.2.0",
   "version_history_path": "review_version_history.json",
+  "output_dir": "gap_analysis_output",
   "stage_timeout": 7200,
   "log_level": "INFO",
   "retry_policy": {
@@ -109,6 +126,13 @@ Create a `pipeline_config.json` file:
   }
 }
 ```
+
+**Configuration Options:**
+- `output_dir`: Custom output directory for gap analysis results (default: `gap_analysis_output`)
+- `version_history_path`: Path to version history JSON file
+- `stage_timeout`: Maximum time (seconds) for each stage
+- `log_level`: Logging verbosity (DEBUG, INFO, WARNING, ERROR)
+- `retry_policy`: Automatic retry configuration (see below)
 
 ### Retry Configuration
 
@@ -340,12 +364,35 @@ The pipeline automatically retries transient failures:
 
 ## Output Files
 
-The pipeline generates analysis results in the following directories:
+The pipeline generates analysis results in configurable directories:
 
 ```
-gap_analysis_output/          # Research gap analysis results (CLI)
+gap_analysis_output/          # Research gap analysis results (default, customizable via --output-dir)
 proof_scorecard_output/       # Proof scorecard outputs (CLI)
 workspace/                    # Dashboard job data and results
+```
+
+**Custom Output Directory:**
+You can specify a custom output directory for gap analysis results:
+```bash
+# Via CLI argument
+python pipeline_orchestrator.py --output-dir reviews/baseline
+
+# Via environment variable
+export LITERATURE_REVIEW_OUTPUT_DIR=reviews/baseline
+
+# Via config file
+{
+  "output_dir": "reviews/baseline"
+}
+```
+
+This enables organizing multiple review projects:
+```
+reviews/
+├── baseline_2025_01/         # Initial review
+├── update_2025_02/           # Monthly update
+└── comparative_study/        # Comparative analysis
 ```
 
 **Note:** These directories are gitignored as they contain generated artifacts. Run the pipeline to regenerate outputs locally.
