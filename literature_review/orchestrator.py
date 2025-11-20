@@ -115,7 +115,7 @@ class OrchestratorConfig:
         progress_callback: Optional[callable] = None,
         log_callback: Optional[callable] = None,
         prompt_callback: Optional[callable] = None,
-        output_dir: Optional[str] = None
+        output_dir: Optional[str] = None,
         prefilter_enabled: bool = True,
         relevance_threshold: float = 0.50,
         prefilter_mode: str = 'auto'

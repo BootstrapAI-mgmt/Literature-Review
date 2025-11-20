@@ -32,6 +32,7 @@ from webdashboard.duplicate_detector import (
     check_for_duplicates,
     load_existing_papers_from_review_log
 )
+from webdashboard.api.incremental import router as incremental_router
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -93,6 +94,9 @@ for directory in [WORKSPACE_DIR, UPLOADS_DIR, JOBS_DIR, STATUS_DIR, LOGS_DIR]:
 STATIC_DIR = Path(__file__).parent / "static"
 STATIC_DIR.mkdir(exist_ok=True)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+# Register API routers
+app.include_router(incremental_router)
 
 # API Key for authentication (from environment)
 API_KEY = os.getenv("DASHBOARD_API_KEY", "dev-key-change-in-production")

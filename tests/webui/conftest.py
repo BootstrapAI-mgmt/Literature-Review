@@ -40,6 +40,10 @@ def test_client(temp_workspace, monkeypatch):
     monkeypatch.setattr("webdashboard.app.STATUS_DIR", temp_workspace / "status")
     monkeypatch.setattr("webdashboard.app.LOGS_DIR", temp_workspace / "logs")
     
+    # Also patch incremental API paths
+    from webdashboard.api import incremental
+    incremental.set_workspace_dir(temp_workspace)
+    
     from webdashboard.app import app
     
     return TestClient(app)
