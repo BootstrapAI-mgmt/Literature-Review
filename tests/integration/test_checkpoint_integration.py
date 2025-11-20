@@ -30,7 +30,9 @@ class TestCheckpointIntegration:
 
         # Mock check_for_rejections to skip DRA
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=False):
-            orch = PipelineOrchestrator(checkpoint_file=str(checkpoint_path))
+            # Enable batch mode for non-interactive execution
+            config = {"batch_mode": True}
+            orch = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), config=config)
             orch.run()
 
         # Checkpoint file should exist
@@ -74,7 +76,9 @@ class TestCheckpointIntegration:
 
         # Mock check_for_rejections to skip DRA
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=False):
-            orch1 = PipelineOrchestrator(checkpoint_file=str(checkpoint_path))
+            # Enable batch mode for non-interactive execution
+            config = {"batch_mode": True}
+            orch1 = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), config=config)
 
             # Run should fail at sync
             with pytest.raises(SystemExit):
@@ -100,7 +104,9 @@ class TestCheckpointIntegration:
         mock_subprocess.side_effect = mock_run_all_success
 
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=False):
-            orch2 = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), resume=True)
+            # Enable batch mode for non-interactive execution
+            config = {"batch_mode": True}
+            orch2 = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), resume=True, config=config)
             orch2.run()
 
         # Verify checkpoint shows completion
@@ -156,7 +162,9 @@ class TestCheckpointIntegration:
 
         # Resume from sync stage
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=False):
-            orch = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), resume=True, resume_from="sync")
+            # Enable batch mode for non-interactive execution
+            config = {"batch_mode": True}
+            orch = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), resume=True, resume_from="sync", config=config)
             orch.run()
 
         # Verify checkpoint
@@ -186,7 +194,9 @@ class TestCheckpointIntegration:
 
         # Test 1: With rejections (DRA runs)
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=True):
-            orch1 = PipelineOrchestrator(checkpoint_file=str(checkpoint_path))
+            # Enable batch mode for non-interactive execution
+            config = {"batch_mode": True}
+            orch1 = PipelineOrchestrator(checkpoint_file=str(checkpoint_path), config=config)
             orch1.run()
 
         with open(checkpoint_path) as f:
@@ -199,7 +209,9 @@ class TestCheckpointIntegration:
         checkpoint_path2 = tmp_path / "dra_checkpoint2.json"
 
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=False):
-            orch2 = PipelineOrchestrator(checkpoint_file=str(checkpoint_path2))
+            # Enable batch mode for non-interactive execution
+            config = {"batch_mode": True}
+            orch2 = PipelineOrchestrator(checkpoint_file=str(checkpoint_path2), config=config)
             orch2.run()
 
         with open(checkpoint_path2) as f:
