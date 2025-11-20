@@ -228,10 +228,9 @@ class TestAPIManagerMocked:
     """Test suite for APIManager with mocked Gemini API."""
     
     @pytest.mark.component
-    @patch('literature_review.utils.api_manager.os.getenv', return_value='mock_api_key')
-    @patch('literature_review.utils.api_manager.genai.GenerativeModel')
+    @patch('literature_review.utils.api_manager.genai.Client')
     @patch('literature_review.utils.api_manager.load_dotenv')
-    def test_api_manager_initialization(self, mock_dotenv, mock_client, mock_getenv):
+    def test_api_manager_initialization(self, mock_dotenv, mock_client):
         """Test APIManager initializes with mocked API."""
         mock_client_instance = MagicMock()
         mock_client.return_value = mock_client_instance
@@ -243,17 +242,15 @@ class TestAPIManagerMocked:
         assert os.path.exists(manager.cache_dir)
     
     @pytest.mark.component
-    @patch('literature_review.utils.api_manager.os.getenv', return_value='mock_api_key')
-    @patch('literature_review.utils.api_manager.genai.configure')
-    @patch('literature_review.utils.api_manager.genai.GenerativeModel')
+    @patch('literature_review.utils.api_manager.genai.Client')
     @patch('literature_review.utils.api_manager.load_dotenv')
-    def test_cached_api_call_caching_behavior(self, mock_dotenv, mock_client_class, mock_configure, mock_getenv):
+    def test_cached_api_call_caching_behavior(self, mock_dotenv, mock_client_class):
         """Test that cache prevents duplicate API calls."""
         # Setup mock
         mock_client_instance = MagicMock()
         mock_response = MagicMock()
         mock_response.text = '{"verdict": "approved", "judge_notes": "Test"}'
-        mock_client_instance.generate_content.return_value = mock_response
+        mock_client_instance.models.generate_content.return_value = mock_response
         mock_client_class.return_value = mock_client_instance
         
         import time
@@ -271,7 +268,7 @@ class TestAPIManagerMocked:
             result2 = manager.cached_api_call("unique test prompt for cache test", use_cache=True, is_json=True)
             
             # API should only be called once (second call uses cache file)
-            assert mock_client_instance.generate_content.call_count == 1
+            assert mock_client_instance.models.generate_content.call_count == 1
             
             # Results should be identical
             assert result1 == result2
@@ -281,15 +278,14 @@ class TestAPIManagerMocked:
                 shutil.rmtree(cache_dir)
     
     @pytest.mark.component
-    @patch('literature_review.utils.api_manager.os.getenv', return_value='mock_api_key')
-    @patch('literature_review.utils.api_manager.genai.GenerativeModel')
+    @patch('literature_review.utils.api_manager.genai.Client')
     @patch('literature_review.utils.api_manager.load_dotenv')
-    def test_cache_bypass_when_disabled(self, mock_dotenv, mock_client, mock_getenv):
+    def test_cache_bypass_when_disabled(self, mock_dotenv, mock_client):
         """Test that cache can be bypassed."""
         mock_client_instance = MagicMock()
         mock_response = MagicMock()
         mock_response.text = '{"verdict": "approved"}'
-        mock_client_instance.generate_content.return_value = mock_response
+        mock_client_instance.models.generate_content.return_value = mock_response
         mock_client.return_value = mock_client_instance
         
         manager = APIManager()
@@ -299,18 +295,17 @@ class TestAPIManagerMocked:
         result2 = manager.cached_api_call("test prompt", use_cache=False, is_json=True)
         
         # API should be called twice
-        assert mock_client_instance.generate_content.call_count == 2
+        assert mock_client_instance.models.generate_content.call_count == 2
     
     @pytest.mark.component
-    @patch('literature_review.utils.api_manager.os.getenv', return_value='mock_api_key')
-    @patch('literature_review.utils.api_manager.genai.GenerativeModel')
+    @patch('literature_review.utils.api_manager.genai.Client')
     @patch('literature_review.utils.api_manager.load_dotenv')
-    def test_json_parsing_in_api_call(self, mock_dotenv, mock_client, mock_getenv):
+    def test_json_parsing_in_api_call(self, mock_dotenv, mock_client):
         """Test JSON parsing in API call."""
         mock_client_instance = MagicMock()
         mock_response = MagicMock()
         mock_response.text = '{"verdict": "approved", "judge_notes": "Evidence is clear"}'
-        mock_client_instance.generate_content.return_value = mock_response
+        mock_client_instance.models.generate_content.return_value = mock_response
         mock_client.return_value = mock_client_instance
         
         manager = APIManager()
