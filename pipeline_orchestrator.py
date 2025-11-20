@@ -825,6 +825,7 @@ def main():
         default=None,
         help="Custom output directory for gap analysis results (default: gap_analysis_output). "
              "Can also be set via LITERATURE_REVIEW_OUTPUT_DIR environment variable."
+    )
     
     # NEW: Pre-filter arguments (INCR-W1-6)
     parser.add_argument(
