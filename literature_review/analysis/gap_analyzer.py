@@ -1,21 +1,51 @@
-"""Gap Analysis with Evidence Decay Integration."""
+"""Gap Analysis with Evidence Decay Integration and Gap Extraction Engine."""
 
 import json
 import logging
+from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
+
 from literature_review.utils.evidence_decay import EvidenceDecayTracker
 
 logger = logging.getLogger(__name__)
 
 
+@dataclass
+class Gap:
+    """Represents a research gap (sub-requirement with low completeness)."""
+    
+    pillar: str                    # e.g., "Pillar 1: Foundational Architecture"
+    requirement_id: str            # e.g., "REQ-001"
+    sub_requirement_id: str        # e.g., "SUB-001"
+    requirement_text: str          # Full text of the requirement
+    current_completeness: float    # 0-100 percentage
+    evidence_count: int            # Number of supporting papers
+    severity: str                  # "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"
+    suggested_searches: List[str] = field(default_factory=list)  # Optional: From gap analysis report
+    
+    @property
+    def gap_id(self) -> str:
+        """Unique identifier for this gap."""
+        return f"{self.requirement_id}-{self.sub_requirement_id}"
+    
+    @property
+    def gap_percentage(self) -> float:
+        """Inverse of completeness (100 - completeness)."""
+        return 100.0 - self.current_completeness
+
+
 class GapAnalyzer:
     """
-    Analyzes gaps with optional evidence decay weighting.
+    Analyzes gaps with optional evidence decay weighting and extracts research gaps.
     
     This class integrates temporal evidence freshness into gap analysis completeness
     scoring. When enabled, it applies exponential decay weighting based on publication
     age, penalizing requirements supported by stale evidence.
+    
+    It also provides gap extraction functionality to identify sub-requirements with
+    low completeness scores from gap analysis reports.
     
     Example:
         >>> config = {'evidence_decay': {'weight_in_gap_analysis': True, 'decay_weight': 0.7}}
@@ -23,16 +53,31 @@ class GapAnalyzer:
         >>> papers = [{'filename': 'old.pdf', 'year': 2015, 'estimated_contribution_percent': 80}]
         >>> final_score, metadata = analyzer.apply_decay_weighting(80.0, papers)
         >>> print(f"Raw: {metadata['raw_score']}, Final: {metadata['final_score']}")
+        
+        >>> # Gap extraction example
+        >>> with open('gap_analysis_output/gap_analysis_report.json') as f:
+        ...     report = json.load(f)
+        >>> gaps = analyzer.extract_gaps(report)
+        >>> print(f"Found {len(gaps)} gaps")
     """
     
-    def __init__(self, config: Optional[Dict] = None):
+    def __init__(self, config: Optional[Dict] = None, completeness_threshold: float = 0.8):
         """
         Initialize gap analyzer.
         
         Args:
             config: Configuration dictionary with evidence_decay settings
+            completeness_threshold: Threshold below which a sub-requirement
+                                   is considered a gap (0.0-1.0). Default: 0.8 (80%)
         """
         self.config = config or {}
+        self.completeness_threshold = completeness_threshold
+        self.severity_thresholds = {
+            "CRITICAL": 0.3,   # < 30% completeness
+            "HIGH": 0.5,       # 30-50% completeness
+            "MEDIUM": 0.7,     # 50-70% completeness
+            "LOW": 0.8         # 70-80% completeness
+        }
         
         # Get decay configuration
         decay_config = self.config.get('evidence_decay', {})
@@ -112,6 +157,186 @@ class GapAnalyzer:
         }
         
         return final_score_percent, metadata
+    
+    def extract_gaps(
+        self,
+        report: Dict,
+        threshold: Optional[float] = None
+    ) -> List[Gap]:
+        """
+        Extract gaps from gap analysis report.
+        
+        Args:
+            report: Gap analysis report (loaded from gap_analysis_report.json)
+            threshold: Override default completeness threshold
+        
+        Returns:
+            List of Gap objects sorted by severity (critical first)
+        
+        Example:
+            >>> analyzer = GapAnalyzer()
+            >>> with open('gap_analysis_output/gap_analysis_report.json') as f:
+            ...     report = json.load(f)
+            >>> gaps = analyzer.extract_gaps(report)
+            >>> print(f"Found {len(gaps)} gaps")
+            Found 23 gaps
+        """
+        threshold = threshold or self.completeness_threshold
+        gaps = []
+        
+        # Navigate report structure
+        pillars = report.get('pillars', {})
+        
+        for pillar_name, pillar_data in pillars.items():
+            requirements = pillar_data.get('requirements', {})
+            
+            for req_id, req_data in requirements.items():
+                sub_requirements = req_data.get('sub_requirements', {})
+                
+                for sub_req_id, sub_req_data in sub_requirements.items():
+                    completeness = sub_req_data.get('completeness_percent', 0) / 100.0
+                    
+                    # Check if this is a gap
+                    if completeness < threshold:
+                        gap = Gap(
+                            pillar=pillar_name,
+                            requirement_id=req_id,
+                            sub_requirement_id=sub_req_id,
+                            requirement_text=sub_req_data.get('text', 'N/A'),
+                            current_completeness=completeness * 100,
+                            evidence_count=len(sub_req_data.get('evidence', [])),
+                            severity=self.classify_gap_severity(completeness),
+                            suggested_searches=sub_req_data.get('suggested_searches', [])
+                        )
+                        gaps.append(gap)
+        
+        # Sort by severity (critical first)
+        severity_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+        gaps.sort(key=lambda g: (severity_order[g.severity], g.current_completeness))
+        
+        logger.info(f"Extracted {len(gaps)} gaps (threshold: {threshold*100:.0f}%)")
+        return gaps
+    
+    def classify_gap_severity(self, completeness: float) -> str:
+        """
+        Classify gap severity based on completeness score.
+        
+        Args:
+            completeness: Completeness percentage (0.0-1.0)
+        
+        Returns:
+            Severity level: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW"
+        """
+        if completeness < self.severity_thresholds["CRITICAL"]:
+            return "CRITICAL"
+        elif completeness < self.severity_thresholds["HIGH"]:
+            return "HIGH"
+        elif completeness < self.severity_thresholds["MEDIUM"]:
+            return "MEDIUM"
+        else:
+            return "LOW"
+    
+    def generate_gap_summary(self, gaps: List[Gap]) -> Dict:
+        """
+        Generate summary statistics for gaps.
+        
+        Args:
+            gaps: List of Gap objects
+        
+        Returns:
+            Summary dictionary with counts, percentages, and breakdowns
+        
+        Example:
+            >>> summary = analyzer.generate_gap_summary(gaps)
+            >>> print(summary['total_gaps'])
+            23
+            >>> print(summary['by_severity']['CRITICAL'])
+            5
+        """
+        summary = {
+            'total_gaps': len(gaps),
+            'by_severity': {
+                'CRITICAL': 0,
+                'HIGH': 0,
+                'MEDIUM': 0,
+                'LOW': 0
+            },
+            'by_pillar': {},
+            'average_completeness': 0.0,
+            'most_incomplete': None,
+            'least_incomplete': None
+        }
+        
+        if not gaps:
+            return summary
+        
+        # Count by severity
+        for gap in gaps:
+            summary['by_severity'][gap.severity] += 1
+            
+            # Count by pillar
+            if gap.pillar not in summary['by_pillar']:
+                summary['by_pillar'][gap.pillar] = 0
+            summary['by_pillar'][gap.pillar] += 1
+        
+        # Calculate average completeness
+        summary['average_completeness'] = sum(g.current_completeness for g in gaps) / len(gaps)
+        
+        # Find extremes
+        summary['most_incomplete'] = min(gaps, key=lambda g: g.current_completeness)
+        summary['least_incomplete'] = max(gaps, key=lambda g: g.current_completeness)
+        
+        return summary
+    
+    def load_report(self, report_path: str) -> Dict:
+        """
+        Load gap analysis report from file.
+        
+        Args:
+            report_path: Path to gap_analysis_report.json
+        
+        Returns:
+            Parsed report dictionary
+        
+        Raises:
+            FileNotFoundError: If report file doesn't exist
+            json.JSONDecodeError: If report is not valid JSON
+        """
+        path = Path(report_path)
+        if not path.exists():
+            raise FileNotFoundError(f"Gap analysis report not found: {report_path}")
+        
+        with open(path, 'r') as f:
+            return json.load(f)
+    
+    def export_gaps_json(self, gaps: List[Gap], output_path: str) -> None:
+        """
+        Export gaps to JSON file.
+        
+        Args:
+            gaps: List of Gap objects
+            output_path: Path to output JSON file
+        """
+        gaps_data = [
+            {
+                'gap_id': gap.gap_id,
+                'pillar': gap.pillar,
+                'requirement_id': gap.requirement_id,
+                'sub_requirement_id': gap.sub_requirement_id,
+                'requirement_text': gap.requirement_text,
+                'current_completeness': gap.current_completeness,
+                'gap_percentage': gap.gap_percentage,
+                'evidence_count': gap.evidence_count,
+                'severity': gap.severity,
+                'suggested_searches': gap.suggested_searches
+            }
+            for gap in gaps
+        ]
+        
+        with open(output_path, 'w') as f:
+            json.dump(gaps_data, f, indent=2)
+        
+        logger.info(f"Exported {len(gaps)} gaps to {output_path}")
     
     def generate_decay_impact_report(self, pillar_name: str, requirements: Dict,
                                     analysis_results: Dict,
@@ -209,3 +434,24 @@ def load_config(config_file: str = 'pipeline_config.json') -> Dict:
     except Exception as e:
         logger.warning(f"Could not load config from {config_file}: {e}")
         return {}
+
+
+# Convenience functions
+def extract_gaps_from_file(
+    report_path: str,
+    threshold: float = 0.8
+) -> List[Gap]:
+    """
+    Extract gaps from gap analysis report file (convenience function).
+    
+    Args:
+        report_path: Path to gap_analysis_report.json
+        threshold: Completeness threshold (0.0-1.0)
+    
+    Returns:
+        List of Gap objects
+    """
+    analyzer = GapAnalyzer(completeness_threshold=threshold)
+    report = analyzer.load_report(report_path)
+    return analyzer.extract_gaps(report)
+
