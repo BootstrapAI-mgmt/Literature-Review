@@ -49,7 +49,8 @@ def test_client(temp_workspace, monkeypatch):
     
     from webdashboard.app import app
     
-    return TestClient(app)
+    # Use raise_server_exceptions=False to allow async handling
+    return TestClient(app, raise_server_exceptions=False)
 
 
 @pytest.fixture

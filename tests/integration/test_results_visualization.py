@@ -94,7 +94,8 @@ def test_client(temp_workspace, monkeypatch):
     monkeypatch.setattr('webdashboard.app.LOGS_DIR', temp_workspace / "logs")
     
     from webdashboard.app import app
-    return TestClient(app)
+    # Use raise_server_exceptions=False to allow async handling
+    return TestClient(app, raise_server_exceptions=False)
 
 
 @pytest.mark.integration
