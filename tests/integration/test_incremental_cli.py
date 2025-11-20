@@ -21,6 +21,9 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from literature_review.utils.state_manager import StateManager, JobType
 
+# Repository root for subprocess commands
+REPO_ROOT = str(Path(__file__).parent.parent.parent)
+
 
 class TestIncrementalCLI:
     """Integration tests for incremental CLI mode."""
@@ -32,7 +35,7 @@ class TestIncrementalCLI:
             capture_output=True,
             text=True,
             timeout=10,
-            cwd='/home/runner/work/Literature-Review/Literature-Review'
+            cwd=REPO_ROOT
         )
         
         assert result.returncode == 0
@@ -47,7 +50,7 @@ class TestIncrementalCLI:
             capture_output=True,
             text=True,
             timeout=10,
-            cwd='/home/runner/work/Literature-Review/Literature-Review'
+            cwd=REPO_ROOT
         )
         
         assert result.returncode == 0
@@ -61,7 +64,7 @@ class TestIncrementalCLI:
             capture_output=True,
             text=True,
             timeout=10,
-            cwd='/home/runner/work/Literature-Review/Literature-Review'
+            cwd=REPO_ROOT
         )
         
         assert result.returncode == 0
@@ -97,7 +100,7 @@ class TestIncrementalCLI:
             capture_output=True,
             text=True,
             timeout=30,
-            cwd='/home/runner/work/Literature-Review/Literature-Review'
+            cwd=REPO_ROOT
         )
         
         # Should complete successfully in dry-run mode
@@ -119,7 +122,7 @@ class TestIncrementalCLI:
             capture_output=True,
             text=True,
             timeout=30,
-            cwd='/home/runner/work/Literature-Review/Literature-Review'
+            cwd=REPO_ROOT
         )
         
         # Should complete successfully
@@ -142,7 +145,7 @@ class TestIncrementalCLI:
             capture_output=True,
             text=True,
             timeout=30,
-            cwd='/home/runner/work/Literature-Review/Literature-Review'
+            cwd=REPO_ROOT
         )
         
         # Should complete and mention falling back or missing prerequisites
@@ -182,7 +185,7 @@ class TestIncrementalCLI:
             capture_output=True,
             text=True,
             timeout=30,
-            cwd='/home/runner/work/Literature-Review/Literature-Review'
+            cwd=REPO_ROOT
         )
         
         # Should accept the parameter without error
@@ -199,7 +202,7 @@ class TestBackwardCompatibility:
             capture_output=True,
             text=True,
             timeout=10,
-            cwd='/home/runner/work/Literature-Review/Literature-Review'
+            cwd=REPO_ROOT
         )
         
         assert result.returncode == 0
@@ -221,7 +224,7 @@ class TestBackwardCompatibility:
             capture_output=True,
             text=True,
             timeout=30,
-            cwd='/home/runner/work/Literature-Review/Literature-Review'
+            cwd=REPO_ROOT
         )
         
         # Should work without errors
