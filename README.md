@@ -52,6 +52,21 @@ python pipeline_orchestrator.py --resume
 python pipeline_orchestrator.py --resume-from judge
 ```
 
+**Batch mode (non-interactive):**
+```bash
+# Run without user prompts - useful for CI/CD and automated testing
+python pipeline_orchestrator.py --batch-mode
+
+# Combine with other options
+python pipeline_orchestrator.py --batch-mode --log-file batch.log
+python pipeline_orchestrator.py --batch-mode --resume
+```
+
+**Batch mode defaults:**
+- Pillar selection: ALL analyzable pillars
+- Analysis mode: ONCE (single-pass)
+- User prompts: Skipped
+
 **Custom output directory:**
 ```bash
 # Use custom output directory for gap analysis results
