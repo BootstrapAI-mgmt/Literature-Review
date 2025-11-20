@@ -825,6 +825,31 @@ def main():
         default=None,
         help="Custom output directory for gap analysis results (default: gap_analysis_output). "
              "Can also be set via LITERATURE_REVIEW_OUTPUT_DIR environment variable."
+    
+    # NEW: Pre-filter arguments (INCR-W1-6)
+    parser.add_argument(
+        "--prefilter",
+        action="store_true",
+        default=True,
+        help="Enable gap-targeted pre-filtering (default: True)"
+    )
+    parser.add_argument(
+        "--no-prefilter",
+        dest="prefilter",
+        action="store_false",
+        help="Disable pre-filtering (analyze all papers)"
+    )
+    parser.add_argument(
+        "--relevance-threshold",
+        type=float,
+        default=0.50,
+        help="Minimum relevance score for paper analysis (0.0-1.0, default: 0.50)"
+    )
+    parser.add_argument(
+        "--prefilter-mode",
+        choices=['auto', 'aggressive', 'conservative'],
+        default='auto',
+        help="Pre-filter preset: auto (50%%), aggressive (30%%), conservative (70%%)"
     )
 
     args = parser.parse_args()
@@ -866,6 +891,22 @@ def main():
     
     # Log output directory
     print(f"📁 Output directory: {output_dir}")
+    # Set pre-filter config (INCR-W1-6)
+    config['prefilter_enabled'] = args.prefilter
+    
+    # Handle prefilter modes
+    if args.prefilter_mode == 'aggressive':
+        config['relevance_threshold'] = 0.30
+    elif args.prefilter_mode == 'conservative':
+        config['relevance_threshold'] = 0.70
+    else:
+        config['relevance_threshold'] = args.relevance_threshold
+    
+    # Log pre-filter config
+    if args.prefilter:
+        print(f"📊 Pre-filter: enabled (threshold: {config['relevance_threshold'] * 100:.0f}%)")
+    else:
+        print("📊 Pre-filter: disabled (analyzing all papers)")
     
     if args.enable_experimental:
         # Enable v2 features if requested
