@@ -17,7 +17,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from literature_review.utils.gap_extractor import GapExtractor
@@ -39,9 +40,16 @@ except (SyntaxError, ImportError) as e:
 # Create router
 router = APIRouter(prefix="/api/jobs", tags=["Incremental Review"])
 
-# Base directories
+# Base directories - will be overridden by app configuration
 WORKSPACE_DIR = Path("/workspaces")
 JOBS_DIR = WORKSPACE_DIR / "jobs"
+
+
+def set_workspace_dir(workspace_dir: Path):
+    """Set workspace directory for testing or configuration."""
+    global WORKSPACE_DIR, JOBS_DIR
+    WORKSPACE_DIR = workspace_dir
+    JOBS_DIR = workspace_dir / "jobs"
 
 
 # Request/Response Models
@@ -271,16 +279,19 @@ async def create_continuation_job(
             f"{len(papers_skipped)} skipped"
         )
         
-        return {
-            "job_id": new_job_id,
-            "parent_job_id": job_id,
-            "status": "queued",
-            "papers_to_analyze": len(papers_to_analyze),
-            "papers_skipped": len(papers_skipped),
-            "gaps_targeted": len(gaps),
-            "estimated_cost_usd": round(estimated_cost_usd, 2),
-            "estimated_duration_minutes": int(estimated_duration_minutes)
-        }
+        return JSONResponse(
+            status_code=status.HTTP_202_ACCEPTED,
+            content={
+                "job_id": new_job_id,
+                "parent_job_id": job_id,
+                "status": "queued",
+                "papers_to_analyze": len(papers_to_analyze),
+                "papers_skipped": len(papers_skipped),
+                "gaps_targeted": len(gaps),
+                "estimated_cost_usd": round(estimated_cost_usd, 2),
+                "estimated_duration_minutes": int(estimated_duration_minutes)
+            }
+        )
     
     except HTTPException:
         raise
