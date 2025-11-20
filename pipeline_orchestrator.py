@@ -36,6 +36,7 @@ Usage:
 
 import subprocess
 import sys
+import os
 import json
 import argparse
 import time
@@ -235,6 +236,14 @@ class PipelineOrchestrator:
         # Initialize cost tracker
         self.cost_tracker = get_cost_tracker()
         self.budget_usd = self.config.get('budget_usd', 50.0)
+        
+        # Set output directory from config
+        import os
+        self.output_dir = self.config.get('output_dir', 'gap_analysis_output')
+        
+        # Create output directory
+        os.makedirs(self.output_dir, exist_ok=True)
+        
         # Initialize incremental analysis support
         self.incremental = self.config.get('incremental', False)
         self.force_full = self.config.get('force', False)
@@ -480,7 +489,51 @@ class PipelineOrchestrator:
                     self.retry_policy.record_success()
                     return True
                 
-                # Build command based on execution type
+                # Special handling for orchestrator stage to pass output_dir
+                if stage_name == "orchestrator":
+                    from literature_review import orchestrator
+                    
+                    # Set the output folder before running
+                    orchestrator.OUTPUT_FOLDER = self.output_dir
+                    os.makedirs(self.output_dir, exist_ok=True)
+                    
+                    # Call orchestrator.main() directly with output_folder parameter
+                    try:
+                        orchestrator.main(output_folder=self.output_dir)
+                        duration = (datetime.now() - stage_start).total_seconds()
+                        self.log(f"✅ Stage complete: {description}", "SUCCESS")
+                        self._mark_stage_completed(stage_name, duration, 0)
+                        self.retry_policy.record_success()
+                        return True
+                    except Exception as e:
+                        # Treat orchestrator exceptions as failures
+                        duration = (datetime.now() - stage_start).total_seconds()
+                        error_msg = str(e)
+                        self.log(f"❌ Orchestrator failed: {error_msg}", "ERROR")
+                        
+                        # Determine if should retry
+                        should_retry, retry_reason, backoff_delay = self.retry_policy.should_retry(
+                            attempt, stage_name, error_msg
+                        )
+                        
+                        if should_retry:
+                            self.log(
+                                f"🔄 {retry_reason} - waiting {backoff_delay:.1f}s before retry",
+                                "WARNING",
+                            )
+                            self._mark_stage_retry(stage_name, attempt, error_msg, backoff_delay)
+                            self.retry_policy.record_failure()
+                            time.sleep(backoff_delay)
+                            continue  # Retry
+                        else:
+                            self.log(f"🚫 Not retrying: {retry_reason}", "ERROR")
+                            self._mark_stage_failed(stage_name, error_msg[:500])
+                            if required:
+                                self.log("Pipeline halted due to required stage failure", "ERROR")
+                                sys.exit(1)
+                            return False
+                
+                # Build command based on execution type for other stages
                 if use_module:
                     cmd = [sys.executable, '-m', script]
                 else:
@@ -766,6 +819,38 @@ def main():
         action="store_true",
         help="Clear incremental analysis cache before running"
     )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Custom output directory for gap analysis results (default: gap_analysis_output). "
+             "Can also be set via LITERATURE_REVIEW_OUTPUT_DIR environment variable."
+    
+    # NEW: Pre-filter arguments (INCR-W1-6)
+    parser.add_argument(
+        "--prefilter",
+        action="store_true",
+        default=True,
+        help="Enable gap-targeted pre-filtering (default: True)"
+    )
+    parser.add_argument(
+        "--no-prefilter",
+        dest="prefilter",
+        action="store_false",
+        help="Disable pre-filtering (analyze all papers)"
+    )
+    parser.add_argument(
+        "--relevance-threshold",
+        type=float,
+        default=0.50,
+        help="Minimum relevance score for paper analysis (0.0-1.0, default: 0.50)"
+    )
+    parser.add_argument(
+        "--prefilter-mode",
+        choices=['auto', 'aggressive', 'conservative'],
+        default='auto',
+        help="Pre-filter preset: auto (50%%), aggressive (30%%), conservative (70%%)"
+    )
 
     args = parser.parse_args()
     
@@ -788,9 +873,40 @@ def main():
     
     if args.budget:
         config['budget_usd'] = args.budget
+    
     # Set incremental flags
     config['incremental'] = args.incremental and not args.force
     config['force'] = args.force
+    
+    # Set output directory
+    # Priority: CLI arg > Environment variable > Config file > Default
+    import os
+    output_dir = (
+        args.output_dir or
+        os.getenv('LITERATURE_REVIEW_OUTPUT_DIR') or
+        config.get('output_dir') or
+        'gap_analysis_output'
+    )
+    config['output_dir'] = output_dir
+    
+    # Log output directory
+    print(f"📁 Output directory: {output_dir}")
+    # Set pre-filter config (INCR-W1-6)
+    config['prefilter_enabled'] = args.prefilter
+    
+    # Handle prefilter modes
+    if args.prefilter_mode == 'aggressive':
+        config['relevance_threshold'] = 0.30
+    elif args.prefilter_mode == 'conservative':
+        config['relevance_threshold'] = 0.70
+    else:
+        config['relevance_threshold'] = args.relevance_threshold
+    
+    # Log pre-filter config
+    if args.prefilter:
+        print(f"📊 Pre-filter: enabled (threshold: {config['relevance_threshold'] * 100:.0f}%)")
+    else:
+        print("📊 Pre-filter: disabled (analyzing all papers)")
     
     if args.enable_experimental:
         # Enable v2 features if requested

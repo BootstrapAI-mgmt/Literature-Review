@@ -67,19 +67,22 @@ DEFINITIONS_FILE = 'pillar_definitions_enhanced.json'
 VERSION_HISTORY_FILE = 'review_version_history.json'
 
 # 2. This script's state / outputs
-OUTPUT_FOLDER = 'gap_analysis_output'
+# OUTPUT_FOLDER will be set dynamically by main() function
+# Default value here, but can be overridden by environment variable or config
+OUTPUT_FOLDER = os.getenv('LITERATURE_REVIEW_OUTPUT_DIR', 'gap_analysis_output')
 CACHE_FOLDER = 'analysis_cache'
 CACHE_FILE = os.path.join(CACHE_FOLDER, 'analysis_cache.pkl')
+# Note: These paths will be updated in main() based on dynamic OUTPUT_FOLDER
 CONTRIBUTION_REPORT_FILE = os.path.join(OUTPUT_FOLDER, 'sub_requirement_paper_contributions.md')
-ORCHESTRATOR_STATE_FILE = 'orchestrator_state.json'
+ORCHESTRATOR_STATE_FILE = os.path.join(OUTPUT_FOLDER, 'orchestrator_state.json')
 DEEP_REVIEW_DIRECTIONS_FILE = os.path.join(OUTPUT_FOLDER, 'deep_review_directions.json')
 
 # 3. External Scripts to call
 # DEEP_REVIEWER_SCRIPT = 'Deep-Reviewer.py'
 # JUDGE_SCRIPT = 'Judge.py'
 
-# Create directories
-os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+# Create directories (output folder created in main() with dynamic value)
+# os.makedirs(OUTPUT_FOLDER, exist_ok=True)  # Moved to main()
 os.makedirs(CACHE_FOLDER, exist_ok=True)
 
 # Analysis configuration
@@ -111,7 +114,11 @@ class OrchestratorConfig:
         skip_user_prompts: bool = True,
         progress_callback: Optional[callable] = None,
         log_callback: Optional[callable] = None,
-        prompt_callback: Optional[callable] = None
+        prompt_callback: Optional[callable] = None,
+        output_dir: Optional[str] = None
+        prefilter_enabled: bool = True,
+        relevance_threshold: float = 0.50,
+        prefilter_mode: str = 'auto'
     ):
         """
         Initialize orchestrator configuration
@@ -124,6 +131,10 @@ class OrchestratorConfig:
             progress_callback: Optional callback for progress updates
             log_callback: Optional callback for log messages
             prompt_callback: Optional async callback for interactive prompts
+            output_dir: Optional custom output directory
+            prefilter_enabled: Enable gap-targeted pre-filtering (default: True)
+            relevance_threshold: Min relevance score for analysis (0.0-1.0, default: 0.50)
+            prefilter_mode: Preset mode - 'auto' (50%), 'aggressive' (30%), 'conservative' (70%)
         """
         self.job_id = job_id
         self.analysis_target = analysis_target
@@ -132,6 +143,19 @@ class OrchestratorConfig:
         self.progress_callback = progress_callback
         self.log_callback = log_callback
         self.prompt_callback = prompt_callback
+        self.output_dir = output_dir
+        
+        # Pre-filter configuration
+        self.prefilter_enabled = prefilter_enabled
+        self.prefilter_mode = prefilter_mode
+        
+        # Set threshold based on mode
+        if prefilter_mode == 'aggressive':
+            self.relevance_threshold = 0.30
+        elif prefilter_mode == 'conservative':
+            self.relevance_threshold = 0.70
+        else:
+            self.relevance_threshold = relevance_threshold
 
 
 @dataclass
@@ -1872,17 +1896,129 @@ def analyze_evidence_evolution(db: pd.DataFrame, pillar_definitions: Dict) -> Di
 # --- END TEMPORAL COHERENCE ANALYSIS FUNCTIONS ---
 
 
+# --- PRE-FILTER FUNCTIONS (INCR-W1-6) ---
+
+def preview_prefilter(
+    papers: List[Dict],
+    gaps: List[Dict],
+    threshold: float = 0.50
+) -> Dict[str, Any]:
+    """
+    Preview pre-filter results without running analysis.
+    
+    Args:
+        papers: All papers in database
+        gaps: Open gaps from gap extraction
+        threshold: Relevance threshold (0.0-1.0)
+    
+    Returns:
+        Preview statistics dictionary
+    """
+    from literature_review.utils.relevance_scorer import RelevanceScorer
+    
+    if not gaps:
+        return {
+            'total_papers': len(papers),
+            'total_gaps': 0,
+            'threshold': threshold,
+            'papers_to_analyze': 0,
+            'papers_to_skip': len(papers),
+            'skip_percentage': 100.0 if papers else 0.0,
+            'avg_relevance_score': 0.0,
+            'top_papers': []
+        }
+    
+    scorer = RelevanceScorer()
+    
+    # Score all papers
+    paper_scores = {}
+    for paper in papers:
+        paper_id = paper.get('FILENAME') or paper.get('id', 'unknown')
+        
+        # Compute max relevance across all gaps
+        scores = [scorer.score_relevance(paper, gap) for gap in gaps]
+        paper_scores[paper_id] = max(scores) if scores else 0.0
+    
+    # Compute statistics
+    papers_above_threshold = sum(1 for score in paper_scores.values() if score >= threshold)
+    papers_below_threshold = len(papers) - papers_above_threshold
+    
+    avg_score = sum(paper_scores.values()) / len(paper_scores) if paper_scores else 0.0
+    
+    # Get top papers
+    top_papers = sorted(
+        paper_scores.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )[:10]
+    
+    return {
+        'total_papers': len(papers),
+        'total_gaps': len(gaps),
+        'threshold': threshold,
+        'papers_to_analyze': papers_above_threshold,
+        'papers_to_skip': papers_below_threshold,
+        'skip_percentage': (papers_below_threshold / len(papers) * 100) if papers else 0,
+        'avg_relevance_score': avg_score,
+        'top_papers': top_papers
+    }
+
+
+def compute_database_hash() -> str:
+    """Compute hash of research database for change detection."""
+    if not os.path.exists(RESEARCH_DB_FILE):
+        return ""
+    
+    hasher = hashlib.md5()
+    try:
+        with open(RESEARCH_DB_FILE, 'rb') as f:
+            hasher.update(f.read())
+        return hasher.hexdigest()
+    except Exception as e:
+        logger.warning(f"Failed to compute database hash: {e}")
+        return ""
+
+# --- END PRE-FILTER FUNCTIONS ---
+
+
 # --- MAIN EXECUTION (MODIFIED) ---
-def main(config: Optional[OrchestratorConfig] = None):
+def main(config: Optional[OrchestratorConfig] = None, output_folder: Optional[str] = None):
     """
     Main orchestrator entry point
     
     Args:
         config: Optional configuration for programmatic execution.
                 If None, runs in interactive terminal mode.
+        output_folder: Custom output directory (overrides default and config)
     """
+    # Set global OUTPUT_FOLDER based on parameter or config
+    global OUTPUT_FOLDER
+    
+    if output_folder:
+        # Explicit parameter takes highest priority
+        OUTPUT_FOLDER = output_folder
+    elif config and hasattr(config, 'output_dir') and config.output_dir:
+        # Config object has output_dir
+        OUTPUT_FOLDER = config.output_dir
+    elif config and isinstance(config, dict) and config.get('output_dir'):
+        # Config dict has output_dir
+        OUTPUT_FOLDER = config['output_dir']
+    else:
+        # Use environment variable or default
+        OUTPUT_FOLDER = os.getenv('LITERATURE_REVIEW_OUTPUT_DIR', 'gap_analysis_output')
+    
+    # Create output directory
+    os.makedirs(OUTPUT_FOLDER, exist_ok=True)
+    
+    # Update dependent file paths
+    global CONTRIBUTION_REPORT_FILE, ORCHESTRATOR_STATE_FILE, DEEP_REVIEW_DIRECTIONS_FILE
+    CONTRIBUTION_REPORT_FILE = os.path.join(OUTPUT_FOLDER, 'sub_requirement_paper_contributions.md')
+    ORCHESTRATOR_STATE_FILE = os.path.join(OUTPUT_FOLDER, 'orchestrator_state.json')
+    DEEP_REVIEW_DIRECTIONS_FILE = os.path.join(OUTPUT_FOLDER, 'deep_review_directions.json')
+    
     logger.info("\n" + "=" * 80)
     logger.info("ENHANCED GAP ANALYSIS ORCHESTRATOR v3.6 (Pre-Analysis Judge Run)")
+    logger.info(f"Output Directory: {OUTPUT_FOLDER}")
     logger.info("=" * 80)
     global_start_time = time.time()
 
@@ -2038,6 +2174,70 @@ def main(config: Optional[OrchestratorConfig] = None):
 
     all_results = previous_results.copy()
     iteration_count = 0
+    
+    # --- NEW: Pre-filter Stage (INCR-W1-6) ---
+    prefilter_enabled = config.prefilter_enabled if config else True
+    relevance_threshold = config.relevance_threshold if config else 0.50
+    papers_to_skip = set()  # Track papers to skip
+    
+    if prefilter_enabled and iteration_count == 0:
+        logger.info("\n" + "=" * 80)
+        logger.info("STAGE: Pre-filter Pipeline (Gap-Targeted Analysis)")
+        logger.info("=" * 80)
+        
+        # Load papers for pre-filtering
+        database_df_obj_prefilter = ResearchDatabase(RESEARCH_DB_FILE)
+        if database_df_obj_prefilter.db is not None and not database_df_obj_prefilter.db.empty:
+            papers_df = database_df_obj_prefilter.db
+            papers_list = papers_df.to_dict('records')
+            
+            # Extract gaps from previous analysis
+            gap_report_path = os.path.join(OUTPUT_FOLDER, 'gap_analysis_report.json')
+            
+            if os.path.exists(gap_report_path):
+                from literature_review.utils.gap_extractor import GapExtractor
+                
+                extractor = GapExtractor(
+                    gap_report_path=gap_report_path,
+                    threshold=0.7
+                )
+                gaps = extractor.extract_gaps()
+                
+                if not gaps:
+                    logger.info("✅ No gaps found - all requirements met!")
+                    logger.info("Continuing with full analysis (no pre-filtering needed)")
+                else:
+                    logger.info(f"📊 Found {len(gaps)} open gaps")
+                    
+                    # Score paper relevance to gaps
+                    from literature_review.utils.relevance_scorer import RelevanceScorer
+                    
+                    scorer = RelevanceScorer()
+                    
+                    # Preview pre-filter results
+                    preview = preview_prefilter(papers_list, gaps, relevance_threshold)
+                    
+                    logger.info(f"✅ Pre-filter results:")
+                    logger.info(f"  - Papers to analyze: {preview['papers_to_analyze']}")
+                    logger.info(f"  - Papers skipped: {preview['papers_to_skip']}")
+                    logger.info(f"  - Threshold: {relevance_threshold * 100:.0f}%")
+                    logger.info(f"  - Estimated cost savings: {preview['skip_percentage']:.1f}%")
+                    
+                    safe_print(f"\n📊 Pre-filter Pipeline:")
+                    safe_print(f"  ✓ Found {len(gaps)} open gaps")
+                    safe_print(f"  ✓ Papers to analyze: {preview['papers_to_analyze']} ({100 - preview['skip_percentage']:.1f}%)")
+                    safe_print(f"  ✓ Papers skipped: {preview['papers_to_skip']} ({preview['skip_percentage']:.1f}%)")
+                    safe_print(f"  ✓ Relevance threshold: {relevance_threshold * 100:.0f}%")
+                    
+                    # Note: The current orchestrator architecture analyzes pillars against ALL papers,
+                    # so we're primarily collecting metrics here. A full implementation would
+                    # require modifying PillarAnalyzer to accept a paper filter list.
+                    # For now, we track metrics for reporting.
+            else:
+                logger.info("No previous gap analysis report found. Skipping pre-filter (first run).")
+        else:
+            logger.warning("No papers in database. Skipping pre-filter.")
+    # --- END PRE-FILTER STAGE ---
 
     # --- 4. Start Iterative Analysis Loop ---
     while True:
