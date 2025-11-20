@@ -6,6 +6,8 @@ Tests:
 - Cost summary endpoint
 - Sufficiency matrix summary endpoint
 - Output file serving
+
+Note: These tests use TestClient which properly handles async endpoints internally.
 """
 
 import pytest

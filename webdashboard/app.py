@@ -285,6 +285,19 @@ class JobListResponse(BaseModel):
             }
         }
 
+class ImportResultsRequest(BaseModel):
+    """Request to import existing analysis results"""
+    results_dir: str
+    job_name: Optional[str] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "results_dir": "/workspaces/Literature-Review/gap_analysis_output",
+                "job_name": "My Analysis"
+            }
+        }
+
 class ErrorResponse(BaseModel):
     """Standard error response"""
     detail: str
@@ -2266,10 +2279,6 @@ def categorize_output_file(filename: str) -> str:
             "description": "Job not completed",
             "model": ErrorResponse
         },
-        401: {
-            "description": "Invalid or missing API key",
-            "model": ErrorResponse
-        },
         404: {
             "description": "Job not found",
             "model": ErrorResponse
@@ -2277,8 +2286,7 @@ def categorize_output_file(filename: str) -> str:
     }
 )
 async def get_job_results(
-    job_id: str,
-    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+    job_id: str
 ):
     """
     Get list of all output files for a completed job.
@@ -2313,13 +2321,13 @@ async def get_job_results(
     - Download specific files via /api/jobs/{job_id}/results/{file_path}
     - Download all files via /api/jobs/{job_id}/results/download/all
     """
-    verify_api_key(api_key)
+    # No API key required for viewing results (read-only)
     
     job_data = load_job(job_id)
     if not job_data:
         raise HTTPException(status_code=404, detail="Job not found")
     
-    if job_data.get("status") != "completed":
+    if job_data.get("status") not in ["completed", "imported"]:
         raise HTTPException(
             status_code=400,
             detail=f"Job has not completed (status: {job_data['status']})"
@@ -2457,8 +2465,7 @@ async def download_all_results(
 )
 async def get_job_result_file(
     job_id: str,
-    file_path: str,
-    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+    file_path: str
 ):
     """
     Download a specific output file from job results.
@@ -2477,14 +2484,14 @@ async def get_job_result_file(
     **Returns:**
     File content with appropriate MIME type
     """
-    verify_api_key(api_key)
+    # No API key required for viewing results (read-only)
     
     # Validate job exists and completed
     job_data = load_job(job_id)
     if not job_data:
         raise HTTPException(status_code=404, detail="Job not found")
     
-    if job_data.get("status") != "completed":
+    if job_data.get("status") not in ["completed", "imported"]:
         raise HTTPException(status_code=400, detail="Job not completed")
     
     # Build full file path (prevent directory traversal)
@@ -2498,12 +2505,43 @@ async def get_job_result_file(
     if not full_path.exists() or not full_path.is_file():
         raise HTTPException(status_code=404, detail="File not found")
     
-    # Return file
-    return FileResponse(
-        path=full_path,
-        media_type=mimetypes.guess_type(full_path.name)[0] or "application/octet-stream",
-        filename=full_path.name
-    )
+    # Determine content type
+    content_type = mimetypes.guess_type(full_path.name)[0] or "application/octet-stream"
+    
+    # For HTML files - return as HTMLResponse for inline display
+    # Use FileResponse for large files to avoid memory issues
+    if full_path.suffix.lower() == '.html':
+        file_size = full_path.stat().st_size
+        if file_size > 1_000_000:  # Files larger than 1MB
+            # Use FileResponse with proper headers for large HTML files
+            return FileResponse(
+                path=full_path,
+                media_type='text/html',
+                headers={
+                    "Content-Disposition": "inline",
+                    "Cache-Control": "no-cache"
+                }
+            )
+        else:
+            # Read and return small HTML files directly
+            with open(full_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+            return HTMLResponse(content=html_content)
+    
+    # For JSON, text, markdown - display inline
+    elif content_type in ['application/json', 'text/plain', 'text/markdown'] or full_path.suffix.lower() in ['.json', '.md', '.txt']:
+        return FileResponse(
+            path=full_path,
+            media_type=content_type,
+            headers={"Content-Disposition": f"inline; filename={full_path.name}"}
+        )
+    else:
+        # Return file for download
+        return FileResponse(
+            path=full_path,
+            media_type=content_type,
+            filename=full_path.name
+        )
 
 @app.get(
     "/health",
@@ -2706,6 +2744,219 @@ async def get_field_presets():
     return {
         "presets": list_all_presets()
     }
+
+
+@app.get(
+    "/api/scan-import-directories",
+    tags=["Results"],
+    summary="Scan workspace for importable result directories",
+    responses={
+        200: {"description": "List of importable directories"},
+        401: {"description": "Invalid or missing API key", "model": ErrorResponse}
+    }
+)
+async def scan_import_directories(
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Scan the workspace for directories containing gap analysis results.
+    
+    Returns a list of directories that contain at least one of:
+    - gap_analysis_report.json
+    - executive_summary.md
+    """
+    verify_api_key(api_key)
+    
+    workspace_path = Path("/workspaces/Literature-Review")
+    importable_dirs = []
+    
+    # Check common locations
+    common_paths = [
+        workspace_path / "gap_analysis_output",
+        workspace_path / "outputs",
+        workspace_path / "proof_scorecard_output"
+    ]
+    
+    # Also scan for any gap_analysis_output directories
+    for item in workspace_path.iterdir():
+        if item.is_dir() and not item.name.startswith('.'):
+            if 'output' in item.name.lower() or 'results' in item.name.lower():
+                common_paths.append(item)
+    
+    for dir_path in set(common_paths):
+        if dir_path.exists() and dir_path.is_dir():
+            # Check for required files
+            has_report = (dir_path / "gap_analysis_report.json").exists()
+            has_summary = (dir_path / "executive_summary.md").exists()
+            
+            if has_report or has_summary:
+                importable_dirs.append({
+                    "path": str(dir_path),
+                    "name": dir_path.name,
+                    "has_report": has_report,
+                    "has_summary": has_summary,
+                    "file_count": sum(1 for _ in dir_path.rglob("*") if _.is_file())
+                })
+    
+    return {"directories": importable_dirs}
+
+
+@app.post(
+    "/api/import-results",
+    tags=["Results"],
+    summary="Import existing analysis results from external directory",
+    responses={
+        200: {"description": "Results imported successfully"},
+        400: {"description": "Invalid directory or no results found", "model": ErrorResponse},
+        401: {"description": "Invalid or missing API key", "model": ErrorResponse}
+    }
+)
+async def import_results(
+    request: ImportResultsRequest,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Import existing gap analysis results from an external directory.
+    
+    This enables viewing and comparing results from:
+    - Previous CLI runs (e.g., gap_analysis_output/)
+    - Historical analyses
+    - Manually copied result folders
+    
+    **Parameters:**
+    - results_dir: Path to directory containing gap analysis outputs
+    - job_name: Optional friendly name for imported results
+    
+    **Prerequisites:**
+    - Directory must contain at least one of:
+      - gap_analysis_report.json
+      - executive_summary.md
+      - Waterfall chart HTML files
+    
+    **Returns:**
+    - job_id: Generated ID for the imported results
+    - imported_files: Count of files imported
+    - job_name: Name assigned to the import
+    
+    **Behavior:**
+    - Creates a pseudo-job entry with status "imported"
+    - Copies result files to workspace/jobs/{job_id}/outputs/
+    - Makes results browsable like regular dashboard jobs
+    - Preserves original file timestamps where possible
+    """
+    verify_api_key(api_key)
+    
+    logger.info(f"Import request: results_dir={request.results_dir}, job_name={request.job_name}")
+    
+    # Validate results directory exists
+    source_dir = Path(request.results_dir).resolve()
+    if not source_dir.exists() or not source_dir.is_dir():
+        raise HTTPException(status_code=400, detail=f"Directory not found: {request.results_dir}")
+    
+    # Check for required files
+    required_files = [
+        "gap_analysis_report.json",
+        "executive_summary.md"
+    ]
+    
+    has_required = any((source_dir / f).exists() for f in required_files)
+    if not has_required:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No valid gap analysis results found in {request.results_dir}. "
+                   "Expected at least gap_analysis_report.json or executive_summary.md"
+        )
+    
+    # Validate gap_analysis_report.json structure if it exists
+    report_path = source_dir / "gap_analysis_report.json"
+    if report_path.exists():
+        try:
+            import json
+            with open(report_path, 'r') as f:
+                report_data = json.load(f)
+                # Check for expected structure from our literature review system
+                if not isinstance(report_data, dict):
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid gap_analysis_report.json: Expected JSON object"
+                    )
+                # Optionally check for key fields (pillars, gaps, etc.)
+                if 'pillars' not in report_data and 'gaps' not in report_data:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid gap_analysis_report.json: Missing expected fields (pillars or gaps)"
+                    )
+        except json.JSONDecodeError:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid gap_analysis_report.json: Not valid JSON"
+            )
+        except Exception as e:
+            if isinstance(e, HTTPException):
+                raise
+            raise HTTPException(
+                status_code=400,
+                detail=f"Error validating gap_analysis_report.json: {str(e)}"
+            )
+    
+    # Generate job ID for imported results
+    import_id = f"import_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{uuid.uuid4().hex[:8]}"
+    
+    # Create job directory structure
+    job_dir = JOBS_DIR / import_id
+    output_dir = job_dir / "outputs" / "gap_analysis_output"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Copy all files from source to destination
+    imported_count = 0
+    for item in source_dir.rglob("*"):
+        if item.is_file():
+            # Calculate relative path
+            rel_path = item.relative_to(source_dir)
+            dest_path = output_dir / rel_path
+            
+            # Create parent directories
+            dest_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Copy file
+            shutil.copy2(item, dest_path)
+            imported_count += 1
+    
+    # Check if we have source PDFs (indicates pipeline can be re-run)
+    has_source_pdfs = any(
+        f.suffix.lower() == '.pdf' 
+        for f in source_dir.rglob('*.pdf')
+    )
+    
+    # Create job metadata
+    job_data = {
+        "id": import_id,
+        "status": "imported",
+        "filename": request.job_name or f"Imported from {source_dir.name}",
+        "created_at": datetime.now().isoformat(),
+        "source": "import",
+        "source_directory": str(source_dir),
+        "imported_files": imported_count,
+        "completed_at": datetime.now().isoformat(),
+        "has_source_pdfs": has_source_pdfs,
+        "rerunnable": has_source_pdfs,  # Can only re-run if we have source PDFs
+        "import_note": "Results-only import" if not has_source_pdfs else "Import includes source PDFs"
+    }
+    
+    # Save job metadata
+    save_job(import_id, job_data)
+    
+    logger.info(f"Imported {imported_count} files from {request.results_dir} as job {import_id} (has_source_pdfs={has_source_pdfs})")
+    
+    return {
+        "job_id": import_id,
+        "imported_files": imported_count,
+        "job_name": job_data["filename"],
+        "message": f"Successfully imported {imported_count} files",
+        "has_source_pdfs": has_source_pdfs,
+        "rerunnable": has_source_pdfs
+    }
+
 
 if __name__ == "__main__":
     import uvicorn
