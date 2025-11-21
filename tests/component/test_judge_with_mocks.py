@@ -22,6 +22,12 @@ from literature_review.analysis.judge import (
 from literature_review.utils.api_manager import APIManager
 
 
+@pytest.fixture(autouse=True)
+def set_gemini_api_key(monkeypatch):
+    """Set GEMINI_API_KEY for all component tests - required for APIManager initialization."""
+    monkeypatch.setenv("GEMINI_API_KEY", "test-dummy-key-for-component-tests")
+
+
 @pytest.fixture
 def mock_pillar_definitions():
     """Fixture providing mock pillar definitions."""
