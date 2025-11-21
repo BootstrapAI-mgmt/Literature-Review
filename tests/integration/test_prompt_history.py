@@ -11,14 +11,19 @@ import sys
 import tempfile
 import shutil
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime
 
 
-# Mock FastAPI dependencies before importing prompt_handler
-sys.modules['fastapi'] = MagicMock()
-sys.modules['fastapi.responses'] = MagicMock()
-sys.modules['fastapi.staticfiles'] = MagicMock()
+@pytest.fixture(autouse=True)
+def mock_fastapi_dependencies():
+    """Mock FastAPI dependencies for all tests in this module"""
+    with patch.dict(sys.modules, {
+        'fastapi': MagicMock(),
+        'fastapi.responses': MagicMock(),
+        'fastapi.staticfiles': MagicMock()
+    }):
+        yield
 
 
 @pytest.fixture

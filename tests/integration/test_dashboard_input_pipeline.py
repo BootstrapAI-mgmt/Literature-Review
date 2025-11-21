@@ -66,6 +66,8 @@ def test_client(temp_workspace, monkeypatch):
     
     # Now import app - directory creation will use temp_workspace
     from webdashboard import app as app_module
+    # Ensure database_builder is imported and available in sys.modules
+    import webdashboard.database_builder
     
     # Patch the already-created directory paths
     app_module.WORKSPACE_DIR = temp_workspace

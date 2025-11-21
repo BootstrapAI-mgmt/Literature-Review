@@ -10,11 +10,28 @@ import sys
 from unittest.mock import Mock, AsyncMock, patch, MagicMock
 from datetime import datetime
 
+# Import heavy dependencies that shouldn't be reloaded by sys.modules patching
+try:
+    import torch
+    import sentence_transformers
+    import transformers
+except ImportError:
+    pass
 
-# Mock FastAPI dependencies before importing prompt_handler
-sys.modules['fastapi'] = MagicMock()
-sys.modules['fastapi.responses'] = MagicMock()
-sys.modules['fastapi.staticfiles'] = MagicMock()
+
+@pytest.fixture(autouse=True)
+def mock_fastapi_dependencies():
+    """Mock FastAPI dependencies for all tests in this module"""
+    mock_fastapi = MagicMock()
+    # Set __spec__ to avoid ValueError in importlib.util.find_spec used by transformers
+    mock_fastapi.__spec__ = MagicMock()
+    
+    with patch.dict(sys.modules, {
+        'fastapi': mock_fastapi,
+        'fastapi.responses': MagicMock(),
+        'fastapi.staticfiles': MagicMock()
+    }):
+        yield
 
 
 @pytest.mark.asyncio
