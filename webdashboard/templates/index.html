@@ -716,6 +716,210 @@
                             </div>
                         </div>
                         
+                        <!-- Advanced Options Panel -->
+                        <div class="card mb-4">
+                            <div class="card-header" style="cursor: pointer;" 
+                                 data-bs-toggle="collapse" data-bs-target="#advancedOptionsPanel">
+                                <h5 class="mb-0">
+                                    ⚙️ Advanced Options
+                                    <span class="badge bg-secondary float-end">Optional</span>
+                                    <i class="bi bi-chevron-down float-end me-2"></i>
+                                </h5>
+                            </div>
+                            <div id="advancedOptionsPanel" class="collapse">
+                                <div class="card-body">
+                                    
+                                    <!-- Dry Run Mode -->
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="dryRunMode">
+                                            <label class="form-check-label" for="dryRunMode">
+                                                <strong>Dry Run</strong>
+                                                <span class="badge bg-info ms-2">CLI: --dry-run</span>
+                                            </label>
+                                            <div class="form-text">
+                                                Validate configuration without making API calls or spending credits.
+                                                Shows what would run.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Force Re-analysis -->
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="forceReanalysis">
+                                            <label class="form-check-label" for="forceReanalysis">
+                                                <strong>Force Re-analysis</strong>
+                                                <span class="badge bg-warning text-dark ms-2">CLI: --force</span>
+                                            </label>
+                                            <div class="form-text">
+                                                Re-run analysis even if recent results exist. Ignores cache.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Clear Cache -->
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="clearCache">
+                                            <label class="form-check-label" for="clearCache">
+                                                <strong>Clear Cache</strong>
+                                                <span class="badge bg-danger ms-2">CLI: --clear-cache</span>
+                                            </label>
+                                            <div class="form-text">
+                                                Delete all cached API responses before starting. 
+                                                Use when switching models or updating prompts.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <!-- Budget Control -->
+                                    <div class="mb-3">
+                                        <label for="budgetLimit" class="form-label">
+                                            <strong>Budget Limit (USD)</strong>
+                                            <span class="badge bg-primary ms-2">CLI: --budget</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" class="form-control" 
+                                                   id="budgetLimit" 
+                                                   placeholder="5.00" 
+                                                   step="0.01" 
+                                                   min="0">
+                                            <button class="btn btn-outline-secondary" type="button"
+                                                    onclick="document.getElementById('budgetLimit').value = ''">
+                                                Clear
+                                            </button>
+                                        </div>
+                                        <div class="form-text">
+                                            Maximum spending for this job. Pipeline stops when reached.
+                                            Leave empty for unlimited.
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Relevance Threshold -->
+                                    <div class="mb-3">
+                                        <label for="relevanceThreshold" class="form-label">
+                                            <strong>Relevance Threshold</strong>
+                                            <span class="badge bg-success ms-2">CLI: --relevance-threshold</span>
+                                        </label>
+                                        <div class="row align-items-center">
+                                            <div class="col-8">
+                                                <input type="range" class="form-range" 
+                                                       id="relevanceThreshold" 
+                                                       min="0.5" max="1.0" step="0.05" 
+                                                       value="0.7"
+                                                       oninput="updateThresholdDisplay(this.value)">
+                                            </div>
+                                            <div class="col-4">
+                                                <input type="number" class="form-control form-control-sm" 
+                                                       id="relevanceThresholdValue" 
+                                                       value="0.7" 
+                                                       min="0.5" max="1.0" step="0.05"
+                                                       oninput="document.getElementById('relevanceThreshold').value = this.value; updateThresholdDisplay(this.value)">
+                                            </div>
+                                        </div>
+                                        <div class="form-text">
+                                            Minimum semantic similarity for papers to be considered relevant.
+                                            Higher = stricter filtering (0.5-1.0).
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <!-- Resume Controls -->
+                                    <div class="mb-3">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="enableResume">
+                                            <label class="form-check-label" for="enableResume">
+                                                <strong>Resume from Stage</strong>
+                                                <span class="badge bg-info ms-2">CLI: --resume-from</span>
+                                            </label>
+                                        </div>
+                                        
+                                        <select class="form-select" id="resumeStage" disabled>
+                                            <option value="">-- Select Stage --</option>
+                                            <option value="judge">Judge</option>
+                                            <option value="sync">Sync</option>
+                                            <option value="deep_review">Deep Review</option>
+                                            <option value="gap_analysis">Gap Analysis</option>
+                                            <option value="visualization">Visualization</option>
+                                        </select>
+                                        <div class="form-text">
+                                            Skip completed stages and resume from specific checkpoint.
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Checkpoint Resume -->
+                                    <div class="mb-3">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="enableCheckpointResume">
+                                            <label class="form-check-label" for="enableCheckpointResume">
+                                                <strong>Resume from Checkpoint</strong>
+                                                <span class="badge bg-info ms-2">CLI: --resume --checkpoint-file</span>
+                                            </label>
+                                        </div>
+                                        
+                                        <input type="text" class="form-control" 
+                                               id="checkpointFile" 
+                                               placeholder="pipeline_checkpoint.json" 
+                                               disabled>
+                                        <div class="form-text">
+                                            Continue from saved checkpoint file. Auto-detected if exists.
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <!-- Experimental Features -->
+                                    <div class="mb-3">
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="experimentalFeatures">
+                                            <label class="form-check-label" for="experimentalFeatures">
+                                                <strong>Enable Experimental Features</strong>
+                                                <span class="badge bg-warning text-dark ms-2">CLI: --enable-experimental</span>
+                                            </label>
+                                            <div class="form-text">
+                                                ⚠️ Use cutting-edge features (may be unstable). 
+                                                Includes: advanced caching, parallel scoring, new prompts.
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Config File Upload -->
+                                    <div class="mb-3">
+                                        <label for="configFileUpload" class="form-label">
+                                            <strong>Custom Configuration File</strong>
+                                            <span class="badge bg-secondary ms-2">CLI: --config</span>
+                                        </label>
+                                        <input class="form-control" type="file" 
+                                               id="configFileUpload" 
+                                               accept=".json">
+                                        <div class="form-text">
+                                            Upload custom pipeline_config.json to override defaults.
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Reset to Defaults -->
+                                    <div class="text-end">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                                onclick="resetAdvancedOptions()">
+                                            🔄 Reset to Defaults
+                                        </button>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        
                         <form id="batchUploadForm">
                             <!-- Upload Mode Selection -->
                             <div class="mb-3">
@@ -2604,6 +2808,69 @@
             }
         }
         
+        // Update threshold display
+        function updateThresholdDisplay(value) {
+            document.getElementById('relevanceThresholdValue').value = value;
+        }
+        
+        // Enable/disable resume controls
+        document.addEventListener('DOMContentLoaded', function() {
+            const enableResume = document.getElementById('enableResume');
+            const resumeStage = document.getElementById('resumeStage');
+            const enableCheckpointResume = document.getElementById('enableCheckpointResume');
+            const checkpointFile = document.getElementById('checkpointFile');
+            
+            if (enableResume) {
+                enableResume.addEventListener('change', (e) => {
+                    resumeStage.disabled = !e.target.checked;
+                });
+            }
+            
+            if (enableCheckpointResume) {
+                enableCheckpointResume.addEventListener('change', (e) => {
+                    checkpointFile.disabled = !e.target.checked;
+                });
+            }
+        });
+        
+        // Reset all advanced options
+        function resetAdvancedOptions() {
+            document.getElementById('dryRunMode').checked = false;
+            document.getElementById('forceReanalysis').checked = false;
+            document.getElementById('clearCache').checked = false;
+            document.getElementById('budgetLimit').value = '';
+            document.getElementById('relevanceThreshold').value = 0.7;
+            document.getElementById('relevanceThresholdValue').value = 0.7;
+            document.getElementById('enableResume').checked = false;
+            document.getElementById('resumeStage').disabled = true;
+            document.getElementById('resumeStage').value = '';
+            document.getElementById('enableCheckpointResume').checked = false;
+            document.getElementById('checkpointFile').disabled = true;
+            document.getElementById('checkpointFile').value = '';
+            document.getElementById('experimentalFeatures').checked = false;
+            document.getElementById('configFileUpload').value = '';
+        }
+        
+        // Collect advanced options for API request
+        function getAdvancedOptions() {
+            return {
+                dry_run: document.getElementById('dryRunMode').checked,
+                force: document.getElementById('forceReanalysis').checked,
+                clear_cache: document.getElementById('clearCache').checked,
+                budget: document.getElementById('budgetLimit').value 
+                         ? parseFloat(document.getElementById('budgetLimit').value) 
+                         : null,
+                relevance_threshold: parseFloat(document.getElementById('relevanceThresholdValue').value),
+                resume_from_stage: document.getElementById('enableResume').checked 
+                                  ? document.getElementById('resumeStage').value 
+                                  : null,
+                resume_from_checkpoint: document.getElementById('enableCheckpointResume').checked 
+                                       ? document.getElementById('checkpointFile').value 
+                                       : null,
+                experimental: document.getElementById('experimentalFeatures').checked
+            };
+        }
+        
         // Toggle all pillars
         function toggleAllPillars(checkbox) {
             const individual = document.querySelectorAll('.pillar-checkbox-individual');
@@ -2635,15 +2902,19 @@
             // Get run mode
             const run_mode = document.querySelector('input[name="runMode"]:checked').value;
             
-            // Get advanced options
+            // Get convergence threshold
             const convergence_threshold = parseFloat(
                 document.getElementById('convergenceThreshold').value
             );
             
+            // Get advanced options
+            const advancedOptions = getAdvancedOptions();
+            
             const config = {
                 pillar_selections,
                 run_mode,
-                convergence_threshold
+                convergence_threshold,
+                ...advancedOptions
             };
             
             try {
@@ -2659,6 +2930,25 @@
                 
                 if (!configResponse.ok) throw new Error('Configuration failed');
                 
+                // Upload custom config file if selected
+                const configFileInput = document.getElementById('configFileUpload');
+                if (configFileInput.files.length > 0) {
+                    const formData = new FormData();
+                    formData.append('config_file', configFileInput.files[0]);
+                    
+                    const uploadResponse = await fetch(`${API_BASE}/api/jobs/${currentJobId}/upload-config`, {
+                        method: 'POST',
+                        headers: {
+                            'X-API-KEY': apiKey
+                        },
+                        body: formData
+                    });
+                    
+                    if (!uploadResponse.ok) {
+                        console.warn('Failed to upload config file');
+                    }
+                }
+                
                 // Start job execution
                 const startResponse = await fetch(`${API_BASE}/api/jobs/${currentJobId}/start`, {
                     method: 'POST',
@@ -2673,7 +2963,14 @@
                 // Close modal
                 bootstrap.Modal.getInstance(document.getElementById('configModal')).hide();
                 
-                alert(`Job ${currentJobId} started successfully!`);
+                const result = await startResponse.json();
+                
+                if (config.dry_run) {
+                    alert(`Dry run completed for job ${currentJobId}. No API calls were made.\n\nCommand: ${result.command || 'N/A'}`);
+                } else {
+                    alert(`Job ${currentJobId} started successfully!`);
+                }
+                
                 
             } catch (error) {
                 alert('Error: ' + error.message);
