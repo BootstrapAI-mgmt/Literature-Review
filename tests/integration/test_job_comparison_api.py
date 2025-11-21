@@ -100,9 +100,8 @@ def test_client(temp_workspace, monkeypatch):
     app_module.LOGS_DIR = temp_workspace / "logs"
     app_module.BASE_DIR = temp_workspace.parent
     
-    # TEMPORARY: Enable exception raising to diagnose CI failures
-    # Use raise_server_exceptions=True to see actual errors in CI
-    return TestClient(app_module.app, raise_server_exceptions=True)
+    # Use raise_server_exceptions=False to allow async handling
+    return TestClient(app_module.app, raise_server_exceptions=False)
 
 
 @pytest.mark.integration

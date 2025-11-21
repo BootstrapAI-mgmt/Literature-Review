@@ -43,7 +43,7 @@ def test_client(temp_workspace, monkeypatch):
     # Patch paths BEFORE importing app module
     import sys
     # Remove app module and related modules if already imported
-    modules_to_remove = [m for m in list(sys.modules.keys()) if m.startswith('webdashboard.')]
+    modules_to_remove = [m for m in list(sys.modules.keys()) if m.startswith('webdashboard.') or m == 'literature_review.analysis.result_merger']
     for mod in modules_to_remove:
         del sys.modules[mod]
     
@@ -65,9 +65,8 @@ def test_client(temp_workspace, monkeypatch):
     app_module.LOGS_DIR = temp_workspace / "logs"
     app_module.BASE_DIR = temp_workspace.parent
     
-    # TEMPORARY: Enable exception raising to diagnose CI failures
-    # Use raise_server_exceptions=True to see actual errors in CI
-    return TestClient(app_module.app, raise_server_exceptions=True)
+    # Use raise_server_exceptions=False to allow async handling
+    return TestClient(app_module.app, raise_server_exceptions=False)
 
 
 @pytest.fixture

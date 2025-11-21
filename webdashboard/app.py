@@ -697,15 +697,6 @@ async def upload_batch(
     - duplicates: List of duplicate files (if any)
     - new: List of new files (if duplicates found)
     """
-    # DEBUG: Log environment state for CI diagnosis
-    import sys
-    logger.info(f"[DEBUG] upload_batch called")
-    logger.info(f"[DEBUG] Python version: {sys.version}")
-    logger.info(f"[DEBUG] BASE_DIR: {BASE_DIR}")
-    logger.info(f"[DEBUG] WORKSPACE_DIR: {WORKSPACE_DIR}")
-    logger.info(f"[DEBUG] review_log.json path: {BASE_DIR / 'review_log.json'}")
-    logger.info(f"[DEBUG] review_log.json exists: {(BASE_DIR / 'review_log.json').exists()}")
-    
     verify_api_key(api_key)
     
     # Validate all files are PDFs
