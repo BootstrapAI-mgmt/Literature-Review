@@ -42,7 +42,10 @@ class APIManager:
         self.minute_start = time.time()
 
         try:
-            self.client = genai.Client()
+            api_key = os.getenv('GEMINI_API_KEY')
+            if not api_key:
+                raise ValueError("GEMINI_API_KEY environment variable not set")
+            self.client = genai.Client(api_key=api_key)
             thinking_config = types.ThinkingConfig(thinking_budget=0)
 
             self.json_generation_config = types.GenerateContentConfig(

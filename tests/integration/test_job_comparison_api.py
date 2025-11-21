@@ -79,6 +79,9 @@ def create_test_job(workspace, job_id, completeness_values, papers, created_at="
 @pytest.fixture
 def test_client(temp_workspace, monkeypatch):
     """Create a test client with mocked workspace directories"""
+    # Set dummy GEMINI_API_KEY for tests (required by genai.Client initialization)
+    monkeypatch.setenv("GEMINI_API_KEY", "test-dummy-key-for-integration-tests")
+    
     # Remove app module and related modules if already imported to ensure clean state
     import sys
     modules_to_remove = [m for m in list(sys.modules.keys()) if m.startswith('webdashboard.')]
@@ -100,8 +103,8 @@ def test_client(temp_workspace, monkeypatch):
     app_module.LOGS_DIR = temp_workspace / "logs"
     app_module.BASE_DIR = temp_workspace.parent
     
-    # Use raise_server_exceptions=False to allow async handling
-    return TestClient(app_module.app, raise_server_exceptions=False)
+    # Temporarily enable raise_server_exceptions for CI debugging (TODO: revert to False)
+    return TestClient(app_module.app, raise_server_exceptions=True)
 
 
 @pytest.mark.integration
