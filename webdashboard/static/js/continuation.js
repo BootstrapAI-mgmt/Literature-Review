@@ -150,51 +150,37 @@ function displayGapSummary(gaps) {
     const panel = document.getElementById('gapSummaryPanel');
     if (!panel) return;
     
-    // Load gap summary template
-    fetch('/static/partials/gap_summary_panel.html')
-        .then(response => response.text())
-        .then(html => {
-            panel.innerHTML = html;
-            panel.style.display = 'block';
+    // Create gap summary HTML directly
+    panel.innerHTML = `
+        <div class="gap-summary">
+            <h6>📊 Gap Summary</h6>
+            <div class="alert alert-info">
+                <strong id="totalGaps">${gaps.total_gaps || 0}</strong> open gaps found in base review
+            </div>
             
-            // Populate data
-            const totalGapsElement = document.getElementById('totalGaps');
-            const pillarListElement = document.getElementById('gapsByPillar');
+            <div class="gap-breakdown">
+                <h6>Gaps by Pillar:</h6>
+                <ul id="gapsByPillar" class="list-unstyled">
+                    ${Object.entries(gaps.gaps_by_pillar || {}).map(([pillarId, count]) => 
+                        `<li><strong>${pillarId}:</strong> ${count} gaps</li>`
+                    ).join('')}
+                </ul>
+            </div>
             
-            if (totalGapsElement) {
-                totalGapsElement.textContent = gaps.total_gaps || 0;
-            }
-            
-            if (pillarListElement && gaps.gaps_by_pillar) {
-                pillarListElement.innerHTML = '';
-                for (const [pillarId, count] of Object.entries(gaps.gaps_by_pillar)) {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<strong>${pillarId}:</strong> ${count} gaps`;
-                    pillarListElement.appendChild(li);
-                }
-            }
-            
-            // Add event listener for view details button
-            const viewDetailsBtn = document.getElementById('viewGapDetailsBtn');
-            if (viewDetailsBtn) {
-                viewDetailsBtn.addEventListener('click', () => {
-                    viewGapDetails(selectedBaseJob);
-                });
-            }
-        })
-        .catch(error => {
-            console.error('Failed to load gap summary template:', error);
-            // Fallback to inline display
-            panel.innerHTML = `
-                <div class="gap-summary">
-                    <h6>📊 Gap Summary</h6>
-                    <div class="alert alert-info">
-                        <strong>${gaps.total_gaps || 0}</strong> open gaps found in base review
-                    </div>
-                </div>
-            `;
-            panel.style.display = 'block';
+            <button class="btn btn-sm btn-outline-primary" id="viewGapDetailsBtn">
+                View Gap Details →
+            </button>
+        </div>
+    `;
+    panel.style.display = 'block';
+    
+    // Add event listener for view details button
+    const viewDetailsBtn = document.getElementById('viewGapDetailsBtn');
+    if (viewDetailsBtn) {
+        viewDetailsBtn.addEventListener('click', () => {
+            viewGapDetails(selectedBaseJob);
         });
+    }
 }
 
 /**
