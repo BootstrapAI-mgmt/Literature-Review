@@ -50,6 +50,10 @@ def test_client(temp_workspace, monkeypatch):
     # Patch the Path resolution at the module level
     monkeypatch.setenv("LITERATURE_REVIEW_WORKSPACE", str(temp_workspace))
     
+    # Create review_log.json in the parent directory (BASE_DIR)
+    review_log_path = temp_workspace.parent / "review_log.json"
+    review_log_path.write_text("[]")
+    
     # Now import app - directory creation will use temp_workspace
     from webdashboard import app as app_module
     

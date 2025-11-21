@@ -85,6 +85,10 @@ def test_client(temp_workspace, monkeypatch):
     for mod in modules_to_remove:
         del sys.modules[mod]
     
+    # Create review_log.json in the parent directory (BASE_DIR)
+    review_log_path = temp_workspace.parent / "review_log.json"
+    review_log_path.write_text("[]")
+    
     # Import and patch the app module
     from webdashboard import app as app_module
     
