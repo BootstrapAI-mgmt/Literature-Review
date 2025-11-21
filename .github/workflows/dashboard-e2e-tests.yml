@@ -74,7 +74,7 @@ jobs:
       
       - name: Run Dashboard E2E tests
         run: |
-          pytest tests/e2e/test_dashboard_workflows.py -m e2e_dashboard -v --tb=short
+          pytest tests/e2e/test_dashboard_workflows.py -m e2e_dashboard -vv --tb=long --showlocals --log-cli-level=INFO
         env:
           DASHBOARD_URL: http://localhost:8000
           DASHBOARD_API_KEY: test-api-key

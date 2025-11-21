@@ -26,7 +26,7 @@ jobs:
           pip install -r requirements-dev.txt
       
       - name: Run E2E tests
-        run: pytest -m e2e -v --timeout=3600 --ignore=tests/webui
+        run: pytest -m e2e -vv --tb=long --showlocals --log-cli-level=INFO --timeout=3600 --ignore=tests/webui
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       

@@ -34,13 +34,13 @@ jobs:
           pip install -r requirements-dashboard.txt
       
       - name: Run unit tests
-        run: pytest -m unit -v --cov=. --cov-report=xml --ignore=tests/webui
+        run: pytest -m unit -vv --tb=short --showlocals --cov=. --cov-report=xml --ignore=tests/webui
       
       - name: Run component tests
-        run: pytest -m component -v --cov=. --cov-append --cov-report=xml --ignore=tests/webui
+        run: pytest -m component -vv --tb=short --showlocals --cov=. --cov-append --cov-report=xml --ignore=tests/webui
       
       - name: Run integration tests
-        run: pytest -m integration -v --cov=. --cov-append --cov-report=xml --ignore=tests/webui
+        run: pytest -m integration -vv --tb=long --showlocals --log-cli-level=INFO --cov=. --cov-append --cov-report=xml --ignore=tests/webui
       
       - name: Upload coverage
         uses: codecov/codecov-action@v3
