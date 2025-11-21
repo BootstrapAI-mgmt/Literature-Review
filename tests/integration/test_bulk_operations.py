@@ -163,9 +163,10 @@ class TestBulkOperations:
         assert response.status_code == 200
         data = response.json()
         
-        # Should complete successfully but report no deletions
+        # Should report as error
         assert data["deleted_count"] == 0
-        # Note: current implementation doesn't report this as an error
+        assert data["error_count"] == 1
+        assert "nonexistent-job" in data["errors"][0]
     
     def test_bulk_delete_no_jobs(self, test_client, temp_workspace):
         """Test bulk delete with empty job list"""

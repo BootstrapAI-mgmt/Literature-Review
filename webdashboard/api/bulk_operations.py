@@ -128,10 +128,14 @@ async def bulk_delete_jobs(
     
     for job_id in request.job_ids:
         try:
-            # Delete job metadata file
+            # Check if job exists
             job_file = jobs_dir / f"{job_id}.json"
-            if job_file.exists():
-                job_file.unlink()
+            if not job_file.exists():
+                errors.append(f"{job_id}: Job not found")
+                continue
+            
+            # Delete job metadata file
+            job_file.unlink()
             
             # Delete job directory (outputs, uploads, etc.)
             job_dir = jobs_dir / job_id
