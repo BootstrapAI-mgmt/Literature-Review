@@ -12,6 +12,9 @@ from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 import sys
 
+# Store original orchestrator module if it exists
+_original_orchestrator = sys.modules.get('literature_review.orchestrator')
+
 # Create a mock orchestrator module to avoid import errors
 mock_orchestrator = MagicMock()
 mock_orchestrator.main = Mock(return_value=None)
@@ -20,6 +23,13 @@ mock_orchestrator.OrchestratorConfig = Mock
 sys.modules['literature_review.orchestrator'] = mock_orchestrator
 
 from pipeline_orchestrator import PipelineOrchestrator
+
+# Restore original orchestrator module after import to avoid contaminating other tests
+if _original_orchestrator is not None:
+    sys.modules['literature_review.orchestrator'] = _original_orchestrator
+else:
+    # Clean up the mock if there was no original module
+    del sys.modules['literature_review.orchestrator']
 
 
 @pytest.mark.integration

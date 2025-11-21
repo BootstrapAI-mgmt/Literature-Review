@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from literature_review.utils.gap_extractor import GapExtractor, Gap
 from literature_review.utils.relevance_scorer import RelevanceScorer
-from literature_review.utils.state_manager import StateManager, GapDetail, save_orchestrator_state_enhanced
+from literature_review.utils.state_manager import StateManager, GapDetail, save_orchestrator_state_enhanced, JobType
 
 
 # --- GapExtractor Tests ---
@@ -291,8 +291,21 @@ def test_state_manager_save_and_load():
         state_file = os.path.join(tmpdir, 'test_state.json')
         manager = StateManager(state_file)
         
-        # Save state
-        gap_details = [
+        # Save state using create_new_state and save_state
+        state = manager.create_new_state(
+            database_path='/path/to/db.csv',
+            database_hash='abc123',
+            database_size=150,
+            job_type=JobType.INCREMENTAL
+        )
+        
+        # Update state with analysis results
+        state.total_papers = 150
+        state.papers_analyzed = 45
+        state.papers_skipped = 105
+        state.total_pillars = 6
+        state.overall_coverage = 72.5
+        state.gap_metrics.gap_details = [
             GapDetail(
                 pillar_id='Pillar 1',
                 requirement_id='REQ-001',
@@ -304,32 +317,22 @@ def test_state_manager_save_and_load():
                 evidence_count=2
             )
         ]
+        state.gap_metrics.total_gaps = 1
         
-        manager.save_state(
-            database_hash='abc123',
-            database_size=150,
-            database_path='/path/to/db.csv',
-            total_papers=150,
-            papers_analyzed=45,
-            papers_skipped=105,
-            total_pillars=6,
-            overall_coverage=72.5,
-            gap_details=gap_details,
-            job_type='incremental'
-        )
+        manager.save_state(state)
         
         # Load state
         loaded_state = manager.load_state()
         
-        assert loaded_state['schema_version'] == "2.0"
-        assert loaded_state['database_hash'] == 'abc123'
-        assert loaded_state['database_size'] == 150
-        assert loaded_state['total_papers'] == 150
-        assert loaded_state['papers_analyzed'] == 45
-        assert loaded_state['papers_skipped'] == 105
-        assert loaded_state['overall_coverage'] == 72.5
-        assert loaded_state['gap_count'] == 1
-        assert len(loaded_state['gap_details']) == 1
+        assert loaded_state.schema_version == "2.0"
+        assert loaded_state.database_hash == 'abc123'
+        assert loaded_state.database_size == 150
+        assert loaded_state.total_papers == 150
+        assert loaded_state.papers_analyzed == 45
+        assert loaded_state.papers_skipped == 105
+        assert loaded_state.overall_coverage == 72.5
+        assert loaded_state.gap_metrics.total_gaps == 1
+        assert len(loaded_state.gap_metrics.gap_details) == 1
 
 
 def test_state_manager_empty_state():
@@ -340,11 +343,8 @@ def test_state_manager_empty_state():
         
         state = manager.load_state()
         
-        # Should return empty state structure
-        assert state['schema_version'] == "2.0"
-        assert state['job_id'] is None
-        assert state['database_hash'] == ""
-        assert state['gap_count'] == 0
+        # Should return None for missing file
+        assert state is None
 
 
 def test_save_orchestrator_state_enhanced():

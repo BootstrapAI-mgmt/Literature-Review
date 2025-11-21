@@ -122,6 +122,7 @@ class StateManager:
     """
     
     CURRENT_SCHEMA_VERSION = "2.0"
+    SCHEMA_VERSION = "2.0"  # Alias for backward compatibility with tests
     
     def __init__(self, state_file: str = "orchestrator_state.json"):
         """
@@ -480,18 +481,67 @@ def save_orchestrator_state_enhanced(
     
     This is a convenience wrapper around StateManager.save_state().
     """
+    from datetime import datetime
+    
     manager = StateManager(state_file)
-    manager.save_state(
+    
+    # Convert gap_details to GapDetail objects if needed
+    gap_detail_objs = []
+    if gap_details:
+        for gap in gap_details:
+            if isinstance(gap, GapDetail):
+                gap_detail_objs.append(gap)
+            else:
+                gap_detail_objs.append(GapDetail(**gap))
+    
+    # Create GapMetrics
+    gap_metrics = GapMetrics(
+        total_gaps=len(gap_detail_objs),
+        total_requirements=total_pillars,
+        gap_threshold=gap_threshold,
+        gaps_by_pillar=coverage_by_pillar or {},
+        gap_details=gap_detail_objs
+    )
+    
+    # Create OrchestratorState
+    now = datetime.now().isoformat()
+    job_id = f"review_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+    
+    state = OrchestratorState(
+        schema_version=manager.CURRENT_SCHEMA_VERSION,
+        job_id=job_id,
+        parent_job_id=None,
+        job_type=JobType.FULL,
+        created_at=now,
+        updated_at=now,
+        completed_at=now if analysis_completed else None,
         database_hash=database_hash,
         database_size=database_size,
         database_path=database_path,
         analysis_completed=analysis_completed,
+        analysis_timestamp=now if analysis_completed else "",
         total_papers=total_papers,
-        papers_analyzed=papers_analyzed,
-        papers_skipped=papers_skipped,
+        papers_analyzed=papers_analyzed or 0,
+        papers_skipped=papers_skipped or 0,
         total_pillars=total_pillars,
         overall_coverage=overall_coverage,
-        coverage_by_pillar=coverage_by_pillar,
-        gap_details=gap_details,
-        gap_threshold=gap_threshold
+        coverage_by_pillar=coverage_by_pillar or {},
+        gap_metrics=gap_metrics,
+        incremental_state=IncrementalState(
+            is_continuation=False,
+            parent_job_id=None,
+            gap_extraction_mode="full",
+            papers_added_since_parent=0,
+            gaps_closed_since_parent=0,
+            new_gaps_identified=len(gap_detail_objs)
+        ),
+        execution_metrics=ExecutionMetrics(
+            duration_seconds=0.0,
+            api_calls=0,
+            api_cost_usd=0.0,
+            cache_hit_rate=0.0,
+            error_count=0
+        )
     )
+    
+    manager.save_state(state)
