@@ -1,0 +1,29 @@
+<div id="relevancePreview" class="card mb-4" style="display: none;">
+    <div class="card-body">
+        <h5 class="card-title">Relevance Preview</h5>
+        
+        <div class="mb-3">
+            <label for="relevanceThreshold" class="form-label">
+                Relevance Threshold: <strong id="thresholdValue">50%</strong>
+            </label>
+            <input type="range" class="form-range" id="relevanceThreshold" 
+                   min="0" max="100" value="50">
+        </div>
+        
+        <div class="alert alert-secondary">
+            <strong id="papersToAnalyze">--</strong> papers will be analyzed
+            (<strong id="papersSkipped">--</strong> filtered out)
+        </div>
+        
+        <div class="paper-list" id="paperRelevanceList">
+            <!-- Populated with uploaded papers + scores -->
+        </div>
+        
+        <div class="estimates mt-3">
+            <small class="text-muted">
+                Estimated cost: <strong id="estimatedCost">--</strong><br>
+                Estimated time: <strong id="estimatedTime">--</strong>
+            </small>
+        </div>
+    </div>
+</div>

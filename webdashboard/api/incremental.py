@@ -41,7 +41,8 @@ except (SyntaxError, ImportError) as e:
 router = APIRouter(prefix="/api/jobs", tags=["Incremental Review"])
 
 # Base directories - will be overridden by app configuration
-WORKSPACE_DIR = Path("/workspaces")
+BASE_DIR = Path(__file__).parent.parent.parent
+WORKSPACE_DIR = BASE_DIR / "workspace"
 JOBS_DIR = WORKSPACE_DIR / "jobs"
 
 
@@ -188,12 +189,16 @@ async def create_continuation_job(
         if not job_dir.exists():
             raise HTTPException(status_code=404, detail="Parent job not found")
         
-        gap_report_path = job_dir / "gap_analysis_report.json"
+        # Look for gap analysis report in outputs directory
+        gap_report_path = job_dir / "outputs" / "gap_analysis_output" / "gap_analysis_report.json"
         if not gap_report_path.exists():
-            raise HTTPException(
-                status_code=400,
-                detail="Parent job incomplete (no gap analysis)"
-            )
+            # Try alternate location (old structure)
+            gap_report_path = job_dir / "gap_analysis_report.json"
+            if not gap_report_path.exists():
+                raise HTTPException(
+                    status_code=400,
+                    detail="Parent job incomplete (no gap analysis)"
+                )
         
         # Extract gaps from parent job
         extractor = GapExtractor(gap_report_path=str(gap_report_path), threshold=0.7)
@@ -344,13 +349,17 @@ async def get_job_gaps(
     try:
         # Validate job exists
         job_dir = get_job_dir(job_id)
-        gap_report_path = job_dir / "gap_analysis_report.json"
         
+        # Look for gap analysis report in outputs directory
+        gap_report_path = job_dir / "outputs" / "gap_analysis_output" / "gap_analysis_report.json"
         if not gap_report_path.exists():
-            raise HTTPException(
-                status_code=404,
-                detail="Job not found or incomplete"
-            )
+            # Try alternate location (old structure)
+            gap_report_path = job_dir / "gap_analysis_report.json"
+            if not gap_report_path.exists():
+                raise HTTPException(
+                    status_code=404,
+                    detail="Job not found or incomplete"
+                )
         
         # Extract gaps
         extractor = GapExtractor(gap_report_path=str(gap_report_path), threshold=threshold)
@@ -424,10 +433,14 @@ async def score_paper_relevance(
     try:
         # Load gaps
         job_dir = get_job_dir(job_id)
-        gap_report_path = job_dir / "gap_analysis_report.json"
         
+        # Look for gap analysis report in outputs directory
+        gap_report_path = job_dir / "outputs" / "gap_analysis_output" / "gap_analysis_report.json"
         if not gap_report_path.exists():
-            raise HTTPException(status_code=404, detail="Job not found")
+            # Try alternate location (old structure)
+            gap_report_path = job_dir / "gap_analysis_report.json"
+            if not gap_report_path.exists():
+                raise HTTPException(status_code=404, detail="Job not found")
         
         extractor = GapExtractor(gap_report_path=str(gap_report_path))
         gaps = extractor.extract_gaps()
