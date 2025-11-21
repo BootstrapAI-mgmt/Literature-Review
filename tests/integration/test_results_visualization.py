@@ -86,10 +86,11 @@ def completed_job(temp_workspace):
 @pytest.fixture
 def test_client(temp_workspace, monkeypatch):
     """Create a test client with mocked workspace directories."""
-    # Remove app module if already imported to ensure clean state
+    # Remove app module and related modules if already imported to ensure clean state
     import sys
-    if 'webdashboard.app' in sys.modules:
-        del sys.modules['webdashboard.app']
+    modules_to_remove = [m for m in list(sys.modules.keys()) if m.startswith('webdashboard.')]
+    for mod in modules_to_remove:
+        del sys.modules[mod]
     
     # Import and patch the app module
     from webdashboard import app as app_module

@@ -42,9 +42,10 @@ def test_client(temp_workspace, monkeypatch):
     """Create a test client with temporary workspace"""
     # Patch paths BEFORE importing app module
     import sys
-    # Remove app module if already imported
-    if 'webdashboard.app' in sys.modules:
-        del sys.modules['webdashboard.app']
+    # Remove app module and related modules if already imported
+    modules_to_remove = [m for m in list(sys.modules.keys()) if m.startswith('webdashboard.')]
+    for mod in modules_to_remove:
+        del sys.modules[mod]
     
     # Patch the Path resolution at the module level
     monkeypatch.setenv("LITERATURE_REVIEW_WORKSPACE", str(temp_workspace))
