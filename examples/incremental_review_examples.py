@@ -19,6 +19,7 @@ Dependencies:
 
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -239,73 +240,98 @@ def score_paper_relevance_example():
 
 def state_manager_example():
     """
-    Demonstrates how to use StateManager to track job metadata and lineage.
+    Demonstrates how job state and lineage tracking works in incremental mode.
+    
+    Note: This example shows the state file structure. The StateManager is
+    typically used internally by the pipeline orchestrator.
     """
     print("\n" + "="*80)
-    print("Example 4: Work with State Manager")
+    print("Example 4: Job State and Lineage Tracking")
     print("="*80)
     
-    output_dir = Path('reviews/example_state')
+    output_dir = Path('/tmp/incremental_examples/state')
     output_dir.mkdir(parents=True, exist_ok=True)
     
-    # Initialize state manager
-    state_manager = StateManager(output_dir=str(output_dir))
+    # Example 1: Full analysis job state
+    print("\n1. Full Analysis Job State:")
+    print("-" * 80)
     
-    print(f"\nState file location: {output_dir / 'orchestrator_state.json'}")
-    
-    # Create initial state for a full analysis
-    print("\n1. Creating state for full analysis job...")
-    state_manager.create_state(
-        job_type=JobType.FULL,
-        database_hash="abc123def456",
-        parent_job_id=None
-    )
-    
-    # Load state
-    state = state_manager.load_state()
-    print(f"   Job ID: {state.get('job_id', 'N/A')}")
-    print(f"   Job Type: {state.get('job_type', 'N/A')}")
-    print(f"   Database Hash: {state.get('database_hash', 'N/A')}")
-    
-    # Update with gap metrics
-    print("\n2. Updating with gap metrics...")
-    gap_metrics = {
-        'total_gaps': 23,
-        'gaps_by_pillar': {
-            'Pillar 1': 5,
-            'Pillar 2': 8,
-            'Pillar 3': 10
+    full_job_state = {
+        'schema_version': '2.0',
+        'job_id': 'review_20250115_103000',
+        'job_type': 'full',
+        'parent_job_id': None,  # No parent - this is a baseline
+        'timestamp': '2025-01-15T10:30:00',
+        'database_hash': 'abc123def456',
+        'analysis_completed': True,
+        'gap_metrics': {
+            'total_gaps': 23,
+            'gaps_by_pillar': {
+                'Pillar 1: Hardware': 5,
+                'Pillar 2: Algorithms': 8,
+                'Pillar 3: Applications': 10
+            }
         }
     }
-    state_manager.update_gap_metrics(gap_metrics)
     
-    # Mark as completed
-    print("\n3. Marking analysis as completed...")
-    state_manager.mark_completed()
+    print(json.dumps(full_job_state, indent=2))
     
-    state = state_manager.load_state()
-    print(f"   Analysis completed: {state.get('analysis_completed', False)}")
-    print(f"   Total gaps: {state.get('gap_metrics', {}).get('total_gaps', 0)}")
+    # Save full job state
+    full_state_file = output_dir / 'baseline_state.json'
+    with open(full_state_file, 'w') as f:
+        json.dump(full_job_state, f, indent=2)
     
-    # Create incremental continuation
-    print("\n4. Creating continuation job...")
-    parent_job_id = state.get('job_id')
+    print(f"\n✓ Saved to: {full_state_file}")
     
-    continuation_state_manager = StateManager(output_dir=str(output_dir / 'continuation'))
-    continuation_state_manager.output_dir.mkdir(parents=True, exist_ok=True)
+    # Example 2: Incremental continuation job state
+    print("\n2. Incremental Continuation Job State:")
+    print("-" * 80)
     
-    continuation_state_manager.create_state(
-        job_type=JobType.INCREMENTAL,
-        database_hash="abc123def456_updated",
-        parent_job_id=parent_job_id
-    )
+    incremental_job_state = {
+        'schema_version': '2.0',
+        'job_id': 'review_20250120_143000',
+        'job_type': 'incremental',
+        'parent_job_id': 'review_20250115_103000',  # References the baseline
+        'timestamp': '2025-01-20T14:30:00',
+        'database_hash': 'abc123def456_updated',
+        'analysis_completed': True,
+        'gap_metrics': {
+            'total_gaps': 18,  # 5 gaps closed!
+            'gaps_by_pillar': {
+                'Pillar 1: Hardware': 3,
+                'Pillar 2: Algorithms': 6,
+                'Pillar 3: Applications': 9
+            }
+        },
+        'incremental_state': {
+            'papers_analyzed': 15,  # Only 15 new papers analyzed
+            'papers_filtered': 35,  # 35 papers skipped (irrelevant)
+            'relevance_threshold': 0.50,
+            'gaps_closed': 5
+        }
+    }
     
-    continuation_state = continuation_state_manager.load_state()
-    print(f"   Continuation Job ID: {continuation_state.get('job_id', 'N/A')}")
-    print(f"   Parent Job ID: {continuation_state.get('parent_job_id', 'N/A')}")
-    print(f"   Job Type: {continuation_state.get('job_type', 'N/A')}")
+    print(json.dumps(incremental_job_state, indent=2))
     
-    print("\n✅ State management demonstration complete")
+    # Save incremental job state
+    incremental_state_file = output_dir / 'incremental_state.json'
+    with open(incremental_state_file, 'w') as f:
+        json.dump(incremental_job_state, f, indent=2)
+    
+    print(f"\n✓ Saved to: {incremental_state_file}")
+    
+    # Example 3: Job lineage tracking
+    print("\n3. Job Lineage:")
+    print("-" * 80)
+    
+    print(f"Baseline Job:      {full_job_state['job_id']}")
+    print(f"  ↓ (parent)")
+    print(f"Continuation Job:  {incremental_job_state['job_id']}")
+    print(f"\nGaps reduced: {full_job_state['gap_metrics']['total_gaps']} → "
+          f"{incremental_job_state['gap_metrics']['total_gaps']} "
+          f"({full_job_state['gap_metrics']['total_gaps'] - incremental_job_state['gap_metrics']['total_gaps']} closed)")
+    
+    print("\n✅ State and lineage tracking demonstration complete")
 
 
 # =============================================================================
@@ -395,7 +421,7 @@ def main():
         ("1", "Run Incremental Analysis Programmatically", run_incremental_analysis_example),
         ("2", "Extract Gaps from Previous Analysis", extract_gaps_example),
         ("3", "Score Paper Relevance to Gaps", score_paper_relevance_example),
-        ("4", "Work with State Manager", state_manager_example),
+        ("4", "Job State and Lineage Tracking", state_manager_example),
         ("5", "Filter Papers Based on Relevance", filter_papers_example),
     ]
     
