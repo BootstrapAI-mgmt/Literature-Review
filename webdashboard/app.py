@@ -555,6 +555,20 @@ async def root():
         return template_file.read_text()
     return "<h1>Literature Review Dashboard</h1><p>Template not found. Please check installation.</p>"
 
+@app.get(
+    "/genealogy",
+    response_class=HTMLResponse,
+    tags=["System"],
+    summary="Job genealogy visualization page",
+    include_in_schema=False  # Hide from API docs (it's a web page)
+)
+async def genealogy():
+    """Serve the job genealogy visualization page"""
+    template_file = Path(__file__).parent / "templates" / "job_genealogy.html"
+    if template_file.exists():
+        return template_file.read_text()
+    return "<h1>Job Genealogy</h1><p>Template not found. Please check installation.</p>"
+
 @app.post(
     "/api/upload",
     response_model=UploadResponse,

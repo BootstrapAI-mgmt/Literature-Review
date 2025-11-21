@@ -1,0 +1,277 @@
+/* Job Genealogy Visualization Styles */
+
+/* Tree Container */
+#genealogy-tree {
+    min-height: 500px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+#genealogy-timeline {
+    min-height: 300px;
+    background: #fff;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+/* Tree Nodes */
+.node {
+    transition: transform 0.2s ease;
+}
+
+.node:hover circle {
+    filter: brightness(1.1);
+    stroke-width: 3px;
+}
+
+.node:active {
+    transform: scale(0.95);
+}
+
+/* Tree Links */
+.link {
+    transition: stroke 0.2s ease;
+}
+
+.link:hover {
+    stroke: #007bff;
+    stroke-width: 3px;
+}
+
+/* Tooltip Styles */
+#tooltip {
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+#tooltip strong {
+    color: #333;
+    font-weight: 600;
+}
+
+/* Chart Containers */
+#gapReductionChart,
+#coverageProgressChart {
+    max-height: 250px;
+}
+
+/* Table Styles */
+#genealogy-table {
+    font-size: 0.9rem;
+}
+
+#genealogy-table td,
+#genealogy-table th {
+    vertical-align: middle;
+}
+
+#genealogy-table code {
+    font-size: 0.85rem;
+    background: #f8f9fa;
+    padding: 2px 6px;
+    border-radius: 3px;
+}
+
+/* View Controls */
+.btn-group .btn {
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.btn-group .btn.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+/* Export Buttons */
+.btn-outline-success:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+.card-header {
+    border-bottom: 2px solid rgba(0,0,0,0.1);
+}
+
+/* Progress Bars */
+.progress {
+    height: 20px;
+    border-radius: 4px;
+}
+
+.progress-bar {
+    transition: width 0.6s ease;
+}
+
+/* Badge Styles */
+.badge {
+    font-size: 0.75rem;
+    padding: 4px 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #genealogy-tree svg {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        border-radius: 4px !important;
+        margin-bottom: 5px;
+    }
+    
+    #genealogy-table {
+        font-size: 0.8rem;
+    }
+    
+    #tooltip {
+        max-width: 200px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 576px) {
+    .display-5 {
+        font-size: 1.75rem;
+    }
+    
+    .card-body {
+        padding: 10px;
+    }
+    
+    #genealogy-tree {
+        padding: 10px;
+    }
+}
+
+/* Loading State */
+.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+}
+
+.loading::after {
+    content: '';
+    width: 40px;
+    height: 40px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state svg {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    opacity: 0.5;
+}
+
+/* Node Color Classes (for legend if needed) */
+.coverage-high {
+    fill: #28a745;
+}
+
+.coverage-medium {
+    fill: #ffc107;
+}
+
+.coverage-low {
+    fill: #fd7e14;
+}
+
+.coverage-critical {
+    fill: #dc3545;
+}
+
+/* Timeline Specific Styles */
+#genealogy-timeline .node circle {
+    transition: r 0.2s ease;
+}
+
+#genealogy-timeline .node:hover circle {
+    r: 35;
+}
+
+/* Export Button Animation */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.btn-outline-success:active {
+    animation: pulse 0.5s ease;
+}
+
+/* Table Hover Effects */
+#genealogy-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+#genealogy-table tbody tr:hover {
+    background-color: #f8f9fa;
+    cursor: pointer;
+}
+
+/* Smooth Transitions */
+* {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Print Styles */
+@media print {
+    .btn-group,
+    button {
+        display: none;
+    }
+    
+    .card {
+        break-inside: avoid;
+    }
+    
+    #tooltip {
+        display: none !important;
+    }
+}

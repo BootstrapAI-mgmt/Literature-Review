@@ -1209,6 +1209,9 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-info" id="genealogyBtn" onclick="viewJobGenealogy()">
+                        🌳 View Genealogy
+                    </button>
                     <button type="button" class="btn btn-primary" id="downloadBtn">
                         📥 Download PDF
                     </button>
@@ -2525,6 +2528,14 @@
                 alert('Retry failed: ' + error.message);
             }
         });
+        
+        // View Job Genealogy
+        function viewJobGenealogy() {
+            if (!currentJobId) return;
+            
+            // Open genealogy page in new window
+            window.open(`/genealogy?job_id=${currentJobId}`, '_blank');
+        }
         
         // Results Viewer Functions
         async function showJobResults(jobId) {
