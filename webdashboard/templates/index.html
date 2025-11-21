@@ -768,6 +768,86 @@
                                 </div>
                             </div>
                             
+                            <!-- Output Directory Configuration -->
+                            <div class="card mb-3">
+                                <div class="card-header">
+                                    <h6>📁 Output Directory</h6>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Mode Selector -->
+                                    <div class="mb-3">
+                                        <label class="form-label">Save Results To:</label>
+                                        
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="outputDirMode" id="outputDirAuto" 
+                                                   value="auto" checked>
+                                            <label class="form-check-label" for="outputDirAuto">
+                                                <strong>Auto-generated</strong>
+                                                <small class="text-muted d-block">
+                                                    Default: workspace/jobs/{job_id}/outputs/gap_analysis_output/
+                                                </small>
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="outputDirMode" id="outputDirCustom" 
+                                                   value="custom">
+                                            <label class="form-check-label" for="outputDirCustom">
+                                                <strong>Custom Path</strong>
+                                                <small class="text-muted d-block">
+                                                    Specify where to save results (like CLI --output-dir)
+                                                </small>
+                                            </label>
+                                        </div>
+                                        
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="outputDirMode" id="outputDirExisting" 
+                                                   value="existing">
+                                            <label class="form-check-label" for="outputDirExisting">
+                                                <strong>Select Existing Directory</strong>
+                                                <small class="text-muted d-block">
+                                                    Continue analysis in existing folder
+                                                </small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Custom Path Input (shown when "Custom Path" selected) -->
+                                    <div id="customPathSection" style="display: none;">
+                                        <label for="customOutputPath" class="form-label">Output Directory Path:</label>
+                                        <input type="text" class="form-control" id="customOutputPath" 
+                                               placeholder="/path/to/output or ./relative/path">
+                                        <div class="form-text">
+                                            Enter absolute path (e.g., /project/review_v1) or relative (e.g., ./my_review)
+                                        </div>
+                                        
+                                        <div class="form-check mt-2">
+                                            <input class="form-check-input" type="checkbox" 
+                                                   id="overwriteExisting">
+                                            <label class="form-check-label" for="overwriteExisting">
+                                                Overwrite existing results (like CLI --force)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Existing Directory Selector (shown when "Select Existing" selected) -->
+                                    <div id="existingDirSection" style="display: none;">
+                                        <label for="existingDirDropdown" class="form-label">Choose Directory:</label>
+                                        <select class="form-select" id="existingDirDropdown">
+                                            <option value="">-- Select a directory --</option>
+                                            <!-- Populated dynamically -->
+                                        </select>
+                                        <button type="button" class="btn btn-sm btn-secondary mt-2" 
+                                                onclick="refreshOutputDirectoryList()">
+                                            🔄 Refresh List
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="mb-3">
                                 <label for="apiKeyInput" class="form-label">API Key</label>
                                 <input 
@@ -2640,10 +2720,34 @@
                 document.getElementById('convergenceThreshold').value
             );
             
+            // Get output directory configuration
+            const output_dir_mode = document.querySelector('input[name="outputDirMode"]:checked').value;
+            let output_dir_path = null;
+            let overwrite_existing = false;
+            
+            if (output_dir_mode === 'custom') {
+                output_dir_path = document.getElementById('customOutputPath').value;
+                if (!output_dir_path) {
+                    alert('Please enter a custom output directory path');
+                    return;
+                }
+                overwrite_existing = document.getElementById('overwriteExisting').checked;
+            } else if (output_dir_mode === 'existing') {
+                output_dir_path = document.getElementById('existingDirDropdown').value;
+                if (!output_dir_path) {
+                    alert('Please select an existing directory');
+                    return;
+                }
+                overwrite_existing = true; // Always overwrite when using existing directory
+            }
+            
             const config = {
                 pillar_selections,
                 run_mode,
-                convergence_threshold
+                convergence_threshold,
+                output_dir_mode,
+                output_dir_path,
+                overwrite_existing
             };
             
             try {
@@ -2657,7 +2761,10 @@
                     body: JSON.stringify(config)
                 });
                 
-                if (!configResponse.ok) throw new Error('Configuration failed');
+                if (!configResponse.ok) {
+                    const error = await configResponse.json();
+                    throw new Error(error.detail || 'Configuration failed');
+                }
                 
                 // Start job execution
                 const startResponse = await fetch(`${API_BASE}/api/jobs/${currentJobId}/start`, {
@@ -3104,6 +3211,62 @@
                 if (promptTimeoutInterval) {
                     clearInterval(promptTimeoutInterval);
                 }
+            }
+        }
+        
+        // === OUTPUT DIRECTORY CONFIGURATION ===
+        
+        // Toggle visibility based on mode selection
+        document.querySelectorAll('input[name="outputDirMode"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                document.getElementById('customPathSection').style.display = 
+                    (e.target.value === 'custom') ? 'block' : 'none';
+                document.getElementById('existingDirSection').style.display = 
+                    (e.target.value === 'existing') ? 'block' : 'none';
+                
+                // Load existing directories when "existing" mode is selected
+                if (e.target.value === 'existing') {
+                    refreshOutputDirectoryList();
+                }
+            });
+        });
+        
+        // Refresh existing directory dropdown
+        async function refreshOutputDirectoryList() {
+            const dropdown = document.getElementById('existingDirDropdown');
+            const apiKey = document.getElementById('apiKeyInput').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/scan-output-directories`, {
+                    headers: { 'X-API-KEY': apiKey }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to scan directories');
+                }
+                
+                const data = await response.json();
+                
+                dropdown.innerHTML = '<option value="">-- Select a directory --</option>';
+                
+                if (data.directories && data.directories.length > 0) {
+                    data.directories.forEach(dir => {
+                        const option = document.createElement('option');
+                        option.value = dir.path;
+                        const lastModified = new Date(dir.last_modified).toLocaleDateString();
+                        option.textContent = `${dir.path} (${dir.file_count} files, ${lastModified})`;
+                        dropdown.appendChild(option);
+                    });
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'No existing output directories found';
+                    option.disabled = true;
+                    dropdown.appendChild(option);
+                }
+            } catch (error) {
+                console.error('Failed to refresh directory list:', error);
+                alert('Failed to load existing directories: ' + error.message);
             }
         }
         
