@@ -1274,7 +1274,7 @@ async def upload_config_file(
         raise HTTPException(status_code=404, detail="Job not found")
     
     # Validate it's a JSON file
-    if not config_file.filename.endswith('.json'):
+    if not config_file.filename or not config_file.filename.endswith('.json'):
         raise HTTPException(status_code=400, detail="Config file must be JSON")
     
     # Create job directory

@@ -290,6 +290,9 @@ class PipelineJobRunner:
         import sys
         from pathlib import Path
         
+        # Default relevance threshold constant
+        DEFAULT_RELEVANCE_THRESHOLD = 0.7
+        
         config = job_data.get("config", {})
         
         # Build CLI command for pipeline orchestrator
@@ -314,8 +317,8 @@ class PipelineJobRunner:
         if config.get("budget"):
             cmd.extend(["--budget", str(config["budget"])])
         
-        relevance_threshold = config.get("relevance_threshold", 0.7)
-        if relevance_threshold != 0.7:  # Only add if non-default
+        relevance_threshold = config.get("relevance_threshold", DEFAULT_RELEVANCE_THRESHOLD)
+        if relevance_threshold != DEFAULT_RELEVANCE_THRESHOLD:  # Only add if non-default
             cmd.extend(["--relevance-threshold", str(relevance_threshold)])
         
         if config.get("resume_from_stage"):
