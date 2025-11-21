@@ -15,7 +15,16 @@ let coverageChart = null;
  */
 async function loadGenealogyViz(jobId) {
     try {
-        const apiKey = 'dev-key-change-in-production';
+        // Get API key from session storage, parent window, or use default
+        // In production, this should use proper server-side authentication
+        let apiKey = sessionStorage.getItem('apiKey');
+        if (!apiKey && window.opener && window.opener.document.getElementById('apiKeyInput')) {
+            apiKey = window.opener.document.getElementById('apiKeyInput').value;
+        }
+        if (!apiKey) {
+            apiKey = 'dev-key-change-in-production';
+        }
+        
         const response = await fetch(`/api/jobs/${jobId}/lineage`, {
             headers: { 'X-API-KEY': apiKey }
         });
@@ -577,6 +586,8 @@ function exportVisualization(format) {
             });
         };
         
-        img.src = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svgData)));
+        // Use modern base64 encoding instead of deprecated unescape
+        const base64Data = btoa(new TextEncoder().encode(svgData).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+        img.src = 'data:image/svg+xml;base64,' + base64Data;
     }
 }

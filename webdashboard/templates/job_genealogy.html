@@ -180,6 +180,17 @@
         const urlParams = new URLSearchParams(window.location.search);
         const jobId = urlParams.get('job_id');
         
+        // Initialize API key input if available from parent window or use default
+        // Note: In production, API keys should be managed server-side
+        if (window.opener && window.opener.document.getElementById('apiKeyInput')) {
+            // Get API key from parent window if available
+            const parentApiKey = window.opener.document.getElementById('apiKeyInput').value;
+            if (parentApiKey) {
+                // Store in session for this page
+                sessionStorage.setItem('apiKey', parentApiKey);
+            }
+        }
+        
         if (jobId) {
             // Load and render genealogy
             loadGenealogyViz(jobId);

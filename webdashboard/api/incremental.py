@@ -736,6 +736,8 @@ async def get_job_lineage(
         ancestors = []
         current_parent = state_data.get('parent_job_id')
         
+        # Build ancestors in reverse chronological order (newest to oldest)
+        temp_ancestors = []
         while current_parent:
             parent_state_file = get_job_dir(current_parent) / "orchestrator_state.json"
             if not parent_state_file.exists():
@@ -749,7 +751,7 @@ async def get_job_lineage(
             # Extract gap metrics for this ancestor
             gap_metrics = _extract_gap_metrics(parent_job_dir)
             
-            ancestors.append({
+            temp_ancestors.append({
                 'job_id': parent_state.get('job_id'),
                 'created_at': parent_state.get('created_at'),
                 'job_type': parent_state.get('job_type', 'unknown'),
@@ -764,7 +766,7 @@ async def get_job_lineage(
             current_parent = parent_state.get('parent_job_id')
         
         # Reverse to get chronological order (oldest first)
-        ancestors.reverse()
+        ancestors = list(reversed(temp_ancestors))
         
         # Add current job metrics
         current_gap_metrics = _extract_gap_metrics(job_dir)
