@@ -1,0 +1,25 @@
+<div class="mode-selector card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Analysis Mode</h5>
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="analysisMode" 
+                   id="modeBaseline" value="baseline" checked>
+            <label class="form-check-label" for="modeBaseline">
+                <strong>New Review</strong> (baseline)
+                <small class="text-muted d-block">
+                    Analyze all papers from scratch
+                </small>
+            </label>
+        </div>
+        <div class="form-check mt-2">
+            <input class="form-check-input" type="radio" name="analysisMode" 
+                   id="modeContinuation" value="continuation">
+            <label class="form-check-label" for="modeContinuation">
+                <strong>Continue Existing Review</strong> (incremental)
+                <small class="text-muted d-block">
+                    Add new papers to previous analysis
+                </small>
+            </label>
+        </div>
+    </div>
+</div>
