@@ -320,6 +320,7 @@ class PipelineJobRunner:
             job_id=job_id,
             pillar_selections=config.get("pillar_selections", ["ALL"]),
             run_mode=config.get("run_mode", "ONCE"),
+            output_dir=config.get("output_dir"),  # Pass custom output directory
             progress_callback=progress_callback,
             log_callback=log_callback,
             prompt_callback=prompt_callback
