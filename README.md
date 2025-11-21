@@ -268,6 +268,13 @@ Literature-Review/
 **Getting Started:**
 - **[docs/guides/WORKFLOW_EXECUTION_GUIDE.md](docs/guides/WORKFLOW_EXECUTION_GUIDE.md)** - How to run the pipeline
 - **[docs/CONSOLIDATED_ROADMAP.md](docs/CONSOLIDATED_ROADMAP.md)** ⭐ - Complete project overview
+- **[docs/DASHBOARD_GUIDE.md](docs/DASHBOARD_GUIDE.md)** - Web dashboard guide
+
+**Incremental Review Mode:**
+- **[docs/INCREMENTAL_REVIEW_USER_GUIDE.md](docs/INCREMENTAL_REVIEW_USER_GUIDE.md)** - Complete incremental mode guide
+- **[docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md](docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md)** - Migration from previous versions
+- **[docs/api/incremental_endpoints.yaml](docs/api/incremental_endpoints.yaml)** - REST API specification
+- **[examples/incremental_review_examples.py](examples/incremental_review_examples.py)** - Code examples
 
 **Architecture & Design:**
 - **[docs/architecture/ARCHITECTURE_REFACTOR.md](docs/architecture/ARCHITECTURE_REFACTOR.md)** - Current repository structure
