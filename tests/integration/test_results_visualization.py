@@ -95,6 +95,13 @@ def test_client(temp_workspace, monkeypatch):
     for mod in modules_to_remove:
         del sys.modules[mod]
     
+    # Also clear any potential mocks from component tests
+    # Remove mocked genai.Client if it exists
+    genai_module = sys.modules.get('google.genai')
+    if genai_module and hasattr(genai_module, 'Client'):
+        import importlib
+        importlib.reload(genai_module)
+    
     # Create review_log.json in the parent directory (BASE_DIR)
     review_log_path = temp_workspace.parent / "review_log.json"
     review_log_path.write_text("[]")
