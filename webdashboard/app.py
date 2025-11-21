@@ -16,14 +16,15 @@ import mimetypes
 import os
 import shutil
 import time
+import traceback
 import uuid
 import zipfile
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect, Header
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect, Header, Request
+from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from typing import Any
@@ -97,6 +98,20 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Register API routers
 app.include_router(incremental_router)
+
+# Global exception handler for better error logging
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Log all unhandled exceptions with full traceback"""
+    logger.error(f"Unhandled exception in {request.method} {request.url.path}")
+    logger.error(f"Exception type: {type(exc).__name__}")
+    logger.error(f"Exception message: {str(exc)}")
+    logger.error(f"Full traceback:\n{traceback.format_exc()}")
+    
+    return JSONResponse(
+        status_code=500,
+        content={"detail": f"Internal server error: {str(exc)}"}
+    )
 
 # API Key for authentication (from environment)
 API_KEY = os.getenv("DASHBOARD_API_KEY", "dev-key-change-in-production")
