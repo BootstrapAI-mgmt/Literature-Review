@@ -588,6 +588,78 @@
             </div>
         </div>
 
+        <!-- Resource Monitoring Section -->
+        <div class="row mb-4" id="resourceMonitorContainer">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header bg-info text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">📊 System Resources</h5>
+                        <span id="monitorConnectionStatus" class="badge bg-secondary">Connecting...</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Alerts Container -->
+                        <div id="resourceAlerts"></div>
+                        
+                        <!-- Current Usage -->
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">CPU Usage</h6>
+                                        <h3 id="cpuPercent">0%</h3>
+                                        <div class="progress mb-2" style="height: 10px;">
+                                            <div id="cpuBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small class="text-muted" id="cpuCores">0 cores</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">Memory Usage</h6>
+                                        <h3 id="memoryPercent">0%</h3>
+                                        <div class="progress mb-2" style="height: 10px;">
+                                            <div id="memoryBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small class="text-muted" id="memoryUsed">0 / 0 GB</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h6 class="card-title text-muted">Disk Usage</h6>
+                                        <h3 id="diskPercent">0%</h3>
+                                        <div class="progress mb-2" style="height: 10px;">
+                                            <div id="diskBar" class="progress-bar bg-success" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <small class="text-muted" id="diskUsed">0 / 0 GB</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Charts -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-muted">CPU Usage (Last 5 Minutes)</h6>
+                                <div style="height: 200px;">
+                                    <canvas id="cpuChart"></canvas>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-muted">Memory Usage (Last 5 Minutes)</h6>
+                                <div style="height: 200px;">
+                                    <canvas id="memoryChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Upload Section -->
         <div class="row mb-4">
             <div class="col-md-12">
@@ -3153,5 +3225,8 @@
     
     <!-- Continuation Mode JavaScript -->
     <script src="/static/js/continuation.js"></script>
+    
+    <!-- Resource Monitor JavaScript -->
+    <script src="/static/js/resource_monitor.js"></script>
 </body>
 </html>
