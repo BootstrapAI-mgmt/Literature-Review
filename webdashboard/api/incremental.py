@@ -612,13 +612,79 @@ async def merge_incremental_results(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+def _extract_gap_metrics(job_dir: Path) -> Dict[str, Any]:
+    """Extract gap metrics from a job's gap analysis report."""
+    # Look for gap analysis report
+    gap_report_path = job_dir / "outputs" / "gap_analysis_output" / "gap_analysis_report.json"
+    if not gap_report_path.exists():
+        # Try alternate location (old structure)
+        gap_report_path = job_dir / "gap_analysis_report.json"
+        if not gap_report_path.exists():
+            return {
+                'total_gaps': 0,
+                'gaps_by_pillar': {},
+                'overall_coverage': 0.0,
+                'papers_analyzed': 0
+            }
+    
+    try:
+        with open(gap_report_path, 'r') as f:
+            gap_report = json.load(f)
+        
+        # Extract gap count
+        total_gaps = 0
+        gaps_by_pillar = {}
+        
+        # Parse pillar results
+        pillar_results = gap_report.get('pillar_results', {})
+        for pillar_id, pillar_data in pillar_results.items():
+            requirements = pillar_data.get('requirements', [])
+            pillar_gaps = 0
+            
+            for req in requirements:
+                coverage = req.get('coverage_percentage', 100.0)
+                if coverage < 70.0:  # Gap threshold
+                    pillar_gaps += 1
+                    
+                # Check sub-requirements
+                for sub_req in req.get('sub_requirements', []):
+                    sub_coverage = sub_req.get('coverage_percentage', 100.0)
+                    if sub_coverage < 70.0:
+                        pillar_gaps += 1
+            
+            if pillar_gaps > 0:
+                gaps_by_pillar[pillar_id] = pillar_gaps
+                total_gaps += pillar_gaps
+        
+        # Calculate overall coverage
+        overall_coverage = gap_report.get('overall_summary', {}).get('overall_coverage_percentage', 0.0)
+        
+        # Get paper count
+        papers_analyzed = gap_report.get('overall_summary', {}).get('total_papers_analyzed', 0)
+        
+        return {
+            'total_gaps': total_gaps,
+            'gaps_by_pillar': gaps_by_pillar,
+            'overall_coverage': overall_coverage,
+            'papers_analyzed': papers_analyzed
+        }
+    except Exception as e:
+        logger.error(f"Error extracting gap metrics: {e}")
+        return {
+            'total_gaps': 0,
+            'gaps_by_pillar': {},
+            'overall_coverage': 0.0,
+            'papers_analyzed': 0
+        }
+
+
 @router.get(
     "/{job_id}/lineage",
-    summary="Get job lineage",
-    description="Get parent-child job relationships and ancestry tree",
+    summary="Get job lineage with metrics",
+    description="Get parent-child job relationships, ancestry tree, and gap/coverage metrics over time",
     responses={
         200: {
-            "description": "Job lineage information",
+            "description": "Job lineage information with metrics",
             "content": {
                 "application/json": {
                     "example": {
@@ -629,7 +695,8 @@ async def merge_incremental_results(
                         "ancestors": [],
                         "descendants": [],
                         "lineage_depth": 2,
-                        "root_job_id": "job_20250101_100000"
+                        "root_job_id": "job_20250101_100000",
+                        "metrics_timeline": []
                     }
                 }
             }
@@ -642,13 +709,14 @@ async def get_job_lineage(
     x_api_key: Optional[str] = Header(None, alias="X-API-KEY")
 ):
     """
-    Get parent-child job relationships.
+    Get parent-child job relationships with gap metrics.
     
     Returns the complete ancestry tree for a job, including:
     - Immediate parent
-    - All ancestors (recursive)
+    - All ancestors (recursive) with gap metrics
     - Child jobs (if any)
     - Root job in the lineage
+    - Metrics timeline for visualization
     """
     verify_api_key(x_api_key)
     
@@ -664,32 +732,76 @@ async def get_job_lineage(
         with open(state_file, 'r') as f:
             state_data = json.load(f)
         
-        # Build lineage - walk up to find ancestors
+        # Build lineage - walk up to find ancestors with metrics
         ancestors = []
         current_parent = state_data.get('parent_job_id')
         
+        # Build ancestors in reverse chronological order (newest to oldest)
+        temp_ancestors = []
         while current_parent:
             parent_state_file = get_job_dir(current_parent) / "orchestrator_state.json"
             if not parent_state_file.exists():
                 logger.warning(f"Parent job {current_parent} state not found")
                 break
             
+            parent_job_dir = get_job_dir(current_parent)
             with open(parent_state_file, 'r') as f:
                 parent_state = json.load(f)
             
-            ancestors.append({
+            # Extract gap metrics for this ancestor
+            gap_metrics = _extract_gap_metrics(parent_job_dir)
+            
+            temp_ancestors.append({
                 'job_id': parent_state.get('job_id'),
                 'created_at': parent_state.get('created_at'),
-                'job_type': parent_state.get('job_type', 'unknown')
+                'job_type': parent_state.get('job_type', 'unknown'),
+                'gap_metrics': {
+                    'total_gaps': gap_metrics['total_gaps'],
+                    'gaps_by_pillar': gap_metrics['gaps_by_pillar']
+                },
+                'overall_coverage': gap_metrics['overall_coverage'],
+                'papers_analyzed': gap_metrics['papers_analyzed']
             })
             
             current_parent = parent_state.get('parent_job_id')
         
-        # Find root job
-        root_job_id = ancestors[-1]['job_id'] if ancestors else job_id
+        # Reverse to get chronological order (oldest first)
+        ancestors = list(reversed(temp_ancestors))
         
-        # TODO: Implement child tracking by scanning all jobs for parent_job_id match
+        # Add current job metrics
+        current_gap_metrics = _extract_gap_metrics(job_dir)
+        current_job_data = {
+            'job_id': job_id,
+            'created_at': state_data.get('created_at'),
+            'job_type': state_data.get('job_type', 'unknown'),
+            'gap_metrics': {
+                'total_gaps': current_gap_metrics['total_gaps'],
+                'gaps_by_pillar': current_gap_metrics['gaps_by_pillar']
+            },
+            'overall_coverage': current_gap_metrics['overall_coverage'],
+            'papers_analyzed': current_gap_metrics['papers_analyzed']
+        }
+        
+        # Find root job
+        root_job_id = ancestors[0]['job_id'] if ancestors else job_id
+        
+        # Build metrics timeline (all jobs in chronological order)
+        metrics_timeline = ancestors + [current_job_data]
+        
+        # Find child jobs by scanning all jobs
         child_job_ids = []
+        if JOBS_DIR.exists():
+            for child_dir in JOBS_DIR.iterdir():
+                if child_dir.is_dir():
+                    child_state_file = child_dir / "orchestrator_state.json"
+                    if child_state_file.exists():
+                        try:
+                            with open(child_state_file, 'r') as f:
+                                child_state = json.load(f)
+                            if child_state.get('parent_job_id') == job_id:
+                                child_job_ids.append(child_state.get('job_id'))
+                        except:
+                            pass
         
         return {
             "job_id": job_id,
@@ -697,9 +809,11 @@ async def get_job_lineage(
             "parent_job_id": state_data.get('parent_job_id'),
             "child_job_ids": child_job_ids,
             "ancestors": ancestors,
-            "descendants": [],  # TODO: Implement descendant tracking
+            "descendants": [],  # Could be implemented if needed
             "lineage_depth": len(ancestors),
-            "root_job_id": root_job_id
+            "root_job_id": root_job_id,
+            "metrics_timeline": metrics_timeline,
+            "current_metrics": current_job_data
         }
     
     except HTTPException:
