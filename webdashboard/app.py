@@ -2949,9 +2949,10 @@ async def scan_output_directories(
     import hashlib
     directories = []
     
-    # Scan common locations
+    # Scan common locations - use current working directory and workspace
     search_paths = [
-        BASE_DIR / "gap_analysis_output",
+        Path.cwd() / "gap_analysis_output",
+        WORKSPACE_DIR / "gap_analysis_output",
         JOBS_DIR,
         Path.home() / "literature_review_outputs"
     ]
@@ -2961,28 +2962,32 @@ async def scan_output_directories(
             continue
         
         # Find directories with gap_analysis_report.json
-        for report_file in search_path.rglob("gap_analysis_report.json"):
-            output_dir = report_file.parent
-            
-            # Skip if already in list
-            output_dir_str = str(output_dir)
-            if any(d['path'] == output_dir_str for d in directories):
-                continue
-            
-            # Count files
-            file_count = sum(1 for _ in output_dir.glob("*") if _.is_file())
-            
-            # Get last modified time
-            last_modified = datetime.fromtimestamp(
-                output_dir.stat().st_mtime
-            ).isoformat()
-            
-            directories.append({
-                "path": output_dir_str,
-                "file_count": file_count,
-                "last_modified": last_modified,
-                "has_report": True
-            })
+        try:
+            for report_file in search_path.rglob("gap_analysis_report.json"):
+                output_dir = report_file.parent
+                
+                # Skip if already in list
+                output_dir_str = str(output_dir)
+                if any(d['path'] == output_dir_str for d in directories):
+                    continue
+                
+                # Count files
+                file_count = sum(1 for _ in output_dir.glob("*") if _.is_file())
+                
+                # Get last modified time
+                last_modified = datetime.fromtimestamp(
+                    output_dir.stat().st_mtime
+                ).isoformat()
+                
+                directories.append({
+                    "path": output_dir_str,
+                    "file_count": file_count,
+                    "last_modified": last_modified,
+                    "has_report": True
+                })
+        except (PermissionError, OSError):
+            # Skip directories we can't access
+            continue
     
     return {"directories": directories, "count": len(directories)}
 
