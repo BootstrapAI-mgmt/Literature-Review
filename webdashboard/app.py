@@ -34,6 +34,7 @@ from webdashboard.duplicate_detector import (
     load_existing_papers_from_review_log
 )
 from webdashboard.api.incremental import router as incremental_router
+from webdashboard.api.bulk_operations import router as bulk_router
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -98,6 +99,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 # Register API routers
 app.include_router(incremental_router)
+app.include_router(bulk_router)
 
 # Global exception handler for better error logging
 @app.exception_handler(Exception)
