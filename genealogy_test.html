@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genealogy Visualization Test</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 0; }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        #test-tree { min-height: 400px; }
+        .chart-container { height: 250px; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <h1>Job Genealogy Visualization - Test Page</h1>
+    
+    <div class="test-section">
+        <h2>Test 1: Sample Data Loading</h2>
+        <p id="test1-result">Running...</p>
+        <pre id="test1-data" style="background: #f8f9fa; padding: 10px; border-radius: 4px; max-height: 200px; overflow-y: auto;"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 2: Tree Structure Transformation</h2>
+        <p id="test2-result">Running...</p>
+        <div id="test-tree"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 3: Gap Reduction Chart</h2>
+        <p id="test3-result">Running...</p>
+        <div class="chart-container">
+            <canvas id="test-gap-chart"></canvas>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test 4: Coverage Progress Chart</h2>
+        <p id="test4-result">Running...</p>
+        <div class="chart-container">
+            <canvas id="test-coverage-chart"></canvas>
+        </div>
+    </div>
+    
+    <script>
+        // Sample lineage data (simulating API response)
+        const sampleLineageData = {
+            "job_id": "job_20250120_143000",
+            "job_type": "incremental",
+            "parent_job_id": "job_20250115_103000",
+            "child_job_ids": [],
+            "lineage_depth": 2,
+            "root_job_id": "job_20250101_100000",
+            "metrics_timeline": [
+                {
+                    "job_id": "job_20250101_100000",
+                    "created_at": "2025-01-01T10:00:00",
+                    "job_type": "baseline",
+                    "gap_metrics": {
+                        "total_gaps": 28,
+                        "gaps_by_pillar": {"pillar_1": 10, "pillar_2": 18}
+                    },
+                    "overall_coverage": 72.0,
+                    "papers_analyzed": 150
+                },
+                {
+                    "job_id": "job_20250115_103000",
+                    "created_at": "2025-01-15T10:30:00",
+                    "job_type": "incremental",
+                    "gap_metrics": {
+                        "total_gaps": 20,
+                        "gaps_by_pillar": {"pillar_1": 5, "pillar_2": 15}
+                    },
+                    "overall_coverage": 80.5,
+                    "papers_analyzed": 165
+                },
+                {
+                    "job_id": "job_20250120_143000",
+                    "created_at": "2025-01-20T14:30:00",
+                    "job_type": "incremental",
+                    "gap_metrics": {
+                        "total_gaps": 12,
+                        "gaps_by_pillar": {"pillar_1": 2, "pillar_2": 10}
+                    },
+                    "overall_coverage": 92.3,
+                    "papers_analyzed": 180
+                }
+            ]
+        };
+        
+        // Test 1: Data Loading
+        try {
+            document.getElementById('test1-data').textContent = JSON.stringify(sampleLineageData, null, 2);
+            document.getElementById('test1-result').innerHTML = '<span class="success">✓ Sample data loaded successfully</span>';
+        } catch (error) {
+            document.getElementById('test1-result').innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+        }
+        
+        // Test 2: Tree Transformation
+        function transformLineageToTree(lineageData) {
+            const timeline = lineageData.metrics_timeline || [];
+            
+            if (timeline.length === 0) {
+                return null;
+            }
+            
+            // Build tree from timeline
+            const root = {
+                name: formatJobName(timeline[0].job_id),
+                job_id: timeline[0].job_id,
+                created_at: timeline[0].created_at,
+                gaps: timeline[0].gap_metrics?.total_gaps || 0,
+                coverage: timeline[0].overall_coverage || 0,
+                papers: timeline[0].papers_analyzed || 0,
+                children: []
+            };
+            
+            let current = root;
+            for (let i = 1; i < timeline.length; i++) {
+                const job = timeline[i];
+                const node = {
+                    name: formatJobName(job.job_id),
+                    job_id: job.job_id,
+                    created_at: job.created_at,
+                    gaps: job.gap_metrics?.total_gaps || 0,
+                    coverage: job.overall_coverage || 0,
+                    papers: job.papers_analyzed || 0,
+                    children: []
+                };
+                current.children.push(node);
+                current = node;
+            }
+            
+            return root;
+        }
+        
+        function formatJobName(jobId) {
+            const match = jobId.match(/job_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})/);
+            if (match) {
+                const [_, year, month, day, hour, minute] = match;
+                return `${month}/${day}/${year}`;
+            }
+            return jobId.substring(0, 12);
+        }
+        
+        function getNodeColor(nodeData) {
+            const coverage = nodeData.coverage || 0;
+            if (coverage >= 90) return '#28a745';
+            if (coverage >= 70) return '#ffc107';
+            if (coverage >= 50) return '#fd7e14';
+            return '#dc3545';
+        }
+        
+        try {
+            const treeData = transformLineageToTree(sampleLineageData);
+            
+            // Render simple tree
+            const container = d3.select('#test-tree');
+            const width = 800;
+            const height = 300;
+            
+            const svg = container
+                .append('svg')
+                .attr('width', width)
+                .attr('height', height)
+                .append('g')
+                .attr('transform', 'translate(50,50)');
+            
+            const treeLayout = d3.tree().size([width - 100, height - 100]);
+            const root = d3.hierarchy(treeData);
+            treeLayout(root);
+            
+            // Links
+            svg.selectAll('.link')
+                .data(root.links())
+                .enter()
+                .append('path')
+                .attr('d', d3.linkVertical().x(d => d.x).y(d => d.y))
+                .attr('fill', 'none')
+                .attr('stroke', '#999')
+                .attr('stroke-width', 2);
+            
+            // Nodes
+            const nodes = svg.selectAll('.node')
+                .data(root.descendants())
+                .enter()
+                .append('g')
+                .attr('transform', d => `translate(${d.x},${d.y})`);
+            
+            nodes.append('circle')
+                .attr('r', 30)
+                .attr('fill', d => getNodeColor(d.data))
+                .attr('stroke', '#333')
+                .attr('stroke-width', 2);
+            
+            nodes.append('text')
+                .attr('dy', -40)
+                .attr('text-anchor', 'middle')
+                .text(d => d.data.name)
+                .attr('font-size', '11px')
+                .attr('font-weight', 'bold');
+            
+            nodes.append('text')
+                .attr('dy', 5)
+                .attr('text-anchor', 'middle')
+                .text(d => `${Math.round(d.data.coverage)}%`)
+                .attr('font-size', '11px')
+                .attr('fill', '#fff')
+                .attr('font-weight', 'bold');
+            
+            document.getElementById('test2-result').innerHTML = '<span class="success">✓ Tree visualization rendered successfully</span>';
+        } catch (error) {
+            document.getElementById('test2-result').innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+        }
+        
+        // Test 3: Gap Chart
+        try {
+            const ctx = document.getElementById('test-gap-chart').getContext('2d');
+            const timeline = sampleLineageData.metrics_timeline;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeline.map(j => new Date(j.created_at).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Total Gaps',
+                        data: timeline.map(j => j.gap_metrics.total_gaps),
+                        borderColor: '#dc3545',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+            
+            document.getElementById('test3-result').innerHTML = '<span class="success">✓ Gap reduction chart rendered successfully</span>';
+        } catch (error) {
+            document.getElementById('test3-result').innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+        }
+        
+        // Test 4: Coverage Chart
+        try {
+            const ctx = document.getElementById('test-coverage-chart').getContext('2d');
+            const timeline = sampleLineageData.metrics_timeline;
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timeline.map(j => new Date(j.created_at).toLocaleDateString()),
+                    datasets: [{
+                        label: 'Coverage %',
+                        data: timeline.map(j => j.overall_coverage),
+                        borderColor: '#28a745',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { min: 0, max: 100 }
+                    }
+                }
+            });
+            
+            document.getElementById('test4-result').innerHTML = '<span class="success">✓ Coverage progress chart rendered successfully</span>';
+        } catch (error) {
+            document.getElementById('test4-result').innerHTML = `<span class="error">✗ Error: ${error.message}</span>`;
+        }
+    </script>
+</body>
+</html>

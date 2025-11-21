@@ -35,6 +35,7 @@ from webdashboard.duplicate_detector import (
 )
 from webdashboard.api.incremental import router as incremental_router
 from webdashboard.api.bulk_operations import router as bulk_router
+from webdashboard.api.system_metrics import router as system_metrics_router
 
 # Setup logger
 logger = logging.getLogger(__name__)
@@ -100,6 +101,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 # Register API routers
 app.include_router(incremental_router)
 app.include_router(bulk_router)
+app.include_router(system_metrics_router)
 
 # Global exception handler for better error logging
 @app.exception_handler(Exception)
@@ -556,6 +558,20 @@ async def root():
     if template_file.exists():
         return template_file.read_text()
     return "<h1>Literature Review Dashboard</h1><p>Template not found. Please check installation.</p>"
+
+@app.get(
+    "/genealogy",
+    response_class=HTMLResponse,
+    tags=["System"],
+    summary="Job genealogy visualization page",
+    include_in_schema=False  # Hide from API docs (it's a web page)
+)
+async def genealogy():
+    """Serve the job genealogy visualization page"""
+    template_file = Path(__file__).parent / "templates" / "job_genealogy.html"
+    if template_file.exists():
+        return template_file.read_text()
+    return "<h1>Job Genealogy</h1><p>Template not found. Please check installation.</p>"
 
 @app.post(
     "/api/upload",

@@ -22,10 +22,9 @@ from literature_review.analysis.judge import (
 from literature_review.utils.api_manager import APIManager
 
 
-@pytest.fixture(autouse=True)
-def set_gemini_api_key(monkeypatch):
-    """Set GEMINI_API_KEY for all component tests - required for APIManager initialization."""
-    monkeypatch.setenv("GEMINI_API_KEY", "test-dummy-key-for-component-tests")
+# Module-level setup for GEMINI_API_KEY - component tests need this for APIManager
+import os
+os.environ["GEMINI_API_KEY"] = "test-dummy-key-for-component-tests"
 
 
 @pytest.fixture
