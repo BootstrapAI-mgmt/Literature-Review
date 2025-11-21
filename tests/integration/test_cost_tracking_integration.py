@@ -48,7 +48,8 @@ class TestCostTrackingIntegration:
                     with patch('literature_review.utils.api_manager.get_cost_tracker') as mock_get_tracker:
                         mock_get_tracker.return_value = tracker
                         
-                        api_manager = APIManager(cache_dir=cache_dir)
+                        with patch.dict(os.environ, {'GEMINI_API_KEY': 'test_key'}):
+                            api_manager = APIManager(cache_dir=cache_dir)
                         
                         # Patch the actual API call
                         with patch.object(api_manager.client.models, 'generate_content', return_value=mock_response):
@@ -96,7 +97,8 @@ class TestCostTrackingIntegration:
                     with patch('literature_review.utils.api_manager.get_cost_tracker') as mock_get_tracker:
                         mock_get_tracker.return_value = tracker
                         
-                        api_manager = APIManager(cache_dir=cache_dir)
+                        with patch.dict(os.environ, {'GEMINI_API_KEY': 'test_key'}):
+                            api_manager = APIManager(cache_dir=cache_dir)
                         
                         with patch.object(api_manager.client.models, 'generate_content', return_value=mock_response):
                             # Should not crash even without usage metadata
@@ -132,7 +134,8 @@ class TestCostTrackingIntegration:
                         # Make get_cost_tracker raise an error
                         mock_get_tracker.side_effect = Exception("Cost tracker error")
                         
-                        api_manager = APIManager(cache_dir=cache_dir)
+                        with patch.dict(os.environ, {'GEMINI_API_KEY': 'test_key'}):
+                            api_manager = APIManager(cache_dir=cache_dir)
                         
                         with patch.object(api_manager.client.models, 'generate_content', return_value=mock_response):
                             # Should still work even if cost tracking fails

@@ -190,26 +190,32 @@ def test_state_manager_gap_details():
             )
         ]
         
-        # Save state
-        manager.save_state(
-            database_hash='test_hash',
-            database_size=100,
+        # Create initial state
+        state = manager.create_new_state(
             database_path='/test/path',
-            total_papers=100,
-            papers_analyzed=30,
-            papers_skipped=70,
-            gap_details=gaps
+            database_hash='test_hash',
+            database_size=100
         )
+        
+        # Update state with gap details
+        state.total_papers = 100
+        state.papers_analyzed = 30
+        state.papers_skipped = 70
+        state.gap_metrics.gap_details = gaps
+        state.gap_metrics.total_gaps = len(gaps)
+        
+        # Save state
+        manager.save_state(state)
         
         # Load and verify
         loaded = manager.load_state()
         
-        assert loaded['gap_count'] == 2
-        assert len(loaded['gap_details']) == 2
+        assert loaded.gap_metrics.total_gaps == 2
+        assert len(loaded.gap_metrics.gap_details) == 2
         
         # Verify first gap
-        gap1 = loaded['gap_details'][0]
-        assert gap1['pillar_id'] == 'Pillar 1'
-        assert gap1['current_coverage'] == 0.45
-        assert gap1['gap_size'] == 0.25
-        assert 'neural' in gap1['keywords']
+        gap1 = loaded.gap_metrics.gap_details[0]
+        assert gap1.pillar_id == 'Pillar 1'
+        assert gap1.current_coverage == 0.45
+        assert gap1.gap_size == 0.25
+        assert 'neural' in gap1.keywords

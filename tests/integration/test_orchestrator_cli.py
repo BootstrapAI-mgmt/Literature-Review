@@ -115,6 +115,7 @@ class TestDryRunCheckpoint:
             [
                 sys.executable, 'pipeline_orchestrator.py',
                 '--dry-run',
+                '--force',
                 '--checkpoint-file', str(checkpoint_file)
             ],
             capture_output=True,
