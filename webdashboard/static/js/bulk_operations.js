@@ -11,7 +11,9 @@
 class BulkJobManager {
     constructor() {
         this.selectedJobs = new Set();
-        this.apiKey = 'dev-key-change-in-production'; // Should match API key
+        // Note: This API key must match DASHBOARD_API_KEY environment variable on the server
+        // In production, consider using a session-based approach or fetching from /api/config endpoint
+        this.apiKey = 'dev-key-change-in-production';
         this.initEventListeners();
     }
     
@@ -251,10 +253,16 @@ class BulkJobManager {
             this.selectedJobs.forEach(jobId => {
                 const checkbox = document.querySelector(`.job-checkbox[data-job-id="${jobId}"]`);
                 if (checkbox) {
-                    const row = checkbox.closest('tr');
-                    if (row) {
-                        const nameCell = row.querySelector('td:nth-child(2)'); // Assuming name is in 2nd column
-                        jobNames.push(nameCell ? nameCell.textContent.trim() : jobId);
+                    // Find the job-item div that contains this checkbox
+                    const jobItem = checkbox.closest('.job-item');
+                    if (jobItem) {
+                        // Extract job name from the h5 element in job-header
+                        const h5 = jobItem.querySelector('.job-header h5');
+                        if (h5) {
+                            jobNames.push(h5.textContent.trim());
+                        } else {
+                            jobNames.push(jobId);
+                        }
                     } else {
                         jobNames.push(jobId);
                     }
