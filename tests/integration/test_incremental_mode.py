@@ -599,6 +599,159 @@ class TestDashboardContinuation:
         assert result.merged_report is not None
         assert 'pillars' in result.merged_report
         assert isinstance(result.statistics, dict)
+    
+    def test_gap_filtering_by_pillar(self, completed_job):
+        """Test filtering gaps by specific pillar."""
+        job_path = completed_job['path']
+        gap_report_path = job_path / 'gap_analysis_report.json'
+        
+        # Extract all gaps
+        extractor = GapExtractor(gap_report_path=str(gap_report_path))
+        all_gaps = extractor.extract_gaps()
+        
+        if len(all_gaps) == 0:
+            pytest.skip("No gaps to test filtering")
+        
+        # Get unique pillar IDs
+        pillar_ids = set(gap.get('pillar_id') for gap in all_gaps)
+        
+        # Filter by first pillar
+        first_pillar = list(pillar_ids)[0]
+        filtered_gaps = [gap for gap in all_gaps if gap.get('pillar_id') == first_pillar]
+        
+        # Verify filtering
+        assert len(filtered_gaps) > 0
+        assert all(gap.get('pillar_id') == first_pillar for gap in filtered_gaps)
+        assert len(filtered_gaps) <= len(all_gaps)
+    
+    def test_relevance_scoring_with_threshold_filtering(self, completed_job):
+        """Test relevance scoring with threshold-based filtering."""
+        job_path = completed_job['path']
+        gap_report_path = job_path / 'gap_analysis_report.json'
+        
+        # Extract gaps
+        extractor = GapExtractor(gap_report_path=str(gap_report_path))
+        gaps = extractor.extract_gaps()
+        
+        if len(gaps) == 0:
+            pytest.skip("No gaps for testing")
+        
+        # Score papers with different thresholds
+        scorer = RelevanceScorer()
+        
+        papers = [
+            {
+                'title': f'Neuromorphic Test Paper {i}',
+                'abstract': f'Research on neuromorphic computing and neural networks topic {i}...'
+            }
+            for i in range(10)
+        ]
+        
+        thresholds = [0.3, 0.5, 0.7]
+        results = {}
+        
+        for threshold in thresholds:
+            above_threshold = 0
+            for paper in papers:
+                paper_scores = [scorer.score_relevance(paper, gap) for gap in gaps]
+                max_score = max(paper_scores) if paper_scores else 0.0
+                if max_score >= threshold:
+                    above_threshold += 1
+            results[threshold] = above_threshold
+        
+        # Higher thresholds should result in fewer papers
+        assert results[0.3] >= results[0.5] >= results[0.7]
+    
+    def test_merge_with_conflict_resolution_strategies(self, tmp_path):
+        """Test different conflict resolution strategies."""
+        # Create base report
+        base_report = {
+            'pillars': {
+                'Pillar 1: Test': {
+                    'requirements': {
+                        'REQ-001': {
+                            'requirement_text': 'Test requirement',
+                            'sub_requirements': {
+                                'SUB-001': {
+                                    'completeness': 0.5,
+                                    'target_coverage': 0.7,
+                                    'evidence_count': 3
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        # Create incremental report with different values
+        incremental_report = {
+            'pillars': {
+                'Pillar 1: Test': {
+                    'requirements': {
+                        'REQ-001': {
+                            'requirement_text': 'Test requirement',
+                            'sub_requirements': {
+                                'SUB-001': {
+                                    'completeness': 0.7,
+                                    'target_coverage': 0.7,
+                                    'evidence_count': 5
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        # Test different strategies
+        strategies = ['keep_both', 'keep_existing', 'keep_new']
+        
+        for strategy in strategies:
+            merger = ResultMerger(conflict_resolution=strategy)
+            result = merger.merge_gap_analysis_results(base_report, incremental_report)
+            
+            # Verify merge completed
+            assert result.merged_report is not None
+            assert 'pillars' in result.merged_report
+    
+    def test_job_continuation_workflow(self, completed_job):
+        """Test complete job continuation workflow simulation."""
+        job_path = completed_job['path']
+        gap_report_path = job_path / 'gap_analysis_report.json'
+        
+        # Step 1: Extract gaps
+        extractor = GapExtractor(gap_report_path=str(gap_report_path))
+        gaps = extractor.extract_gaps()
+        assert len(gaps) > 0, "Need gaps for continuation"
+        
+        # Step 2: Prepare new papers
+        new_papers = [
+            {
+                'title': 'Neuromorphic Vision Processing',
+                'abstract': 'Event-based vision using spiking neural networks...'
+            },
+            {
+                'title': 'STDP Learning Rules',
+                'abstract': 'Spike-timing dependent plasticity in neuromorphic hardware...'
+            }
+        ]
+        
+        # Step 3: Score relevance
+        scorer = RelevanceScorer()
+        relevant_papers = []
+        threshold = 0.4
+        
+        for paper in new_papers:
+            paper_scores = [scorer.score_relevance(paper, gap) for gap in gaps]
+            max_score = max(paper_scores) if paper_scores else 0.0
+            if max_score >= threshold:
+                relevant_papers.append(paper)
+        
+        # Verify workflow
+        assert isinstance(relevant_papers, list)
+        # At least some papers should be relevant given neuromorphic keywords
+        # But we don't enforce exact count as it depends on gap keywords
 
 
 # ============================================================================
