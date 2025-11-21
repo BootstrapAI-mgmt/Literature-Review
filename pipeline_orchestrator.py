@@ -259,9 +259,16 @@ class PipelineOrchestrator:
         else:
             self.incremental_analyzer = None
         
+        # Batch mode support
+        self.batch_mode = self.config.get('batch_mode', False)
+        
         # Log analysis mode
         mode_str = "INCREMENTAL" if self.incremental_mode else "FULL"
         self.log(f"Analysis mode: {mode_str}", "INFO")
+        
+        # Log batch mode if enabled
+        if self.batch_mode:
+            self.log("BATCH MODE ENABLED - Running non-interactively with defaults", "INFO")
         
         # Log dry-run mode if enabled
         if self.dry_run:
@@ -499,7 +506,7 @@ class PipelineOrchestrator:
                     self.retry_policy.record_success()
                     return True
                 
-                # Special handling for orchestrator stage to pass output_dir
+                # Special handling for orchestrator stage to pass output_dir and batch_mode
                 if stage_name == "orchestrator":
                     from literature_review import orchestrator
                     
@@ -507,9 +514,33 @@ class PipelineOrchestrator:
                     orchestrator.OUTPUT_FOLDER = self.output_dir
                     os.makedirs(self.output_dir, exist_ok=True)
                     
-                    # Call orchestrator.main() directly with output_folder parameter
+                    # Create config for batch mode if enabled
+                    orch_config = None
+                    if self.batch_mode:
+                        # Create batch mode config with defaults
+                        # Filter out metadata sections to get analyzable pillars
+                        try:
+                            with open('pillar_definitions_enhanced.json', 'r') as f:
+                                pillar_defs = json.load(f)
+                            metadata_sections = {'Framework_Overview', 'Cross_Cutting_Requirements', 'Success_Criteria'}
+                            analyzable_pillars = [k for k in pillar_defs.keys() if k not in metadata_sections]
+                        except:
+                            # Fallback to ALL if we can't load definitions
+                            analyzable_pillars = []
+                        
+                        orch_config = orchestrator.OrchestratorConfig(
+                            job_id="batch_mode",
+                            analysis_target=analyzable_pillars if analyzable_pillars else ["ALL"],
+                            run_mode="ONCE",  # Default to single-pass analysis
+                            skip_user_prompts=True,
+                            output_dir=self.output_dir,
+                            prefilter_enabled=self.config.get('prefilter_enabled', True),
+                            relevance_threshold=self.config.get('relevance_threshold', 0.50)
+                        )
+                    
+                    # Call orchestrator.main() directly with output_folder parameter and config
                     try:
-                        orchestrator.main(output_folder=self.output_dir)
+                        orchestrator.main(config=orch_config, output_folder=self.output_dir)
                         duration = (datetime.now() - stage_start).total_seconds()
                         self.log(f"✅ Stage complete: {description}", "SUCCESS")
                         self._mark_stage_completed(stage_name, duration, 0)
@@ -1079,6 +1110,11 @@ def main():
         default='auto',
         help="Pre-filter preset: auto (50%%), aggressive (30%%), conservative (70%%)"
     )
+    parser.add_argument(
+        "--batch-mode",
+        action="store_true",
+        help="Run in non-interactive mode (skip all user prompts, use defaults)"
+    )
 
     args = parser.parse_args()
     
@@ -1098,6 +1134,9 @@ def main():
     # Override config with CLI flags
     if args.dry_run:
         config['dry_run'] = True
+    
+    if args.batch_mode:
+        config['batch_mode'] = True
     
     if args.budget:
         config['budget_usd'] = args.budget
@@ -1139,6 +1178,10 @@ def main():
         print(f"📊 Pre-filter: enabled (threshold: {config['relevance_threshold'] * 100:.0f}%)")
     else:
         print("📊 Pre-filter: disabled (analyzing all papers)")
+    
+    # Log batch mode
+    if args.batch_mode:
+        print("🤖 Batch mode: enabled (non-interactive execution)")
     
     if args.enable_experimental:
         # Enable v2 features if requested
