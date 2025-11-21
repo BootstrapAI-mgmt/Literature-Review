@@ -42,12 +42,17 @@ def test_client(temp_workspace, monkeypatch):
     """Create a test client with temporary workspace"""
     # Patch paths BEFORE importing app module
     import sys
-    # Remove app module if already imported
-    if 'webdashboard.app' in sys.modules:
-        del sys.modules['webdashboard.app']
+    # Remove app module and related modules if already imported
+    modules_to_remove = [m for m in list(sys.modules.keys()) if m.startswith('webdashboard.') or m == 'literature_review.analysis.result_merger']
+    for mod in modules_to_remove:
+        del sys.modules[mod]
     
     # Patch the Path resolution at the module level
     monkeypatch.setenv("LITERATURE_REVIEW_WORKSPACE", str(temp_workspace))
+    
+    # Create review_log.json in the parent directory (BASE_DIR)
+    review_log_path = temp_workspace.parent / "review_log.json"
+    review_log_path.write_text("[]")
     
     # Now import app - directory creation will use temp_workspace
     from webdashboard import app as app_module

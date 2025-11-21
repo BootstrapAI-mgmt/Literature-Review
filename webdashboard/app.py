@@ -2290,7 +2290,8 @@ def categorize_output_file(filename: str) -> str:
     }
 )
 async def get_job_results(
-    job_id: str
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
 ):
     """
     Get list of all output files for a completed job.
@@ -2325,7 +2326,8 @@ async def get_job_results(
     - Download specific files via /api/jobs/{job_id}/results/{file_path}
     - Download all files via /api/jobs/{job_id}/results/download/all
     """
-    # No API key required for viewing results (read-only)
+    # Verify API key
+    verify_api_key(api_key)
     
     job_data = load_job(job_id)
     if not job_data:

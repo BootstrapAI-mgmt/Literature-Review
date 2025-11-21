@@ -79,10 +79,15 @@ def create_test_job(workspace, job_id, completeness_values, papers, created_at="
 @pytest.fixture
 def test_client(temp_workspace, monkeypatch):
     """Create a test client with mocked workspace directories"""
-    # Remove app module if already imported to ensure clean state
+    # Remove app module and related modules if already imported to ensure clean state
     import sys
-    if 'webdashboard.app' in sys.modules:
-        del sys.modules['webdashboard.app']
+    modules_to_remove = [m for m in list(sys.modules.keys()) if m.startswith('webdashboard.')]
+    for mod in modules_to_remove:
+        del sys.modules[mod]
+    
+    # Create review_log.json in the parent directory (BASE_DIR)
+    review_log_path = temp_workspace.parent / "review_log.json"
+    review_log_path.write_text("[]")
     
     # Import and patch the app module
     from webdashboard import app as app_module
