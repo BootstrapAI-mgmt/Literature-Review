@@ -2738,7 +2738,8 @@
                     alert('Please select an existing directory');
                     return;
                 }
-                overwrite_existing = true; // Always overwrite when using existing directory
+                // Overwrite is always enabled when using existing directory (backend enforces this)
+                overwrite_existing = true;
             }
             
             const config = {

@@ -48,7 +48,7 @@ def run_pipeline_for_job(
         actual_output_dir = Path(output_dir)
     else:
         # Create job-specific output directory (legacy behavior)
-        actual_output_dir = Path(f"workspace/jobs/{job_id}/outputs/gap_analysis_output")
+        actual_output_dir = Path("workspace") / "jobs" / job_id / "outputs" / "gap_analysis_output"
     
     actual_output_dir.mkdir(parents=True, exist_ok=True)
     

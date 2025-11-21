@@ -1202,8 +1202,6 @@ async def configure_job(
     """
     verify_api_key(api_key)
     
-    import hashlib
-    
     job_data = load_job(job_id)
     if not job_data:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -2946,7 +2944,6 @@ async def scan_output_directories(
     """
     verify_api_key(api_key)
     
-    import hashlib
     directories = []
     
     # Scan common locations - use current working directory and workspace
