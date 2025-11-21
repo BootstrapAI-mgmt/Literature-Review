@@ -144,5 +144,7 @@ async def websocket_metrics_stream(websocket: WebSocket):
     
     except WebSocketDisconnect:
         pass
-    except Exception:
-        pass
+    except Exception as e:
+        # Log unexpected errors for debugging
+        import logging
+        logging.getLogger(__name__).error(f"Error in metrics WebSocket: {e}")

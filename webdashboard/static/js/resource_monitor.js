@@ -1,6 +1,9 @@
 // Resource Monitor - Real-time system metrics monitoring
 // Displays CPU, Memory, and Disk usage with charts and alerts
 
+// Constants
+const BYTES_TO_GB = 1024 ** 3;
+
 class ResourceMonitor {
     constructor() {
         this.socket = null;
@@ -221,15 +224,15 @@ class ResourceMonitor {
         
         const memoryUsed = document.getElementById('memoryUsed');
         if (memoryUsed) {
-            const usedGB = (metrics.memory.used / (1024**3)).toFixed(1);
-            const totalGB = (metrics.memory.total / (1024**3)).toFixed(1);
+            const usedGB = (metrics.memory.used / BYTES_TO_GB).toFixed(1);
+            const totalGB = (metrics.memory.total / BYTES_TO_GB).toFixed(1);
             memoryUsed.textContent = `${usedGB} / ${totalGB} GB`;
         }
         
         const diskUsed = document.getElementById('diskUsed');
         if (diskUsed) {
-            const usedGB = (metrics.disk.used / (1024**3)).toFixed(1);
-            const totalGB = (metrics.disk.total / (1024**3)).toFixed(1);
+            const usedGB = (metrics.disk.used / BYTES_TO_GB).toFixed(1);
+            const totalGB = (metrics.disk.total / BYTES_TO_GB).toFixed(1);
             diskUsed.textContent = `${usedGB} / ${totalGB} GB`;
         }
     }
