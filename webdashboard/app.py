@@ -223,17 +223,43 @@ class JobConfig(BaseModel):
         pillar_selections: List of analysis pillars to include (use ["ALL"] for all pillars)
         run_mode: Execution mode - "ONCE" for single pass, "DEEP_LOOP" for iterative analysis
         convergence_threshold: Threshold percentage for convergence in DEEP_LOOP mode (default: 5.0)
+        
+        Advanced options:
+        dry_run: Validate configuration without making API calls (default: False)
+        force: Force re-analysis even if recent results exist (default: False)
+        clear_cache: Delete all cached API responses before starting (default: False)
+        budget: Maximum spending for this job in USD (default: None for unlimited)
+        relevance_threshold: Minimum semantic similarity for paper relevance (0.0-1.0, default: 0.7)
+        resume_from_stage: Skip completed stages and resume from checkpoint (default: None)
+        resume_from_checkpoint: Continue from saved checkpoint file (default: None)
+        experimental: Enable cutting-edge experimental features (default: False)
     """
     pillar_selections: List[str]
     run_mode: str  # "ONCE" or "DEEP_LOOP"
     convergence_threshold: float = 5.0
+    
+    # Advanced options
+    dry_run: bool = False
+    force: bool = False
+    clear_cache: bool = False
+    budget: Optional[float] = None
+    relevance_threshold: float = 0.7
+    resume_from_stage: Optional[str] = None
+    resume_from_checkpoint: Optional[str] = None
+    experimental: bool = False
     
     class Config:
         json_schema_extra = {
             "example": {
                 "pillar_selections": ["ALL"],
                 "run_mode": "ONCE",
-                "convergence_threshold": 5.0
+                "convergence_threshold": 5.0,
+                "dry_run": False,
+                "force": False,
+                "clear_cache": False,
+                "budget": 5.00,
+                "relevance_threshold": 0.7,
+                "experimental": False
             }
         }
 
@@ -1173,10 +1199,21 @@ async def configure_job(
     - Percentage change threshold to stop iterations (default: 5.0)
     - Lower values = more iterations, higher precision
     
+    **Advanced Options:**
+    - `dry_run`: Validate configuration without making API calls
+    - `force`: Force re-analysis even if recent results exist
+    - `clear_cache`: Delete all cached API responses before starting
+    - `budget`: Maximum spending for this job in USD
+    - `relevance_threshold`: Minimum semantic similarity for paper relevance (0.0-1.0)
+    - `resume_from_stage`: Skip completed stages and resume from checkpoint
+    - `resume_from_checkpoint`: Continue from saved checkpoint file
+    - `experimental`: Enable cutting-edge experimental features
+    
     **Workflow:**
     1. Upload PDFs (via /api/upload or /api/upload/batch)
     2. Call this endpoint to configure the job
-    3. Call /api/jobs/{job_id}/start to begin processing
+    3. (Optional) Call /api/jobs/{job_id}/upload-config to upload custom config file
+    4. Call /api/jobs/{job_id}/start to begin processing
     
     **Path Parameters:**
     - job_id: Unique job identifier
@@ -1196,6 +1233,75 @@ async def configure_job(
     save_job(job_id, job_data)
     
     return {"job_id": job_id, "config": config.dict()}
+
+@app.post(
+    "/api/jobs/{job_id}/upload-config",
+    tags=["Jobs"],
+    summary="Upload custom config file for job",
+    responses={
+        200: {
+            "description": "Config file uploaded successfully",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Job not found",
+            "model": ErrorResponse
+        }
+    }
+)
+async def upload_config_file(
+    job_id: str,
+    config_file: UploadFile = File(...),
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Upload a custom pipeline_config.json file for a job.
+    
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Returns:**
+    - job_id: Job identifier
+    - config_path: Path to uploaded config file
+    """
+    verify_api_key(api_key)
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    # Validate it's a JSON file
+    if not config_file.filename or not config_file.filename.endswith('.json'):
+        raise HTTPException(status_code=400, detail="Config file must be JSON")
+    
+    # Create job directory
+    job_dir = JOBS_DIR / job_id
+    job_dir.mkdir(parents=True, exist_ok=True)
+    
+    custom_config_path = job_dir / "custom_config.json"
+    
+    try:
+        # Save uploaded config file
+        with open(custom_config_path, 'wb') as f:
+            shutil.copyfileobj(config_file.file, f)
+        
+        # Store path in job data
+        job_data["custom_config_path"] = str(custom_config_path)
+        save_job(job_id, job_data)
+        
+        return {
+            "job_id": job_id,
+            "config_path": str(custom_config_path)
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to save config file: {str(e)}"
+        )
 
 @app.post(
     "/api/jobs/{job_id}/start",
