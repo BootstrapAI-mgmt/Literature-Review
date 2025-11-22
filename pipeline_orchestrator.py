@@ -1110,6 +1110,16 @@ def main():
         default='auto',
         help="Pre-filter preset: auto (50%%), aggressive (30%%), conservative (70%%)"
     )
+    
+    # NEW: Section pre-filter for gap analysis (PARITY-W2-5)
+    parser.add_argument(
+        "--pre-filter",
+        type=str,
+        default=None,
+        help="Comma-separated list of paper sections to analyze (e.g., 'abstract,introduction'). "
+             "Use empty string for full paper. Default uses title+abstract+intro."
+    )
+    
     parser.add_argument(
         "--batch-mode",
         action="store_true",
@@ -1172,6 +1182,14 @@ def main():
         config['relevance_threshold'] = 0.70
     else:
         config['relevance_threshold'] = args.relevance_threshold
+    
+    # Set section pre-filter (PARITY-W2-5)
+    if hasattr(args, 'pre_filter') and args.pre_filter is not None:
+        config['section_pre_filter'] = args.pre_filter
+        if args.pre_filter == "":
+            print("📄 Section pre-filter: Full paper (all sections)")
+        else:
+            print(f"📄 Section pre-filter: {args.pre_filter}")
     
     # Log pre-filter config
     if args.prefilter:
