@@ -372,6 +372,30 @@ class ErrorResponse(BaseModel):
         }
 
 
+class CheckpointScanRequest(BaseModel):
+    """Request to scan directory for checkpoint files"""
+    directory: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "directory": "/workspaces/Literature-Review/workspace/jobs/abc123/outputs"
+            }
+        }
+
+
+class ResumeJobRequest(BaseModel):
+    """Request to resume a failed job"""
+    auto_resume: bool = True
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "auto_resume": True
+            }
+        }
+
+
 class CostEstimateRequest(BaseModel):
     """Request for cost estimation."""
     paper_count: int = Field(..., ge=1, le=1000)
@@ -759,6 +783,39 @@ def get_recommendation_reason(state: Dict) -> str:
         return f"Found existing analysis (last updated: {state['last_modified']}). Can continue or overwrite."
     else:
         return "Will run fresh baseline analysis."
+
+
+def validate_checkpoint_file(checkpoint_path: str) -> Path:
+    """
+    Validate checkpoint file exists and has valid structure.
+    
+    Returns validated Path object.
+    Raises HTTPException if invalid.
+    """
+    checkpoint = Path(checkpoint_path)
+    
+    if not checkpoint.exists():
+        raise HTTPException(404, f"Checkpoint file not found: {checkpoint_path}")
+    
+    try:
+        with open(checkpoint) as f:
+            data = json.load(f)
+        
+        # Validate required fields
+        required_fields = ["pipeline_version", "status", "stages"]
+        missing = [f for f in required_fields if f not in data]
+        
+        if missing:
+            raise HTTPException(
+                400,
+                f"Invalid checkpoint: missing fields {missing}"
+            )
+        
+        return checkpoint
+        
+    except json.JSONDecodeError as e:
+        raise HTTPException(400, f"Invalid checkpoint JSON: {str(e)}")
+
 
 # API Endpoints
 @app.get(
@@ -3785,6 +3842,166 @@ async def import_results(
         "has_source_pdfs": has_source_pdfs,
         "rerunnable": has_source_pdfs
     }
+
+
+@app.post(
+    "/api/checkpoints/scan",
+    tags=["Resume"],
+    summary="Scan directory for checkpoint files"
+)
+async def scan_checkpoints(
+    request: CheckpointScanRequest,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Scan output directory for pipeline checkpoint files.
+    
+    Returns list of found checkpoints with metadata.
+    """
+    verify_api_key(api_key)
+    
+    directory = Path(request.directory).expanduser().resolve()
+    
+    if not directory.exists():
+        raise HTTPException(404, f"Directory not found: {directory}")
+    
+    # Find checkpoint files
+    checkpoint_files = list(directory.glob("*checkpoint*.json"))
+    checkpoint_files.extend(directory.glob("pipeline_checkpoint.json"))
+    
+    # Remove duplicates
+    checkpoint_files = list(set(checkpoint_files))
+    
+    checkpoints = []
+    
+    for checkpoint_file in checkpoint_files:
+        try:
+            with open(checkpoint_file) as f:
+                checkpoint_data = json.load(f)
+            
+            # Extract metadata - handle different checkpoint structures
+            last_stage = "Unknown"
+            resume_stage = "Unknown"
+            
+            # Try to find last completed stage from stages dict
+            stages = checkpoint_data.get("stages", {})
+            if stages:
+                completed_stages = [
+                    stage for stage, data in stages.items()
+                    if isinstance(data, dict) and data.get("status") == "completed"
+                ]
+                if completed_stages:
+                    last_stage = completed_stages[-1] if completed_stages else "Unknown"
+                
+                # Find next stage to resume
+                not_started = [
+                    stage for stage, data in stages.items()
+                    if isinstance(data, dict) and data.get("status") in ["not_started", "failed"]
+                ]
+                if not_started:
+                    resume_stage = not_started[0]
+            
+            checkpoints.append({
+                "path": str(checkpoint_file),
+                "filename": checkpoint_file.name,
+                "modified": datetime.fromtimestamp(
+                    checkpoint_file.stat().st_mtime
+                ).isoformat(),
+                "last_stage": last_stage,
+                "resume_stage": resume_stage,
+                "papers_processed": checkpoint_data.get("papers_processed", 0),
+                "valid": True
+            })
+            
+        except Exception as e:
+            logger.warning(f"Failed to parse checkpoint {checkpoint_file}: {e}")
+            checkpoints.append({
+                "path": str(checkpoint_file),
+                "filename": checkpoint_file.name,
+                "modified": datetime.fromtimestamp(
+                    checkpoint_file.stat().st_mtime
+                ).isoformat(),
+                "valid": False,
+                "error": str(e)
+            })
+    
+    # Sort by modification time (newest first)
+    checkpoints.sort(key=lambda c: c["modified"], reverse=True)
+    
+    return {
+        "checkpoints": checkpoints,
+        "count": len(checkpoints),
+        "directory": str(directory)
+    }
+
+
+@app.post(
+    "/api/jobs/{job_id}/resume",
+    tags=["Resume"],
+    summary="Resume failed job automatically"
+)
+async def resume_job(
+    job_id: str,
+    request: ResumeJobRequest,
+    api_key: str = Header(None, alias="X-API-KEY")
+):
+    """
+    Resume a failed job from its last checkpoint.
+    
+    Automatically finds and uses the most recent checkpoint.
+    """
+    verify_api_key(api_key)
+    
+    job_dir = JOBS_DIR / job_id
+    if not job_dir.exists():
+        raise HTTPException(404, f"Job {job_id} not found")
+    
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(404, f"Job {job_id} not found")
+    
+    # Find output directory
+    output_dir = job_dir / "outputs" / "gap_analysis_output"
+    if not output_dir.exists():
+        # Try to find it from config
+        config = job_data.get("config", {})
+        if config.get("output_dir_path"):
+            output_dir = Path(config["output_dir_path"])
+    
+    # Scan for checkpoints
+    scan_result = await scan_checkpoints(
+        CheckpointScanRequest(directory=str(output_dir)),
+        api_key
+    )
+    
+    if scan_result["count"] == 0:
+        raise HTTPException(
+            404,
+            "No checkpoint files found. Cannot auto-resume."
+        )
+    
+    # Use most recent valid checkpoint
+    checkpoint = next(
+        (c for c in scan_result["checkpoints"] if c.get("valid", False)),
+        None
+    )
+    
+    if not checkpoint:
+        raise HTTPException(
+            400,
+            "No valid checkpoint files found. Cannot auto-resume."
+        )
+    
+    # Update job config with resume from checkpoint
+    if not job_data.get("config"):
+        job_data["config"] = {}
+    
+    job_data["config"]["resume_from_checkpoint"] = checkpoint["path"]
+    job_data["status"] = "draft"  # Reset to draft so it can be started
+    save_job(job_id, job_data)
+    
+    # Start the job
+    return await start_job(job_id, api_key)
 
 
 if __name__ == "__main__":
