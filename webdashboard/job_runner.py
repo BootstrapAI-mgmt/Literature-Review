@@ -286,42 +286,108 @@ class PipelineJobRunner:
         Returns:
             Result dictionary from orchestrator execution
         """
-        from literature_review.orchestrator_integration import run_pipeline_for_job
-        from literature_review.orchestrator import ProgressEvent
+        import subprocess
+        import sys
+        from pathlib import Path
         
-        def progress_callback(event):
-            """Callback for progress events"""
-            # Write to progress file
-            self._write_progress_event(job_id, event)
-            
-            # Also write to log
-            self._write_log(job_id, f"[{event.stage}] {event.message}")
+        # Default relevance threshold constant
+        DEFAULT_RELEVANCE_THRESHOLD = 0.7
         
-        def log_callback(message: str):
-            """Callback for log messages"""
-            self._write_log(job_id, f"LOG: {message}")
-        
-        async def prompt_callback(prompt_type: str, prompt_data: dict):
-            """Async callback for user prompts"""
-            from webdashboard.prompt_handler import prompt_handler
-            
-            # Request user input via PromptHandler (uses configured timeout)
-            response = await prompt_handler.request_user_input(
-                job_id=job_id,
-                prompt_type=prompt_type,
-                prompt_data=prompt_data
-                # No timeout_seconds arg → uses config
-            )
-            return response
         
         config = job_data.get("config", {})
         
-        return run_pipeline_for_job(
-            job_id=job_id,
-            pillar_selections=config.get("pillar_selections", ["ALL"]),
-            run_mode=config.get("run_mode", "ONCE"),
-            output_dir=config.get("output_dir"),  # Pass custom output directory
-            progress_callback=progress_callback,
-            log_callback=log_callback,
-            prompt_callback=prompt_callback
-        )
+        # Build CLI command for pipeline orchestrator
+        cmd = [sys.executable, "pipeline_orchestrator.py"]
+        
+        # Add batch mode (non-interactive)
+        cmd.append("--batch-mode")
+        
+        # Add job ID for incremental tracking
+        cmd.extend(["--parent-job-id", job_id])
+        
+        # Add advanced options
+        if config.get("dry_run"):
+            cmd.append("--dry-run")
+        
+        if config.get("force"):
+            cmd.append("--force")
+        
+        if config.get("clear_cache"):
+            cmd.append("--clear-cache")
+        
+        if config.get("budget"):
+            cmd.extend(["--budget", str(config["budget"])])
+        
+        relevance_threshold = config.get("relevance_threshold", DEFAULT_RELEVANCE_THRESHOLD)
+        if relevance_threshold != DEFAULT_RELEVANCE_THRESHOLD:  # Only add if non-default
+            cmd.extend(["--relevance-threshold", str(relevance_threshold)])
+        
+        if config.get("resume_from_stage"):
+            cmd.extend(["--resume-from", config["resume_from_stage"]])
+        
+        if config.get("resume_from_checkpoint"):
+            cmd.extend(["--checkpoint-file", config["resume_from_checkpoint"]])
+            cmd.append("--resume")
+        
+        if config.get("experimental"):
+            cmd.append("--enable-experimental")
+        
+        # Handle custom config file
+        custom_config_path = job_data.get("custom_config_path")
+        if custom_config_path and Path(custom_config_path).exists():
+            cmd.extend(["--config", custom_config_path])
+        
+        # Set output directory for this job
+        # Use custom output directory if specified, otherwise use default job directory
+        if config.get("output_dir"):
+            output_dir = Path(config["output_dir"])
+        else:
+            output_dir = Path(f"workspace/jobs/{job_id}/outputs/gap_analysis_output")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        cmd.extend(["--output-dir", str(output_dir)])
+        
+        # Set log file
+        log_file = Path(f"workspace/logs/{job_id}.log")
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+        cmd.extend(["--log-file", str(log_file)])
+        
+        # Log the command being executed
+        self._write_log(job_id, f"Executing command: {' '.join(cmd)}")
+        
+        try:
+            # Execute pipeline orchestrator
+            result = subprocess.run(
+                cmd,
+                capture_output=True,
+                text=True,
+                cwd=str(Path(__file__).parent.parent),  # Run from repo root
+                timeout=7200  # 2 hour timeout
+            )
+            
+            # Log stdout and stderr
+            if result.stdout:
+                self._write_log(job_id, f"STDOUT:\n{result.stdout}")
+            if result.stderr:
+                self._write_log(job_id, f"STDERR:\n{result.stderr}")
+            
+            if result.returncode != 0:
+                error_msg = f"Pipeline failed with exit code {result.returncode}"
+                if result.stderr:
+                    error_msg += f": {result.stderr}"
+                raise RuntimeError(error_msg)
+            
+            return {
+                "status": "success",
+                "output_dir": str(output_dir),
+                "command": " ".join(cmd),
+                "dry_run": config.get("dry_run", False)
+            }
+            
+        except subprocess.TimeoutExpired:
+            error_msg = "Pipeline execution timed out after 2 hours"
+            self._write_log(job_id, error_msg)
+            raise RuntimeError(error_msg)
+        except Exception as e:
+            self._write_log(job_id, f"Pipeline execution failed: {str(e)}")
+            raise
+
