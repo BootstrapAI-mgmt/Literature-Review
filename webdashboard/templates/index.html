@@ -2039,6 +2039,10 @@
         const WS_PROTOCOL = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const WS_URL = `${WS_PROTOCOL}//${window.location.host}/ws/jobs`;
         
+        // Force re-analysis configuration
+        const DEFAULT_PAPER_COUNT_ESTIMATE = 10;  // Default estimate when actual count unknown
+        const CACHE_HIT_RATE = 0.8;  // Expected 80% cache hit rate
+        
         // State
         let jobs = [];
         let ws = null;
@@ -2968,7 +2972,7 @@
                         'X-API-KEY': apiKey
                     },
                     body: JSON.stringify({
-                        paper_count: fileCount || 10,  // Default to 10 if unknown
+                        paper_count: fileCount || DEFAULT_PAPER_COUNT_ESTIMATE,
                         use_cache: false  // Force fresh
                     })
                 });
@@ -3005,7 +3009,7 @@
                 }
             }
             // Default to reasonable estimate
-            return 10;
+            return DEFAULT_PAPER_COUNT_ESTIMATE;
         }
         
         // Validate force confirmation before submission
@@ -3091,7 +3095,7 @@
             });
         }
         
-        # Save configuration and start job
+        // Save configuration and start job
         async function saveConfigAndStart() {
             const apiKey = document.getElementById('apiKeyInput').value;
             

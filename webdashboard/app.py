@@ -120,6 +120,9 @@ async def global_exception_handler(request: Request, exc: Exception):
 # API Key for authentication (from environment)
 API_KEY = os.getenv("DASHBOARD_API_KEY", "dev-key-change-in-production")
 
+# Cost estimation constants
+DEFAULT_CACHE_HIT_RATE = 0.8  # Assume 80% cache hit rate for cost estimates
+
 # Global job runner instance
 job_runner: Optional["PipelineJobRunner"] = None
 
@@ -1435,8 +1438,8 @@ async def estimate_cost(
         output_cost = (tokens["output"] * request.paper_count / 1_000_000) * pricing["output"]
         fresh_cost += input_cost + output_cost
     
-    # Cached cost (assume 80% cache hit rate)
-    cache_hit_rate = 0.8 if request.use_cache else 0.0
+    # Cached cost (assume default cache hit rate)
+    cache_hit_rate = DEFAULT_CACHE_HIT_RATE if request.use_cache else 0.0
     cached_cost = fresh_cost * (1 - cache_hit_rate)
     
     return {
