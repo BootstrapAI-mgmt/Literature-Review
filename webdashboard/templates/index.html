@@ -1052,6 +1052,31 @@
                                 </div>
                             </div>
                             
+                            <!-- Directory State Indicator (shown after directory selection) -->
+                            <div id="directoryStateIndicator" class="alert mt-3" style="display: none;">
+                                <h6 class="alert-heading">
+                                    <span id="stateIcon"></span>
+                                    Directory Analysis
+                                </h6>
+                                <p id="stateDescription"></p>
+                                
+                                <div id="recommendationBox" class="mt-3">
+                                    <strong>Recommended Mode:</strong>
+                                    <span id="recommendedMode" class="badge"></span>
+                                    <p id="recommendationReason" class="mb-0 mt-2"></p>
+                                </div>
+                                
+                                <!-- Action Buttons -->
+                                <div class="btn-group mt-3" role="group">
+                                    <button type="button" class="btn btn-sm btn-primary" id="acceptRecommendation">
+                                        ✅ Use Recommended Mode
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="changeMode">
+                                        🔀 Choose Different Mode
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <div class="mb-3">
                                 <label for="apiKeyInput" class="form-label">API Key</label>
                                 <input 
@@ -3567,6 +3592,110 @@
                 alert('Failed to load existing directories: ' + error.message);
             }
         }
+        
+        // === DIRECTORY STATE ANALYSIS (PARITY-W1-3) ===
+        
+        // Analyze directory when path changes
+        async function analyzeOutputDirectory(directoryPath) {
+            if (!directoryPath) {
+                // Hide indicator if no path
+                document.getElementById('directoryStateIndicator').style.display = 'none';
+                return;
+            }
+            
+            const apiKey = document.getElementById('apiKeyInput').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/upload/analyze-directory`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': apiKey
+                    },
+                    body: JSON.stringify({ directory_path: directoryPath })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to analyze directory');
+                }
+                
+                const data = await response.json();
+                displayDirectoryState(data);
+                
+            } catch (error) {
+                console.error('Failed to analyze directory:', error);
+                // Don't show error to user - just hide indicator
+                document.getElementById('directoryStateIndicator').style.display = 'none';
+            }
+        }
+        
+        function displayDirectoryState(data) {
+            const indicator = document.getElementById('directoryStateIndicator');
+            const stateIcon = document.getElementById('stateIcon');
+            const stateDescription = document.getElementById('stateDescription');
+            const recommendedMode = document.getElementById('recommendedMode');
+            const recommendationReason = document.getElementById('recommendationReason');
+            
+            // Set state icon and color
+            const stateConfig = {
+                'not_exist': { icon: '📁', color: 'primary', text: 'New Directory' },
+                'empty': { icon: '📂', color: 'info', text: 'Empty Directory' },
+                'has_csv': { icon: '📄', color: 'warning', text: 'Contains CSV Files' },
+                'has_results': { icon: '✅', color: 'success', text: 'Has Previous Results' }
+            };
+            
+            const config = stateConfig[data.state.state] || stateConfig['empty'];
+            
+            stateIcon.textContent = config.icon;
+            indicator.className = `alert alert-${config.color} mt-3`;
+            stateDescription.innerHTML = `
+                <strong>${config.text}</strong><br>
+                Files: ${data.state.file_count}<br>
+                ${data.state.has_gap_report ? '✅ Has analysis report' : '❌ No analysis report'}
+            `;
+            
+            // Set recommendation
+            recommendedMode.textContent = data.recommendation.mode.toUpperCase();
+            recommendedMode.className = `badge bg-${data.recommendation.mode === 'baseline' ? 'primary' : 'success'}`;
+            recommendationReason.textContent = data.recommendation.reason;
+            
+            // Show indicator
+            indicator.style.display = 'block';
+            
+            // Note: Mode selection is handled by "Accept Recommendation" button
+            // We don't auto-select to avoid confusion
+        }
+        
+        // Accept recommendation button
+        document.getElementById('acceptRecommendation').addEventListener('click', () => {
+            // Mode already set by auto-selection in displayDirectoryState
+            // Just scroll to upload form to continue workflow
+            document.getElementById('uploadForm').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Change mode button
+        document.getElementById('changeMode').addEventListener('click', () => {
+            // Scroll to configuration section
+            document.getElementById('configureSection').scrollIntoView({ behavior: 'smooth' });
+        });
+        
+        // Trigger analysis when custom path entered
+        document.getElementById('customOutputPath').addEventListener('blur', (e) => {
+            analyzeOutputDirectory(e.target.value);
+        });
+        
+        // Also trigger on Enter key
+        document.getElementById('customOutputPath').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                analyzeOutputDirectory(e.target.value);
+            }
+        });
+        
+        // Trigger analysis when existing directory selected
+        document.getElementById('existingDirDropdown').addEventListener('change', (e) => {
+            analyzeOutputDirectory(e.target.value);
+        });
         
         // === UPLOAD MODE SWITCHING ===
         document.querySelectorAll('input[name="uploadMode"]').forEach(radio => {
