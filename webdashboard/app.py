@@ -367,6 +367,43 @@ class ErrorResponse(BaseModel):
             }
         }
 
+
+class PipelineConfig(BaseModel):
+    """
+    Pipeline configuration schema matching pipeline_config.json.
+    
+    This validates custom configuration files uploaded by users.
+    """
+    version: str
+    models: Optional[Dict[str, str]] = None
+    pre_filtering: Optional[Dict[str, Any]] = None
+    prefilter: Optional[Dict[str, Any]] = None  # Alternative name
+    roi_optimizer: Optional[Dict[str, Any]] = None
+    retry_policy: Optional[Dict[str, Any]] = None
+    evidence_decay: Optional[Dict[str, Any]] = None
+    deduplication: Optional[Dict[str, Any]] = None
+    prompts: Optional[Dict[str, Any]] = None
+    v2_features: Optional[Dict[str, Any]] = None
+    stage_timeout: Optional[int] = None
+    log_level: Optional[str] = None
+    version_history_path: Optional[str] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "version": "2.0.0",
+                "models": {
+                    "gap_extraction": "gemini-1.5-pro",
+                    "relevance": "gemini-1.5-flash"
+                },
+                "pre_filtering": {
+                    "enabled": True,
+                    "threshold": 0.6
+                }
+            }
+        }
+
+
 # Helper functions
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
     """Verify API key from request header"""
@@ -403,6 +440,45 @@ def save_job(job_id: str, job_data: dict):
     job_file = get_job_file(job_id)
     with open(job_file, 'w') as f:
         json.dump(job_data, f, indent=2)
+
+
+def find_config_overrides(
+    custom: Dict[str, Any],
+    default: Dict[str, Any],
+    path: str = ""
+) -> list:
+    """
+    Find all configuration overrides recursively.
+    
+    Args:
+        custom: Custom configuration dictionary
+        default: Default configuration dictionary
+        path: Current path in the config tree (for nested keys)
+    
+    Returns:
+        List of override descriptions
+    """
+    overrides = []
+    
+    for key, value in custom.items():
+        current_path = f"{path}.{key}" if path else key
+        
+        if key not in default:
+            overrides.append(f"Added: {current_path} = {value}")
+            
+        elif isinstance(value, dict) and isinstance(default.get(key), dict):
+            # Recurse for nested dicts
+            overrides.extend(
+                find_config_overrides(value, default[key], current_path)
+            )
+            
+        elif value != default.get(key):
+            overrides.append(
+                f"Changed: {current_path} from {default.get(key)} to {value}"
+            )
+    
+    return overrides
+
 
 def extract_completeness(job_data: dict) -> float:
     """Extract overall completeness percentage from job results"""
@@ -1304,6 +1380,125 @@ async def configure_job(
         "output_dir": str(output_dir)
     }
 
+
+@app.post(
+    "/api/config/validate",
+    tags=["Configuration"],
+    summary="Validate custom pipeline configuration",
+    responses={
+        200: {
+            "description": "Configuration validation result",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        }
+    }
+)
+async def validate_config(
+    config: Dict[str, Any],
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Validate uploaded pipeline configuration against schema.
+    
+    This endpoint validates a custom pipeline_config.json file and returns
+    information about what settings will be overridden compared to defaults.
+    
+    **Request Body:**
+    - config: Configuration dictionary to validate
+    
+    **Returns:**
+    - valid: Boolean indicating if configuration is valid
+    - config: Validated configuration (if valid)
+    - overrides: List of settings that differ from defaults
+    - overrides_count: Number of override settings
+    - errors: List of validation errors (if invalid)
+    """
+    verify_api_key(api_key)
+    
+    try:
+        # Validate against schema
+        validated_config = PipelineConfig(**config)
+        
+        # Load default config for comparison
+        default_config_path = BASE_DIR / "pipeline_config.json"
+        with open(default_config_path) as f:
+            default_config = json.load(f)
+        
+        # Find overrides
+        overrides = find_config_overrides(config, default_config)
+        
+        return {
+            "valid": True,
+            "config": validated_config.dict(exclude_none=True),
+            "overrides": overrides,
+            "overrides_count": len(overrides)
+        }
+        
+    except Exception as e:
+        logger.error(f"Config validation error: {e}")
+        error_message = str(e)
+        
+        # Extract more user-friendly error messages from Pydantic errors
+        errors = [error_message]
+        
+        return {
+            "valid": False,
+            "errors": errors,
+            "config": None,
+            "overrides": [],
+            "overrides_count": 0
+        }
+
+
+@app.get(
+    "/api/config/template",
+    tags=["Configuration"],
+    summary="Download default configuration template",
+    responses={
+        200: {
+            "description": "Configuration template file",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Template file not found",
+            "model": ErrorResponse
+        }
+    }
+)
+async def download_config_template(
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Download default pipeline_config.json as template.
+    
+    This returns the default configuration file that can be used as a starting
+    point for creating custom configurations.
+    
+    **Returns:**
+    - File download of pipeline_config_template.json
+    """
+    verify_api_key(api_key)
+    
+    config_path = BASE_DIR / "pipeline_config.json"
+    
+    if not config_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Configuration template file not found"
+        )
+    
+    return FileResponse(
+        path=config_path,
+        filename="pipeline_config_template.json",
+        media_type="application/json"
+    )
+
+
 @app.post(
     "/api/jobs/{job_id}/upload-config",
     tags=["Jobs"],
@@ -1336,6 +1531,8 @@ async def upload_config_file(
     **Returns:**
     - job_id: Job identifier
     - config_path: Path to uploaded config file
+    - valid: Whether config is valid
+    - errors: Validation errors (if any)
     """
     verify_api_key(api_key)
     
@@ -1354,19 +1551,42 @@ async def upload_config_file(
     custom_config_path = job_dir / "custom_config.json"
     
     try:
+        # Read and parse config content
+        content = await config_file.read()
+        config_data = json.loads(content)
+        
+        # Validate config
+        try:
+            validated_config = PipelineConfig(**config_data)
+            is_valid = True
+            errors = []
+        except Exception as e:
+            is_valid = False
+            errors = [str(e)]
+            logger.warning(f"Invalid config uploaded for job {job_id}: {e}")
+        
         # Save uploaded config file
-        with open(custom_config_path, 'wb') as f:
-            shutil.copyfileobj(config_file.file, f)
+        with open(custom_config_path, 'w') as f:
+            json.dump(config_data, f, indent=2)
         
         # Store path in job data
         job_data["custom_config_path"] = str(custom_config_path)
+        job_data["config_uploaded"] = True
+        job_data["config_valid"] = is_valid
         save_job(job_id, job_data)
         
         return {
             "job_id": job_id,
-            "config_path": str(custom_config_path)
+            "config_path": str(custom_config_path),
+            "valid": is_valid,
+            "errors": errors
         }
         
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid JSON format: {str(e)}"
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,
