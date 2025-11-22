@@ -332,6 +332,39 @@ class PipelineJobRunner:
         if config.get("experimental"):
             cmd.append("--enable-experimental")
         
+        # Add pre-filter configuration (PARITY-W2-5)
+        if "pre_filter" in config:
+            pre_filter = config["pre_filter"]
+            if pre_filter is not None:  # None means use default (don't add flag)
+                # Validate sections if custom (non-empty string)
+                if pre_filter:  # Non-empty string = custom sections
+                    valid_sections = [
+                        'title', 'abstract', 'introduction', 'methods',
+                        'results', 'discussion', 'conclusion', 'references'
+                    ]
+                    sections = [s.strip() for s in pre_filter.split(',')]
+                    invalid_sections = [s for s in sections if s and s not in valid_sections]
+                    
+                    if invalid_sections:
+                        error_msg = (
+                            f"Invalid sections: {', '.join(invalid_sections)}. "
+                            f"Valid sections: {', '.join(valid_sections)}"
+                        )
+                        self._write_log(job_id, f"❌ {error_msg}")
+                        raise ValueError(error_msg)
+                    
+                    if len([s for s in sections if s]) == 0:
+                        error_msg = "Pre-filter cannot be empty list. Use empty string for full paper."
+                        self._write_log(job_id, f"❌ {error_msg}")
+                        raise ValueError(error_msg)
+                
+                cmd.extend(["--pre-filter", pre_filter])
+                
+                if pre_filter == "":
+                    self._write_log(job_id, "📄 Pre-filter: Full paper (all sections)")
+                else:
+                    self._write_log(job_id, f"📄 Pre-filter: {pre_filter}")
+        
         # Handle custom config file
         custom_config_path = job_data.get("custom_config_path")
         if custom_config_path and Path(custom_config_path).exists():
