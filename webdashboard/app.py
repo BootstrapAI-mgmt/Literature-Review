@@ -3867,7 +3867,6 @@ async def scan_checkpoints(
     
     # Find checkpoint files
     checkpoint_files = list(directory.glob("*checkpoint*.json"))
-    checkpoint_files.extend(directory.glob("pipeline_checkpoint.json"))
     
     # Remove duplicates
     checkpoint_files = list(set(checkpoint_files))
@@ -3890,8 +3889,7 @@ async def scan_checkpoints(
                     stage for stage, data in stages.items()
                     if isinstance(data, dict) and data.get("status") == "completed"
                 ]
-                if completed_stages:
-                    last_stage = completed_stages[-1] if completed_stages else "Unknown"
+                last_stage = completed_stages[-1] if completed_stages else "Unknown"
                 
                 # Find next stage to resume
                 not_started = [

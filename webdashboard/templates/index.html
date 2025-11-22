@@ -1005,11 +1005,13 @@
                                                                id="checkpointFilePath" 
                                                                placeholder="pipeline_checkpoint.json" readonly>
                                                         <button class="btn btn-outline-secondary" type="button"
-                                                                onclick="scanForCheckpoints()">
+                                                                onclick="scanForCheckpoints()"
+                                                                aria-label="Auto-detect checkpoint files in output directory">
                                                             🔍 Auto-detect
                                                         </button>
                                                         <button class="btn btn-outline-primary" type="button"
-                                                                onclick="document.getElementById('checkpointFileUpload').click()">
+                                                                onclick="document.getElementById('checkpointFileUpload').click()"
+                                                                aria-label="Upload checkpoint file from your computer">
                                                             📤 Upload
                                                         </button>
                                                     </div>
