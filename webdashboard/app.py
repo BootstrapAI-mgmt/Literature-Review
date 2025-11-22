@@ -3833,6 +3833,10 @@ async def get_prefilter_recommendations(
     """
     verify_api_key(api_key)
     
+    # Validate paper_count
+    if paper_count <= 0:
+        raise HTTPException(status_code=400, detail="paper_count must be a positive integer")
+    
     recommendations = {
         "general": {
             "small": ["title", "abstract", "introduction", "discussion"],

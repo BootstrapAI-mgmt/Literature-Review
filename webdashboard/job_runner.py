@@ -343,18 +343,20 @@ class PipelineJobRunner:
                         'results', 'discussion', 'conclusion', 'references'
                     ]
                     sections = [s.strip() for s in pre_filter.split(',')]
-                    invalid_sections = [s for s in sections if s and s not in valid_sections]
                     
+                    # Check if all sections are empty strings
+                    if not any(s for s in sections):
+                        error_msg = "Pre-filter cannot be empty list. Use empty string for full paper."
+                        self._write_log(job_id, f"❌ {error_msg}")
+                        raise ValueError(error_msg)
+                    
+                    # Validate section names
+                    invalid_sections = [s for s in sections if s and s not in valid_sections]
                     if invalid_sections:
                         error_msg = (
                             f"Invalid sections: {', '.join(invalid_sections)}. "
                             f"Valid sections: {', '.join(valid_sections)}"
                         )
-                        self._write_log(job_id, f"❌ {error_msg}")
-                        raise ValueError(error_msg)
-                    
-                    if len([s for s in sections if s]) == 0:
-                        error_msg = "Pre-filter cannot be empty list. Use empty string for full paper."
                         self._write_log(job_id, f"❌ {error_msg}")
                         raise ValueError(error_msg)
                 
