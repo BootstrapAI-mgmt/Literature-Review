@@ -223,6 +223,9 @@ class JobConfig(BaseModel):
         pillar_selections: List of analysis pillars to include (use ["ALL"] for all pillars)
         run_mode: Execution mode - "ONCE" for single pass, "DEEP_LOOP" for iterative analysis
         convergence_threshold: Threshold percentage for convergence in DEEP_LOOP mode (default: 5.0)
+        output_dir_mode: Output directory mode - "auto", "custom", or "existing" (default: "auto")
+        output_dir_path: Custom output directory path (required if output_dir_mode is "custom" or "existing")
+        overwrite_existing: Whether to overwrite existing results (default: False)
         
         Advanced options:
         dry_run: Validate configuration without making API calls (default: False)
@@ -237,6 +240,9 @@ class JobConfig(BaseModel):
     pillar_selections: List[str]
     run_mode: str  # "ONCE" or "DEEP_LOOP"
     convergence_threshold: float = 5.0
+    output_dir_mode: str = "auto"  # "auto" | "custom" | "existing"
+    output_dir_path: Optional[str] = None
+    overwrite_existing: bool = False
     
     # Advanced options
     dry_run: bool = False
@@ -254,6 +260,9 @@ class JobConfig(BaseModel):
                 "pillar_selections": ["ALL"],
                 "run_mode": "ONCE",
                 "convergence_threshold": 5.0,
+                "output_dir_mode": "auto",
+                "output_dir_path": None,
+                "overwrite_existing": False,
                 "dry_run": False,
                 "force": False,
                 "clear_cache": False,
@@ -1199,6 +1208,11 @@ async def configure_job(
     - Percentage change threshold to stop iterations (default: 5.0)
     - Lower values = more iterations, higher precision
     
+    **Output Directory Configuration:**
+    - `output_dir_mode`: "auto" (default), "custom", or "existing"
+    - `output_dir_path`: Required for "custom" and "existing" modes
+    - `overwrite_existing`: Whether to overwrite existing results
+    
     **Advanced Options:**
     - `dry_run`: Validate configuration without making API calls
     - `force`: Force re-analysis even if recent results exist
@@ -1221,6 +1235,7 @@ async def configure_job(
     **Returns:**
     - job_id: Job identifier
     - config: Configured parameters
+    - output_dir: Resolved output directory path
     """
     verify_api_key(api_key)
     
@@ -1228,11 +1243,66 @@ async def configure_job(
     if not job_data:
         raise HTTPException(status_code=404, detail="Job not found")
     
-    # Update job configuration
-    job_data["config"] = config.dict()
+    # Determine output directory based on mode
+    if config.output_dir_mode == "auto":
+        # Original behavior: auto-generate job_id directory
+        output_dir = JOBS_DIR / job_id / "outputs" / "gap_analysis_output"
+        
+    elif config.output_dir_mode == "custom":
+        # User-specified custom path
+        if not config.output_dir_path:
+            raise HTTPException(status_code=400, detail="Custom path required when output_dir_mode is 'custom'")
+        
+        output_dir = Path(config.output_dir_path).expanduser().resolve()
+        
+        # Security check: prevent directory traversal
+        # Allow paths within project or explicit absolute paths
+        if not output_dir.is_absolute():
+            # Resolve relative paths from BASE_DIR
+            output_dir = (BASE_DIR / output_dir).resolve()
+        
+        # Validate path is not a system directory
+        system_dirs = ['/etc', '/bin', '/sbin', '/usr/bin', '/usr/sbin', '/boot', '/sys', '/proc']
+        if any(str(output_dir).startswith(sys_dir) for sys_dir in system_dirs):
+            raise HTTPException(status_code=400, detail="Cannot use system directories as output path")
+        
+    elif config.output_dir_mode == "existing":
+        # Reuse existing directory
+        if not config.output_dir_path:
+            raise HTTPException(status_code=400, detail="Existing path required when output_dir_mode is 'existing'")
+        
+        output_dir = Path(config.output_dir_path).resolve()
+        if not output_dir.exists():
+            raise HTTPException(status_code=404, detail=f"Directory not found: {output_dir}")
+        
+        # Always overwrite when reusing existing directory
+        config.overwrite_existing = True
+    else:
+        raise HTTPException(status_code=400, detail=f"Invalid output_dir_mode: {config.output_dir_mode}")
+    
+    # Create/validate output directory
+    if config.overwrite_existing or not output_dir.exists():
+        output_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        # Check if directory has existing analysis
+        if (output_dir / "gap_analysis_report.json").exists():
+            raise HTTPException(
+                status_code=409,
+                detail=f"Directory {output_dir} contains existing analysis. "
+                       "Enable 'overwrite_existing' to proceed."
+            )
+    
+    # Update job configuration with resolved output directory
+    config_dict = config.dict()
+    config_dict["output_dir"] = str(output_dir)
+    job_data["config"] = config_dict
     save_job(job_id, job_data)
     
-    return {"job_id": job_id, "config": config.dict()}
+    return {
+        "job_id": job_id,
+        "config": config_dict,
+        "output_dir": str(output_dir)
+    }
 
 @app.post(
     "/api/jobs/{job_id}/upload-config",
@@ -2944,6 +3014,85 @@ async def scan_import_directories(
                 })
     
     return {"directories": importable_dirs}
+
+
+@app.get(
+    "/api/scan-output-directories",
+    tags=["Configuration"],
+    summary="Scan for existing output directories",
+    responses={
+        200: {"description": "List of existing output directories"},
+        401: {"description": "Invalid or missing API key", "model": ErrorResponse}
+    }
+)
+async def scan_output_directories(
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Scan for existing gap analysis output directories.
+    
+    Returns directories containing gap_analysis_report.json for reuse.
+    This enables users to:
+    - Continue analysis in existing directories
+    - Select existing directories from dropdown
+    - View metadata about existing analyses
+    
+    **Search Locations:**
+    - gap_analysis_output/ (default CLI output)
+    - workspace/jobs/*/outputs/gap_analysis_output/ (dashboard outputs)
+    - ~/literature_review_outputs/ (user home directory)
+    
+    **Response Fields:**
+    - path: Full path to output directory
+    - file_count: Number of files in directory
+    - last_modified: ISO timestamp of last modification
+    - has_report: Whether gap_analysis_report.json exists
+    """
+    verify_api_key(api_key)
+    
+    directories = []
+    
+    # Scan common locations - use current working directory and workspace
+    search_paths = [
+        Path.cwd() / "gap_analysis_output",
+        WORKSPACE_DIR / "gap_analysis_output",
+        JOBS_DIR,
+        Path.home() / "literature_review_outputs"
+    ]
+    
+    for search_path in search_paths:
+        if not search_path.exists():
+            continue
+        
+        # Find directories with gap_analysis_report.json
+        try:
+            for report_file in search_path.rglob("gap_analysis_report.json"):
+                output_dir = report_file.parent
+                
+                # Skip if already in list
+                output_dir_str = str(output_dir)
+                if any(d['path'] == output_dir_str for d in directories):
+                    continue
+                
+                # Count files
+                file_count = sum(1 for _ in output_dir.glob("*") if _.is_file())
+                
+                # Get last modified time
+                last_modified = datetime.fromtimestamp(
+                    output_dir.stat().st_mtime
+                ).isoformat()
+                
+                directories.append({
+                    "path": output_dir_str,
+                    "file_count": file_count,
+                    "last_modified": last_modified,
+                    "has_report": True
+                })
+        except (PermissionError, OSError):
+            # Skip directories we can't access
+            continue
+    
+    return {"directories": directories, "count": len(directories)}
 
 
 @app.post(

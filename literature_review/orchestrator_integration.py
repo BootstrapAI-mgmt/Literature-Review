@@ -20,6 +20,7 @@ def run_pipeline_for_job(
     job_id: str,
     pillar_selections: List[str],
     run_mode: str,
+    output_dir: Optional[str] = None,
     progress_callback: Optional[Callable] = None,
     log_callback: Optional[Callable] = None,
     prompt_callback: Optional[Callable] = None
@@ -31,6 +32,7 @@ def run_pipeline_for_job(
         job_id: Unique job identifier
         pillar_selections: List of pillar names or ["ALL"]
         run_mode: "ONCE" (single pass) or "DEEP_LOOP" (iterative)
+        output_dir: Custom output directory path (optional)
         progress_callback: Function to call with progress updates
         log_callback: Function to call with log messages
         prompt_callback: Async function to call for user prompts
@@ -40,9 +42,15 @@ def run_pipeline_for_job(
     """
     from literature_review.orchestrator import main as orchestrator_main, OrchestratorConfig
     
-    # Create job-specific output directory
-    output_dir = Path(f"workspace/jobs/{job_id}/outputs")
-    output_dir.mkdir(parents=True, exist_ok=True)
+    # Determine output directory
+    if output_dir:
+        # Use custom output directory from job config
+        actual_output_dir = Path(output_dir)
+    else:
+        # Create job-specific output directory (legacy behavior)
+        actual_output_dir = Path("workspace") / "jobs" / job_id / "outputs" / "gap_analysis_output"
+    
+    actual_output_dir.mkdir(parents=True, exist_ok=True)
     
     # Configure orchestrator
     config = OrchestratorConfig(
@@ -52,13 +60,15 @@ def run_pipeline_for_job(
         skip_user_prompts=(prompt_callback is None),
         progress_callback=progress_callback,
         log_callback=log_callback,
-        prompt_callback=prompt_callback
+        prompt_callback=prompt_callback,
+        output_dir=str(actual_output_dir)
     )
     
     # Execute pipeline
     try:
         if log_callback:
             log_callback(f"Starting orchestrator for job {job_id}")
+            log_callback(f"Output directory: {actual_output_dir}")
         
         if progress_callback:
             progress_callback("Initializing pipeline")
@@ -68,16 +78,15 @@ def run_pipeline_for_job(
         if progress_callback:
             progress_callback("Pipeline execution completed")
         
-        # Collect output file paths from standard output directory
-        standard_output_dir = Path("gap_analysis_output")
+        # Collect output file paths from actual output directory
         output_files = []
         
-        if standard_output_dir.exists():
-            output_files = [str(f) for f in standard_output_dir.glob("**/*") if f.is_file()]
+        if actual_output_dir.exists():
+            output_files = [str(f) for f in actual_output_dir.glob("**/*") if f.is_file()]
         
         return {
             "status": "success",
-            "output_dir": str(output_dir),
+            "output_dir": str(actual_output_dir),
             "output_files": output_files,
             "result": result
         }

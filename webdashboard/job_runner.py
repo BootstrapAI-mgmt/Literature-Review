@@ -293,6 +293,7 @@ class PipelineJobRunner:
         # Default relevance threshold constant
         DEFAULT_RELEVANCE_THRESHOLD = 0.7
         
+        
         config = job_data.get("config", {})
         
         # Build CLI command for pipeline orchestrator
@@ -337,7 +338,11 @@ class PipelineJobRunner:
             cmd.extend(["--config", custom_config_path])
         
         # Set output directory for this job
-        output_dir = Path(f"workspace/jobs/{job_id}/outputs/gap_analysis_output")
+        # Use custom output directory if specified, otherwise use default job directory
+        if config.get("output_dir"):
+            output_dir = Path(config["output_dir"])
+        else:
+            output_dir = Path(f"workspace/jobs/{job_id}/outputs/gap_analysis_output")
         output_dir.mkdir(parents=True, exist_ok=True)
         cmd.extend(["--output-dir", str(output_dir)])
         
@@ -385,3 +390,4 @@ class PipelineJobRunner:
         except Exception as e:
             self._write_log(job_id, f"Pipeline execution failed: {str(e)}")
             raise
+
