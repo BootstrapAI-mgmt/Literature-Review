@@ -446,7 +446,7 @@ def find_config_overrides(
     custom: Dict[str, Any],
     default: Dict[str, Any],
     path: str = ""
-) -> list:
+) -> List[str]:
     """
     Find all configuration overrides recursively.
     
