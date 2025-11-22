@@ -579,6 +579,91 @@ def extract_summary_metrics(job_data: dict) -> dict:
         "has_results": bool(results)
     }
 
+def detect_directory_state(output_dir: Path) -> Dict[str, any]:
+    """
+    Analyze output directory to determine what analysis mode to use.
+    
+    Returns:
+        {
+            "state": "empty" | "has_csv" | "has_results" | "not_exist",
+            "recommended_mode": "baseline" | "continuation",
+            "file_count": int,
+            "has_gap_report": bool,
+            "csv_files": List[str],
+            "last_modified": str (ISO datetime)
+        }
+    """
+    result = {
+        "state": "not_exist",
+        "recommended_mode": "baseline",
+        "file_count": 0,
+        "has_gap_report": False,
+        "csv_files": [],
+        "last_modified": None
+    }
+    
+    # Case 1: Directory doesn't exist
+    if not output_dir.exists():
+        result["state"] = "not_exist"
+        result["recommended_mode"] = "baseline"
+        return result
+    
+    # Count files
+    all_files = list(output_dir.glob("*"))
+    result["file_count"] = len(all_files)
+    
+    # Check for gap analysis report
+    gap_report = output_dir / "gap_analysis_report.json"
+    result["has_gap_report"] = gap_report.exists()
+    
+    # Find CSV files
+    csv_files = list(output_dir.glob("*.csv"))
+    result["csv_files"] = [f.name for f in csv_files]
+    
+    # Get last modified time
+    if all_files:
+        latest_file = max(all_files, key=lambda f: f.stat().st_mtime)
+        result["last_modified"] = datetime.fromtimestamp(
+            latest_file.stat().st_mtime
+        ).isoformat()
+    
+    # Determine state
+    if result["file_count"] == 0:
+        # Empty directory
+        result["state"] = "empty"
+        result["recommended_mode"] = "baseline"
+        
+    elif result["has_gap_report"]:
+        # Has previous analysis results
+        result["state"] = "has_results"
+        result["recommended_mode"] = "continuation"
+        
+    elif len(result["csv_files"]) > 0:
+        # Has CSV files but no analysis results
+        result["state"] = "has_csv"
+        result["recommended_mode"] = "baseline"
+        
+    else:
+        # Has files but nothing recognizable
+        result["state"] = "empty"
+        result["recommended_mode"] = "baseline"
+    
+    return result
+
+
+def get_recommendation_reason(state: Dict) -> str:
+    """Generate human-readable recommendation."""
+    if state["state"] == "not_exist":
+        return "Directory doesn't exist. Will create and run fresh analysis."
+    elif state["state"] == "empty":
+        return "Directory is empty. Will run fresh baseline analysis."
+    elif state["state"] == "has_csv":
+        return f"Found {len(state['csv_files'])} CSV files. Will run fresh analysis on these papers."
+    elif state["state"] == "has_results":
+        return f"Found existing analysis (last updated: {state['last_modified']}). Can continue or overwrite."
+    else:
+        return "Will run fresh baseline analysis."
+
 # API Endpoints
 @app.get(
     "/",
@@ -979,6 +1064,75 @@ async def confirm_upload(
             detail=f"Invalid action: {action}. Must be 'skip_duplicates' or 'overwrite_all'"
         )
 
+@app.post(
+    "/api/upload/analyze-directory",
+    tags=["Papers"],
+    summary="Analyze directory state for fresh analysis detection",
+    responses={
+        200: {
+            "description": "Directory state analysis completed",
+        },
+        400: {
+            "description": "Invalid directory path",
+            "model": ErrorResponse
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        }
+    }
+)
+async def analyze_directory_state(
+    request: Request,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Analyze directory to recommend baseline vs continuation mode.
+    
+    Called by frontend when user selects output directory.
+    This endpoint detects whether a directory is empty, has CSV files,
+    or contains previous analysis results, and recommends the appropriate
+    analysis mode.
+    
+    **Request Body:**
+    - directory_path: Path to the output directory to analyze
+    
+    **Returns:**
+    - directory: Resolved directory path
+    - state: Directory state information (file count, has_gap_report, etc.)
+    - recommendation: Recommended mode and reason
+    """
+    verify_api_key(api_key)
+    
+    # Parse request body
+    body = await request.json()
+    directory_path = body.get("directory_path")
+    
+    if not directory_path:
+        raise HTTPException(status_code=400, detail="directory_path is required")
+    
+    output_dir = Path(directory_path).expanduser().resolve()
+    
+    # Security check: validate path is safe
+    if not output_dir.is_absolute():
+        output_dir = (BASE_DIR / output_dir).resolve()
+    
+    # Validate path is not a system directory
+    system_dirs = ['/etc', '/bin', '/sbin', '/usr/bin', '/usr/sbin', '/boot', '/sys', '/proc']
+    if any(str(output_dir).startswith(sys_dir) for sys_dir in system_dirs):
+        raise HTTPException(status_code=400, detail="Cannot use system directories as output path")
+    
+    state = detect_directory_state(output_dir)
+    
+    return {
+        "directory": str(output_dir),
+        "state": state,
+        "recommendation": {
+            "mode": state["recommended_mode"],
+            "reason": get_recommendation_reason(state)
+        }
+    }
+
 @app.get(
     "/api/jobs",
     response_model=JobListResponse,
@@ -1280,6 +1434,9 @@ async def configure_job(
     else:
         raise HTTPException(status_code=400, detail=f"Invalid output_dir_mode: {config.output_dir_mode}")
     
+    # Detect directory state for fresh analysis determination
+    dir_state = detect_directory_state(output_dir)
+    
     # Create/validate output directory
     if config.overwrite_existing or not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -1292,16 +1449,24 @@ async def configure_job(
                        "Enable 'overwrite_existing' to proceed."
             )
     
+    # Determine if this is fresh analysis
+    # Fresh analysis is triggered for: not_exist, empty, or has_csv states
+    fresh_analysis = dir_state["state"] in ["not_exist", "empty", "has_csv"]
+    
     # Update job configuration with resolved output directory
     config_dict = config.dict()
     config_dict["output_dir"] = str(output_dir)
     job_data["config"] = config_dict
+    job_data["fresh_analysis"] = fresh_analysis
+    job_data["directory_state"] = dir_state
     save_job(job_id, job_data)
     
     return {
         "job_id": job_id,
         "config": config_dict,
-        "output_dir": str(output_dir)
+        "output_dir": str(output_dir),
+        "fresh_analysis": fresh_analysis,
+        "directory_state": dir_state
     }
 
 @app.post(
