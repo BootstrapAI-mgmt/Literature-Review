@@ -530,6 +530,17 @@
             font-style: italic;
             color: #6c757d;
         }
+        
+        /* Pre-filter Configuration Styles (PARITY-W2-5) */
+        .section-checkbox:checked ~ label {
+            font-weight: 600;
+            color: #0d6efd;
+        }
+
+        #selectedSectionsPreview {
+            font-family: monospace;
+            color: #0d6efd;
+        }
     </style>
 </head>
 <body>
@@ -1008,6 +1019,189 @@
                                                     </div>
                                                 </div>
                                             </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <hr class="my-4">
+                                    
+                                    <!-- Pre-Filter Configuration (PARITY-W2-5) -->
+                                    <div class="card mb-3 border-secondary">
+                                        <div class="card-header bg-secondary bg-opacity-10">
+                                            <h6 class="mb-0">📄 Pre-Filter: Paper Sections</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            
+                                            <!-- Mode Selector -->
+                                            <div class="mb-3">
+                                                <label class="form-label">
+                                                    <strong>Analysis Scope</strong>
+                                                    <span class="badge bg-secondary">CLI: --pre-filter</span>
+                                                </label>
+                                                
+                                                <div class="btn-group w-100" role="group">
+                                                    <input type="radio" class="btn-check" name="prefilterMode" 
+                                                           id="prefilterDefault" value="default" checked
+                                                           onchange="updatePreFilterMode()">
+                                                    <label class="btn btn-outline-secondary" for="prefilterDefault">
+                                                        ✅ Default<br>
+                                                        <small class="text-muted">Title + Abstract + Intro</small>
+                                                    </label>
+                                                    
+                                                    <input type="radio" class="btn-check" name="prefilterMode" 
+                                                           id="prefilterCustom" value="custom"
+                                                           onchange="updatePreFilterMode()">
+                                                    <label class="btn btn-outline-primary" for="prefilterCustom">
+                                                        🎛️ Custom<br>
+                                                        <small class="text-muted">Choose Sections</small>
+                                                    </label>
+                                                    
+                                                    <input type="radio" class="btn-check" name="prefilterMode" 
+                                                           id="prefilterFull" value="full"
+                                                           onchange="updatePreFilterMode()">
+                                                    <label class="btn btn-outline-warning" for="prefilterFull">
+                                                        📖 Full Paper<br>
+                                                        <small class="text-muted">All Sections</small>
+                                                    </label>
+                                                </div>
+                                                
+                                                <div class="form-text">
+                                                    Control which sections to analyze for gap extraction. 
+                                                    Fewer sections = faster analysis and lower cost.
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Custom Section Selector -->
+                                            <div id="customSectionsPanel" style="display: none;" class="mb-3">
+                                                <label class="form-label">Select Sections to Analyze:</label>
+                                                
+                                                <div class="row">
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input section-checkbox" type="checkbox" 
+                                                                   id="section_title" value="title" checked>
+                                                            <label class="form-check-label" for="section_title">
+                                                                <strong>Title</strong>
+                                                                <small class="text-muted d-block">Paper title and keywords</small>
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input section-checkbox" type="checkbox" 
+                                                                   id="section_abstract" value="abstract" checked>
+                                                            <label class="form-check-label" for="section_abstract">
+                                                                <strong>Abstract</strong>
+                                                                <small class="text-muted d-block">High-level summary</small>
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input section-checkbox" type="checkbox" 
+                                                                   id="section_introduction" value="introduction" checked>
+                                                            <label class="form-check-label" for="section_introduction">
+                                                                <strong>Introduction</strong>
+                                                                <small class="text-muted d-block">Background and motivation</small>
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input section-checkbox" type="checkbox" 
+                                                                   id="section_methods" value="methods">
+                                                            <label class="form-check-label" for="section_methods">
+                                                                <strong>Methods</strong>
+                                                                <small class="text-muted d-block">Experimental design</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="col-md-6">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input section-checkbox" type="checkbox" 
+                                                                   id="section_results" value="results">
+                                                            <label class="form-check-label" for="section_results">
+                                                                <strong>Results</strong>
+                                                                <small class="text-muted d-block">Findings and data</small>
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input section-checkbox" type="checkbox" 
+                                                                   id="section_discussion" value="discussion">
+                                                            <label class="form-check-label" for="section_discussion">
+                                                                <strong>Discussion</strong>
+                                                                <small class="text-muted d-block">Interpretation and implications</small>
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input section-checkbox" type="checkbox" 
+                                                                   id="section_conclusion" value="conclusion">
+                                                            <label class="form-check-label" for="section_conclusion">
+                                                                <strong>Conclusion</strong>
+                                                                <small class="text-muted d-block">Summary and future work</small>
+                                                            </label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input section-checkbox" type="checkbox" 
+                                                                   id="section_references" value="references">
+                                                            <label class="form-check-label" for="section_references">
+                                                                <strong>References</strong>
+                                                                <small class="text-muted d-block">Citations (rarely useful)</small>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Selection Summary -->
+                                                <div class="mt-3 p-2 bg-light rounded">
+                                                    <small>
+                                                        <strong>Selected sections:</strong> 
+                                                        <span id="selectedSectionsPreview">title, abstract, introduction</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Impact Preview -->
+                                            <div class="alert alert-info mb-3">
+                                                <div class="row">
+                                                    <div class="col-md-4 text-center">
+                                                        <div class="small text-muted">Estimated Sections</div>
+                                                        <div class="fs-5 fw-bold" id="prefilterSectionCount">3</div>
+                                                    </div>
+                                                    <div class="col-md-4 text-center">
+                                                        <div class="small text-muted">Relative Speed</div>
+                                                        <div class="fs-5 fw-bold" id="prefilterSpeed">Fast ⚡</div>
+                                                    </div>
+                                                    <div class="col-md-4 text-center">
+                                                        <div class="small text-muted">Relative Cost</div>
+                                                        <div class="fs-5 fw-bold" id="prefilterCost">Low 💰💰</div>
+                                                    </div>
+                                                </div>
+                                                <hr>
+                                                <div class="small">
+                                                    <strong>💡 Recommendation:</strong> <span id="prefilterRecommendation">
+                                                        Default configuration balances coverage and efficiency for most reviews.
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Common Presets -->
+                                            <div class="mt-3">
+                                                <label class="form-label"><small><strong>Quick Presets:</strong></small></label>
+                                                <div class="btn-group btn-group-sm w-100">
+                                                    <button type="button" class="btn btn-outline-secondary" 
+                                                            onclick="applyPreset('default')">
+                                                        Default
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary" 
+                                                            onclick="applyPreset('abstract-only')">
+                                                        Abstract Only
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary" 
+                                                            onclick="applyPreset('methods-focus')">
+                                                        Methods Focus
+                                                    </button>
+                                                    <button type="button" class="btn btn-outline-secondary" 
+                                                            onclick="applyPreset('comprehensive')">
+                                                        Comprehensive
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
                                         </div>
                                     </div>
                                     
@@ -3124,6 +3318,14 @@
                     checkpointFile.disabled = !e.target.checked;
                 });
             }
+            
+            // Initialize pre-filter configuration (PARITY-W2-5)
+            document.querySelectorAll('.section-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedSections);
+            });
+            
+            // Initialize pre-filter display
+            updatePreFilterMode();
         });
         
         // Reset all advanced options
@@ -3225,6 +3427,139 @@
             return input.files[0] || null;
         }
         
+        // Pre-filter Configuration Functions (PARITY-W2-5)
+        
+        // Update pre-filter mode
+        function updatePreFilterMode() {
+            const mode = document.querySelector('input[name="prefilterMode"]:checked').value;
+            
+            const customPanel = document.getElementById('customSectionsPanel');
+            
+            if (mode === 'default') {
+                customPanel.style.display = 'none';
+                updateImpactPreview(['title', 'abstract', 'introduction']);
+                
+            } else if (mode === 'custom') {
+                customPanel.style.display = 'block';
+                updateSelectedSections();
+                
+            } else if (mode === 'full') {
+                customPanel.style.display = 'none';
+                updateImpactPreview([
+                    'title', 'abstract', 'introduction', 'methods', 
+                    'results', 'discussion', 'conclusion', 'references'
+                ]);
+            }
+        }
+        
+        // Update selected sections preview
+        function updateSelectedSections() {
+            const checkboxes = document.querySelectorAll('.section-checkbox:checked');
+            const sections = Array.from(checkboxes).map(cb => cb.value);
+            
+            document.getElementById('selectedSectionsPreview').textContent = 
+                sections.length > 0 ? sections.join(', ') : 'none';
+            
+            updateImpactPreview(sections);
+        }
+        
+        // Update impact preview (speed/cost estimates)
+        function updateImpactPreview(sections) {
+            const count = sections.length;
+            
+            document.getElementById('prefilterSectionCount').textContent = count;
+            
+            // Speed estimate
+            let speed, speedEmoji;
+            if (count <= 2) {
+                speed = 'Very Fast';
+                speedEmoji = '⚡⚡';
+            } else if (count <= 3) {
+                speed = 'Fast';
+                speedEmoji = '⚡';
+            } else if (count <= 5) {
+                speed = 'Moderate';
+                speedEmoji = '⏱️';
+            } else {
+                speed = 'Slow';
+                speedEmoji = '🐌';
+            }
+            document.getElementById('prefilterSpeed').textContent = `${speed} ${speedEmoji}`;
+            
+            // Cost estimate
+            let cost, costEmoji;
+            if (count <= 2) {
+                cost = 'Very Low';
+                costEmoji = '💰';
+            } else if (count <= 3) {
+                cost = 'Low';
+                costEmoji = '💰💰';
+            } else if (count <= 5) {
+                cost = 'Moderate';
+                costEmoji = '💰💰💰';
+            } else {
+                cost = 'High';
+                costEmoji = '💰💰💰💰';
+            }
+            document.getElementById('prefilterCost').textContent = `${cost} ${costEmoji}`;
+            
+            // Recommendation
+            let recommendation;
+            if (count === 0) {
+                recommendation = '⚠️ Warning: No sections selected! Gap analysis will fail.';
+            } else if (count === 1 && sections.includes('abstract')) {
+                recommendation = '✅ Great for quick screening or very large datasets (100+ papers).';
+            } else if (count >= 1 && count <= 3) {
+                recommendation = '✅ Good balance of coverage and efficiency for most reviews.';
+            } else if (count >= 4 && count <= 6) {
+                recommendation = '📊 Comprehensive analysis - use for detailed reviews or small datasets.';
+            } else {
+                recommendation = '⚠️ Full paper analysis is slow and expensive. Consider if necessary.';
+            }
+            document.getElementById('prefilterRecommendation').textContent = recommendation;
+        }
+        
+        // Apply preset configurations
+        function applyPreset(presetName) {
+            // Switch to custom mode
+            document.getElementById('prefilterCustom').checked = true;
+            updatePreFilterMode();
+            
+            // Uncheck all first
+            document.querySelectorAll('.section-checkbox').forEach(cb => cb.checked = false);
+            
+            // Apply preset
+            const presets = {
+                'default': ['title', 'abstract', 'introduction'],
+                'abstract-only': ['abstract'],
+                'methods-focus': ['abstract', 'methods', 'results'],
+                'comprehensive': ['title', 'abstract', 'introduction', 'methods', 'results', 'discussion', 'conclusion']
+            };
+            
+            const sections = presets[presetName] || [];
+            sections.forEach(section => {
+                const checkbox = document.getElementById(`section_${section}`);
+                if (checkbox) checkbox.checked = true;
+            });
+            
+            updateSelectedSections();
+        }
+        
+        // Get pre-filter configuration for submission
+        function getPreFilterConfig() {
+            const mode = document.querySelector('input[name="prefilterMode"]:checked').value;
+            
+            if (mode === 'default') {
+                return null;  // Use pipeline default
+            } else if (mode === 'full') {
+                return '';  // Empty string = no pre-filter (analyze all)
+            } else {
+                // Custom: return comma-separated sections
+                const checkboxes = document.querySelectorAll('.section-checkbox:checked');
+                return Array.from(checkboxes).map(cb => cb.value).join(',');
+            }
+        }
+        
         function resetAdvancedOptions() {
             document.getElementById('dryRunMode').checked = false;
             document.getElementById('forceReanalysis').checked = false;
@@ -3241,6 +3576,11 @@
             document.getElementById('checkpointFile').disabled = true;
             document.getElementById('checkpointFile').value = '';
             document.getElementById('experimentalFeatures').checked = false;
+            
+            // Reset pre-filter to default (PARITY-W2-5)
+            document.getElementById('prefilterDefault').checked = true;
+            updatePreFilterMode();
+            
             clearConfigUpload();
         }
         
@@ -3261,7 +3601,8 @@
                 resume_from_checkpoint: document.getElementById('enableCheckpointResume').checked 
                                        ? document.getElementById('checkpointFile').value 
                                        : null,
-                experimental: document.getElementById('experimentalFeatures').checked
+                experimental: document.getElementById('experimentalFeatures').checked,
+                pre_filter: getPreFilterConfig()  // PARITY-W2-5
             };
         }
         
