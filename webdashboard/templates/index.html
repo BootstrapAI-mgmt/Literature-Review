@@ -749,15 +749,62 @@
                                     <div class="mb-3">
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" 
-                                                   id="forceReanalysis">
+                                                   id="forceReanalysis"
+                                                   onchange="updateForceWarning()">
                                             <label class="form-check-label" for="forceReanalysis">
                                                 <strong>Force Re-analysis</strong>
                                                 <span class="badge bg-warning text-dark ms-2">CLI: --force</span>
                                             </label>
                                             <div class="form-text">
-                                                Re-run analysis even if recent results exist. Ignores cache.
+                                                Re-run analysis even if recent results exist. Ignores all cached responses.
                                             </div>
                                         </div>
+                                        
+                                        <!-- Cost Warning (shown when force enabled) -->
+                                        <div id="forceWarning" style="display: none;" class="alert alert-warning mt-2">
+                                            <strong>⚠️ Cost Impact</strong>
+                                            <p class="mb-2">
+                                                Forcing re-analysis will make fresh API calls instead of using cached responses.
+                                                This may significantly increase costs.
+                                            </p>
+                                            
+                                            <!-- Cost Estimation -->
+                                            <div id="costEstimate" class="mt-2">
+                                                <small>
+                                                    <strong>Estimated Impact:</strong><br>
+                                                    Cached run: ~$<span id="cachedCost">0.50</span><br>
+                                                    Fresh run: ~$<span id="freshCost">5.00</span><br>
+                                                    <strong>Difference: +$<span id="costDiff">4.50</span></strong>
+                                                </small>
+                                            </div>
+                                            
+                                            <div class="form-check mt-2">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       id="forceConfirm">
+                                                <label class="form-check-label" for="forceConfirm">
+                                                    <small>I understand this will increase costs</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Use Cases Help -->
+                                        <div class="collapse mt-2" id="forceUseCases">
+                                            <div class="card card-body bg-light">
+                                                <h6>When to Use Force Re-analysis:</h6>
+                                                <ul class="mb-0 small">
+                                                    <li>Testing new models or prompts</li>
+                                                    <li>Verifying configuration changes</li>
+                                                    <li>Ensuring reproducibility (fresh run)</li>
+                                                    <li>Cache corruption suspected</li>
+                                                    <li>Model API behavior changed</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        
+                                        <button type="button" class="btn btn-sm btn-link p-0 mt-1"
+                                                data-bs-toggle="collapse" data-bs-target="#forceUseCases">
+                                            ℹ️ When should I use this?
+                                        </button>
                                     </div>
                                     
                                     <!-- Clear Cache -->
@@ -2893,6 +2940,87 @@
             document.getElementById('relevanceThresholdValue').value = value;
         }
         
+        // Update force warning visibility and cost estimate
+        function updateForceWarning() {
+            const forceEnabled = document.getElementById('forceReanalysis').checked;
+            const warning = document.getElementById('forceWarning');
+            
+            if (forceEnabled) {
+                warning.style.display = 'block';
+                estimateForceCost();
+            } else {
+                warning.style.display = 'none';
+                document.getElementById('forceConfirm').checked = false;
+            }
+        }
+        
+        // Estimate cost impact of forcing re-analysis
+        async function estimateForceCost() {
+            try {
+                // Get uploaded file count from current job
+                const fileCount = getUploadedFileCount();
+                
+                const apiKey = document.getElementById('apiKeyInput').value;
+                const response = await fetch(`${API_BASE}/api/cost/estimate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': apiKey
+                    },
+                    body: JSON.stringify({
+                        paper_count: fileCount || 10,  // Default to 10 if unknown
+                        use_cache: false  // Force fresh
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Cost estimation failed');
+                }
+                
+                const estimate = await response.json();
+                
+                // Update display
+                document.getElementById('cachedCost').textContent = 
+                    estimate.cached_cost.toFixed(2);
+                document.getElementById('freshCost').textContent = 
+                    estimate.fresh_cost.toFixed(2);
+                document.getElementById('costDiff').textContent = 
+                    (estimate.fresh_cost - estimate.cached_cost).toFixed(2);
+                    
+            } catch (error) {
+                console.error('Cost estimation failed:', error);
+                // Show generic warning - hide specific cost estimate
+                document.getElementById('costEstimate').style.display = 'none';
+            }
+        }
+        
+        // Get uploaded file count for current job
+        function getUploadedFileCount() {
+            // Try to get from upload summary if available
+            const uploadSummary = document.getElementById('uploadSummary');
+            if (uploadSummary && uploadSummary.textContent) {
+                const match = uploadSummary.textContent.match(/(\d+)\s+file/);
+                if (match) {
+                    return parseInt(match[1]);
+                }
+            }
+            // Default to reasonable estimate
+            return 10;
+        }
+        
+        // Validate force confirmation before submission
+        function validateForceOptions() {
+            const forceEnabled = document.getElementById('forceReanalysis').checked;
+            const confirmed = document.getElementById('forceConfirm').checked;
+            
+            if (forceEnabled && !confirmed) {
+                alert('Please confirm you understand the cost impact of forcing re-analysis.');
+                return false;
+            }
+            
+            return true;
+        }
+        
         // Enable/disable resume controls
         document.addEventListener('DOMContentLoaded', function() {
             const enableResume = document.getElementById('enableResume');
@@ -2917,6 +3045,8 @@
         function resetAdvancedOptions() {
             document.getElementById('dryRunMode').checked = false;
             document.getElementById('forceReanalysis').checked = false;
+            document.getElementById('forceConfirm').checked = false;
+            document.getElementById('forceWarning').style.display = 'none';
             document.getElementById('clearCache').checked = false;
             document.getElementById('budgetLimit').value = '';
             document.getElementById('relevanceThreshold').value = 0.7;
@@ -2936,6 +3066,7 @@
             return {
                 dry_run: document.getElementById('dryRunMode').checked,
                 force: document.getElementById('forceReanalysis').checked,
+                force_confirmed: document.getElementById('forceConfirm').checked,
                 clear_cache: document.getElementById('clearCache').checked,
                 budget: document.getElementById('budgetLimit').value 
                          ? parseFloat(document.getElementById('budgetLimit').value) 
@@ -3011,6 +3142,11 @@
             
             // Collect advanced options
             const advancedOptions = getAdvancedOptions();
+            
+            // Validate force options
+            if (!validateForceOptions()) {
+                return;
+            }
             
             const config = {
                 pillar_selections,

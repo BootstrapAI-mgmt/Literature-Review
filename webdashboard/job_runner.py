@@ -354,6 +354,13 @@ class PipelineJobRunner:
         # Log the command being executed
         self._write_log(job_id, f"Executing command: {' '.join(cmd)}")
         
+        # Log force flag usage if enabled
+        if config.get("force"):
+            self._write_log(
+                job_id,
+                f"⚠️  Force re-analysis enabled (cache disabled, costs may be higher)"
+            )
+        
         try:
             # Execute pipeline orchestrator
             result = subprocess.run(
@@ -380,7 +387,10 @@ class PipelineJobRunner:
                 "status": "success",
                 "output_dir": str(output_dir),
                 "command": " ".join(cmd),
-                "dry_run": config.get("dry_run", False)
+                "dry_run": config.get("dry_run", False),
+                "force_enabled": config.get("force", False),
+                "force_confirmed": config.get("force_confirmed", False),
+                "cache_disabled": config.get("force", False)
             }
             
         except subprocess.TimeoutExpired:

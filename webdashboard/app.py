@@ -26,7 +26,7 @@ from typing import Dict, List, Optional
 from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect, Header, Request
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Any
 
 from webdashboard.duplicate_detector import (
@@ -247,6 +247,7 @@ class JobConfig(BaseModel):
     # Advanced options
     dry_run: bool = False
     force: bool = False
+    force_confirmed: bool = False
     clear_cache: bool = False
     budget: Optional[float] = None
     relevance_threshold: float = 0.7
@@ -366,6 +367,23 @@ class ErrorResponse(BaseModel):
                 "detail": "Job not found"
             }
         }
+
+
+class CostEstimateRequest(BaseModel):
+    """Request for cost estimation."""
+    paper_count: int = Field(..., ge=1, le=1000)
+    use_cache: bool = True
+    model: Optional[str] = "gemini-1.5-pro"
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "paper_count": 10,
+                "use_cache": False,
+                "model": "gemini-1.5-pro"
+            }
+        }
+
 
 # Helper functions
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
@@ -1374,6 +1392,128 @@ async def upload_config_file(
         )
 
 @app.post(
+    "/api/cost/estimate",
+    tags=["Cost Management"],
+    summary="Estimate analysis cost with/without cache",
+    responses={
+        200: {"description": "Cost estimate calculated successfully"},
+        401: {"description": "Invalid or missing API key", "model": ErrorResponse}
+    }
+)
+async def estimate_cost(
+    request: CostEstimateRequest,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Estimate cost for analysis with and without cache.
+    
+    Used by force re-analysis warning to show cost impact.
+    Provides estimates based on paper count and model selection.
+    """
+    verify_api_key(api_key)
+    
+    # Model pricing (input/output per 1M tokens)
+    model_pricing = {
+        "gemini-1.5-pro": {"input": 1.25, "output": 5.00},
+        "gemini-1.5-flash": {"input": 0.075, "output": 0.30},
+        "gemini-2.0-flash-exp": {"input": 0.00, "output": 0.00},  # Free tier
+    }
+    
+    pricing = model_pricing.get(request.model, model_pricing["gemini-1.5-pro"])
+    
+    # Estimate tokens per paper per stage
+    tokens_per_paper = {
+        "gap_extraction": {"input": 3000, "output": 500},
+        "relevance": {"input": 2000, "output": 200},
+        "deep_review": {"input": 5000, "output": 1500}
+    }
+    
+    # Calculate fresh cost (no cache)
+    fresh_cost = 0.0
+    for stage, tokens in tokens_per_paper.items():
+        input_cost = (tokens["input"] * request.paper_count / 1_000_000) * pricing["input"]
+        output_cost = (tokens["output"] * request.paper_count / 1_000_000) * pricing["output"]
+        fresh_cost += input_cost + output_cost
+    
+    # Cached cost (assume 80% cache hit rate)
+    cache_hit_rate = 0.8 if request.use_cache else 0.0
+    cached_cost = fresh_cost * (1 - cache_hit_rate)
+    
+    return {
+        "paper_count": request.paper_count,
+        "model": request.model,
+        "fresh_cost": round(fresh_cost, 2),
+        "cached_cost": round(cached_cost, 2),
+        "savings": round(fresh_cost - cached_cost, 2),
+        "cache_hit_rate": cache_hit_rate
+    }
+
+
+@app.get(
+    "/api/cache/stats",
+    tags=["Cache Management"],
+    summary="Get cache statistics",
+    responses={
+        200: {"description": "Cache statistics retrieved successfully"},
+        401: {"description": "Invalid or missing API key", "model": ErrorResponse}
+    }
+)
+async def get_cache_stats(
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Get cache statistics for all cache directories.
+    
+    Shows size, entry count, hit rate, age.
+    """
+    verify_api_key(api_key)
+    
+    cache_dirs = [
+        BASE_DIR / "cache",
+        BASE_DIR / "deep_reviewer_cache",
+        BASE_DIR / "judge_cache"
+    ]
+    
+    stats = {}
+    
+    for cache_dir in cache_dirs:
+        if not cache_dir.exists():
+            continue
+        
+        # Count files and size
+        files = list(cache_dir.rglob("*.json"))
+        total_size = sum(f.stat().st_size for f in files)
+        
+        # Get oldest and newest
+        if files:
+            oldest = min(files, key=lambda f: f.stat().st_mtime)
+            newest = max(files, key=lambda f: f.stat().st_mtime)
+            
+            stats[cache_dir.name] = {
+                "entry_count": len(files),
+                "total_size_mb": round(total_size / (1024 * 1024), 2),
+                "oldest_entry": datetime.fromtimestamp(
+                    oldest.stat().st_mtime
+                ).isoformat(),
+                "newest_entry": datetime.fromtimestamp(
+                    newest.stat().st_mtime
+                ).isoformat()
+            }
+        else:
+            stats[cache_dir.name] = {
+                "entry_count": 0,
+                "total_size_mb": 0.0,
+                "oldest_entry": None,
+                "newest_entry": None
+            }
+    
+    return {
+        "caches": stats,
+        "total_entries": sum(s["entry_count"] for s in stats.values()),
+        "total_size_mb": sum(s["total_size_mb"] for s in stats.values())
+    }
+
+@app.post(
     "/api/jobs/{job_id}/start",
     tags=["Jobs"],
     summary="Start a configured job",
@@ -1442,6 +1582,14 @@ async def start_job(
         raise HTTPException(
             status_code=400,
             detail="Job must be configured before starting"
+        )
+    
+    # Validate force re-analysis confirmation
+    config = job_data.get("config", {})
+    if config.get("force") and not config.get("force_confirmed"):
+        raise HTTPException(
+            status_code=400,
+            detail="Force re-analysis requires cost impact confirmation"
         )
     
     # Build research database from uploaded files
