@@ -1,8 +1,22 @@
 # Dashboard vs CLI Feature Parity Analysis
 
-**Last Updated:** November 19, 2025
+**Last Updated:** November 21, 2025  
+**Status:** ⚠️ SUPERSEDED - See DASHBOARD_CLI_PARITY_ASSESSMENT_V2.md for accurate analysis
 
-## Executive Summary
+## ⚠️ Important Notice
+
+**This document contains outdated information.** A comprehensive re-assessment was performed on November 21, 2025 through manual code inspection and live testing.
+
+**Key Findings:**
+- ❌ Dashboard does **NOT** have output directory selection (claimed as "parity" below but actually hardcoded)
+- ❌ Many "PARITY" claims below are inaccurate - Dashboard lacks CLI flags like `--force`, `--dry-run`, `--config`, etc.
+- ✅ True parity exists for: file generation, visualizations, incremental mode, monitoring
+
+**For accurate assessment, see:** `/workspaces/Literature-Review/DASHBOARD_CLI_PARITY_ASSESSMENT_V2.md`
+
+---
+
+## Executive Summary (ORIGINAL - May Be Inaccurate)
 
 This document provides a comprehensive 1:1 comparison between the Terminal/CLI execution and Web Dashboard for the Literature Review system, covering execution, monitoring, output, and visualization capabilities.
 

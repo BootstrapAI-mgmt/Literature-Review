@@ -388,6 +388,42 @@ class CostEstimateRequest(BaseModel):
         }
 
 
+class PipelineConfig(BaseModel):
+    """
+    Pipeline configuration schema matching pipeline_config.json.
+    
+    This validates custom configuration files uploaded by users.
+    """
+    version: str
+    models: Optional[Dict[str, str]] = None
+    pre_filtering: Optional[Dict[str, Any]] = None
+    prefilter: Optional[Dict[str, Any]] = None  # Alternative name
+    roi_optimizer: Optional[Dict[str, Any]] = None
+    retry_policy: Optional[Dict[str, Any]] = None
+    evidence_decay: Optional[Dict[str, Any]] = None
+    deduplication: Optional[Dict[str, Any]] = None
+    prompts: Optional[Dict[str, Any]] = None
+    v2_features: Optional[Dict[str, Any]] = None
+    stage_timeout: Optional[int] = None
+    log_level: Optional[str] = None
+    version_history_path: Optional[str] = None
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "version": "2.0.0",
+                "models": {
+                    "gap_extraction": "gemini-1.5-pro",
+                    "relevance": "gemini-1.5-flash"
+                },
+                "pre_filtering": {
+                    "enabled": True,
+                    "threshold": 0.6
+                }
+            }
+        }
+
+
 # Helper functions
 def verify_api_key(x_api_key: Optional[str] = Header(None)):
     """Verify API key from request header"""
@@ -424,6 +460,45 @@ def save_job(job_id: str, job_data: dict):
     job_file = get_job_file(job_id)
     with open(job_file, 'w') as f:
         json.dump(job_data, f, indent=2)
+
+
+def find_config_overrides(
+    custom: Dict[str, Any],
+    default: Dict[str, Any],
+    path: str = ""
+) -> List[str]:
+    """
+    Find all configuration overrides recursively.
+    
+    Args:
+        custom: Custom configuration dictionary
+        default: Default configuration dictionary
+        path: Current path in the config tree (for nested keys)
+    
+    Returns:
+        List of override descriptions
+    """
+    overrides = []
+    
+    for key, value in custom.items():
+        current_path = f"{path}.{key}" if path else key
+        
+        if key not in default:
+            overrides.append(f"Added: {current_path} = {value}")
+            
+        elif isinstance(value, dict) and isinstance(default.get(key), dict):
+            # Recurse for nested dicts
+            overrides.extend(
+                find_config_overrides(value, default[key], current_path)
+            )
+            
+        elif value != default.get(key):
+            overrides.append(
+                f"Changed: {current_path} from {default.get(key)} to {value}"
+            )
+    
+    return overrides
+
 
 def extract_completeness(job_data: dict) -> float:
     """Extract overall completeness percentage from job results"""
@@ -599,6 +674,91 @@ def extract_summary_metrics(job_data: dict) -> dict:
         "recommendations_preview": recommendations_preview,
         "has_results": bool(results)
     }
+
+def detect_directory_state(output_dir: Path) -> Dict[str, any]:
+    """
+    Analyze output directory to determine what analysis mode to use.
+    
+    Returns:
+        {
+            "state": "empty" | "has_csv" | "has_results" | "not_exist",
+            "recommended_mode": "baseline" | "continuation",
+            "file_count": int,
+            "has_gap_report": bool,
+            "csv_files": List[str],
+            "last_modified": str (ISO datetime)
+        }
+    """
+    result = {
+        "state": "not_exist",
+        "recommended_mode": "baseline",
+        "file_count": 0,
+        "has_gap_report": False,
+        "csv_files": [],
+        "last_modified": None
+    }
+    
+    # Case 1: Directory doesn't exist
+    if not output_dir.exists():
+        result["state"] = "not_exist"
+        result["recommended_mode"] = "baseline"
+        return result
+    
+    # Count files
+    all_files = list(output_dir.glob("*"))
+    result["file_count"] = len(all_files)
+    
+    # Check for gap analysis report
+    gap_report = output_dir / "gap_analysis_report.json"
+    result["has_gap_report"] = gap_report.exists()
+    
+    # Find CSV files
+    csv_files = list(output_dir.glob("*.csv"))
+    result["csv_files"] = [f.name for f in csv_files]
+    
+    # Get last modified time
+    if all_files:
+        latest_file = max(all_files, key=lambda f: f.stat().st_mtime)
+        result["last_modified"] = datetime.fromtimestamp(
+            latest_file.stat().st_mtime
+        ).isoformat()
+    
+    # Determine state
+    if result["file_count"] == 0:
+        # Empty directory
+        result["state"] = "empty"
+        result["recommended_mode"] = "baseline"
+        
+    elif result["has_gap_report"]:
+        # Has previous analysis results
+        result["state"] = "has_results"
+        result["recommended_mode"] = "continuation"
+        
+    elif len(result["csv_files"]) > 0:
+        # Has CSV files but no analysis results
+        result["state"] = "has_csv"
+        result["recommended_mode"] = "baseline"
+        
+    else:
+        # Has files but nothing recognizable
+        result["state"] = "empty"
+        result["recommended_mode"] = "baseline"
+    
+    return result
+
+
+def get_recommendation_reason(state: Dict) -> str:
+    """Generate human-readable recommendation."""
+    if state["state"] == "not_exist":
+        return "Directory doesn't exist. Will create and run fresh analysis."
+    elif state["state"] == "empty":
+        return "Directory is empty. Will run fresh baseline analysis."
+    elif state["state"] == "has_csv":
+        return f"Found {len(state['csv_files'])} CSV files. Will run fresh analysis on these papers."
+    elif state["state"] == "has_results":
+        return f"Found existing analysis (last updated: {state['last_modified']}). Can continue or overwrite."
+    else:
+        return "Will run fresh baseline analysis."
 
 # API Endpoints
 @app.get(
@@ -1000,6 +1160,75 @@ async def confirm_upload(
             detail=f"Invalid action: {action}. Must be 'skip_duplicates' or 'overwrite_all'"
         )
 
+@app.post(
+    "/api/upload/analyze-directory",
+    tags=["Papers"],
+    summary="Analyze directory state for fresh analysis detection",
+    responses={
+        200: {
+            "description": "Directory state analysis completed",
+        },
+        400: {
+            "description": "Invalid directory path",
+            "model": ErrorResponse
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        }
+    }
+)
+async def analyze_directory_state(
+    request: Request,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Analyze directory to recommend baseline vs continuation mode.
+    
+    Called by frontend when user selects output directory.
+    This endpoint detects whether a directory is empty, has CSV files,
+    or contains previous analysis results, and recommends the appropriate
+    analysis mode.
+    
+    **Request Body:**
+    - directory_path: Path to the output directory to analyze
+    
+    **Returns:**
+    - directory: Resolved directory path
+    - state: Directory state information (file count, has_gap_report, etc.)
+    - recommendation: Recommended mode and reason
+    """
+    verify_api_key(api_key)
+    
+    # Parse request body
+    body = await request.json()
+    directory_path = body.get("directory_path")
+    
+    if not directory_path:
+        raise HTTPException(status_code=400, detail="directory_path is required")
+    
+    output_dir = Path(directory_path).expanduser().resolve()
+    
+    # Security check: validate path is safe
+    if not output_dir.is_absolute():
+        output_dir = (BASE_DIR / output_dir).resolve()
+    
+    # Validate path is not a system directory
+    system_dirs = ['/etc', '/bin', '/sbin', '/usr/bin', '/usr/sbin', '/boot', '/sys', '/proc']
+    if any(str(output_dir).startswith(sys_dir) for sys_dir in system_dirs):
+        raise HTTPException(status_code=400, detail="Cannot use system directories as output path")
+    
+    state = detect_directory_state(output_dir)
+    
+    return {
+        "directory": str(output_dir),
+        "state": state,
+        "recommendation": {
+            "mode": state["recommended_mode"],
+            "reason": get_recommendation_reason(state)
+        }
+    }
+
 @app.get(
     "/api/jobs",
     response_model=JobListResponse,
@@ -1301,6 +1530,9 @@ async def configure_job(
     else:
         raise HTTPException(status_code=400, detail=f"Invalid output_dir_mode: {config.output_dir_mode}")
     
+    # Detect directory state for fresh analysis determination
+    dir_state = detect_directory_state(output_dir)
+    
     # Create/validate output directory
     if config.overwrite_existing or not output_dir.exists():
         output_dir.mkdir(parents=True, exist_ok=True)
@@ -1313,17 +1545,144 @@ async def configure_job(
                        "Enable 'overwrite_existing' to proceed."
             )
     
+    # Determine if this is fresh analysis
+    # Fresh analysis is triggered for: not_exist, empty, or has_csv states
+    fresh_analysis = dir_state["state"] in ["not_exist", "empty", "has_csv"]
+    
     # Update job configuration with resolved output directory
     config_dict = config.dict()
     config_dict["output_dir"] = str(output_dir)
     job_data["config"] = config_dict
+    job_data["fresh_analysis"] = fresh_analysis
+    job_data["directory_state"] = dir_state
     save_job(job_id, job_data)
     
     return {
         "job_id": job_id,
         "config": config_dict,
-        "output_dir": str(output_dir)
+        "output_dir": str(output_dir),
+        "fresh_analysis": fresh_analysis,
+        "directory_state": dir_state
     }
+
+
+@app.post(
+    "/api/config/validate",
+    tags=["Configuration"],
+    summary="Validate custom pipeline configuration",
+    responses={
+        200: {
+            "description": "Configuration validation result",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        }
+    }
+)
+async def validate_config(
+    config: Dict[str, Any],
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Validate uploaded pipeline configuration against schema.
+    
+    This endpoint validates a custom pipeline_config.json file and returns
+    information about what settings will be overridden compared to defaults.
+    
+    **Request Body:**
+    - config: Configuration dictionary to validate
+    
+    **Returns:**
+    - valid: Boolean indicating if configuration is valid
+    - config: Validated configuration (if valid)
+    - overrides: List of settings that differ from defaults
+    - overrides_count: Number of override settings
+    - errors: List of validation errors (if invalid)
+    """
+    verify_api_key(api_key)
+    
+    try:
+        # Validate against schema
+        validated_config = PipelineConfig(**config)
+        
+        # Load default config for comparison
+        default_config_path = BASE_DIR / "pipeline_config.json"
+        with open(default_config_path) as f:
+            default_config = json.load(f)
+        
+        # Find overrides
+        overrides = find_config_overrides(config, default_config)
+        
+        return {
+            "valid": True,
+            "config": validated_config.dict(exclude_none=True),
+            "overrides": overrides,
+            "overrides_count": len(overrides)
+        }
+        
+    except Exception as e:
+        logger.error(f"Config validation error: {e}")
+        error_message = str(e)
+        
+        # Extract more user-friendly error messages from Pydantic errors
+        errors = [error_message]
+        
+        return {
+            "valid": False,
+            "errors": errors,
+            "config": None,
+            "overrides": [],
+            "overrides_count": 0
+        }
+
+
+@app.get(
+    "/api/config/template",
+    tags=["Configuration"],
+    summary="Download default configuration template",
+    responses={
+        200: {
+            "description": "Configuration template file",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Template file not found",
+            "model": ErrorResponse
+        }
+    }
+)
+async def download_config_template(
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Download default pipeline_config.json as template.
+    
+    This returns the default configuration file that can be used as a starting
+    point for creating custom configurations.
+    
+    **Returns:**
+    - File download of pipeline_config_template.json
+    """
+    verify_api_key(api_key)
+    
+    config_path = BASE_DIR / "pipeline_config.json"
+    
+    if not config_path.exists():
+        raise HTTPException(
+            status_code=404,
+            detail="Configuration template file not found"
+        )
+    
+    return FileResponse(
+        path=config_path,
+        filename="pipeline_config_template.json",
+        media_type="application/json"
+    )
+
 
 @app.post(
     "/api/jobs/{job_id}/upload-config",
@@ -1357,6 +1716,8 @@ async def upload_config_file(
     **Returns:**
     - job_id: Job identifier
     - config_path: Path to uploaded config file
+    - valid: Whether config is valid
+    - errors: Validation errors (if any)
     """
     verify_api_key(api_key)
     
@@ -1375,19 +1736,42 @@ async def upload_config_file(
     custom_config_path = job_dir / "custom_config.json"
     
     try:
+        # Read and parse config content
+        content = await config_file.read()
+        config_data = json.loads(content)
+        
+        # Validate config
+        try:
+            validated_config = PipelineConfig(**config_data)
+            is_valid = True
+            errors = []
+        except Exception as e:
+            is_valid = False
+            errors = [str(e)]
+            logger.warning(f"Invalid config uploaded for job {job_id}: {e}")
+        
         # Save uploaded config file
-        with open(custom_config_path, 'wb') as f:
-            shutil.copyfileobj(config_file.file, f)
+        with open(custom_config_path, 'w') as f:
+            json.dump(config_data, f, indent=2)
         
         # Store path in job data
         job_data["custom_config_path"] = str(custom_config_path)
+        job_data["config_uploaded"] = True
+        job_data["config_valid"] = is_valid
         save_job(job_id, job_data)
         
         return {
             "job_id": job_id,
-            "config_path": str(custom_config_path)
+            "config_path": str(custom_config_path),
+            "valid": is_valid,
+            "errors": errors
         }
         
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Invalid JSON format: {str(e)}"
+        )
     except Exception as e:
         raise HTTPException(
             status_code=500,
