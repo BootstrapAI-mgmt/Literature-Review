@@ -1,20 +1,21 @@
 # PARITY-W3-2: Direct Directory Input
 
-**Priority:** 🟡 **MEDIUM**  
-**Effort:** 12-16 hours  
+**Priority:** 🔴 **HIGH** (was MEDIUM - upgraded due to production need)  
+**Effort:** 6-8 hours (was 12-16 - reduced due to simple subprocess implementation)  
 **Wave:** 3 (Enhancement Features)  
-**Dependencies:** PARITY-W1-1 (Output Directory Selector)
+**Dependencies:** PARITY-W1-1 (Output Directory Selector)  
+**Relation:** Essentially same as PARITY-CRITICAL-1 (server directory input)
 
 ---
 
 ## 📋 Problem Statement
 
 **Current State:**  
-Dashboard requires users to upload individual PDF/CSV files through file picker. Users with local directories containing papers cannot directly point to them - must manually select all files or create archives.
+Dashboard requires users to upload individual PDF/CSV files through file picker. Users with papers already on the server cannot directly point to those directories - must upload via browser or manually select all files.
 
 **CLI Capability:**
 ```bash
-# Direct directory input
+# Direct directory input (server paths)
 python pipeline_orchestrator.py --data-dir /path/to/papers/
 
 # Pipeline scans directory for PDFs/CSVs automatically
@@ -22,12 +23,12 @@ python pipeline_orchestrator.py --data-dir /path/to/papers/
 ```
 
 **User Problems:**
-- Have 100 PDFs in folder → must select all individually
-- Cannot use existing organized paper directories
-- Cannot leverage local file organization
+- Have 100 PDFs in server folder → must upload or select all individually
+- Cannot use existing organized paper directories on server
+- Cannot leverage server file organization
 - Time-consuming multi-file selection
 - No support for nested directories
-- Cannot point to network shares or mounted drives
+- Cannot point to server network shares or mounted drives
 
 **Gap:** No directory input option in Dashboard.
 
@@ -36,6 +37,8 @@ python pipeline_orchestrator.py --data-dir /path/to/papers/
 ## 🎯 Objective
 
 Add direct directory input capability matching CLI's `--data-dir` flag, allowing users to provide a directory path that the pipeline scans for papers automatically.
+
+**Architecture Note:** Dashboard runs server-side Python and executes the CLI via `subprocess.run()`. This means the Dashboard can access any directory on the server filesystem, just like the CLI. The "directory path" input refers to **server paths** (e.g., `/workspaces/Literature-Review/data/`), not the user's local computer.
 
 ---
 
@@ -261,7 +264,7 @@ function updateInputMethod() {
     document.getElementById('directoryValidation').style.display = 'none';
 }
 
-// Validate directory path (basic client-side check)
+// Validate directory path (basic format check before server validation)
 function validateDirectoryPath() {
     const path = document.getElementById('directoryPath').value.trim();
     
@@ -279,15 +282,13 @@ function validateDirectoryPath() {
     scanDirectory();
 }
 
-// Browse for directory (opens native file picker in directory mode)
+// Browse for directory (server-side directory browser)
 function browseDirectory() {
-    // Note: Web browsers don't allow direct directory browsing from JavaScript
-    // This would require a native file picker or server-side browsing
+    // Note: This opens a server-side directory browser
+    // Users navigate the server filesystem, not their local machine
     
-    alert('Directory browsing requires:\n\n' +
-          '1. Desktop app integration, OR\n' +
-          '2. Manually type/paste directory path, then click Scan\n\n' +
-          'Alternatively, use Upload Files to select files from a directory.');
+    // Open server directory browser modal
+    openServerDirectoryBrowser();
 }
 
 // Scan directory for papers
@@ -643,33 +644,176 @@ async def create_job(
         "input_method": config.input_method,
         "file_count": metadata["file_count"]
     }
-
-
-@app.post("/api/jobs/{job_id}/start")
-async def start_job(
-    job_id: str,
-    config: JobConfig,
-    api_key: str = Header(None, alias="X-API-KEY")
-):
-    """Start job (supports directory input)."""
-    # ... existing code ...
-    
-    # Build CLI command
-    cmd = ["python", "pipeline_orchestrator.py", "--batch-mode"]
-    
-    # Add data directory if directory input method
-    metadata = load_job_metadata(job_id)
-    if metadata.get("input_method") == "directory":
-        cmd.extend(["--data-dir", metadata["data_dir"]])
-        
-        logger.info(f"Job {job_id} using directory input: {metadata['data_dir']}")
-    else:
-        # Upload method: point to uploads directory
-        upload_dir = job_dir / "uploads"
-        cmd.extend(["--data-dir", str(upload_dir)])
-    
-    # ... rest of command building ...
 ```
+
+**Job Runner Integration:**
+
+**File:** `webdashboard/job_runner.py`
+
+The critical change is in `_run_orchestrator_sync()` method where the CLI command is built. The job runner needs to check if the job uses directory input and pass the appropriate `--data-dir` flag:
+
+```python
+def _run_orchestrator_sync(self, job_id: str, job_data: dict):
+    """
+    Run orchestrator synchronously (called in thread pool)
+    """
+    import subprocess
+    import sys
+    from pathlib import Path
+    
+    config = job_data.get("config", {})
+    
+    # Build CLI command for pipeline orchestrator
+    cmd = [sys.executable, "pipeline_orchestrator.py"]
+    cmd.append("--batch-mode")
+    cmd.extend(["--parent-job-id", job_id])
+    
+    # ===== KEY CHANGE: Handle directory input vs upload =====
+    input_method = job_data.get("input_method", "upload")
+    
+    if input_method == "directory":
+        # Directory input: pass server directory path directly to CLI
+        data_dir = job_data.get("data_dir")
+        if not data_dir:
+            raise ValueError("Directory input method requires data_dir")
+        
+        cmd.extend(["--data-dir", data_dir])
+        self._write_log(job_id, f"Using server directory: {data_dir}")
+        
+    else:
+        # Upload method: point to job's upload directory
+        upload_dir = UPLOADS_DIR / job_id
+        if not upload_dir.exists() or not list(upload_dir.glob("*.pdf")):
+            raise ValueError("No uploaded files found for job")
+        
+        cmd.extend(["--data-dir", str(upload_dir)])
+        self._write_log(job_id, f"Using uploaded files from: {upload_dir}")
+    
+    # Add other CLI flags (dry_run, force, budget, etc.)
+    if config.get("dry_run"):
+        cmd.append("--dry-run")
+    if config.get("force"):
+        cmd.append("--force")
+    # ... rest of config flags ...
+    
+    # Set output directory
+    if config.get("output_dir"):
+        output_dir = Path(config["output_dir"])
+    else:
+        output_dir = Path(f"workspace/jobs/{job_id}/outputs/gap_analysis_output")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    cmd.extend(["--output-dir", str(output_dir)])
+    
+    # Execute CLI
+    self._write_log(job_id, f"Executing: {' '.join(cmd)}")
+    result = subprocess.run(
+        cmd,
+        capture_output=True,
+        text=True,
+        cwd=str(Path(__file__).parent.parent),
+        timeout=7200
+    )
+    
+    # Handle result...
+```
+
+**Key Points:**
+1. Check `job_data.get("input_method")` to determine if directory or upload
+2. For directory: pass `job_data["data_dir"]` directly to `--data-dir`
+3. For upload: pass job's upload directory to `--data-dir` (existing behavior)
+4. No database building needed for directory input - CLI handles it
+
+---
+
+**Job Data Storage:**
+
+When directory input is used, the job metadata must store:
+
+```python
+# In /api/jobs/create endpoint
+job_data = {
+    "id": job_id,
+    "input_method": "directory",  # or "upload"
+    "data_dir": "/path/to/server/directory",  # for directory input
+    "file_count": scan_result["pdf_count"] + scan_result["csv_count"],
+    "created_at": datetime.utcnow().isoformat(),
+    "status": "draft"
+}
+```
+
+---
+
+## 🔄 Complete Workflow
+
+### Directory Input Flow (End-to-End)
+
+```
+1. User selects "Directory Path" input method
+   ↓
+2. User types server path: /workspaces/Literature-Review/data/papers/
+   ↓
+3. User clicks "Scan" button
+   ↓
+4. Frontend → POST /api/directory/scan
+   ↓
+5. Backend validates path (security checks)
+   ↓
+6. Backend scans directory (finds 50 PDFs)
+   ↓
+7. Frontend displays scan results
+   ↓
+8. User clicks "Create Job"
+   ↓
+9. Frontend → POST /api/jobs/create
+   {
+     "input_method": "directory",
+     "data_dir": "/workspaces/Literature-Review/data/papers/"
+   }
+   ↓
+10. Backend creates job metadata (status: "draft")
+    ↓
+11. User clicks "Configure & Start" (or config modal)
+    ↓
+12. User selects pillars, analysis mode
+    ↓
+13. Frontend → POST /api/jobs/{job_id}/configure
+    ↓
+14. Backend saves configuration
+    ↓
+15. Frontend → POST /api/jobs/{job_id}/start
+    ↓
+16. Backend queues job (status: "queued")
+    ↓
+17. JobRunner picks up job
+    ↓
+18. JobRunner builds CLI command:
+    cmd = ["python", "pipeline_orchestrator.py",
+           "--batch-mode",
+           "--data-dir", "/workspaces/Literature-Review/data/papers/",
+           "--output-dir", "/workspaces/jobs/{job_id}/outputs/",
+           ...other flags...]
+    ↓
+19. JobRunner executes: subprocess.run(cmd)
+    ↓
+20. CLI processes papers directly from server directory
+    ↓
+21. Results saved to output directory
+    ↓
+22. Job status updated to "completed"
+    ↓
+23. User views results in Dashboard
+```
+
+### Key Differences from Upload Method
+
+| Aspect | Upload Method | Directory Method |
+|--------|--------------|------------------|
+| **Data location** | Browser upload → server temp dir | Already on server |
+| **Transfer** | Network transfer required | No transfer (local) |
+| **Storage** | Duplicate files created | No duplication |
+| **--data-dir value** | `workspace/uploads/{job_id}/` | User-provided path |
+| **Database building** | ResearchDatabaseBuilder runs | CLI handles it |
+| **File validation** | On upload | On scan |
 
 ---
 
@@ -850,20 +994,20 @@ Instead of uploading files, you can provide a directory path containing your pap
 **Use Upload Files when:**
 - Papers are scattered across different locations
 - Working with small number of files (<20)
-- Papers are on remote server (need to upload)
+- Papers not yet on server (need to upload from your computer)
 
 **Use Directory Path when:**
-- Papers organized in local directory
+- Papers already exist in server directory
 - Large number of files (50+)
-- Papers on network share or mounted drive
-- Want to avoid re-uploading files
+- Papers on server network share or mounted drive
+- Want to avoid re-uploading files already on server
 
 ### How to Use
 
 1. Select **Directory Path** input method
-2. Enter absolute path to directory:
-   - Linux/Mac: `/home/user/papers/`
-   - Windows: `C:\Users\user\Documents\papers\`
+2. Enter absolute path to directory on server:
+   - Example: `/workspaces/Literature-Review/data/papers/`
+   - Example: `/data/research_2024/neuromorphic/`
 3. Configure options:
    - **Recursive:** Include subdirectories (recommended)
    - **Follow symlinks:** Include linked directories
@@ -874,8 +1018,8 @@ Instead of uploading files, you can provide a directory path containing your pap
 
 ### Security
 
-For security, only directories within allowed locations can be accessed:
-- Your home directory (`/home/username/`)
+For security, only directories within allowed server locations can be accessed:
+- Project workspace (`/workspaces/Literature-Review/`)
 - Shared data directory (`/data/`)
 - Mounted drives (`/mnt/`)
 
