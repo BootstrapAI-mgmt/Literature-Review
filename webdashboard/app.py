@@ -230,6 +230,12 @@ class JobConfig(BaseModel):
         output_dir_path: Custom output directory path (required if output_dir_mode is "custom" or "existing")
         overwrite_existing: Whether to overwrite existing results (default: False)
         
+        Input method options (PARITY-W3-2):
+        input_method: Input method - "upload" or "directory" (default: "upload")
+        data_dir: Server directory path for directory input method
+        scan_recursive: Whether to scan subdirectories (default: True)
+        follow_symlinks: Whether to follow symbolic links (default: False)
+        
         Advanced options:
         dry_run: Validate configuration without making API calls (default: False)
         force: Force re-analysis even if recent results exist (default: False)
@@ -246,6 +252,12 @@ class JobConfig(BaseModel):
     output_dir_mode: str = "auto"  # "auto" | "custom" | "existing"
     output_dir_path: Optional[str] = None
     overwrite_existing: bool = False
+    
+    # Input method options (PARITY-W3-2)
+    input_method: str = "upload"  # "upload" or "directory"
+    data_dir: Optional[str] = None  # Server directory path for directory input
+    scan_recursive: bool = True
+    follow_symlinks: bool = False
     
     # Advanced options
     dry_run: bool = False
@@ -270,6 +282,10 @@ class JobConfig(BaseModel):
                 "output_dir_mode": "auto",
                 "output_dir_path": None,
                 "overwrite_existing": False,
+                "input_method": "upload",
+                "data_dir": None,
+                "scan_recursive": True,
+                "follow_symlinks": False,
                 "dry_run": False,
                 "force": False,
                 "clear_cache": False,
@@ -415,6 +431,69 @@ class CostEstimateRequest(BaseModel):
         }
 
 
+class DirectoryScanRequest(BaseModel):
+    """
+    Request to scan a server directory for paper files (PDFs/CSVs).
+    
+    This enables users to point to existing papers on the server without uploading.
+    
+    Args:
+        path: Absolute path to directory containing papers
+        recursive: Whether to scan subdirectories (default: True)
+        follow_symlinks: Whether to follow symbolic links (default: False)
+    """
+    path: str
+    recursive: bool = True
+    follow_symlinks: bool = False
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "path": "/workspaces/Literature-Review/data/papers",
+                "recursive": True,
+                "follow_symlinks": False
+            }
+        }
+
+
+class DirectoryScanResponse(BaseModel):
+    """Response from directory scan operation."""
+    path: str
+    pdf_count: int
+    csv_count: int
+    total_files: int
+    total_size_bytes: int
+    subdirectory_count: int
+    recursive: bool
+    follow_symlinks: bool
+    files: List[Dict[str, Any]]
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "path": "/workspaces/Literature-Review/data/papers",
+                "pdf_count": 10,
+                "csv_count": 2,
+                "total_files": 12,
+                "total_size_bytes": 52428800,
+                "subdirectory_count": 3,
+                "recursive": True,
+                "follow_symlinks": False,
+                "files": [
+                    {
+                        "filename": "paper1.pdf",
+                        "relative_path": "paper1.pdf",
+                        "absolute_path": "/workspaces/Literature-Review/data/papers/paper1.pdf",
+                        "type": "pdf",
+                        "size_bytes": 1024000,
+                        "modified": "2024-01-15T10:30:00",
+                        "created": "2024-01-10T08:00:00"
+                    }
+                ]
+            }
+        }
+
+
 class PipelineConfig(BaseModel):
     """
     Pipeline configuration schema matching pipeline_config.json.
@@ -487,6 +566,71 @@ def save_job(job_id: str, job_data: dict):
     job_file = get_job_file(job_id)
     with open(job_file, 'w') as f:
         json.dump(job_data, f, indent=2)
+
+
+# Allowed directory prefixes for security (directory input feature)
+# Users can only scan directories within these paths
+ALLOWED_DIRECTORY_PREFIXES = [
+    Path.home(),  # User's home directory
+    Path("/workspaces"),  # GitHub Codespaces workspaces
+    Path("/data"),  # Shared data directory
+    Path("/mnt"),  # Mounted drives
+    Path("/tmp"),  # Temporary directory
+]
+
+
+def get_allowed_directory_prefixes() -> List[Path]:
+    """
+    Get allowed directory prefixes, including the BASE_DIR.
+    
+    Returns:
+        List of Path objects representing allowed directory prefixes
+    """
+    prefixes = list(ALLOWED_DIRECTORY_PREFIXES)
+    # Always allow BASE_DIR (project root)
+    prefixes.append(BASE_DIR)
+    return prefixes
+
+
+def is_path_allowed(path: Path) -> bool:
+    """
+    Check if a path is within allowed directories.
+    
+    Security check to prevent path traversal attacks.
+    
+    Args:
+        path: Resolved absolute path to check
+        
+    Returns:
+        True if path is within an allowed prefix
+    """
+    allowed_prefixes = get_allowed_directory_prefixes()
+    path_str = str(path)
+    return any(path_str.startswith(str(prefix)) for prefix in allowed_prefixes)
+
+
+def extract_file_metadata(file_path: Path, base_dir: Path) -> Dict[str, Any]:
+    """
+    Extract metadata from a file for directory scan results.
+    
+    Args:
+        file_path: Absolute path to the file
+        base_dir: Base directory for computing relative path
+        
+    Returns:
+        Dictionary with file metadata
+    """
+    stat = file_path.stat()
+    
+    return {
+        "filename": file_path.name,
+        "relative_path": str(file_path.relative_to(base_dir)),
+        "absolute_path": str(file_path),
+        "type": file_path.suffix.lstrip('.').lower(),
+        "size_bytes": stat.st_size,
+        "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+        "created": datetime.fromtimestamp(stat.st_ctime).isoformat()
+    }
 
 
 def find_config_overrides(
@@ -1221,6 +1365,188 @@ async def confirm_upload(
         )
 
 @app.post(
+    "/api/directory/scan",
+    response_model=DirectoryScanResponse,
+    tags=["Papers"],
+    summary="Scan server directory for paper files",
+    responses={
+        200: {
+            "description": "Directory scanned successfully",
+        },
+        400: {
+            "description": "Invalid path (not a directory or invalid format)",
+            "model": ErrorResponse
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        403: {
+            "description": "Access denied (path traversal or restricted directory)",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Directory not found or no papers found",
+            "model": ErrorResponse
+        }
+    }
+)
+async def scan_directory(
+    request: DirectoryScanRequest,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Scan a server directory for PDF and CSV paper files.
+    
+    This endpoint enables users to point to existing papers on the server
+    instead of uploading files. The directory is scanned for PDF and CSV files,
+    with optional recursive scanning and symlink following.
+    
+    **Security:**
+    - Only directories within allowed paths can be scanned
+    - Path traversal attempts are rejected
+    - Requires valid API key
+    
+    **Use Cases:**
+    - Papers already exist on the server
+    - Large number of files (50+)
+    - Papers on mounted drives or network shares
+    - Avoiding re-upload of existing files
+    
+    **CLI Equivalent:**
+    This maps to the CLI's `--data-dir` flag.
+    
+    **Request Body:**
+    - path: Absolute path to directory (e.g., "/workspaces/Literature-Review/data/")
+    - recursive: Scan subdirectories (default: true)
+    - follow_symlinks: Follow symbolic links (default: false)
+    
+    **Returns:**
+    - File counts (PDF/CSV)
+    - Total size in bytes
+    - Subdirectory count
+    - List of discovered files with metadata
+    """
+    verify_api_key(api_key)
+    
+    # Validate and resolve path
+    try:
+        directory = Path(request.path).expanduser().resolve()
+    except Exception as e:
+        raise HTTPException(400, f"Invalid path format: {str(e)}")
+    
+    # Security: Must be absolute path
+    if not request.path.startswith('/') and not request.path.startswith('~'):
+        # Allow Windows paths too
+        if len(request.path) < 2 or request.path[1] != ':':
+            raise HTTPException(
+                400,
+                "Path must be absolute (e.g., /path/to/directory or C:\\path)"
+            )
+    
+    # Security: Prevent path traversal - check if resolved path is within allowed directories
+    if not is_path_allowed(directory):
+        allowed_list = ", ".join(str(p) for p in get_allowed_directory_prefixes())
+        raise HTTPException(
+            403,
+            f"Access denied. Directory must be within allowed locations: {allowed_list}"
+        )
+    
+    # Check directory exists
+    if not directory.exists():
+        raise HTTPException(404, f"Directory not found: {directory}")
+    
+    # Check is directory (not a file)
+    if not directory.is_dir():
+        raise HTTPException(400, f"Path is not a directory: {directory}")
+    
+    # Check read permissions
+    if not os.access(directory, os.R_OK):
+        raise HTTPException(403, f"No read permission for directory: {directory}")
+    
+    # Scan for files
+    files: List[Dict[str, Any]] = []
+    pdf_count = 0
+    csv_count = 0
+    total_size = 0
+    subdirs: set = set()
+    
+    try:
+        if request.recursive:
+            # Recursive scan using glob
+            for pattern in ["**/*.pdf", "**/*.PDF"]:
+                for pdf_file in directory.glob(pattern):
+                    if pdf_file.is_file():
+                        # Check if we should follow symlinks
+                        if pdf_file.is_symlink() and not request.follow_symlinks:
+                            continue
+                        
+                        files.append(extract_file_metadata(pdf_file, directory))
+                        pdf_count += 1
+                        total_size += pdf_file.stat().st_size
+                        
+                        # Track subdirectory
+                        if pdf_file.parent != directory:
+                            subdirs.add(pdf_file.parent)
+            
+            for pattern in ["**/*.csv", "**/*.CSV"]:
+                for csv_file in directory.glob(pattern):
+                    if csv_file.is_file():
+                        if csv_file.is_symlink() and not request.follow_symlinks:
+                            continue
+                        
+                        files.append(extract_file_metadata(csv_file, directory))
+                        csv_count += 1
+                        total_size += csv_file.stat().st_size
+                        
+                        if csv_file.parent != directory:
+                            subdirs.add(csv_file.parent)
+        else:
+            # Non-recursive: only top level
+            for item in directory.iterdir():
+                if item.is_file():
+                    # Check symlinks
+                    if item.is_symlink() and not request.follow_symlinks:
+                        continue
+                    
+                    suffix = item.suffix.lower()
+                    if suffix == '.pdf':
+                        files.append(extract_file_metadata(item, directory))
+                        pdf_count += 1
+                        total_size += item.stat().st_size
+                    elif suffix == '.csv':
+                        files.append(extract_file_metadata(item, directory))
+                        csv_count += 1
+                        total_size += item.stat().st_size
+        
+    except PermissionError as e:
+        raise HTTPException(403, f"Permission denied while scanning: {str(e)}")
+    except Exception as e:
+        raise HTTPException(500, f"Error scanning directory: {str(e)}")
+    
+    # Validate found files
+    if pdf_count == 0 and csv_count == 0:
+        raise HTTPException(
+            404,
+            f"No PDF or CSV files found in directory: {directory}"
+        )
+    
+    # Sort files by relative path
+    files.sort(key=lambda f: f["relative_path"])
+    
+    return DirectoryScanResponse(
+        path=str(directory),
+        pdf_count=pdf_count,
+        csv_count=csv_count,
+        total_files=pdf_count + csv_count,
+        total_size_bytes=total_size,
+        subdirectory_count=len(subdirs),
+        recursive=request.recursive,
+        follow_symlinks=request.follow_symlinks,
+        files=files
+    )
+
+@app.post(
     "/api/upload/analyze-directory",
     tags=["Papers"],
     summary="Analyze directory state for fresh analysis detection",
@@ -1609,6 +1935,39 @@ async def configure_job(
     # Fresh analysis is triggered for: not_exist, empty, or has_csv states
     fresh_analysis = dir_state["state"] in ["not_exist", "empty", "has_csv"]
     
+    # Handle directory input method (PARITY-W3-2)
+    if config.input_method == "directory":
+        if not config.data_dir:
+            raise HTTPException(
+                status_code=400,
+                detail="data_dir is required when input_method is 'directory'"
+            )
+        
+        # Validate the data directory using the scan endpoint logic
+        try:
+            scan_request = DirectoryScanRequest(
+                path=config.data_dir,
+                recursive=config.scan_recursive,
+                follow_symlinks=config.follow_symlinks
+            )
+            scan_result = await scan_directory(scan_request, api_key)
+            
+            # Store directory input metadata in job data
+            job_data["input_method"] = "directory"
+            job_data["data_dir"] = scan_result.path
+            job_data["file_count"] = scan_result.total_files
+            job_data["pdf_count"] = scan_result.pdf_count
+            job_data["csv_count"] = scan_result.csv_count
+            job_data["scan_recursive"] = config.scan_recursive
+            job_data["follow_symlinks"] = config.follow_symlinks
+            
+        except HTTPException as e:
+            # Re-raise with more context
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=f"Directory validation failed: {e.detail}"
+            )
+    
     # Update job configuration with resolved output directory
     config_dict = config.dict()
     config_dict["output_dir"] = str(output_dir)
@@ -1622,7 +1981,10 @@ async def configure_job(
         "config": config_dict,
         "output_dir": str(output_dir),
         "fresh_analysis": fresh_analysis,
-        "directory_state": dir_state
+        "directory_state": dir_state,
+        "input_method": job_data.get("input_method", "upload"),
+        "data_dir": job_data.get("data_dir"),
+        "file_count": job_data.get("file_count")
     }
 
 

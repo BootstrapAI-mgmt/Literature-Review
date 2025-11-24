@@ -372,6 +372,41 @@ class PipelineJobRunner:
         if custom_config_path and Path(custom_config_path).exists():
             cmd.extend(["--config", custom_config_path])
         
+        # Handle input method: directory vs upload (PARITY-W3-2)
+        input_method = job_data.get("input_method", "upload")
+        
+        if input_method == "directory":
+            # Directory input: pass server directory path directly to CLI
+            data_dir = job_data.get("data_dir")
+            if not data_dir:
+                error_msg = "Directory input method requires data_dir in job data"
+                self._write_log(job_id, f"❌ {error_msg}")
+                raise ValueError(error_msg)
+            
+            cmd.extend(["--data-dir", data_dir])
+            self._write_log(job_id, f"📁 Using server directory: {data_dir}")
+            
+            # Log file counts
+            pdf_count = job_data.get("pdf_count", 0)
+            csv_count = job_data.get("csv_count", 0)
+            self._write_log(job_id, f"📊 Found {pdf_count} PDFs and {csv_count} CSVs")
+        else:
+            # Upload method: point to job's upload directory
+            upload_dir = Path(f"workspace/uploads/{job_id}")
+            
+            # Check if we have uploaded files
+            if upload_dir.exists() and any(upload_dir.glob("*.pdf")):
+                cmd.extend(["--data-dir", str(upload_dir)])
+                self._write_log(job_id, f"📤 Using uploaded files from: {upload_dir}")
+            elif job_data.get("file_path"):
+                # Single file upload (legacy) - use file path directly
+                single_file = Path(job_data["file_path"])
+                if single_file.exists():
+                    cmd.extend(["--data-dir", str(single_file.parent)])
+                    self._write_log(job_id, f"📄 Using single uploaded file: {single_file}")
+            else:
+                self._write_log(job_id, "⚠️ No input files specified - pipeline will use defaults")
+        
         # Set output directory for this job
         # Use custom output directory if specified, otherwise use default job directory
         if config.get("output_dir"):
