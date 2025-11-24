@@ -216,6 +216,31 @@ class RetryRequest(BaseModel):
             }
         }
 
+class ExperimentalConfig(BaseModel):
+    """
+    Experimental features configuration.
+    
+    Allows users to opt-in to beta functionality with explicit consent.
+    
+    Args:
+        experimental: Master toggle to enable experimental features
+        features: List of specific experimental feature IDs to enable
+        consent_given: User has acknowledged the risks of experimental features
+    """
+    experimental: bool = False
+    features: List[str] = []
+    consent_given: bool = False
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "experimental": True,
+                "features": ["beta_models", "smart_cache"],
+                "consent_given": True
+            }
+        }
+
+
 class JobConfig(BaseModel):
     """
     Job configuration parameters
@@ -238,7 +263,8 @@ class JobConfig(BaseModel):
         relevance_threshold: Minimum semantic similarity for paper relevance (0.0-1.0, default: 0.7)
         resume_from_stage: Skip completed stages and resume from checkpoint (default: None)
         resume_from_checkpoint: Continue from saved checkpoint file (default: None)
-        experimental: Enable cutting-edge experimental features (default: False)
+        experimental: Enable cutting-edge experimental features (default: False, deprecated - use experimental_config)
+        experimental_config: Detailed experimental features configuration
     """
     pillar_selections: List[str]
     run_mode: str  # "ONCE" or "DEEP_LOOP"
@@ -256,7 +282,8 @@ class JobConfig(BaseModel):
     relevance_threshold: float = 0.7
     resume_from_stage: Optional[str] = None
     resume_from_checkpoint: Optional[str] = None
-    experimental: bool = False
+    experimental: bool = False  # Kept for backwards compatibility
+    experimental_config: Optional[ExperimentalConfig] = None  # New detailed config
     
     # Pre-filter configuration (PARITY-W2-5)
     pre_filter: Optional[str] = None  # None=default, ""=full, "section1,section2"=custom
@@ -275,7 +302,8 @@ class JobConfig(BaseModel):
                 "clear_cache": False,
                 "budget": 5.00,
                 "relevance_threshold": 0.7,
-                "experimental": False
+                "experimental": False,
+                "experimental_config": None
             }
         }
 
@@ -2039,6 +2067,18 @@ async def start_job(
             detail="Force re-analysis requires cost impact confirmation"
         )
     
+    # Validate experimental features consent (PARITY-W3-4)
+    exp_config = config.get("experimental_config")
+    if exp_config and exp_config.get("experimental"):
+        if not exp_config.get("consent_given"):
+            raise HTTPException(
+                status_code=400,
+                detail="Experimental features require explicit consent acceptance"
+            )
+        logger.warning(
+            f"Job {job_id} using EXPERIMENTAL features: {exp_config.get('features', [])}"
+        )
+    
     # Build research database from uploaded files
     try:
         from webdashboard.database_builder import ResearchDatabaseBuilder
@@ -3553,6 +3593,120 @@ async def get_field_presets():
     
     return {
         "presets": list_all_presets()
+    }
+
+
+@app.get(
+    "/api/experimental/features",
+    tags=["Experimental"],
+    summary="Get available experimental features",
+    responses={
+        200: {
+            "description": "List of available experimental features with details",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        }
+    }
+)
+async def get_experimental_features(
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Get list of available experimental features with descriptions.
+    
+    Returns current experimental features, their status, and warnings.
+    This endpoint provides information needed for the UI to display
+    experimental feature options with appropriate risk levels.
+    
+    **Response Structure:**
+    ```json
+    {
+      "features": [
+        {
+          "id": "beta_models",
+          "name": "Beta Models",
+          "description": "Access to latest unreleased language models",
+          "status": "active",
+          "risk_level": "medium",
+          "cost_impact": "high",
+          "warning": "Beta models may have higher costs and rate limits"
+        }
+      ],
+      "total_count": 4,
+      "disclaimer": "Experimental features are unstable..."
+    }
+    ```
+    
+    **Available Features:**
+    - beta_models: Access to GPT-4-Turbo, Claude-3.5-Opus, Gemini-Pro-1.5
+    - advanced_modes: Consensus, Triangulation, Genealogy tracking
+    - smart_cache: Semantic similarity-based caching
+    - prototype_viz: Experimental 3D visualizations
+    
+    **Risk Levels:**
+    - low: Minor risk, safe to try
+    - medium: Some risk, may have edge cases
+    - high: Significant risk, may increase costs/time
+    
+    **Cost Impact:**
+    - none: No cost change
+    - negative: Reduces cost (e.g., smart caching)
+    - high: Increases cost
+    - very_high: Significantly increases cost (3-5x)
+    """
+    verify_api_key(api_key)
+    
+    features = [
+        {
+            "id": "beta_models",
+            "name": "Beta Models",
+            "description": "Access to latest unreleased language models",
+            "status": "active",
+            "risk_level": "medium",
+            "cost_impact": "high",
+            "models": ["gpt-4-turbo", "claude-3-5-opus", "gemini-pro-1.5"],
+            "warning": "Beta models may have higher costs and rate limits"
+        },
+        {
+            "id": "advanced_modes",
+            "name": "Advanced Analysis Modes",
+            "description": "Experimental multi-model analysis techniques",
+            "status": "active",
+            "risk_level": "high",
+            "cost_impact": "very_high",
+            "modes": ["consensus", "triangulation", "genealogy"],
+            "warning": "These modes significantly increase API calls (3-5x) and cost"
+        },
+        {
+            "id": "smart_cache",
+            "name": "Smart Caching (Beta)",
+            "description": "Intelligent semantic similarity-based caching",
+            "status": "active",
+            "risk_level": "low",
+            "cost_impact": "negative",
+            "warning": "May reuse results for semantically similar but different papers"
+        },
+        {
+            "id": "prototype_viz",
+            "name": "Prototype Visualizations",
+            "description": "Experimental interactive visualization modes",
+            "status": "beta",
+            "risk_level": "low",
+            "cost_impact": "none",
+            "warning": "May have rendering issues or incomplete features"
+        }
+    ]
+    
+    return {
+        "features": features,
+        "total_count": len(features),
+        "disclaimer": (
+            "Experimental features are unstable and may change without notice. "
+            "They may produce incorrect results, fail unexpectedly, or be removed "
+            "in future versions. Use at your own risk. Feedback appreciated."
+        )
     }
 
 

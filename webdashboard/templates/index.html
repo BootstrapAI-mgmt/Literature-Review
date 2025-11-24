@@ -575,6 +575,29 @@
             font-size: 16px;
             color: #6c757d;
         }
+        
+        /* Experimental Features Styles (PARITY-W3-4) */
+        .card.border-danger {
+            border-width: 2px;
+        }
+
+        .experimental-feature:checked + label {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        #experimentalFeaturesPanel .card {
+            transition: all 0.2s;
+        }
+
+        #experimentalFeaturesPanel .card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        #experimentalFeaturesPanel .card .form-check-input:checked {
+            background-color: #dc3545;
+            border-color: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -1080,19 +1103,177 @@
                                     
                                     <hr class="my-4">
                                     
-                                    <!-- Experimental Features -->
-                                    <div class="mb-3">
-                                        <div class="form-check form-switch">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   id="experimentalFeatures">
-                                            <label class="form-check-label" for="experimentalFeatures">
-                                                <strong>Enable Experimental Features</strong>
-                                                <span class="badge bg-warning text-dark ms-2">CLI: --enable-experimental</span>
-                                            </label>
-                                            <div class="form-text">
-                                                ⚠️ Use cutting-edge features (may be unstable). 
-                                                Includes: advanced caching, parallel scoring, new prompts.
+                                    <!-- Experimental Features (PARITY-W3-4) -->
+                                    <div class="card mb-3 border-danger">
+                                        <div class="card-header bg-danger bg-opacity-10">
+                                            <h6 class="mb-0">🧪 Experimental Features</h6>
+                                        </div>
+                                        <div class="card-body">
+                                            
+                                            <!-- Main Toggle -->
+                                            <div class="form-check form-switch mb-3">
+                                                <input class="form-check-input" type="checkbox" 
+                                                       id="enableExperimental" onchange="toggleExperimental()">
+                                                <label class="form-check-label" for="enableExperimental">
+                                                    <strong>Enable Experimental Features (Beta)</strong>
+                                                    <span class="badge bg-danger">CLI: --enable-experimental</span>
+                                                </label>
                                             </div>
+                                            
+                                            <!-- Warning (Always Visible) -->
+                                            <div class="alert alert-warning mb-3">
+                                                <h6 class="alert-heading">⚠️ Experimental Features Warning</h6>
+                                                <p class="mb-2">
+                                                    Experimental features are <strong>unstable</strong> and <strong>under active development</strong>. 
+                                                    They may:
+                                                </p>
+                                                <ul class="mb-2">
+                                                    <li>Produce incorrect or incomplete results</li>
+                                                    <li>Change behavior without notice</li>
+                                                    <li>Consume more resources (time/cost)</li>
+                                                    <li>Fail unexpectedly</li>
+                                                    <li>Be removed in future versions</li>
+                                                </ul>
+                                                <p class="mb-0">
+                                                    <strong>Only enable if you understand the risks and want to help test beta functionality.</strong>
+                                                </p>
+                                            </div>
+                                            
+                                            <!-- Feature List (Collapsed by Default) -->
+                                            <div id="experimentalFeaturesPanel" style="display: none;">
+                                                
+                                                <hr>
+                                                
+                                                <h6 class="mb-3">Available Experimental Features:</h6>
+                                                
+                                                <!-- Beta Models -->
+                                                <div class="card mb-3 border-secondary">
+                                                    <div class="card-header bg-light">
+                                                        <div class="form-check mb-0">
+                                                            <input class="form-check-input experimental-feature" type="checkbox" 
+                                                                   id="expBetaModels" value="beta_models" disabled>
+                                                            <label class="form-check-label" for="expBetaModels">
+                                                                <strong>Beta Models</strong>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="small mb-2">
+                                                            Access to latest unreleased models:
+                                                        </p>
+                                                        <ul class="small mb-0">
+                                                            <li><strong>GPT-4-Turbo:</strong> Faster GPT-4 with 128k context</li>
+                                                            <li><strong>Claude-3.5-Opus:</strong> Most capable Claude model</li>
+                                                            <li><strong>Gemini-Pro-1.5:</strong> Google's latest multimodal model</li>
+                                                        </ul>
+                                                        <div class="alert alert-info mt-2 mb-0 small">
+                                                            <strong>Note:</strong> Beta models may have higher costs and rate limits.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Advanced Analysis Modes -->
+                                                <div class="card mb-3 border-secondary">
+                                                    <div class="card-header bg-light">
+                                                        <div class="form-check mb-0">
+                                                            <input class="form-check-input experimental-feature" type="checkbox" 
+                                                                   id="expAdvancedModes" value="advanced_modes" disabled>
+                                                            <label class="form-check-label" for="expAdvancedModes">
+                                                                <strong>Advanced Analysis Modes</strong>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="small mb-2">
+                                                            Experimental analysis techniques:
+                                                        </p>
+                                                        <ul class="small mb-0">
+                                                            <li><strong>Consensus Mode:</strong> Multi-model gap extraction with voting</li>
+                                                            <li><strong>Triangulation:</strong> Cross-validate findings across models</li>
+                                                            <li><strong>Genealogy Tracking:</strong> Trace evidence provenance</li>
+                                                        </ul>
+                                                        <div class="alert alert-warning mt-2 mb-0 small">
+                                                            <strong>Warning:</strong> These modes significantly increase API calls (3-5x) and cost.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Smart Caching -->
+                                                <div class="card mb-3 border-secondary">
+                                                    <div class="card-header bg-light">
+                                                        <div class="form-check mb-0">
+                                                            <input class="form-check-input experimental-feature" type="checkbox" 
+                                                                   id="expSmartCache" value="smart_cache" disabled>
+                                                            <label class="form-check-label" for="expSmartCache">
+                                                                <strong>Smart Caching (Beta)</strong>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="small mb-2">
+                                                            Intelligent cache with semantic similarity matching:
+                                                        </p>
+                                                        <ul class="small mb-0">
+                                                            <li>Reuse results for semantically similar papers</li>
+                                                            <li>Adaptive cache expiration based on model updates</li>
+                                                            <li>Cross-job cache sharing (privacy-aware)</li>
+                                                        </ul>
+                                                        <div class="alert alert-success mt-2 mb-0 small">
+                                                            <strong>Benefit:</strong> Can reduce costs by 40-60% on similar datasets.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Prototype Visualizations -->
+                                                <div class="card mb-3 border-secondary">
+                                                    <div class="card-header bg-light">
+                                                        <div class="form-check mb-0">
+                                                            <input class="form-check-input experimental-feature" type="checkbox" 
+                                                                   id="expPrototypeViz" value="prototype_viz" disabled>
+                                                            <label class="form-check-label" for="expPrototypeViz">
+                                                                <strong>Prototype Visualizations</strong>
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <p class="small mb-2">
+                                                            Experimental interactive visualizations:
+                                                        </p>
+                                                        <ul class="small mb-0">
+                                                            <li><strong>3D Gap Network:</strong> Interactive network graph of gap relationships</li>
+                                                            <li><strong>Timeline View:</strong> Temporal evolution of research gaps</li>
+                                                            <li><strong>Evidence Dashboard:</strong> Real-time evidence quality metrics</li>
+                                                        </ul>
+                                                        <div class="alert alert-info mt-2 mb-0 small">
+                                                            <strong>Status:</strong> May have rendering issues or incomplete features.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Feedback Banner -->
+                                                <div class="alert alert-primary mb-0">
+                                                    <strong>🙏 Help Us Improve!</strong><br>
+                                                    Your feedback on experimental features is valuable. Report issues or suggestions 
+                                                    via GitHub issues or contact the development team.
+                                                </div>
+                                                
+                                            </div>
+                                            
+                                            <!-- Consent Checkbox (Required) -->
+                                            <div id="experimentalConsent" style="display: none;" class="mt-3">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           id="experimentalConsentCheckbox">
+                                                    <label class="form-check-label" for="experimentalConsentCheckbox">
+                                                        <strong>I understand the risks and accept that experimental features may produce 
+                                                        unreliable results or fail.</strong>
+                                                    </label>
+                                                </div>
+                                                <div class="form-text text-danger">
+                                                    You must accept these terms to use experimental features.
+                                                </div>
+                                            </div>
+                                            
                                         </div>
                                     </div>
                                     
@@ -3971,6 +4152,79 @@
             }
         }
         
+        // === Experimental Features Functions (PARITY-W3-4) ===
+        
+        // Toggle experimental features panel
+        function toggleExperimental() {
+            const enabled = document.getElementById('enableExperimental').checked;
+            
+            document.getElementById('experimentalFeaturesPanel').style.display = 
+                enabled ? 'block' : 'none';
+            document.getElementById('experimentalConsent').style.display = 
+                enabled ? 'block' : 'none';
+            
+            // Enable/disable individual feature checkboxes
+            document.querySelectorAll('.experimental-feature').forEach(checkbox => {
+                checkbox.disabled = !enabled;
+                if (!enabled) {
+                    checkbox.checked = false;
+                }
+            });
+            
+            // Reset consent if toggling off
+            if (!enabled) {
+                document.getElementById('experimentalConsentCheckbox').checked = false;
+            }
+        }
+        
+        // Validate experimental consent before job start
+        function validateExperimentalConsent() {
+            const experimentalEnabled = document.getElementById('enableExperimental').checked;
+            
+            if (experimentalEnabled) {
+                const consentGiven = document.getElementById('experimentalConsentCheckbox').checked;
+                
+                if (!consentGiven) {
+                    alert('You must accept the experimental features terms to proceed.\n\nPlease check the consent checkbox in the Experimental Features section.');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        // Get experimental configuration for job submission
+        function getExperimentalConfig() {
+            const enabled = document.getElementById('enableExperimental').checked;
+            
+            if (!enabled) {
+                return null;  // No experimental config needed
+            }
+            
+            const features = [];
+            document.querySelectorAll('.experimental-feature:checked').forEach(checkbox => {
+                features.push(checkbox.value);
+            });
+            
+            return {
+                experimental: true,
+                features: features,
+                consent_given: document.getElementById('experimentalConsentCheckbox').checked
+            };
+        }
+        
+        // Reset experimental features UI
+        function resetExperimentalFeatures() {
+            document.getElementById('enableExperimental').checked = false;
+            document.getElementById('experimentalFeaturesPanel').style.display = 'none';
+            document.getElementById('experimentalConsent').style.display = 'none';
+            document.getElementById('experimentalConsentCheckbox').checked = false;
+            document.querySelectorAll('.experimental-feature').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.disabled = true;
+            });
+        }
+        
         function resetAdvancedOptions() {
             document.getElementById('dryRunMode').checked = false;
             document.getElementById('forceReanalysis').checked = false;
@@ -3990,7 +4244,9 @@
             document.getElementById('detectedCheckpoints').style.display = 'none';
             document.getElementById('checkpointPreview').style.display = 'none';
             resetStageHighlight();
-            document.getElementById('experimentalFeatures').checked = false;
+            
+            // Reset experimental features (PARITY-W3-4)
+            resetExperimentalFeatures();
             
             // Reset pre-filter to default (PARITY-W2-5)
             document.getElementById('prefilterDefault').checked = true;
@@ -4002,6 +4258,8 @@
         // Collect advanced options for API request
         function getAdvancedOptions() {
             const resumeConfig = getResumeConfig();
+            const experimentalConfig = getExperimentalConfig();
+            
             return {
                 dry_run: document.getElementById('dryRunMode').checked,
                 force: document.getElementById('forceReanalysis').checked,
@@ -4013,7 +4271,10 @@
                 relevance_threshold: parseFloat(document.getElementById('relevanceThresholdValue').value),
                 resume_from_stage: resumeConfig.resume_from_stage,
                 resume_from_checkpoint: resumeConfig.resume_from_checkpoint,
-                experimental: document.getElementById('experimentalFeatures').checked,
+                // Legacy field for backwards compatibility
+                experimental: experimentalConfig ? experimentalConfig.experimental : false,
+                // New detailed experimental config (PARITY-W3-4)
+                experimental_config: experimentalConfig,
                 pre_filter: getPreFilterConfig()  // PARITY-W2-5
             };
         }
@@ -4081,6 +4342,11 @@
             
             // Validate force options
             if (!validateForceOptions()) {
+                return;
+            }
+            
+            // Validate experimental features consent (PARITY-W3-4)
+            if (!validateExperimentalConsent()) {
                 return;
             }
             
