@@ -23,7 +23,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect, Header, Request
+from fastapi import FastAPI, File, HTTPException, UploadFile, WebSocket, WebSocketDisconnect, Header, Request, Query
 from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -257,6 +257,9 @@ class JobConfig(BaseModel):
     resume_from_stage: Optional[str] = None
     resume_from_checkpoint: Optional[str] = None
     experimental: bool = False
+    
+    # Pre-filter configuration (PARITY-W2-5)
+    pre_filter: Optional[str] = None  # None=default, ""=full, "section1,section2"=custom
     
     class Config:
         json_schema_extra = {
@@ -3841,6 +3844,92 @@ async def import_results(
         "message": f"Successfully imported {imported_count} files",
         "has_source_pdfs": has_source_pdfs,
         "rerunnable": has_source_pdfs
+    }
+
+
+@app.get(
+    "/api/prefilter/recommendations",
+    tags=["Pre-Filter"],
+    summary="Get pre-filter recommendations",
+    responses={
+        200: {"description": "Pre-filter recommendations based on dataset characteristics"},
+        401: {"description": "Invalid or missing API key", "model": ErrorResponse}
+    }
+)
+async def get_prefilter_recommendations(
+    paper_count: int,
+    review_type: str = "general",
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Get recommended pre-filter configuration based on review characteristics.
+    
+    Returns optimal section selection for speed/cost balance.
+    
+    **Parameters:**
+    - paper_count: Number of papers to analyze (determines dataset size category)
+    - review_type: Type of review - "general", "methodology", or "survey"
+    
+    **Dataset Size Categories:**
+    - Small: < 20 papers - Can afford comprehensive analysis
+    - Medium: 20-100 papers - Need to balance coverage and efficiency
+    - Large: > 100 papers - Must optimize for speed and cost
+    
+    **Review Types:**
+    - general: Standard literature reviews (focus on intro/discussion)
+    - methodology: Methods-focused reviews (focus on methods/results)
+    - survey: Broad surveys (need comprehensive coverage)
+    
+    **Returns:**
+    - recommended_sections: List of section names to analyze
+    - section_string: Comma-separated section list (for --pre-filter flag)
+    - paper_count: Number of papers (echoed from request)
+    - review_type: Review type (echoed from request)
+    - dataset_size: Calculated size category (small/medium/large)
+    - rationale: Explanation of recommendation
+    """
+    verify_api_key(api_key)
+    
+    # Validate paper_count
+    if paper_count <= 0:
+        raise HTTPException(status_code=400, detail="paper_count must be a positive integer")
+    
+    recommendations = {
+        "general": {
+            "small": ["title", "abstract", "introduction", "discussion"],
+            "medium": ["title", "abstract", "introduction"],
+            "large": ["abstract"]
+        },
+        "methodology": {
+            "small": ["abstract", "methods", "results"],
+            "medium": ["abstract", "methods"],
+            "large": ["abstract"]
+        },
+        "survey": {
+            "small": ["title", "abstract", "introduction", "methods", "results", "discussion"],
+            "medium": ["title", "abstract", "introduction", "discussion"],
+            "large": ["title", "abstract", "introduction"]
+        }
+    }
+    
+    # Determine dataset size
+    if paper_count < 20:
+        size = "small"
+    elif paper_count < 100:
+        size = "medium"
+    else:
+        size = "large"
+    
+    sections = recommendations.get(review_type, recommendations["general"])[size]
+    
+    return {
+        "recommended_sections": sections,
+        "section_string": ",".join(sections),
+        "paper_count": paper_count,
+        "review_type": review_type,
+        "dataset_size": size,
+        "rationale": f"For {review_type} reviews with {size} datasets ({paper_count} papers), "
+                    f"analyzing {len(sections)} sections balances coverage and efficiency."
     }
 
 
