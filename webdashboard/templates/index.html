@@ -781,15 +781,30 @@
                                     <div class="mb-3">
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" 
-                                                   id="dryRunMode">
+                                                   id="dryRunMode"
+                                                   onchange="updateDryRunMode()">
                                             <label class="form-check-label" for="dryRunMode">
-                                                <strong>Dry Run</strong>
+                                                <strong>Dry Run (Preview Only)</strong>
                                                 <span class="badge bg-info ms-2">CLI: --dry-run</span>
                                             </label>
                                             <div class="form-text">
-                                                Validate configuration without making API calls or spending credits.
-                                                Shows what would run.
+                                                Preview analysis plan and cost estimates without executing. 
+                                                No API calls made, no charges incurred.
                                             </div>
+                                        </div>
+                                        
+                                        <!-- Dry Run Benefits (shown when enabled) -->
+                                        <div id="dryRunBenefits" style="display: none;" class="alert alert-info mt-2 mb-0">
+                                            <strong>🧪 Dry-Run Benefits:</strong>
+                                            <ul class="mb-0 small">
+                                                <li>✅ Preview analysis stages and order</li>
+                                                <li>✅ Estimate API calls and costs</li>
+                                                <li>✅ Validate file paths and configuration</li>
+                                                <li>✅ See which papers will be processed</li>
+                                                <li>✅ Verify resume/cache behavior</li>
+                                                <li>❌ No actual analysis performed</li>
+                                                <li>❌ No results generated</li>
+                                            </ul>
                                         </div>
                                     </div>
                                     
@@ -2119,6 +2134,132 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dry-Run Results Modal (PARITY-W3-3) -->
+    <div class="modal fade" id="dryRunResultsModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">🧪 Dry-Run Preview</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <div class="small text-muted">Papers to Process</div>
+                                    <div class="display-6 fw-bold" id="dryRunPaperCount">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <div class="small text-muted">Est. API Calls</div>
+                                    <div class="display-6 fw-bold text-warning" id="dryRunApiCalls">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <div class="small text-muted">Est. Cost</div>
+                                    <div class="display-6 fw-bold text-success" id="dryRunCost">$0.00</div>
+                                    <div class="small text-muted" id="dryRunCostRange">$0.00 - $0.00</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-secondary">
+                                <div class="card-body text-center">
+                                    <div class="small text-muted">Est. Duration</div>
+                                    <div class="display-6 fw-bold text-secondary" id="dryRunDuration">0m</div>
+                                    <div class="small text-muted" id="dryRunDurationRange">0-0 min</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Execution Plan -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">📋 Execution Plan</h6>
+                        </div>
+                        <div class="card-body">
+                            <ol id="dryRunExecutionPlan" class="mb-0">
+                                <!-- Populated dynamically -->
+                            </ol>
+                        </div>
+                    </div>
+                    
+                    <!-- Configuration Summary -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">⚙️ Configuration</h6>
+                        </div>
+                        <div class="card-body">
+                            <dl class="row mb-0" id="dryRunConfig">
+                                <!-- Populated dynamically -->
+                            </dl>
+                        </div>
+                    </div>
+                    
+                    <!-- File List -->
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h6 class="mb-0">📄 Files to Process</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>#</th>
+                                            <th>Filename</th>
+                                            <th>Type</th>
+                                            <th>Size</th>
+                                            <th>Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dryRunFileList">
+                                        <!-- Populated dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Warnings -->
+                    <div id="dryRunWarnings" style="display: none;">
+                        <div class="alert alert-warning">
+                            <h6>⚠️ Warnings</h6>
+                            <ul id="dryRunWarningList" class="mb-0">
+                                <!-- Populated if warnings exist -->
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Notice -->
+                    <div class="alert alert-info mb-0">
+                        <strong>ℹ️ Notice:</strong> This is a preview only. No actual analysis has been performed. 
+                        Estimates are based on historical averages and may vary. Click "Proceed with Analysis" to execute.
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Close Preview
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="proceedWithAnalysis()">
+                        ✅ Proceed with Analysis
                     </button>
                 </div>
             </div>
@@ -3973,6 +4114,7 @@
         
         function resetAdvancedOptions() {
             document.getElementById('dryRunMode').checked = false;
+            document.getElementById('dryRunBenefits').style.display = 'none';
             document.getElementById('forceReanalysis').checked = false;
             document.getElementById('forceConfirm').checked = false;
             document.getElementById('forceWarning').style.display = 'none';
@@ -3997,6 +4139,188 @@
             updatePreFilterMode();
             
             clearConfigUpload();
+        }
+        
+        // ============================================
+        // DRY-RUN MODE FUNCTIONS (PARITY-W3-3)
+        // ============================================
+        
+        // Update UI when dry-run mode is toggled
+        function updateDryRunMode() {
+            const enabled = document.getElementById('dryRunMode').checked;
+            
+            // Show/hide benefits panel
+            document.getElementById('dryRunBenefits').style.display = 
+                enabled ? 'block' : 'none';
+        }
+        
+        // Display dry-run results in modal
+        function displayDryRunResults(data) {
+            // Summary cards
+            document.getElementById('dryRunPaperCount').textContent = data.paper_count;
+            document.getElementById('dryRunApiCalls').textContent = data.estimated_api_calls;
+            document.getElementById('dryRunCost').textContent = '$' + data.estimated_cost.toFixed(2);
+            document.getElementById('dryRunCostRange').textContent = 
+                `$${data.cost_range.min.toFixed(2)} - $${data.cost_range.max.toFixed(2)}`;
+            document.getElementById('dryRunDuration').textContent = 
+                Math.round(data.estimated_duration_minutes) + 'm';
+            document.getElementById('dryRunDurationRange').textContent = 
+                `${data.duration_range.min}-${data.duration_range.max} min`;
+            
+            // Execution plan
+            const planList = document.getElementById('dryRunExecutionPlan');
+            planList.innerHTML = '';
+            data.execution_plan.forEach((step, index) => {
+                const li = document.createElement('li');
+                li.className = 'mb-2';
+                li.innerHTML = `
+                    <strong>${step.stage}</strong> 
+                    <span class="badge bg-${step.status === 'skip' ? 'secondary' : 'primary'}">
+                        ${step.status === 'skip' ? 'SKIP' : 'RUN'}
+                    </span>
+                    <br>
+                    <small class="text-muted">${step.description}</small>
+                    <br>
+                    <small>Est. API calls: ${step.estimated_api_calls}, Cost: $${step.estimated_cost.toFixed(2)}</small>
+                `;
+                planList.appendChild(li);
+            });
+            
+            // Configuration
+            const configDl = document.getElementById('dryRunConfig');
+            configDl.innerHTML = '';
+            Object.entries(data.configuration).forEach(([key, value]) => {
+                const dt = document.createElement('dt');
+                dt.className = 'col-sm-4';
+                dt.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                
+                const dd = document.createElement('dd');
+                dd.className = 'col-sm-8';
+                if (value === null || value === undefined) {
+                    dd.textContent = 'Not set';
+                    dd.classList.add('text-muted');
+                } else if (typeof value === 'object') {
+                    dd.textContent = JSON.stringify(value);
+                } else if (typeof value === 'boolean') {
+                    dd.innerHTML = value 
+                        ? '<span class="badge bg-success">Enabled</span>' 
+                        : '<span class="badge bg-secondary">Disabled</span>';
+                } else {
+                    dd.textContent = value;
+                }
+                
+                configDl.appendChild(dt);
+                configDl.appendChild(dd);
+            });
+            
+            // File list
+            const fileList = document.getElementById('dryRunFileList');
+            fileList.innerHTML = '';
+            if (data.files.length === 0) {
+                const row = fileList.insertRow();
+                const cell = row.insertCell();
+                cell.colSpan = 5;
+                cell.className = 'text-center text-muted';
+                cell.textContent = 'No files found';
+            } else {
+                data.files.forEach((file, index) => {
+                    const row = fileList.insertRow();
+                    row.insertCell().textContent = index + 1;
+                    row.insertCell().textContent = file.filename;
+                    row.insertCell().textContent = file.type;
+                    row.insertCell().textContent = formatFileSize(file.size_bytes);
+                    
+                    const statusCell = row.insertCell();
+                    const statusBadge = document.createElement('span');
+                    statusBadge.className = 'badge bg-' + (file.cached ? 'success' : 'secondary');
+                    statusBadge.textContent = file.cached ? 'Cached' : 'New';
+                    statusCell.appendChild(statusBadge);
+                });
+            }
+            
+            // Warnings
+            if (data.warnings && data.warnings.length > 0) {
+                document.getElementById('dryRunWarnings').style.display = 'block';
+                const warningList = document.getElementById('dryRunWarningList');
+                warningList.innerHTML = '';
+                data.warnings.forEach(warning => {
+                    const li = document.createElement('li');
+                    li.textContent = warning;
+                    warningList.appendChild(li);
+                });
+            } else {
+                document.getElementById('dryRunWarnings').style.display = 'none';
+            }
+            
+            // Store job_id for proceed action
+            window.dryRunJobId = data.job_id;
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('dryRunResultsModal'));
+            modal.show();
+        }
+        
+        // Proceed with actual analysis after dry-run preview
+        function proceedWithAnalysis() {
+            // Disable dry-run mode
+            document.getElementById('dryRunMode').checked = false;
+            updateDryRunMode();
+            
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('dryRunResultsModal'));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Start actual analysis
+            if (window.dryRunJobId) {
+                startJobAfterDryRun(window.dryRunJobId);
+            }
+        }
+        
+        // Start job execution after dry-run preview
+        async function startJobAfterDryRun(jobId) {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/jobs/${jobId}/start`, {
+                    method: 'POST',
+                    headers: { 'X-API-KEY': apiKey }
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to start job');
+                }
+                
+                alert(`Job ${jobId} started successfully!`);
+                
+            } catch (error) {
+                alert('Error starting job: ' + error.message);
+            }
+        }
+        
+        // Execute dry-run for a job
+        async function executeDryRun(jobId) {
+            const apiKey = document.getElementById('apiKeyInput').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/jobs/${jobId}/dry-run`, {
+                    method: 'POST',
+                    headers: { 'X-API-KEY': apiKey }
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Dry-run failed');
+                }
+                
+                const data = await response.json();
+                displayDryRunResults(data);
+                
+            } catch (error) {
+                alert('Dry-run error: ' + error.message);
+            }
         }
         
         // Collect advanced options for API request
@@ -4129,25 +4453,41 @@
                     }
                 }
                 
-                // Start job execution
-                const startResponse = await fetch(`${API_BASE}/api/jobs/${currentJobId}/start`, {
-                    method: 'POST',
-                    headers: { 'X-API-KEY': apiKey }
-                });
-                
-                if (!startResponse.ok) {
-                    const error = await startResponse.json();
-                    throw new Error(error.detail || 'Failed to start job');
-                }
-                
-                // Close modal
-                bootstrap.Modal.getInstance(document.getElementById('configModal')).hide();
-                
-                const result = await startResponse.json();
-                
+                // Check if dry-run mode is enabled
                 if (config.dry_run) {
-                    alert(`Dry run completed for job ${currentJobId}. No API calls were made.\n\nCommand: ${result.command || 'N/A'}`);
+                    // Execute dry-run instead of starting job
+                    const dryRunResponse = await fetch(`${API_BASE}/api/jobs/${currentJobId}/dry-run`, {
+                        method: 'POST',
+                        headers: { 'X-API-KEY': apiKey }
+                    });
+                    
+                    if (!dryRunResponse.ok) {
+                        const error = await dryRunResponse.json();
+                        throw new Error(error.detail || 'Dry-run failed');
+                    }
+                    
+                    // Close config modal
+                    bootstrap.Modal.getInstance(document.getElementById('configModal')).hide();
+                    
+                    // Display dry-run results
+                    const dryRunData = await dryRunResponse.json();
+                    displayDryRunResults(dryRunData);
+                    
                 } else {
+                    // Start job execution
+                    const startResponse = await fetch(`${API_BASE}/api/jobs/${currentJobId}/start`, {
+                        method: 'POST',
+                        headers: { 'X-API-KEY': apiKey }
+                    });
+                    
+                    if (!startResponse.ok) {
+                        const error = await startResponse.json();
+                        throw new Error(error.detail || 'Failed to start job');
+                    }
+                    
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('configModal')).hide();
+                    
                     alert(`Job ${currentJobId} started successfully!`);
                 }
                 
