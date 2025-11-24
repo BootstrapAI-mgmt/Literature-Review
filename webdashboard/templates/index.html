@@ -4156,120 +4156,157 @@
         
         // Display dry-run results in modal
         function displayDryRunResults(data) {
+            // Safety check for data
+            if (!data) {
+                console.error('No data provided to displayDryRunResults');
+                return;
+            }
+            
+            // Helper function to safely set element text
+            const safeSetText = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+            
             // Summary cards
-            document.getElementById('dryRunPaperCount').textContent = data.paper_count;
-            document.getElementById('dryRunApiCalls').textContent = data.estimated_api_calls;
-            document.getElementById('dryRunCost').textContent = '$' + data.estimated_cost.toFixed(2);
-            document.getElementById('dryRunCostRange').textContent = 
-                `$${data.cost_range.min.toFixed(2)} - $${data.cost_range.max.toFixed(2)}`;
-            document.getElementById('dryRunDuration').textContent = 
-                Math.round(data.estimated_duration_minutes) + 'm';
-            document.getElementById('dryRunDurationRange').textContent = 
-                `${data.duration_range.min}-${data.duration_range.max} min`;
+            safeSetText('dryRunPaperCount', data.paper_count || 0);
+            safeSetText('dryRunApiCalls', data.estimated_api_calls || 0);
+            safeSetText('dryRunCost', '$' + (data.estimated_cost || 0).toFixed(2));
+            
+            if (data.cost_range) {
+                safeSetText('dryRunCostRange', 
+                    `$${(data.cost_range.min || 0).toFixed(2)} - $${(data.cost_range.max || 0).toFixed(2)}`);
+            }
+            
+            safeSetText('dryRunDuration', Math.round(data.estimated_duration_minutes || 0) + 'm');
+            
+            if (data.duration_range) {
+                safeSetText('dryRunDurationRange', 
+                    `${data.duration_range.min || 0}-${data.duration_range.max || 0} min`);
+            }
             
             // Execution plan
             const planList = document.getElementById('dryRunExecutionPlan');
-            planList.innerHTML = '';
-            data.execution_plan.forEach((step, index) => {
-                const li = document.createElement('li');
-                li.className = 'mb-2';
-                li.innerHTML = `
-                    <strong>${step.stage}</strong> 
-                    <span class="badge bg-${step.status === 'skip' ? 'secondary' : 'primary'}">
-                        ${step.status === 'skip' ? 'SKIP' : 'RUN'}
-                    </span>
-                    <br>
-                    <small class="text-muted">${step.description}</small>
-                    <br>
-                    <small>Est. API calls: ${step.estimated_api_calls}, Cost: $${step.estimated_cost.toFixed(2)}</small>
-                `;
-                planList.appendChild(li);
-            });
-            
-            // Configuration
-            const configDl = document.getElementById('dryRunConfig');
-            configDl.innerHTML = '';
-            Object.entries(data.configuration).forEach(([key, value]) => {
-                const dt = document.createElement('dt');
-                dt.className = 'col-sm-4';
-                dt.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                
-                const dd = document.createElement('dd');
-                dd.className = 'col-sm-8';
-                if (value === null || value === undefined) {
-                    dd.textContent = 'Not set';
-                    dd.classList.add('text-muted');
-                } else if (typeof value === 'object') {
-                    dd.textContent = JSON.stringify(value);
-                } else if (typeof value === 'boolean') {
-                    dd.innerHTML = value 
-                        ? '<span class="badge bg-success">Enabled</span>' 
-                        : '<span class="badge bg-secondary">Disabled</span>';
-                } else {
-                    dd.textContent = value;
-                }
-                
-                configDl.appendChild(dt);
-                configDl.appendChild(dd);
-            });
-            
-            // File list
-            const fileList = document.getElementById('dryRunFileList');
-            fileList.innerHTML = '';
-            if (data.files.length === 0) {
-                const row = fileList.insertRow();
-                const cell = row.insertCell();
-                cell.colSpan = 5;
-                cell.className = 'text-center text-muted';
-                cell.textContent = 'No files found';
-            } else {
-                data.files.forEach((file, index) => {
-                    const row = fileList.insertRow();
-                    row.insertCell().textContent = index + 1;
-                    row.insertCell().textContent = file.filename;
-                    row.insertCell().textContent = file.type;
-                    row.insertCell().textContent = formatFileSize(file.size_bytes);
-                    
-                    const statusCell = row.insertCell();
-                    const statusBadge = document.createElement('span');
-                    statusBadge.className = 'badge bg-' + (file.cached ? 'success' : 'secondary');
-                    statusBadge.textContent = file.cached ? 'Cached' : 'New';
-                    statusCell.appendChild(statusBadge);
+            if (planList && data.execution_plan) {
+                planList.innerHTML = '';
+                data.execution_plan.forEach((step, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'mb-2';
+                    li.innerHTML = `
+                        <strong>${step.stage}</strong> 
+                        <span class="badge bg-${step.status === 'skip' ? 'secondary' : 'primary'}">
+                            ${step.status === 'skip' ? 'SKIP' : 'RUN'}
+                        </span>
+                        <br>
+                        <small class="text-muted">${step.description}</small>
+                        <br>
+                        <small>Est. API calls: ${step.estimated_api_calls || 0}, Cost: $${(step.estimated_cost || 0).toFixed(2)}</small>
+                    `;
+                    planList.appendChild(li);
                 });
             }
             
-            // Warnings
-            if (data.warnings && data.warnings.length > 0) {
-                document.getElementById('dryRunWarnings').style.display = 'block';
-                const warningList = document.getElementById('dryRunWarningList');
-                warningList.innerHTML = '';
-                data.warnings.forEach(warning => {
-                    const li = document.createElement('li');
-                    li.textContent = warning;
-                    warningList.appendChild(li);
+            // Configuration
+            const configDl = document.getElementById('dryRunConfig');
+            if (configDl && data.configuration) {
+                configDl.innerHTML = '';
+                Object.entries(data.configuration).forEach(([key, value]) => {
+                    const dt = document.createElement('dt');
+                    dt.className = 'col-sm-4';
+                    dt.textContent = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+                    
+                    const dd = document.createElement('dd');
+                    dd.className = 'col-sm-8';
+                    if (value === null || value === undefined) {
+                        dd.textContent = 'Not set';
+                        dd.classList.add('text-muted');
+                    } else if (typeof value === 'object') {
+                        dd.textContent = JSON.stringify(value);
+                    } else if (typeof value === 'boolean') {
+                        dd.innerHTML = value 
+                            ? '<span class="badge bg-success">Enabled</span>' 
+                            : '<span class="badge bg-secondary">Disabled</span>';
+                    } else {
+                        dd.textContent = value;
+                    }
+                    
+                    configDl.appendChild(dt);
+                    configDl.appendChild(dd);
                 });
-            } else {
-                document.getElementById('dryRunWarnings').style.display = 'none';
+            }
+            
+            // File list
+            const fileList = document.getElementById('dryRunFileList');
+            if (fileList) {
+                fileList.innerHTML = '';
+                const files = data.files || [];
+                if (files.length === 0) {
+                    const row = fileList.insertRow();
+                    const cell = row.insertCell();
+                    cell.colSpan = 5;
+                    cell.className = 'text-center text-muted';
+                    cell.textContent = 'No files found';
+                } else {
+                    files.forEach((file, index) => {
+                        const row = fileList.insertRow();
+                        row.insertCell().textContent = index + 1;
+                        row.insertCell().textContent = file.filename || 'Unknown';
+                        row.insertCell().textContent = file.type || '-';
+                        row.insertCell().textContent = formatFileSize(file.size_bytes || 0);
+                        
+                        const statusCell = row.insertCell();
+                        const statusBadge = document.createElement('span');
+                        statusBadge.className = 'badge bg-' + (file.cached ? 'success' : 'secondary');
+                        statusBadge.textContent = file.cached ? 'Cached' : 'New';
+                        statusCell.appendChild(statusBadge);
+                    });
+                }
+            }
+            
+            // Warnings
+            const warningsDiv = document.getElementById('dryRunWarnings');
+            const warningList = document.getElementById('dryRunWarningList');
+            if (warningsDiv && warningList) {
+                if (data.warnings && data.warnings.length > 0) {
+                    warningsDiv.style.display = 'block';
+                    warningList.innerHTML = '';
+                    data.warnings.forEach(warning => {
+                        const li = document.createElement('li');
+                        li.textContent = warning;
+                        warningList.appendChild(li);
+                    });
+                } else {
+                    warningsDiv.style.display = 'none';
+                }
             }
             
             // Store job_id for proceed action
             window.dryRunJobId = data.job_id;
             
-            // Show modal
-            const modal = new bootstrap.Modal(document.getElementById('dryRunResultsModal'));
-            modal.show();
+            // Show modal - with Bootstrap availability check
+            const modalElement = document.getElementById('dryRunResultsModal');
+            if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+            }
         }
         
         // Proceed with actual analysis after dry-run preview
         function proceedWithAnalysis() {
             // Disable dry-run mode
-            document.getElementById('dryRunMode').checked = false;
+            const dryRunCheckbox = document.getElementById('dryRunMode');
+            if (dryRunCheckbox) {
+                dryRunCheckbox.checked = false;
+            }
             updateDryRunMode();
             
-            // Close modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('dryRunResultsModal'));
-            if (modal) {
-                modal.hide();
+            // Close modal - with Bootstrap availability check
+            const modalElement = document.getElementById('dryRunResultsModal');
+            if (modalElement && typeof bootstrap !== 'undefined' && bootstrap.Modal) {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
             }
             
             // Start actual analysis

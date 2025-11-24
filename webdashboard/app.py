@@ -1693,10 +1693,15 @@ def check_if_cached(file_path: str) -> bool:
             continue
         
         try:
-            # Check if any cache file might correspond to this file
-            file_name = Path(file_path).stem
+            # Check if any cache file corresponds to this file
+            # Use exact stem match to avoid false positives
+            file_name = Path(file_path).stem.lower()
             for cache_file in cache_dir.glob("*.json"):
-                if file_name.lower() in cache_file.name.lower():
+                cache_name = cache_file.stem.lower()
+                # Check for exact match or common cache naming patterns
+                if (cache_name == file_name or
+                    cache_name.startswith(f"{file_name}_") or
+                    cache_name == f"{file_name}_cache"):
                     return True
         except Exception:
             continue
@@ -1818,11 +1823,13 @@ def estimate_job_resources(execution_plan: List[Dict], files: List[Dict], config
     duration_min = int(duration_minutes * 0.7)
     duration_max = int(duration_minutes * 1.3)
     
-    # Ensure minimum duration
+    # Ensure minimum duration and that max >= min
     if duration_min < 1:
         duration_min = 1
     if duration_max < 1:
         duration_max = 1
+    if duration_max < duration_min:
+        duration_max = duration_min
     
     return {
         "api_calls": total_calls,
