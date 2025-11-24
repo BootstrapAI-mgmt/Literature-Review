@@ -5225,7 +5225,11 @@
             const path = pathInput.value.trim();
             
             if (!path) {
-                alert('Please enter a directory path');
+                // Show inline error instead of alert
+                document.getElementById('scanErrorMessage').textContent = 'Please enter a directory path';
+                errorDiv.style.display = 'block';
+                resultsDiv.style.display = 'none';
+                pathInput.focus();
                 return;
             }
             
@@ -5277,7 +5281,10 @@
         // Show file list modal
         function showFileListModal() {
             if (!directoryScanResults || !directoryScanResults.files) {
-                alert('No scan results available. Please scan a directory first.');
+                // Show inline error instead of alert
+                const errorDiv = document.getElementById('directoryScanError');
+                document.getElementById('scanErrorMessage').textContent = 'No scan results available. Please scan a directory first.';
+                errorDiv.style.display = 'block';
                 return;
             }
             

@@ -1435,14 +1435,14 @@ async def scan_directory(
     except Exception as e:
         raise HTTPException(400, f"Invalid path format: {str(e)}")
     
-    # Security: Must be absolute path
-    if not request.path.startswith('/') and not request.path.startswith('~'):
-        # Allow Windows paths too
-        if len(request.path) < 2 or request.path[1] != ':':
-            raise HTTPException(
-                400,
-                "Path must be absolute (e.g., /path/to/directory or C:\\path)"
-            )
+    # Security: Must be absolute path (cross-platform)
+    # Use os.path.isabs for proper cross-platform absolute path detection
+    # Also allow ~ expansion (home directory)
+    if not (os.path.isabs(request.path) or request.path.startswith('~')):
+        raise HTTPException(
+            400,
+            "Path must be absolute (e.g., /path/to/directory or C:\\path)"
+        )
     
     # Security: Prevent path traversal - check if resolved path is within allowed directories
     if not is_path_allowed(directory):
@@ -1471,53 +1471,40 @@ async def scan_directory(
     total_size = 0
     subdirs: set = set()
     
+    def process_file(file_path: Path, base_dir: Path) -> None:
+        """Process a file if it matches PDF or CSV extension (case-insensitive)."""
+        nonlocal pdf_count, csv_count, total_size
+        
+        if not file_path.is_file():
+            return
+        
+        # Check symlinks
+        if file_path.is_symlink() and not request.follow_symlinks:
+            return
+        
+        suffix = file_path.suffix.lower()
+        if suffix == '.pdf':
+            files.append(extract_file_metadata(file_path, base_dir))
+            pdf_count += 1
+            total_size += file_path.stat().st_size
+            if file_path.parent != base_dir:
+                subdirs.add(file_path.parent)
+        elif suffix == '.csv':
+            files.append(extract_file_metadata(file_path, base_dir))
+            csv_count += 1
+            total_size += file_path.stat().st_size
+            if file_path.parent != base_dir:
+                subdirs.add(file_path.parent)
+    
     try:
         if request.recursive:
-            # Recursive scan using glob
-            for pattern in ["**/*.pdf", "**/*.PDF"]:
-                for pdf_file in directory.glob(pattern):
-                    if pdf_file.is_file():
-                        # Check if we should follow symlinks
-                        if pdf_file.is_symlink() and not request.follow_symlinks:
-                            continue
-                        
-                        files.append(extract_file_metadata(pdf_file, directory))
-                        pdf_count += 1
-                        total_size += pdf_file.stat().st_size
-                        
-                        # Track subdirectory
-                        if pdf_file.parent != directory:
-                            subdirs.add(pdf_file.parent)
-            
-            for pattern in ["**/*.csv", "**/*.CSV"]:
-                for csv_file in directory.glob(pattern):
-                    if csv_file.is_file():
-                        if csv_file.is_symlink() and not request.follow_symlinks:
-                            continue
-                        
-                        files.append(extract_file_metadata(csv_file, directory))
-                        csv_count += 1
-                        total_size += csv_file.stat().st_size
-                        
-                        if csv_file.parent != directory:
-                            subdirs.add(csv_file.parent)
+            # Recursive scan using single directory walk
+            for file_path in directory.rglob('*'):
+                process_file(file_path, directory)
         else:
             # Non-recursive: only top level
             for item in directory.iterdir():
-                if item.is_file():
-                    # Check symlinks
-                    if item.is_symlink() and not request.follow_symlinks:
-                        continue
-                    
-                    suffix = item.suffix.lower()
-                    if suffix == '.pdf':
-                        files.append(extract_file_metadata(item, directory))
-                        pdf_count += 1
-                        total_size += item.stat().st_size
-                    elif suffix == '.csv':
-                        files.append(extract_file_metadata(item, directory))
-                        csv_count += 1
-                        total_size += item.stat().st_size
+                process_file(item, directory)
         
     except PermissionError as e:
         raise HTTPException(403, f"Permission denied while scanning: {str(e)}")
