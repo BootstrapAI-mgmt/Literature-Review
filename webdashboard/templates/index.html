@@ -1844,6 +1844,223 @@
                         </div>
                     </div>
                     
+                    <!-- Resource Monitoring Dashboard (PARITY-W3-1) -->
+                    <div id="resourceMonitoring" style="display: none;" class="mb-4">
+                        <div class="card border-primary">
+                            <div class="card-header bg-primary text-white">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">📊 Resource Monitoring</h5>
+                                    <div>
+                                        <span class="badge bg-light text-dark me-2">
+                                            Auto-refresh: <span id="resourceRefreshCountdown">5</span>s
+                                        </span>
+                                        <button class="btn btn-sm btn-outline-light" onclick="refreshResourceMetrics()">
+                                            🔄 Refresh Now
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                
+                                <!-- Row 1: API Usage & Costs -->
+                                <div class="row mb-4">
+                                    
+                                    <!-- API Calls -->
+                                    <div class="col-md-3">
+                                        <div class="card border-info h-100">
+                                            <div class="card-body text-center">
+                                                <div class="small text-muted mb-2">API Calls</div>
+                                                <div class="display-6 fw-bold" id="resApiCallsCount">0</div>
+                                                <div class="small text-muted">
+                                                    of <span id="resApiBudget">unlimited</span> budget
+                                                </div>
+                                                <div class="progress mt-2" style="height: 8px;">
+                                                    <div class="progress-bar bg-info" role="progressbar" 
+                                                         id="resApiCallsProgress" style="width: 0%">
+                                                    </div>
+                                                </div>
+                                                <div class="small mt-2">
+                                                    <span id="resApiCallsPercent">0%</span> used
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Cost -->
+                                    <div class="col-md-3">
+                                        <div class="card border-success h-100">
+                                            <div class="card-body text-center">
+                                                <div class="small text-muted mb-2">Total Cost</div>
+                                                <div class="display-6 fw-bold text-success" id="resTotalCost">$0.00</div>
+                                                <div class="small text-muted">
+                                                    of <span id="resCostBudget">$100.00</span> budget
+                                                </div>
+                                                <div class="progress mt-2" style="height: 8px;">
+                                                    <div class="progress-bar bg-success" role="progressbar" 
+                                                         id="resCostProgress" style="width: 0%">
+                                                    </div>
+                                                </div>
+                                                <div class="small mt-2">
+                                                    Avg: <span id="resAvgCostPerPaper">$0.00</span>/paper
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Cache Performance -->
+                                    <div class="col-md-3">
+                                        <div class="card border-warning h-100">
+                                            <div class="card-body text-center">
+                                                <div class="small text-muted mb-2">Cache Hit Rate</div>
+                                                <div class="display-6 fw-bold text-warning" id="resCacheHitRate">0%</div>
+                                                <div class="small text-muted">
+                                                    <span id="resCacheHits">0</span> hits / 
+                                                    <span id="resCacheMisses">0</span> misses
+                                                </div>
+                                                <div class="progress mt-2" style="height: 8px;">
+                                                    <div class="progress-bar bg-warning" role="progressbar" 
+                                                         id="resCacheHitProgress" style="width: 0%">
+                                                    </div>
+                                                </div>
+                                                <div class="small mt-2">
+                                                    Saved: <span id="resCacheSavings">$0.00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Processing Rate -->
+                                    <div class="col-md-3">
+                                        <div class="card border-secondary h-100">
+                                            <div class="card-body text-center">
+                                                <div class="small text-muted mb-2">Processing Rate</div>
+                                                <div class="display-6 fw-bold text-secondary" id="resProcessingRate">0</div>
+                                                <div class="small text-muted">papers/minute</div>
+                                                <div class="mt-2">
+                                                    <div class="small">ETA: <strong id="resEta">Calculating...</strong></div>
+                                                </div>
+                                                <div class="small mt-2">
+                                                    Elapsed: <span id="resElapsed">0m 0s</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                                
+                                <!-- Row 2: Processing Progress -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="card border-primary">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between mb-2">
+                                                    <h6 class="mb-0">Processing Progress</h6>
+                                                    <span class="badge bg-primary" id="resCurrentStage">Initializing</span>
+                                                </div>
+                                                
+                                                <div class="progress mb-2" style="height: 30px;">
+                                                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                                         role="progressbar" id="resOverallProgress" style="width: 0%">
+                                                        <strong id="resOverallProgressText">0%</strong>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="row small">
+                                                    <div class="col-md-3">
+                                                        <strong>Papers:</strong> 
+                                                        <span id="resPapersProcessed">0</span> / 
+                                                        <span id="resTotalPapers">0</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <strong>Stage:</strong> 
+                                                        <span id="resStageProgress">0/4</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <strong>Started:</strong> 
+                                                        <span id="resStartTime">-</span>
+                                                    </div>
+                                                    <div class="col-md-3">
+                                                        <strong>Est. Complete:</strong> 
+                                                        <span id="resEstimatedCompletion">-</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Row 3: Stage Breakdown -->
+                                <div class="row mb-4">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="mb-0">Stage Breakdown</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <table class="table table-sm table-borderless mb-0">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Stage</th>
+                                                            <th>Status</th>
+                                                            <th>API Calls</th>
+                                                            <th>Cost</th>
+                                                            <th>Cache Hits</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="resStageBreakdownTable">
+                                                        <tr>
+                                                            <td>Gap Analysis</td>
+                                                            <td><span class="badge bg-secondary">Pending</span></td>
+                                                            <td>-</td>
+                                                            <td>-</td>
+                                                            <td>-</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Relevance Scoring</td>
+                                                            <td><span class="badge bg-secondary">Pending</span></td>
+                                                            <td>-</td>
+                                                            <td>-</td>
+                                                            <td>-</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Deep Review</td>
+                                                            <td><span class="badge bg-secondary">Pending</span></td>
+                                                            <td>-</td>
+                                                            <td>-</td>
+                                                            <td>-</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>Visualization</td>
+                                                            <td><span class="badge bg-secondary">Pending</span></td>
+                                                            <td>-</td>
+                                                            <td>-</td>
+                                                            <td>-</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Row 4: Resource Timeline Chart -->
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="mb-0">Resource Usage Timeline</h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <canvas id="resourceTimelineChart" height="80"></canvas>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- Real-time Progress Display -->
                     <div class="mb-3" id="progressContainer" style="display: none;">
                         <h6>Pipeline Progress</h6>
@@ -3038,6 +3255,281 @@
             card.style.display = 'block';
         }
         
+        // ============================================================================
+        // Resource Monitoring (PARITY-W3-1)
+        // ============================================================================
+        
+        let resourceChart = null;
+        let resourceRefreshInterval = null;
+        let resourceRefreshCountdown = 5;
+        let currentResourceJobId = null;
+        let currentResourceApiKey = null;
+        
+        // Initialize resource monitoring
+        function initResourceMonitoring(jobId, apiKeyVal) {
+            currentResourceJobId = jobId;
+            currentResourceApiKey = apiKeyVal;
+            
+            // Show the resource monitoring section
+            document.getElementById('resourceMonitoring').style.display = 'block';
+            
+            // Initial fetch
+            refreshResourceMetrics();
+            
+            // Start auto-refresh
+            startResourceAutoRefresh();
+        }
+        
+        // Stop resource monitoring
+        function stopResourceMonitoring() {
+            if (resourceRefreshInterval) {
+                clearInterval(resourceRefreshInterval);
+                resourceRefreshInterval = null;
+            }
+            currentResourceJobId = null;
+        }
+        
+        // Refresh resource metrics
+        async function refreshResourceMetrics() {
+            if (!currentResourceJobId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/jobs/${currentResourceJobId}/resources`, {
+                    headers: {'X-API-KEY': currentResourceApiKey}
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to fetch resources');
+                }
+                
+                const data = await response.json();
+                updateResourceDashboard(data);
+                
+            } catch (error) {
+                console.error('Failed to fetch resource metrics:', error);
+            }
+        }
+        
+        // Update dashboard with new data
+        function updateResourceDashboard(data) {
+            // API Calls
+            document.getElementById('resApiCallsCount').textContent = data.api_calls.total;
+            document.getElementById('resApiBudget').textContent = data.api_calls.budget || 'unlimited';
+            
+            const apiPercent = data.api_calls.budget ? 
+                (data.api_calls.total / data.api_calls.budget * 100).toFixed(1) : 0;
+            document.getElementById('resApiCallsPercent').textContent = apiPercent + '%';
+            document.getElementById('resApiCallsProgress').style.width = Math.min(apiPercent, 100) + '%';
+            
+            // Cost
+            document.getElementById('resTotalCost').textContent = '$' + data.cost.total.toFixed(2);
+            document.getElementById('resCostBudget').textContent = '$' + (data.cost.budget || 100).toFixed(2);
+            
+            const papersProcessed = data.progress.papers_processed || 0;
+            const avgCost = papersProcessed > 0 ? (data.cost.total / papersProcessed) : 0;
+            document.getElementById('resAvgCostPerPaper').textContent = '$' + avgCost.toFixed(3);
+            
+            const costPercent = data.cost.budget ? 
+                (data.cost.total / data.cost.budget * 100).toFixed(1) : 0;
+            document.getElementById('resCostProgress').style.width = Math.min(costPercent, 100) + '%';
+            
+            // Cache
+            const hitRate = data.cache.total > 0 ? 
+                (data.cache.hits / data.cache.total * 100).toFixed(1) : 0;
+            document.getElementById('resCacheHitRate').textContent = hitRate + '%';
+            document.getElementById('resCacheHits').textContent = data.cache.hits;
+            document.getElementById('resCacheMisses').textContent = data.cache.misses;
+            document.getElementById('resCacheHitProgress').style.width = hitRate + '%';
+            document.getElementById('resCacheSavings').textContent = '$' + (data.cache.savings || 0).toFixed(2);
+            
+            // Processing Rate
+            document.getElementById('resProcessingRate').textContent = 
+                (data.processing.rate || 0).toFixed(2);
+            document.getElementById('resEta').textContent = data.processing.eta || 'Calculating...';
+            document.getElementById('resElapsed').textContent = formatResourceDuration(data.processing.elapsed);
+            
+            // Progress
+            document.getElementById('resCurrentStage').textContent = data.progress.current_stage;
+            document.getElementById('resPapersProcessed').textContent = data.progress.papers_processed;
+            document.getElementById('resTotalPapers').textContent = data.progress.total_papers;
+            
+            const overallPercent = data.progress.total_papers > 0 ? 
+                (data.progress.papers_processed / data.progress.total_papers * 100).toFixed(1) : 0;
+            document.getElementById('resOverallProgress').style.width = overallPercent + '%';
+            document.getElementById('resOverallProgressText').textContent = overallPercent + '%';
+            
+            document.getElementById('resStageProgress').textContent = 
+                `${data.progress.stage_number}/4`;
+            
+            if (data.progress.start_time) {
+                document.getElementById('resStartTime').textContent = 
+                    new Date(data.progress.start_time).toLocaleTimeString();
+            }
+            
+            if (data.processing.eta_timestamp) {
+                document.getElementById('resEstimatedCompletion').textContent = 
+                    new Date(data.processing.eta_timestamp).toLocaleTimeString();
+            }
+            
+            // Stage breakdown
+            updateResourceStageBreakdown(data.stages);
+            
+            // Timeline chart
+            updateResourceChart(data.timeline);
+        }
+        
+        // Update stage breakdown table
+        function updateResourceStageBreakdown(stages) {
+            const tbody = document.getElementById('resStageBreakdownTable');
+            tbody.innerHTML = '';
+            
+            const stageNames = ['gap_analysis', 'relevance_scoring', 'deep_review', 'visualization'];
+            const stageLabels = ['Gap Analysis', 'Relevance Scoring', 'Deep Review', 'Visualization'];
+            
+            stageNames.forEach((stageName, index) => {
+                const stage = stages[stageName] || {};
+                const row = tbody.insertRow();
+                
+                // Stage name
+                row.insertCell().textContent = stageLabels[index];
+                
+                // Status badge
+                const statusCell = row.insertCell();
+                const statusBadge = document.createElement('span');
+                statusBadge.className = 'badge bg-' + getResourceStatusColor(stage.status);
+                statusBadge.textContent = stage.status || 'Pending';
+                statusCell.appendChild(statusBadge);
+                
+                // Metrics
+                row.insertCell().textContent = stage.api_calls || '-';
+                row.insertCell().textContent = stage.cost ? '$' + stage.cost.toFixed(2) : '-';
+                row.insertCell().textContent = stage.cache_hits || '-';
+            });
+        }
+        
+        function getResourceStatusColor(status) {
+            const colors = {
+                'Pending': 'secondary',
+                'Running': 'primary',
+                'Completed': 'success',
+                'Failed': 'danger',
+                'Skipped': 'warning'
+            };
+            return colors[status] || 'secondary';
+        }
+        
+        // Update timeline chart
+        function updateResourceChart(timelineData) {
+            const canvas = document.getElementById('resourceTimelineChart');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            
+            if (resourceChart) {
+                resourceChart.destroy();
+            }
+            
+            resourceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timelineData.map(d => new Date(d.timestamp).toLocaleTimeString()),
+                    datasets: [
+                        {
+                            label: 'API Calls/min',
+                            data: timelineData.map(d => d.api_rate),
+                            borderColor: 'rgb(54, 162, 235)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                            yAxisID: 'y',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Cost/min ($)',
+                            data: timelineData.map(d => d.cost_rate),
+                            borderColor: 'rgb(75, 192, 192)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                            yAxisID: 'y1',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: { display: true, text: 'API Calls/min' },
+                            beginAtZero: true
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: { display: true, text: 'Cost/min ($)' },
+                            grid: { drawOnChartArea: false },
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Auto-refresh logic
+        function startResourceAutoRefresh() {
+            resourceRefreshCountdown = 5;
+            
+            // Clear existing interval
+            if (resourceRefreshInterval) {
+                clearInterval(resourceRefreshInterval);
+            }
+            
+            resourceRefreshInterval = setInterval(() => {
+                resourceRefreshCountdown--;
+                const countdownEl = document.getElementById('resourceRefreshCountdown');
+                if (countdownEl) {
+                    countdownEl.textContent = resourceRefreshCountdown;
+                }
+                
+                if (resourceRefreshCountdown <= 0) {
+                    refreshResourceMetrics();
+                    resourceRefreshCountdown = 5;
+                }
+            }, 1000);
+        }
+        
+        // Format duration (seconds to human-readable)
+        function formatResourceDuration(seconds) {
+            if (!seconds || seconds < 0) return '0s';
+            
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            
+            if (hours > 0) {
+                return `${hours}h ${minutes}m ${secs}s`;
+            } else if (minutes > 0) {
+                return `${minutes}m ${secs}s`;
+            } else {
+                return `${secs}s`;
+            }
+        }
+        
+        // Stop auto-refresh when modal is closed
+        document.getElementById('jobDetailModal').addEventListener('hidden.bs.modal', function () {
+            stopResourceMonitoring();
+        });
+        
         // Show job detail modal
         async function showJobDetail(jobId) {
             currentJobId = jobId;
@@ -3142,9 +3634,14 @@
                 // Connect to progress stream if job is running or queued
                 if (job.status === 'running' || job.status === 'queued') {
                     connectProgressWebSocket(jobId);
+                    // Initialize resource monitoring for running jobs
+                    initResourceMonitoring(jobId, currentApiKey);
                 } else {
                     // Hide progress container for completed/failed jobs
                     document.getElementById('progressContainer').style.display = 'none';
+                    // Hide resource monitoring for non-running jobs
+                    document.getElementById('resourceMonitoring').style.display = 'none';
+                    stopResourceMonitoring();
                 }
                 
                 // Show modal

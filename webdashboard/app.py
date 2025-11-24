@@ -19,7 +19,8 @@ import time
 import traceback
 import uuid
 import zipfile
-from datetime import datetime
+import csv
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -2940,6 +2941,378 @@ async def get_cost_summary(
             "total_cost": 0,
             "message": f"Error reading cost data: {str(e)}"
         }
+
+
+# ============================================================================
+# Resource Monitoring Endpoint (PARITY-W3-1)
+# ============================================================================
+
+def parse_cost_tracker_csv(job_dir: Path) -> Dict:
+    """
+    Parse cost tracker CSV for resource metrics.
+    
+    Args:
+        job_dir: Path to job directory
+    
+    Returns:
+        Dictionary with parsed cost metrics
+    """
+    cost_file = job_dir / "outputs" / "cost_reports" / "cost_tracker.csv"
+    
+    result = {
+        "total_api_calls": 0,
+        "total_cost": 0.0,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "cache_savings": 0.0,
+        "by_model": {},
+        "rows": []
+    }
+    
+    if not cost_file.exists():
+        return result
+    
+    try:
+        with open(cost_file, 'r') as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+            result["rows"] = rows
+            
+            for row in rows:
+                result["total_api_calls"] += 1
+                cost = float(row.get("cost", 0.0) or 0.0)
+                result["total_cost"] += cost
+                
+                # Check cache hit
+                cache_hit = row.get("cache_hit", "").lower() == "true"
+                if cache_hit:
+                    result["cache_hits"] += 1
+                else:
+                    result["cache_misses"] += 1
+                
+                # Track by model
+                model = row.get("model", "unknown")
+                if model not in result["by_model"]:
+                    result["by_model"][model] = {"calls": 0, "cost": 0.0}
+                result["by_model"][model]["calls"] += 1
+                result["by_model"][model]["cost"] += cost
+        
+        # Estimate savings (cached calls would have cost average)
+        if result["cache_misses"] > 0:
+            avg_cost = result["total_cost"] / result["cache_misses"]
+            result["cache_savings"] = result["cache_hits"] * avg_cost
+        
+    except Exception as e:
+        logger.warning(f"Failed to parse cost tracker CSV: {e}")
+    
+    return result
+
+
+def get_stage_metrics(job_dir: Path, stage_name: str, cost_data: Dict) -> Dict:
+    """
+    Get metrics for specific pipeline stage.
+    
+    Args:
+        job_dir: Path to job directory
+        stage_name: Name of the stage
+        cost_data: Parsed cost tracker data
+    
+    Returns:
+        Dictionary with stage metrics
+    """
+    # Check for stage marker files or completion indicators
+    stage_markers = [
+        job_dir / f".{stage_name}_complete",
+        job_dir / "outputs" / f"{stage_name}_complete.marker",
+    ]
+    
+    # Check orchestrator state for stage status
+    state_file = job_dir / "outputs" / "orchestrator_state.json"
+    stage_status = "Pending"
+    
+    if state_file.exists():
+        try:
+            with open(state_file, 'r') as f:
+                state = json.load(f)
+                stages_state = state.get("stages", {})
+                if stage_name in stages_state:
+                    stage_info = stages_state[stage_name]
+                    if isinstance(stage_info, dict):
+                        stage_status = stage_info.get("status", "Pending")
+                    else:
+                        stage_status = "Completed" if stage_info else "Pending"
+        except Exception:
+            pass
+    
+    # Check marker files as fallback
+    for marker in stage_markers:
+        if marker.exists():
+            stage_status = "Completed"
+            break
+    
+    if stage_status == "Pending":
+        return {"status": "Pending"}
+    
+    # Parse stage-specific cost data
+    stage_costs = [
+        row for row in cost_data.get("rows", [])
+        if stage_name.lower() in (row.get("stage", "") or "").lower()
+    ]
+    
+    stage_cache_hits = sum(1 for row in stage_costs 
+                          if row.get("cache_hit", "").lower() == "true")
+    
+    return {
+        "status": stage_status,
+        "api_calls": len(stage_costs),
+        "cost": sum(float(row.get("cost", 0) or 0) for row in stage_costs),
+        "cache_hits": stage_cache_hits,
+        "duration": 0.0  # Could be calculated from timestamps if available
+    }
+
+
+def get_resource_timeline(job_dir: Path, points: int = 20) -> List[Dict]:
+    """
+    Get timeline of resource usage over job execution.
+    
+    Args:
+        job_dir: Path to job directory
+        points: Number of data points to return
+    
+    Returns:
+        List of data points for charting
+    """
+    cost_file = job_dir / "outputs" / "cost_reports" / "cost_tracker.csv"
+    timeline = []
+    
+    if cost_file.exists():
+        try:
+            with open(cost_file, 'r') as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+                
+                if rows:
+                    # Group by timestamp intervals
+                    timestamps = []
+                    for row in rows:
+                        ts = row.get("timestamp")
+                        if ts:
+                            try:
+                                timestamps.append(datetime.fromisoformat(ts))
+                            except (ValueError, TypeError):
+                                pass
+                    
+                    if timestamps:
+                        # Calculate rates over time intervals
+                        min_ts = min(timestamps)
+                        max_ts = max(timestamps)
+                        duration = (max_ts - min_ts).total_seconds()
+                        
+                        if duration > 0:
+                            interval = duration / points
+                            
+                            for i in range(points):
+                                start = min_ts + timedelta(seconds=i * interval)
+                                end = min_ts + timedelta(seconds=(i + 1) * interval)
+                                
+                                # Count API calls and cost in this interval
+                                interval_rows = [
+                                    row for row in rows
+                                    if row.get("timestamp") and
+                                    start <= datetime.fromisoformat(row["timestamp"]) < end
+                                ]
+                                
+                                api_rate = len(interval_rows) * 60 / max(interval, 1)  # per minute
+                                cost_rate = sum(float(row.get("cost", 0) or 0) 
+                                               for row in interval_rows) * 60 / max(interval, 1)
+                                
+                                timeline.append({
+                                    "timestamp": start.isoformat(),
+                                    "api_rate": round(api_rate, 2),
+                                    "cost_rate": round(cost_rate, 4)
+                                })
+                        
+        except Exception as e:
+            logger.warning(f"Failed to generate resource timeline: {e}")
+    
+    # Return simulated data if no real data available
+    if not timeline:
+        now = datetime.now()
+        for i in range(points):
+            timeline.append({
+                "timestamp": (now - timedelta(minutes=points-i)).isoformat(),
+                "api_rate": 0,
+                "cost_rate": 0
+            })
+    
+    return timeline
+
+
+def format_eta_duration(minutes: float) -> str:
+    """
+    Format ETA in human-readable form.
+    
+    Args:
+        minutes: Estimated time remaining in minutes
+    
+    Returns:
+        Human-readable duration string
+    """
+    if minutes < 0:
+        return "Unknown"
+    elif minutes < 1:
+        return f"{int(minutes * 60)}s"
+    elif minutes < 60:
+        return f"{int(minutes)}m"
+    else:
+        hours = int(minutes / 60)
+        mins = int(minutes % 60)
+        return f"{hours}h {mins}m"
+
+
+@app.get(
+    "/api/jobs/{job_id}/resources",
+    tags=["Monitoring"],
+    summary="Get real-time resource metrics",
+    responses={
+        200: {"description": "Resource metrics for running job"},
+        404: {"description": "Job not found", "model": ErrorResponse}
+    }
+)
+async def get_job_resources(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Get real-time resource consumption metrics for a job.
+    
+    Returns API usage, costs, cache performance, and processing rates.
+    This endpoint is designed for polling during job execution to provide
+    real-time visibility into resource consumption.
+    
+    **Response includes:**
+    - api_calls: Total API calls and budget usage
+    - cost: Total cost, budget, and cost per paper
+    - cache: Cache hits/misses and savings estimate
+    - processing: Rate (papers/minute), ETA, elapsed time
+    - progress: Papers processed, current stage, timestamps
+    - stages: Per-stage metrics breakdown
+    - timeline: Time series data for charting
+    
+    **Use Cases:**
+    - Real-time cost monitoring
+    - Processing progress tracking
+    - Cache effectiveness analysis
+    - Time estimation for completion
+    
+    **Refresh Rate:**
+    - Recommended: Poll every 5 seconds for running jobs
+    - Dashboard auto-refreshes at 5-second intervals
+    """
+    verify_api_key(api_key)
+    
+    job_dir = JOBS_DIR / job_id
+    if not job_dir.exists():
+        # Check if job exists in job files
+        job_file = JOBS_DIR / f"{job_id}.json"
+        if not job_file.exists():
+            raise HTTPException(404, f"Job {job_id} not found")
+        job_dir = JOBS_DIR / job_id
+        job_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Load job metadata
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(404, f"Job {job_id} not found")
+    
+    # Parse cost tracker
+    cost_data = parse_cost_tracker_csv(job_dir)
+    
+    # Load orchestrator state
+    state_file = job_dir / "outputs" / "orchestrator_state.json"
+    state = {}
+    if state_file.exists():
+        try:
+            with open(state_file, 'r') as f:
+                state = json.load(f)
+        except Exception:
+            pass
+    
+    # Calculate timing metrics
+    started_at = job_data.get("started_at")
+    if started_at:
+        try:
+            start_time = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+        except (ValueError, TypeError):
+            start_time = datetime.now()
+    else:
+        start_time = datetime.now()
+    
+    elapsed = (datetime.now() - start_time.replace(tzinfo=None)).total_seconds()
+    
+    # Get paper counts
+    papers_processed = state.get("papers_processed", 0)
+    total_papers = state.get("total_papers", 0)
+    
+    # Try to get total papers from job data if not in state
+    if total_papers == 0:
+        if "files" in job_data:
+            total_papers = len(job_data.get("files", []))
+        elif "file_count" in job_data:
+            total_papers = job_data.get("file_count", 0)
+        elif "paper_count" in job_data:
+            total_papers = job_data.get("paper_count", 0)
+    
+    # Calculate processing rate and ETA
+    processing_rate = papers_processed / (elapsed / 60) if elapsed > 0 else 0
+    remaining_papers = max(0, total_papers - papers_processed)
+    eta_minutes = remaining_papers / processing_rate if processing_rate > 0 else 0
+    
+    # Get budget from job config
+    config = job_data.get("config", {})
+    api_budget = config.get("api_budget")
+    cost_budget = config.get("budget", 100.0)
+    
+    return {
+        "api_calls": {
+            "total": cost_data.get("total_api_calls", 0),
+            "budget": api_budget,
+            "remaining": (api_budget - cost_data.get("total_api_calls", 0)) if api_budget else None
+        },
+        "cost": {
+            "total": round(cost_data.get("total_cost", 0.0), 4),
+            "budget": cost_budget,
+            "remaining": round(cost_budget - cost_data.get("total_cost", 0.0), 4) if cost_budget else None,
+            "by_model": cost_data.get("by_model", {})
+        },
+        "cache": {
+            "hits": cost_data.get("cache_hits", 0),
+            "misses": cost_data.get("cache_misses", 0),
+            "total": cost_data.get("cache_hits", 0) + cost_data.get("cache_misses", 0),
+            "savings": round(cost_data.get("cache_savings", 0.0), 4)
+        },
+        "processing": {
+            "rate": round(processing_rate, 2),
+            "elapsed": round(elapsed, 0),
+            "eta": format_eta_duration(eta_minutes),
+            "eta_timestamp": (datetime.now() + timedelta(minutes=eta_minutes)).isoformat() if eta_minutes > 0 else None
+        },
+        "progress": {
+            "papers_processed": papers_processed,
+            "total_papers": total_papers,
+            "current_stage": state.get("current_stage", job_data.get("status", "Unknown")),
+            "stage_number": state.get("stage_number", 0),
+            "start_time": start_time.isoformat()
+        },
+        "stages": {
+            "gap_analysis": get_stage_metrics(job_dir, "gap_analysis", cost_data),
+            "relevance_scoring": get_stage_metrics(job_dir, "relevance_scoring", cost_data),
+            "deep_review": get_stage_metrics(job_dir, "deep_review", cost_data),
+            "visualization": get_stage_metrics(job_dir, "visualization", cost_data)
+        },
+        "timeline": get_resource_timeline(job_dir)
+    }
+
 
 @app.get(
     "/api/jobs/{job_id}/sufficiency-summary",
