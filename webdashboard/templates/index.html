@@ -530,6 +530,40 @@
             font-style: italic;
             color: #6c757d;
         }
+
+        /* Resume Controls - Stage Progress Diagram */
+        .stage-box {
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            padding: 8px;
+            text-align: center;
+            min-width: 70px;
+            background: white;
+            transition: all 0.3s;
+        }
+
+        .stage-box.completed {
+            background: #d4edda;
+            border-color: #28a745;
+        }
+
+        .stage-box.active {
+            background: #fff3cd;
+            border-color: #ffc107;
+            font-weight: bold;
+        }
+
+        .stage-box.pending {
+            background: #f8f9fa;
+            border-color: #ccc;
+            opacity: 0.6;
+        }
+
+        .stage-arrow {
+            margin: 0 5px;
+            font-size: 16px;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -882,47 +916,154 @@
                                     
                                     <hr class="my-4">
                                     
-                                    <!-- Resume Controls -->
-                                    <div class="mb-3">
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   id="enableResume">
-                                            <label class="form-check-label" for="enableResume">
-                                                <strong>Resume from Stage</strong>
-                                                <span class="badge bg-info ms-2">CLI: --resume-from</span>
-                                            </label>
+                                    <!-- Resume Controls Card -->
+                                    <div class="card mb-3 border-info">
+                                        <div class="card-header bg-info bg-opacity-10">
+                                            <h6 class="mb-0">♻️ Resume Controls</h6>
                                         </div>
-                                        
-                                        <select class="form-select" id="resumeStage" disabled>
-                                            <option value="">-- Select Stage --</option>
-                                            <option value="judge">Judge</option>
-                                            <option value="sync">Sync</option>
-                                            <option value="deep_review">Deep Review</option>
-                                            <option value="gap_analysis">Gap Analysis</option>
-                                            <option value="visualization">Visualization</option>
-                                        </select>
-                                        <div class="form-text">
-                                            Skip completed stages and resume from specific checkpoint.
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Checkpoint Resume -->
-                                    <div class="mb-3">
-                                        <div class="form-check mb-2">
-                                            <input class="form-check-input" type="checkbox" 
-                                                   id="enableCheckpointResume">
-                                            <label class="form-check-label" for="enableCheckpointResume">
-                                                <strong>Resume from Checkpoint</strong>
-                                                <span class="badge bg-info ms-2">CLI: --resume --checkpoint-file</span>
-                                            </label>
-                                        </div>
-                                        
-                                        <input type="text" class="form-control" 
-                                               id="checkpointFile" 
-                                               placeholder="pipeline_checkpoint.json" 
-                                               disabled>
-                                        <div class="form-text">
-                                            Continue from saved checkpoint file. Auto-detected if exists.
+                                        <div class="card-body">
+                                            
+                                            <!-- Resume from Stage -->
+                                            <div class="mb-3">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           id="enableResumeStage"
+                                                           onchange="toggleResumeStage()">
+                                                    <label class="form-check-label" for="enableResumeStage">
+                                                        <strong>Resume from Stage</strong>
+                                                        <span class="badge bg-info">CLI: --resume-from</span>
+                                                    </label>
+                                                </div>
+                                                
+                                                <!-- Stage Selector -->
+                                                <select class="form-select" id="resumeStage" disabled onchange="updateStageHighlight()">
+                                                    <option value="">-- Select Stage to Resume From --</option>
+                                                    <option value="journal_reviewer">Journal Reviewer (Stage 1)</option>
+                                                    <option value="judge">Judge (Stage 2)</option>
+                                                    <option value="dra">DRA Appeal (Stage 3)</option>
+                                                    <option value="sync">Sync to Database (Stage 4)</option>
+                                                    <option value="orchestrator">Gap Analysis (Stage 5)</option>
+                                                    <option value="proof_scorecard">Proof Scorecard (Stage 6)</option>
+                                                    <option value="sufficiency_matrix">Sufficiency Matrix (Stage 7)</option>
+                                                </select>
+                                                
+                                                <div class="form-text">
+                                                    Skip completed stages and start from selected stage.
+                                                    Requires previous results in output directory.
+                                                </div>
+                                                
+                                                <!-- Stage Progress Diagram -->
+                                                <div class="mt-3" id="stageProgressDiagram" style="display: none;">
+                                                    <small class="text-muted">Pipeline Stages:</small>
+                                                    <div class="d-flex align-items-center mt-2 flex-wrap" style="gap: 5px;">
+                                                        <div class="stage-box" id="stage-journal">
+                                                            <small>Journal<br>Review</small>
+                                                        </div>
+                                                        <div class="stage-arrow">→</div>
+                                                        <div class="stage-box" id="stage-judge">
+                                                            <small>Judge</small>
+                                                        </div>
+                                                        <div class="stage-arrow">→</div>
+                                                        <div class="stage-box" id="stage-dra">
+                                                            <small>DRA</small>
+                                                        </div>
+                                                        <div class="stage-arrow">→</div>
+                                                        <div class="stage-box" id="stage-sync">
+                                                            <small>Sync</small>
+                                                        </div>
+                                                        <div class="stage-arrow">→</div>
+                                                        <div class="stage-box" id="stage-orch">
+                                                            <small>Gap<br>Analysis</small>
+                                                        </div>
+                                                        <div class="stage-arrow">→</div>
+                                                        <div class="stage-box" id="stage-proof">
+                                                            <small>Proof</small>
+                                                        </div>
+                                                        <div class="stage-arrow">→</div>
+                                                        <div class="stage-box" id="stage-suff">
+                                                            <small>Sufficiency</small>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <hr>
+                                            
+                                            <!-- Resume from Checkpoint -->
+                                            <div class="mb-3">
+                                                <div class="form-check mb-2">
+                                                    <input class="form-check-input" type="checkbox" 
+                                                           id="enableResumeCheckpoint"
+                                                           onchange="toggleResumeCheckpoint()">
+                                                    <label class="form-check-label" for="enableResumeCheckpoint">
+                                                        <strong>Resume from Checkpoint</strong>
+                                                        <span class="badge bg-info">CLI: --resume --checkpoint-file</span>
+                                                    </label>
+                                                </div>
+                                                
+                                                <!-- Checkpoint File Input -->
+                                                <div id="checkpointInputSection" style="display: none;">
+                                                    <div class="input-group mb-2">
+                                                        <input type="text" class="form-control" 
+                                                               id="checkpointFilePath" 
+                                                               placeholder="pipeline_checkpoint.json" readonly>
+                                                        <button class="btn btn-outline-secondary" type="button"
+                                                                onclick="scanForCheckpoints()"
+                                                                aria-label="Auto-detect checkpoint files in output directory">
+                                                            🔍 Auto-detect
+                                                        </button>
+                                                        <button class="btn btn-outline-primary" type="button"
+                                                                onclick="document.getElementById('checkpointFileUpload').click()"
+                                                                aria-label="Upload checkpoint file from your computer">
+                                                            📤 Upload
+                                                        </button>
+                                                    </div>
+                                                    <input type="file" id="checkpointFileUpload" 
+                                                           accept=".json" style="display: none;"
+                                                           onchange="handleCheckpointUpload(this)">
+                                                    
+                                                    <div class="form-text">
+                                                        Continue from saved checkpoint. Auto-detect scans output directory.
+                                                    </div>
+                                                    
+                                                    <!-- Detected Checkpoints -->
+                                                    <div id="detectedCheckpoints" style="display: none;" class="mt-2">
+                                                        <small><strong>Detected Checkpoints:</strong></small>
+                                                        <div class="list-group list-group-flush" id="checkpointList">
+                                                            <!-- Populated dynamically -->
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Checkpoint Preview -->
+                                                    <div id="checkpointPreview" style="display: none;" class="mt-3">
+                                                        <div class="card bg-light">
+                                                            <div class="card-body">
+                                                                <h6 class="card-title">Checkpoint Details</h6>
+                                                                <dl class="row mb-0 small">
+                                                                    <dt class="col-sm-4">Modified:</dt>
+                                                                    <dd class="col-sm-8" id="checkpointCreated">-</dd>
+                                                                    
+                                                                    <dt class="col-sm-4">Last Stage:</dt>
+                                                                    <dd class="col-sm-8" id="checkpointLastStage">-</dd>
+                                                                    
+                                                                    <dt class="col-sm-4">Papers:</dt>
+                                                                    <dd class="col-sm-8" id="checkpointPapersProcessed">-</dd>
+                                                                    
+                                                                    <dt class="col-sm-4">Will Resume From:</dt>
+                                                                    <dd class="col-sm-8" id="checkpointResumeFrom">-</dd>
+                                                                </dl>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Mutual Exclusion Warning -->
+                                            <div id="resumeConflictWarning" style="display: none;" class="alert alert-warning">
+                                                ⚠️ Only one resume method can be used at a time. 
+                                                Using checkpoint will override stage selection.
+                                            </div>
+                                            
                                         </div>
                                     </div>
                                     
@@ -3104,6 +3245,250 @@
                 document.getElementById('costEstimate').style.display = 'none';
             }
         }
+
+        // ===== Resume Controls Functions =====
+
+        // Toggle resume from stage controls
+        function toggleResumeStage() {
+            const enabled = document.getElementById('enableResumeStage').checked;
+            document.getElementById('resumeStage').disabled = !enabled;
+            
+            if (enabled) {
+                document.getElementById('enableResumeCheckpoint').checked = false;
+                toggleResumeCheckpoint();
+                document.getElementById('stageProgressDiagram').style.display = 'block';
+                updateStageHighlight();
+            } else {
+                document.getElementById('stageProgressDiagram').style.display = 'none';
+                resetStageHighlight();
+            }
+            
+            checkResumeConflict();
+        }
+
+        // Toggle resume from checkpoint controls
+        function toggleResumeCheckpoint() {
+            const enabled = document.getElementById('enableResumeCheckpoint').checked;
+            document.getElementById('checkpointInputSection').style.display = 
+                enabled ? 'block' : 'none';
+            
+            if (enabled) {
+                document.getElementById('enableResumeStage').checked = false;
+                document.getElementById('stageProgressDiagram').style.display = 'none';
+                resetStageHighlight();
+            }
+            
+            checkResumeConflict();
+        }
+
+        // Check for mutual exclusion
+        function checkResumeConflict() {
+            const stageEnabled = document.getElementById('enableResumeStage').checked;
+            const checkpointEnabled = document.getElementById('enableResumeCheckpoint').checked;
+            
+            document.getElementById('resumeConflictWarning').style.display = 
+                (stageEnabled && checkpointEnabled) ? 'block' : 'none';
+        }
+
+        // Update stage diagram highlighting
+        function updateStageHighlight() {
+            const selectedStage = document.getElementById('resumeStage').value;
+            const stageMapping = {
+                'journal_reviewer': 'journal',
+                'judge': 'judge',
+                'dra': 'dra',
+                'sync': 'sync',
+                'orchestrator': 'orch',
+                'proof_scorecard': 'proof',
+                'sufficiency_matrix': 'suff'
+            };
+            
+            const stages = ['journal_reviewer', 'judge', 'dra', 'sync', 'orchestrator', 'proof_scorecard', 'sufficiency_matrix'];
+            const selectedIndex = stages.indexOf(selectedStage);
+            
+            stages.forEach((stage, index) => {
+                const boxId = `stage-${stageMapping[stage]}`;
+                const box = document.getElementById(boxId);
+                if (!box) return;
+                
+                box.classList.remove('completed', 'active', 'pending');
+                
+                if (selectedIndex < 0) {
+                    // No selection
+                    return;
+                }
+                
+                if (index < selectedIndex) {
+                    box.classList.add('completed');
+                } else if (index === selectedIndex) {
+                    box.classList.add('active');
+                } else {
+                    box.classList.add('pending');
+                }
+            });
+        }
+
+        function resetStageHighlight() {
+            ['journal', 'judge', 'dra', 'sync', 'orch', 'proof', 'suff'].forEach(stage => {
+                const box = document.getElementById(`stage-${stage}`);
+                if (box) {
+                    box.classList.remove('completed', 'active', 'pending');
+                }
+            });
+        }
+
+        // Scan for checkpoint files
+        async function scanForCheckpoints() {
+            const outputDirMode = document.querySelector('input[name="outputDirMode"]:checked')?.value;
+            let outputDir = '';
+            
+            if (outputDirMode === 'custom') {
+                outputDir = document.getElementById('customOutputPath')?.value;
+            } else if (outputDirMode === 'existing') {
+                outputDir = document.getElementById('existingDirDropdown')?.value;
+            } else {
+                // Auto mode - use current job directory
+                const jobId = currentJobId;
+                if (jobId) {
+                    outputDir = `workspace/jobs/${jobId}/outputs/gap_analysis_output`;
+                }
+            }
+            
+            if (!outputDir) {
+                alert('Please select an output directory first');
+                return;
+            }
+            
+            try {
+                const apiKey = document.getElementById('apiKeyInput').value;
+                const response = await fetch(`${API_BASE}/api/checkpoints/scan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': apiKey
+                    },
+                    body: JSON.stringify({ directory: outputDir })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(`Failed to scan for checkpoints: ${error.detail}`);
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                if (data.checkpoints.length === 0) {
+                    alert('No checkpoint files found in output directory');
+                    return;
+                }
+                
+                // Display detected checkpoints
+                displayDetectedCheckpoints(data.checkpoints);
+                
+            } catch (error) {
+                console.error('Failed to scan for checkpoints:', error);
+                alert('Failed to scan for checkpoints');
+            }
+        }
+
+        // Display detected checkpoint files
+        function displayDetectedCheckpoints(checkpoints) {
+            const listContainer = document.getElementById('checkpointList');
+            listContainer.innerHTML = '';
+            
+            checkpoints.forEach(checkpoint => {
+                if (!checkpoint.valid) return; // Skip invalid checkpoints
+                
+                const item = document.createElement('a');
+                item.href = '#';
+                item.className = 'list-group-item list-group-item-action';
+                item.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between">
+                        <h6 class="mb-1 small">${checkpoint.filename}</h6>
+                        <small>${new Date(checkpoint.modified).toLocaleString()}</small>
+                    </div>
+                    <p class="mb-1 small">
+                        Last Stage: <strong>${checkpoint.last_stage}</strong> | 
+                        Papers: ${checkpoint.papers_processed}
+                    </p>
+                `;
+                
+                item.onclick = (e) => {
+                    e.preventDefault();
+                    selectCheckpoint(checkpoint);
+                };
+                
+                listContainer.appendChild(item);
+            });
+            
+            document.getElementById('detectedCheckpoints').style.display = 'block';
+        }
+
+        // Select a checkpoint
+        function selectCheckpoint(checkpoint) {
+            document.getElementById('checkpointFilePath').value = checkpoint.path;
+            
+            // Show preview
+            document.getElementById('checkpointCreated').textContent = 
+                new Date(checkpoint.modified).toLocaleString();
+            document.getElementById('checkpointLastStage').textContent = checkpoint.last_stage;
+            document.getElementById('checkpointPapersProcessed').textContent = checkpoint.papers_processed;
+            document.getElementById('checkpointResumeFrom').textContent = checkpoint.resume_stage;
+            
+            document.getElementById('checkpointPreview').style.display = 'block';
+        }
+
+        // Handle checkpoint file upload
+        async function handleCheckpointUpload(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            try {
+                const text = await file.text();
+                const checkpoint = JSON.parse(text);
+                
+                // Validate checkpoint structure
+                if (!checkpoint.pipeline_version || !checkpoint.stages) {
+                    alert('Invalid checkpoint file format');
+                    return;
+                }
+                
+                // Display as selected
+                selectCheckpoint({
+                    path: file.name,
+                    filename: file.name,
+                    modified: new Date().toISOString(),
+                    last_stage: Object.keys(checkpoint.stages || {}).pop() || 'Unknown',
+                    papers_processed: checkpoint.papers_processed || 0,
+                    resume_stage: checkpoint.next_stage || 'Unknown'
+                });
+                
+                // Store file for upload
+                window.uploadedCheckpointFile = file;
+                
+            } catch (error) {
+                alert('Failed to parse checkpoint file: ' + error.message);
+            }
+        }
+
+        // Get resume configuration for job configuration
+        function getResumeConfig() {
+            const config = {
+                resume_from_stage: null,
+                resume_from_checkpoint: null
+            };
+            
+            if (document.getElementById('enableResumeStage').checked) {
+                config.resume_from_stage = document.getElementById('resumeStage').value || null;
+            }
+            
+            if (document.getElementById('enableResumeCheckpoint').checked) {
+                config.resume_from_checkpoint = document.getElementById('checkpointFilePath').value || null;
+            }
+            
+            return config;
+        }
         
         // Get uploaded file count for current job
         function getUploadedFileCount() {
@@ -3260,18 +3645,23 @@
             document.getElementById('budgetLimit').value = '';
             document.getElementById('relevanceThreshold').value = 0.7;
             document.getElementById('relevanceThresholdValue').value = 0.7;
-            document.getElementById('enableResume').checked = false;
+            document.getElementById('enableResumeStage').checked = false;
             document.getElementById('resumeStage').disabled = true;
             document.getElementById('resumeStage').value = '';
-            document.getElementById('enableCheckpointResume').checked = false;
-            document.getElementById('checkpointFile').disabled = true;
-            document.getElementById('checkpointFile').value = '';
+            document.getElementById('enableResumeCheckpoint').checked = false;
+            document.getElementById('checkpointFilePath').value = '';
+            document.getElementById('checkpointInputSection').style.display = 'none';
+            document.getElementById('stageProgressDiagram').style.display = 'none';
+            document.getElementById('detectedCheckpoints').style.display = 'none';
+            document.getElementById('checkpointPreview').style.display = 'none';
+            resetStageHighlight();
             document.getElementById('experimentalFeatures').checked = false;
             clearConfigUpload();
         }
         
         // Collect advanced options for API request
         function getAdvancedOptions() {
+            const resumeConfig = getResumeConfig();
             return {
                 dry_run: document.getElementById('dryRunMode').checked,
                 force: document.getElementById('forceReanalysis').checked,
@@ -3281,12 +3671,8 @@
                          ? parseFloat(document.getElementById('budgetLimit').value) 
                          : null,
                 relevance_threshold: parseFloat(document.getElementById('relevanceThresholdValue').value),
-                resume_from_stage: document.getElementById('enableResume').checked 
-                                  ? document.getElementById('resumeStage').value 
-                                  : null,
-                resume_from_checkpoint: document.getElementById('enableCheckpointResume').checked 
-                                       ? document.getElementById('checkpointFile').value 
-                                       : null,
+                resume_from_stage: resumeConfig.resume_from_stage,
+                resume_from_checkpoint: resumeConfig.resume_from_checkpoint,
                 experimental: document.getElementById('experimentalFeatures').checked
             };
         }
