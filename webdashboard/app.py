@@ -3109,22 +3109,28 @@ def get_resource_timeline(job_dir: Path, points: int = 20) -> List[Dict]:
                         duration = (max_ts - min_ts).total_seconds()
                         
                         if duration > 0:
-                            interval = duration / points
+                            interval = max(duration / points, 60)  # Ensure minimum 1-minute interval
                             
                             for i in range(points):
                                 start = min_ts + timedelta(seconds=i * interval)
                                 end = min_ts + timedelta(seconds=(i + 1) * interval)
                                 
                                 # Count API calls and cost in this interval
-                                interval_rows = [
-                                    row for row in rows
-                                    if row.get("timestamp") and
-                                    start <= datetime.fromisoformat(row["timestamp"]) < end
-                                ]
+                                interval_rows = []
+                                for row in rows:
+                                    ts_str = row.get("timestamp")
+                                    if not ts_str:
+                                        continue
+                                    try:
+                                        ts = datetime.fromisoformat(ts_str)
+                                        if start <= ts < end:
+                                            interval_rows.append(row)
+                                    except (ValueError, TypeError):
+                                        continue
                                 
-                                api_rate = len(interval_rows) * 60 / max(interval, 1)  # per minute
+                                api_rate = len(interval_rows) * 60 / interval  # per minute
                                 cost_rate = sum(float(row.get("cost", 0) or 0) 
-                                               for row in interval_rows) * 60 / max(interval, 1)
+                                               for row in interval_rows) * 60 / interval
                                 
                                 timeline.append({
                                     "timestamp": start.isoformat(),
@@ -3240,15 +3246,21 @@ async def get_job_resources(
     
     # Calculate timing metrics
     started_at = job_data.get("started_at")
+    now = datetime.now()
+    
     if started_at:
         try:
+            # Parse start_time, handling optional timezone
             start_time = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+            # Convert to timezone-naive for consistent comparison
+            if start_time.tzinfo is not None:
+                start_time = start_time.replace(tzinfo=None)
         except (ValueError, TypeError):
-            start_time = datetime.now()
+            start_time = now
     else:
-        start_time = datetime.now()
+        start_time = now
     
-    elapsed = (datetime.now() - start_time.replace(tzinfo=None)).total_seconds()
+    elapsed = max(0, (now - start_time).total_seconds())
     
     # Get paper counts
     papers_processed = state.get("papers_processed", 0)

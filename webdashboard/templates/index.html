@@ -3316,7 +3316,7 @@
             document.getElementById('resApiCallsCount').textContent = data.api_calls.total;
             document.getElementById('resApiBudget').textContent = data.api_calls.budget || 'unlimited';
             
-            const apiPercent = data.api_calls.budget ? 
+            const apiPercent = (data.api_calls.budget && data.api_calls.budget > 0) ? 
                 (data.api_calls.total / data.api_calls.budget * 100).toFixed(1) : 0;
             document.getElementById('resApiCallsPercent').textContent = apiPercent + '%';
             document.getElementById('resApiCallsProgress').style.width = Math.min(apiPercent, 100) + '%';
@@ -3329,7 +3329,7 @@
             const avgCost = papersProcessed > 0 ? (data.cost.total / papersProcessed) : 0;
             document.getElementById('resAvgCostPerPaper').textContent = '$' + avgCost.toFixed(3);
             
-            const costPercent = data.cost.budget ? 
+            const costPercent = (data.cost.budget && data.cost.budget > 0) ? 
                 (data.cost.total / data.cost.budget * 100).toFixed(1) : 0;
             document.getElementById('resCostProgress').style.width = Math.min(costPercent, 100) + '%';
             
