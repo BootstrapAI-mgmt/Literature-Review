@@ -1564,6 +1564,110 @@ async def scan_directory(
     )
 
 @app.post(
+    "/api/jobs/create-from-directory",
+    tags=["Jobs"],
+    summary="Create job from directory scan results",
+    responses={
+        200: {
+            "description": "Job created successfully",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Directory not found or invalid",
+            "model": ErrorResponse
+        }
+    }
+)
+async def create_job_from_directory(
+    request: Request,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Create a draft job from directory scan results (PARITY-W3-2).
+    
+    This endpoint:
+    1. Validates the directory path
+    2. Scans for PDFs/CSVs
+    3. Creates a draft job with directory input configuration
+    4. Returns job_id for further configuration via /api/jobs/{job_id}/configure
+    
+    **Request Body:**
+    - data_dir: Absolute path to directory containing PDF/CSV files
+    - scan_recursive: Whether to scan subdirectories (default: true)
+    - follow_symlinks: Whether to follow symbolic links (default: false)
+    
+    **Returns:**
+    - job_id: Unique job identifier
+    - status: Job status (draft)
+    - input_method: "directory"
+    - data_dir: Validated directory path
+    - file_count: Total number of PDF/CSV files found
+    - pdf_count: Number of PDF files
+    - csv_count: Number of CSV files
+    """
+    verify_api_key(api_key)
+    
+    # Parse request body
+    body = await request.json()
+    data_dir = body.get("data_dir")
+    scan_recursive = body.get("scan_recursive", True)
+    follow_symlinks = body.get("follow_symlinks", False)
+    
+    if not data_dir:
+        raise HTTPException(status_code=400, detail="data_dir is required")
+    
+    # Validate and scan directory
+    scan_request = DirectoryScanRequest(
+        path=data_dir,
+        recursive=scan_recursive,
+        follow_symlinks=follow_symlinks
+    )
+    scan_result = await scan_directory(scan_request, api_key)
+    
+    # Create job ID
+    job_id = str(uuid.uuid4())
+    
+    # Create job metadata
+    job_data = {
+        "id": job_id,
+        "status": "draft",
+        "input_method": "directory",
+        "data_dir": scan_result.path,
+        "file_count": scan_result.total_files,
+        "pdf_count": scan_result.pdf_count,
+        "csv_count": scan_result.csv_count,
+        "scan_recursive": scan_recursive,
+        "follow_symlinks": follow_symlinks,
+        "created_at": datetime.utcnow().isoformat(),
+        "started_at": None,
+        "completed_at": None,
+        "error": None,
+        "progress": {},
+        "config": {}
+    }
+    
+    save_job(job_id, job_data)
+    
+    # Broadcast update to WebSocket clients
+    await manager.broadcast({
+        "type": "job_created",
+        "job": job_data
+    })
+    
+    return {
+        "job_id": job_id,
+        "status": "draft",
+        "input_method": "directory",
+        "data_dir": scan_result.path,
+        "file_count": scan_result.total_files,
+        "pdf_count": scan_result.pdf_count,
+        "csv_count": scan_result.csv_count
+    }
+
+@app.post(
     "/api/upload/analyze-directory",
     tags=["Papers"],
     summary="Analyze directory state for fresh analysis detection",
@@ -2844,12 +2948,32 @@ async def start_job(
             f"Job {job_id} using EXPERIMENTAL features: {exp_config.get('features', [])}"
         )
     
-    # Build research database from uploaded files
+    # Build research database from files
     try:
         from webdashboard.database_builder import ResearchDatabaseBuilder
         
-        job_dir = UPLOADS_DIR / job_id
-        pdf_files = list(job_dir.glob("*.pdf"))
+        # Get PDF files based on input method
+        input_method = job_data.get("input_method", "upload")
+        
+        if input_method == "directory":
+            # For directory input, use data_dir from job configuration
+            data_dir = Path(job_data.get("data_dir", ""))
+            if not data_dir.exists():
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Configured data directory does not exist: {data_dir}"
+                )
+            
+            # Collect PDFs from data_dir (recursively if scan_recursive was true)
+            scan_recursive = job_data.get("scan_recursive", True)
+            if scan_recursive:
+                pdf_files = list(data_dir.rglob("*.pdf"))
+            else:
+                pdf_files = list(data_dir.glob("*.pdf"))
+        else:
+            # For upload input, use uploads directory
+            job_dir = UPLOADS_DIR / job_id
+            pdf_files = list(job_dir.glob("*.pdf"))
         
         if not pdf_files:
             raise HTTPException(
@@ -2863,13 +2987,18 @@ async def start_job(
         # Update job data with database path
         job_data["research_database"] = str(csv_path)
         
-    except ImportError:
+    except ImportError as ie:
+        logger.error(f"Failed to import database builder: {ie}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail="Database builder module not available"
         )
     except Exception as e:
         logger.error(f"Failed to build database for job {job_id}: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Failed to build research database: {str(e)}"

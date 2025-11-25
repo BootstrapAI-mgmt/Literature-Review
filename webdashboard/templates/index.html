@@ -1872,8 +1872,8 @@
                                     value="dev-key-change-in-production">
                             </div>
                             
-                            <button type="submit" class="btn btn-primary">
-                                📤 Upload Papers
+                            <button type="submit" class="btn btn-primary" id="submitButton">
+                                <span id="submitButtonText">📤 Upload Papers</span>
                             </button>
                         </form>
                         
@@ -4189,7 +4189,16 @@
         document.getElementById('batchUploadForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Determine which mode is selected
+            // Check input method (PARITY-W3-2)
+            const inputMethod = document.querySelector('input[name="inputMethod"]:checked').value;
+            
+            if (inputMethod === 'directory') {
+                // Directory input - create job from scan results
+                await handleDirectoryJobCreation();
+                return;
+            }
+            
+            // Upload method - original logic
             const uploadMode = document.querySelector('input[name="uploadMode"]:checked').value;
             const fileInput = uploadMode === 'files' 
                 ? document.getElementById('batchFileInput')
@@ -6364,15 +6373,18 @@
                 const method = e.target.value;
                 const uploadSection = document.getElementById('uploadMethodSection');
                 const directorySection = document.getElementById('directoryMethodSection');
+                const submitButtonText = document.getElementById('submitButtonText');
                 
                 if (method === 'upload') {
                     uploadSection.style.display = 'block';
                     directorySection.style.display = 'none';
                     document.getElementById('batchFileInput').required = true;
+                    submitButtonText.textContent = '📤 Upload Papers';
                 } else {
                     uploadSection.style.display = 'none';
                     directorySection.style.display = 'block';
                     document.getElementById('batchFileInput').required = false;
+                    submitButtonText.textContent = '🚀 Create Analysis Job';
                 }
             });
         });
@@ -6383,7 +6395,8 @@
             const scanBtn = document.getElementById('scanDirectoryBtn');
             const resultsDiv = document.getElementById('directoryScanResults');
             const errorDiv = document.getElementById('directoryScanError');
-            const apiKey = document.getElementById('apiKeyInput').value;
+            // Use Dashboard API key, not Google API key
+            const dashboardApiKey = apiKey;  // Global variable set at line 3219
             
             const path = pathInput.value.trim();
             
@@ -6407,7 +6420,7 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-API-KEY': apiKey
+                        'X-API-KEY': dashboardApiKey
                     },
                     body: JSON.stringify({
                         path: path,
@@ -6495,6 +6508,51 @@
             );
             
             renderFileListTable(filtered);
+        }
+        
+        // Handle directory job creation (PARITY-W3-2)
+        async function handleDirectoryJobCreation() {
+            if (!directoryScanResults) {
+                alert('Please scan a directory first');
+                return;
+            }
+            
+            const dashboardApiKey = apiKey;  // Global Dashboard API key
+            
+            try {
+                // Create job from directory scan results
+                const response = await fetch(`${API_BASE}/api/jobs/create-from-directory`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': dashboardApiKey
+                    },
+                    body: JSON.stringify({
+                        data_dir: directoryScanResults.path,
+                        scan_recursive: directoryScanResults.recursive,
+                        follow_symlinks: directoryScanResults.follow_symlinks
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Failed to create job');
+                }
+                
+                const result = await response.json();
+                
+                // Show configuration modal for customization
+                currentJobId = result.job_id;
+                document.getElementById('configJobId').textContent = result.job_id;
+                document.getElementById('configFileCount').textContent = result.file_count;
+                
+                const modal = new bootstrap.Modal(document.getElementById('configModal'));
+                modal.show();
+                
+            } catch (error) {
+                alert('Failed to create job: ' + error.message);
+                console.error('Directory job creation error:', error);
+            }
         }
         
         // Sort file list

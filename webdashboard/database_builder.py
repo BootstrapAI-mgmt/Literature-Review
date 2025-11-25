@@ -45,8 +45,14 @@ class ResearchDatabaseBuilder:
         self.use_enhanced_extraction = use_enhanced_extraction and ENHANCED_EXTRACTION_AVAILABLE
         
         if self.use_enhanced_extraction:
-            self.enhanced_extractor = EnhancedMetadataExtractor()
-            logger.info("Using enhanced metadata extraction with PyMuPDF")
+            try:
+                self.enhanced_extractor = EnhancedMetadataExtractor()
+                logger.info("Using enhanced metadata extraction with PyMuPDF")
+            except ImportError as e:
+                logger.warning(f"Enhanced extraction not available: {e}")
+                self.enhanced_extractor = None
+                self.use_enhanced_extraction = False
+                logger.info("Falling back to basic metadata extraction with PyPDF2")
         else:
             self.enhanced_extractor = None
             logger.info("Using basic metadata extraction with PyPDF2")

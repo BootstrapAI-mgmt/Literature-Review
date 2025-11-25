@@ -1169,6 +1169,7 @@ def main():
     
     # Handle data directory (PARITY-W3-2)
     import os
+    import sys
     if args.data_dir:
         data_dir = Path(args.data_dir).resolve()
         if not data_dir.exists():
@@ -1178,8 +1179,21 @@ def main():
             print(f"❌ Error: Path is not a directory: {data_dir}")
             sys.exit(1)
         
-        # Change to data directory so modules can discover CSV/PDF files
-        os.chdir(str(data_dir))
+        # Preserve repo root in sys.path and PYTHONPATH for module imports
+        # This ensures Python modules can still be imported even if paths change
+        repo_root = str(Path(__file__).parent.resolve())
+        if repo_root not in sys.path:
+            sys.path.insert(0, repo_root)
+        
+        # Also set PYTHONPATH for subprocesses
+        current_pythonpath = os.environ.get('PYTHONPATH', '')
+        if current_pythonpath:
+            os.environ['PYTHONPATH'] = f"{repo_root}:{current_pythonpath}"
+        else:
+            os.environ['PYTHONPATH'] = repo_root
+        
+        # Store data directory in config (don't change working directory)
+        # Modules that need to find files will use this path
         config['data_dir'] = str(data_dir)
         print(f"📁 Data directory: {data_dir}")
     

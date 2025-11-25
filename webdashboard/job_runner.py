@@ -157,7 +157,7 @@ class PipelineJobRunner:
             job_id: Job identifier
             message: Log message
         """
-        log_file = Path(f"workspace/logs/{job_id}.log")
+        log_file = Path(f"workspace/logs/{job_id}.log").resolve()
         log_file.parent.mkdir(parents=True, exist_ok=True)
         
         timestamp = datetime.utcnow().isoformat()
@@ -409,15 +409,16 @@ class PipelineJobRunner:
         
         # Set output directory for this job
         # Use custom output directory if specified, otherwise use default job directory
+        # Use absolute paths to avoid issues with --data-dir changing working directory
         if config.get("output_dir"):
-            output_dir = Path(config["output_dir"])
+            output_dir = Path(config["output_dir"]).resolve()
         else:
-            output_dir = Path(f"workspace/jobs/{job_id}/outputs/gap_analysis_output")
+            output_dir = Path(f"workspace/jobs/{job_id}/outputs/gap_analysis_output").resolve()
         output_dir.mkdir(parents=True, exist_ok=True)
         cmd.extend(["--output-dir", str(output_dir)])
         
-        # Set log file
-        log_file = Path(f"workspace/logs/{job_id}.log")
+        # Set log file (use absolute path to avoid issues with --data-dir)
+        log_file = Path(f"workspace/logs/{job_id}.log").resolve()
         log_file.parent.mkdir(parents=True, exist_ok=True)
         cmd.extend(["--log-file", str(log_file)])
         
