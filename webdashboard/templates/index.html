@@ -1362,54 +1362,193 @@
                         </div>
                         
                         <form id="batchUploadForm">
-                            <!-- Upload Mode Selection -->
-                            <div class="mb-3">
-                                <label class="form-label">Upload Mode</label>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="uploadMode" id="uploadModeFiles" value="files" checked>
-                                    <label class="form-check-label" for="uploadModeFiles">
-                                        📄 Select Individual Files
-                                    </label>
+                            <!-- Input Method Selection (PARITY-W3-2) -->
+                            <div class="card mb-3 border-primary">
+                                <div class="card-header bg-primary bg-opacity-10">
+                                    <h6 class="mb-0">📥 Input Method</h6>
                                 </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="uploadMode" id="uploadModeFolder" value="folder">
-                                    <label class="form-check-label" for="uploadModeFolder">
-                                        📁 Select Folder (Recursive - like CLI)
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- File Selection (default) -->
-                            <div class="mb-3" id="fileUploadSection">
-                                <label for="batchFileInput" class="form-label">
-                                    Select PDF files (multiple allowed)
-                                </label>
-                                <input 
-                                    class="form-control" 
-                                    type="file" 
-                                    id="batchFileInput" 
-                                    accept=".pdf" 
-                                    multiple
-                                    required>
-                                <div class="form-text">
-                                    Select one or more research papers (PDF format only)
-                                </div>
-                            </div>
-                            
-                            <!-- Folder Selection (hidden by default) -->
-                            <div class="mb-3" id="folderUploadSection" style="display: none;">
-                                <label for="folderInput" class="form-label">
-                                    Select Folder (all PDFs will be extracted recursively)
-                                </label>
-                                <input 
-                                    class="form-control" 
-                                    type="file" 
-                                    id="folderInput" 
-                                    webkitdirectory
-                                    directory
-                                    multiple>
-                                <div class="form-text">
-                                    Choose a folder containing PDF files (nested folders supported)
+                                <div class="card-body">
+                                    <div class="btn-group w-100 mb-3" role="group" aria-label="Input method selection">
+                                        <input type="radio" class="btn-check" name="inputMethod" id="inputMethodUpload" value="upload" checked>
+                                        <label class="btn btn-outline-primary" for="inputMethodUpload">
+                                            📤 Upload Files
+                                            <small class="d-block text-muted">From your computer</small>
+                                        </label>
+                                        
+                                        <input type="radio" class="btn-check" name="inputMethod" id="inputMethodDirectory" value="directory">
+                                        <label class="btn btn-outline-primary" for="inputMethodDirectory">
+                                            📁 Directory Path
+                                            <small class="d-block text-muted">Server directory</small>
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Upload Section (shown when Upload Files selected) -->
+                                    <div id="uploadMethodSection">
+                                        <div class="mb-3">
+                                            <label class="form-label">Upload Mode</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="uploadMode" id="uploadModeFiles" value="files" checked>
+                                                <label class="form-check-label" for="uploadModeFiles">
+                                                    📄 Select Individual Files
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="uploadMode" id="uploadModeFolder" value="folder">
+                                                <label class="form-check-label" for="uploadModeFolder">
+                                                    📁 Select Folder (Recursive - like CLI)
+                                                </label>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- File Selection (default) -->
+                                        <div class="mb-3" id="fileUploadSection">
+                                            <label for="batchFileInput" class="form-label">
+                                                Select PDF files (multiple allowed)
+                                            </label>
+                                            <input 
+                                                class="form-control" 
+                                                type="file" 
+                                                id="batchFileInput" 
+                                                accept=".pdf" 
+                                                multiple
+                                                required>
+                                            <div class="form-text">
+                                                Select one or more research papers (PDF format only)
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Folder Selection (hidden by default) -->
+                                        <div class="mb-3" id="folderUploadSection" style="display: none;">
+                                            <label for="folderInput" class="form-label">
+                                                Select Folder (all PDFs will be extracted recursively)
+                                            </label>
+                                            <input 
+                                                class="form-control" 
+                                                type="file" 
+                                                id="folderInput" 
+                                                webkitdirectory
+                                                directory
+                                                multiple>
+                                            <div class="form-text">
+                                                Choose a folder containing PDF files (nested folders supported)
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Directory Path Section (shown when Directory Path selected) -->
+                                    <div id="directoryMethodSection" style="display: none;">
+                                        <div class="alert alert-info">
+                                            <strong>📁 Server Directory Input</strong>
+                                            <p class="mb-0 small">
+                                                Point to papers already on the server. No upload needed!
+                                                <br>
+                                                <span class="badge bg-secondary">CLI: --data-dir</span>
+                                            </p>
+                                        </div>
+                                        
+                                        <!-- Directory Path Input -->
+                                        <div class="mb-3">
+                                            <label for="directoryPathInput" class="form-label">
+                                                Server Directory Path
+                                            </label>
+                                            <div class="input-group">
+                                                <span class="input-group-text">📂</span>
+                                                <input 
+                                                    type="text" 
+                                                    class="form-control" 
+                                                    id="directoryPathInput" 
+                                                    placeholder="/workspaces/Literature-Review/data/papers/"
+                                                    aria-label="Server directory path">
+                                                <button 
+                                                    class="btn btn-outline-primary" 
+                                                    type="button" 
+                                                    id="scanDirectoryBtn"
+                                                    onclick="scanDirectory()">
+                                                    🔍 Scan
+                                                </button>
+                                            </div>
+                                            <div class="form-text">
+                                                Enter absolute path to directory containing PDFs/CSVs on the server.
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Scan Options -->
+                                        <div class="row mb-3">
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="scanRecursive" checked>
+                                                    <label class="form-check-label" for="scanRecursive">
+                                                        <strong>Recursive Scan</strong>
+                                                        <small class="text-muted d-block">Include subdirectories</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="followSymlinks">
+                                                    <label class="form-check-label" for="followSymlinks">
+                                                        <strong>Follow Symlinks</strong>
+                                                        <small class="text-muted d-block">Include linked directories</small>
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Scan Results (hidden until scan complete) -->
+                                        <div id="directoryScanResults" style="display: none;">
+                                            <div class="card bg-light">
+                                                <div class="card-body">
+                                                    <h6 class="card-title text-success">
+                                                        ✅ Directory Scanned Successfully
+                                                    </h6>
+                                                    
+                                                    <!-- File Counts -->
+                                                    <div class="row text-center mb-3">
+                                                        <div class="col-4">
+                                                            <div class="h4 mb-0" id="scanPdfCount">0</div>
+                                                            <small class="text-muted">PDFs</small>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="h4 mb-0" id="scanCsvCount">0</div>
+                                                            <small class="text-muted">CSVs</small>
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <div class="h4 mb-0" id="scanTotalSize">0 KB</div>
+                                                            <small class="text-muted">Total Size</small>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <!-- Subdirectory Count -->
+                                                    <div class="small text-muted mb-2">
+                                                        <span id="scanSubdirCount">0</span> subdirectories scanned
+                                                    </div>
+                                                    
+                                                    <!-- View Files Button -->
+                                                    <button 
+                                                        type="button" 
+                                                        class="btn btn-sm btn-outline-secondary"
+                                                        onclick="showFileListModal()">
+                                                        📋 View File List
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Scan Error (hidden until error) -->
+                                        <div id="directoryScanError" style="display: none;">
+                                            <div class="alert alert-danger">
+                                                <strong>❌ Scan Failed</strong>
+                                                <p class="mb-0" id="scanErrorMessage"></p>
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Security Warning -->
+                                        <div class="alert alert-secondary small mt-3">
+                                            <strong>🔒 Security:</strong>
+                                            Only directories within allowed server locations can be accessed.
+                                            Path traversal attempts will be rejected.
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -2654,6 +2793,66 @@
                     <button type="button" class="btn btn-primary" onclick="refreshResultsBrowser()">
                         🔄 Refresh
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Directory File List Modal (PARITY-W3-2) -->
+    <div class="modal fade" id="fileListModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">📋 Files in Directory</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Summary -->
+                    <div class="row text-center mb-3">
+                        <div class="col-4">
+                            <strong id="fileListPdfCount">0</strong> PDFs
+                        </div>
+                        <div class="col-4">
+                            <strong id="fileListCsvCount">0</strong> CSVs
+                        </div>
+                        <div class="col-4">
+                            <strong id="fileListTotalSize">0 KB</strong> Total
+                        </div>
+                    </div>
+                    
+                    <!-- Search -->
+                    <div class="mb-3">
+                        <input type="text" class="form-control" id="fileListSearch" 
+                               placeholder="Search files..." oninput="filterFileList()">
+                    </div>
+                    
+                    <!-- File List Table -->
+                    <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                        <table class="table table-sm table-hover" id="fileListTable">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th onclick="sortFileList('filename')" style="cursor: pointer;">
+                                        Filename ↕
+                                    </th>
+                                    <th onclick="sortFileList('type')" style="cursor: pointer;">
+                                        Type ↕
+                                    </th>
+                                    <th onclick="sortFileList('size')" style="cursor: pointer;">
+                                        Size ↕
+                                    </th>
+                                    <th onclick="sortFileList('path')" style="cursor: pointer;">
+                                        Path ↕
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody id="fileListBody">
+                                <!-- Populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -4499,6 +4698,8 @@
         // Collect advanced options for API request
         function getAdvancedOptions() {
             const resumeConfig = getResumeConfig();
+            const inputMethodConfig = getInputMethodConfig();
+            
             return {
                 dry_run: document.getElementById('dryRunMode').checked,
                 force: document.getElementById('forceReanalysis').checked,
@@ -4511,7 +4712,8 @@
                 resume_from_stage: resumeConfig.resume_from_stage,
                 resume_from_checkpoint: resumeConfig.resume_from_checkpoint,
                 experimental: document.getElementById('experimentalFeatures').checked,
-                pre_filter: getPreFilterConfig()  // PARITY-W2-5
+                pre_filter: getPreFilterConfig(),  // PARITY-W2-5
+                ...inputMethodConfig  // PARITY-W3-2: Include input method and data_dir
             };
         }
         
@@ -4698,9 +4900,22 @@
         
         // Open new analysis modal without upload requirement
         async function openNewAnalysisModal() {
-            // This will trigger PARITY-CRITICAL-1 workflow when implemented
-            // For now, show alert
-            alert('Server directory input feature coming soon!\n\nThis will allow you to:\n- Point to existing papers on the server\n- Scan directories recursively\n- Skip browser upload entirely\n\nFor now, please use the upload form or CLI.');
+            // Select Directory Path input method (PARITY-W3-2)
+            document.getElementById('inputMethodDirectory').checked = true;
+            
+            // Trigger the change event to show directory section
+            document.getElementById('inputMethodDirectory').dispatchEvent(new Event('change'));
+            
+            // Scroll to the input method section
+            document.querySelector('.card.border-primary').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+            
+            // Focus the directory path input
+            setTimeout(() => {
+                document.getElementById('directoryPathInput').focus();
+            }, 500);
         }
         
         // Delete a specific job
@@ -5470,6 +5685,223 @@
                 }
             });
         });
+        
+        // === INPUT METHOD SWITCHING (PARITY-W3-2) ===
+        // Store scan results globally
+        let directoryScanResults = null;
+        let fileListSortColumn = 'filename';
+        let fileListSortAscending = true;
+        
+        // Input method switching
+        document.querySelectorAll('input[name="inputMethod"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                const method = e.target.value;
+                const uploadSection = document.getElementById('uploadMethodSection');
+                const directorySection = document.getElementById('directoryMethodSection');
+                
+                if (method === 'upload') {
+                    uploadSection.style.display = 'block';
+                    directorySection.style.display = 'none';
+                    document.getElementById('batchFileInput').required = true;
+                } else {
+                    uploadSection.style.display = 'none';
+                    directorySection.style.display = 'block';
+                    document.getElementById('batchFileInput').required = false;
+                }
+            });
+        });
+        
+        // Scan directory function
+        async function scanDirectory() {
+            const pathInput = document.getElementById('directoryPathInput');
+            const scanBtn = document.getElementById('scanDirectoryBtn');
+            const resultsDiv = document.getElementById('directoryScanResults');
+            const errorDiv = document.getElementById('directoryScanError');
+            const apiKey = document.getElementById('apiKeyInput').value;
+            
+            const path = pathInput.value.trim();
+            
+            if (!path) {
+                // Show inline error instead of alert
+                document.getElementById('scanErrorMessage').textContent = 'Please enter a directory path';
+                errorDiv.style.display = 'block';
+                resultsDiv.style.display = 'none';
+                pathInput.focus();
+                return;
+            }
+            
+            // Reset UI
+            resultsDiv.style.display = 'none';
+            errorDiv.style.display = 'none';
+            scanBtn.disabled = true;
+            scanBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Scanning...';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/directory/scan`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-KEY': apiKey
+                    },
+                    body: JSON.stringify({
+                        path: path,
+                        recursive: document.getElementById('scanRecursive').checked,
+                        follow_symlinks: document.getElementById('followSymlinks').checked
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.detail || 'Scan failed');
+                }
+                
+                const data = await response.json();
+                directoryScanResults = data;
+                
+                // Update UI with results
+                document.getElementById('scanPdfCount').textContent = data.pdf_count;
+                document.getElementById('scanCsvCount').textContent = data.csv_count;
+                document.getElementById('scanTotalSize').textContent = formatFileSize(data.total_size_bytes);
+                document.getElementById('scanSubdirCount').textContent = data.subdirectory_count;
+                
+                resultsDiv.style.display = 'block';
+                
+            } catch (error) {
+                document.getElementById('scanErrorMessage').textContent = error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                scanBtn.disabled = false;
+                scanBtn.innerHTML = '🔍 Scan';
+            }
+        }
+        
+        // Show file list modal
+        function showFileListModal() {
+            if (!directoryScanResults || !directoryScanResults.files) {
+                // Show inline error instead of alert
+                const errorDiv = document.getElementById('directoryScanError');
+                document.getElementById('scanErrorMessage').textContent = 'No scan results available. Please scan a directory first.';
+                errorDiv.style.display = 'block';
+                return;
+            }
+            
+            // Update summary
+            document.getElementById('fileListPdfCount').textContent = directoryScanResults.pdf_count;
+            document.getElementById('fileListCsvCount').textContent = directoryScanResults.csv_count;
+            document.getElementById('fileListTotalSize').textContent = formatFileSize(directoryScanResults.total_size_bytes);
+            
+            // Clear search
+            document.getElementById('fileListSearch').value = '';
+            
+            // Render file list
+            renderFileListTable(directoryScanResults.files);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('fileListModal'));
+            modal.show();
+        }
+        
+        // Render file list table
+        function renderFileListTable(files) {
+            const tbody = document.getElementById('fileListBody');
+            tbody.innerHTML = '';
+            
+            files.forEach(file => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td title="${file.filename}">${truncateString(file.filename, 40)}</td>
+                    <td><span class="badge ${file.type === 'pdf' ? 'bg-primary' : 'bg-success'}">${file.type.toUpperCase()}</span></td>
+                    <td>${formatFileSize(file.size_bytes)}</td>
+                    <td title="${file.relative_path}" class="text-muted small">${truncateString(file.relative_path, 50)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+        
+        // Filter file list
+        function filterFileList() {
+            if (!directoryScanResults || !directoryScanResults.files) return;
+            
+            const searchTerm = document.getElementById('fileListSearch').value.toLowerCase();
+            const filtered = directoryScanResults.files.filter(file => 
+                file.filename.toLowerCase().includes(searchTerm) ||
+                file.relative_path.toLowerCase().includes(searchTerm)
+            );
+            
+            renderFileListTable(filtered);
+        }
+        
+        // Sort file list
+        function sortFileList(column) {
+            if (!directoryScanResults || !directoryScanResults.files) return;
+            
+            if (fileListSortColumn === column) {
+                fileListSortAscending = !fileListSortAscending;
+            } else {
+                fileListSortColumn = column;
+                fileListSortAscending = true;
+            }
+            
+            const files = [...directoryScanResults.files];
+            
+            files.sort((a, b) => {
+                let valA, valB;
+                
+                switch (column) {
+                    case 'filename':
+                        valA = a.filename.toLowerCase();
+                        valB = b.filename.toLowerCase();
+                        break;
+                    case 'type':
+                        valA = a.type;
+                        valB = b.type;
+                        break;
+                    case 'size':
+                        valA = a.size_bytes;
+                        valB = b.size_bytes;
+                        break;
+                    case 'path':
+                        valA = a.relative_path.toLowerCase();
+                        valB = b.relative_path.toLowerCase();
+                        break;
+                    default:
+                        return 0;
+                }
+                
+                if (valA < valB) return fileListSortAscending ? -1 : 1;
+                if (valA > valB) return fileListSortAscending ? 1 : -1;
+                return 0;
+            });
+            
+            renderFileListTable(files);
+        }
+        
+        // Helper: truncate string
+        function truncateString(str, maxLength) {
+            if (str.length <= maxLength) return str;
+            return str.substring(0, maxLength - 3) + '...';
+        }
+        
+        // Get input method and data for job submission
+        function getInputMethodConfig() {
+            const inputMethod = document.querySelector('input[name="inputMethod"]:checked').value;
+            
+            if (inputMethod === 'directory') {
+                if (!directoryScanResults) {
+                    throw new Error('Please scan a directory before proceeding');
+                }
+                return {
+                    input_method: 'directory',
+                    data_dir: directoryScanResults.path,
+                    scan_recursive: document.getElementById('scanRecursive').checked,
+                    follow_symlinks: document.getElementById('followSymlinks').checked
+                };
+            }
+            
+            return {
+                input_method: 'upload'
+            };
+        }
         
         // Import Results Form Handler
         document.getElementById('importResultsForm').addEventListener('submit', async (e) => {
