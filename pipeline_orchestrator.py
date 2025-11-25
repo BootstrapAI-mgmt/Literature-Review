@@ -1125,6 +1125,14 @@ def main():
         action="store_true",
         help="Run in non-interactive mode (skip all user prompts, use defaults)"
     )
+    
+    parser.add_argument(
+        "--data-dir",
+        type=str,
+        default=None,
+        help="Directory containing PDF and CSV files for analysis. "
+             "If not specified, uses current directory for database discovery."
+    )
 
     args = parser.parse_args()
     
@@ -1159,9 +1167,24 @@ def main():
     if args.parent_job_id:
         config['parent_job_id'] = args.parent_job_id
     
+    # Handle data directory (PARITY-W3-2)
+    import os
+    if args.data_dir:
+        data_dir = Path(args.data_dir).resolve()
+        if not data_dir.exists():
+            print(f"❌ Error: Data directory does not exist: {data_dir}")
+            sys.exit(1)
+        if not data_dir.is_dir():
+            print(f"❌ Error: Path is not a directory: {data_dir}")
+            sys.exit(1)
+        
+        # Change to data directory so modules can discover CSV/PDF files
+        os.chdir(str(data_dir))
+        config['data_dir'] = str(data_dir)
+        print(f"📁 Data directory: {data_dir}")
+    
     # Set output directory
     # Priority: CLI arg > Environment variable > Config file > Default
-    import os
     output_dir = (
         args.output_dir or
         os.getenv('LITERATURE_REVIEW_OUTPUT_DIR') or
