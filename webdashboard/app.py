@@ -9,6 +9,7 @@ Provides RESTful API and WebSocket endpoints for:
 """
 
 import asyncio
+import hashlib
 import io
 import json
 import logging
@@ -1973,6 +1974,420 @@ async def configure_job(
         "input_method": job_data.get("input_method", "upload"),
         "data_dir": job_data.get("data_dir"),
         "file_count": job_data.get("file_count")
+    }
+
+
+# ============================================================================
+# DRY-RUN MODE HELPER FUNCTIONS (PARITY-W3-3)
+# ============================================================================
+
+def get_job_files_for_dry_run(job_id: str, job_data: Dict) -> List[Dict]:
+    """
+    Get list of files for job dry-run analysis.
+    
+    Args:
+        job_id: Job identifier
+        job_data: Job metadata dictionary
+        
+    Returns:
+        List of file dictionaries with filename, path, type, and size
+    """
+    files = []
+    
+    # Get files from job upload directory
+    job_upload_dir = UPLOADS_DIR / job_id
+    if job_upload_dir.exists():
+        for file_path in job_upload_dir.iterdir():
+            if file_path.suffix.lower() in ['.pdf', '.csv']:
+                files.append({
+                    "filename": file_path.name,
+                    "path": str(file_path),
+                    "type": file_path.suffix.lstrip('.').lower(),
+                    "size": file_path.stat().st_size
+                })
+    
+    # Also check if files list is in job_data
+    if "files" in job_data and not files:
+        for f in job_data["files"]:
+            path = Path(f.get("path", ""))
+            if path.exists():
+                files.append({
+                    "filename": f.get("original_name", path.name),
+                    "path": str(path),
+                    "type": path.suffix.lstrip('.').lower(),
+                    "size": path.stat().st_size if path.exists() else 0
+                })
+    
+    return files
+
+
+def check_if_cached(file_path: str) -> bool:
+    """
+    Check if file results are cached.
+    
+    Args:
+        file_path: Path to the file
+        
+    Returns:
+        True if cached results exist, False otherwise
+    """
+    # Check common cache directories
+    cache_dirs = [
+        BASE_DIR / "gap_extraction_cache",
+        BASE_DIR / "analysis_cache",
+        BASE_DIR / "cache"
+    ]
+    
+    for cache_dir in cache_dirs:
+        if not cache_dir.exists():
+            continue
+        
+        try:
+            # Check if any cache file corresponds to this file
+            # Use exact stem match to avoid false positives
+            file_name = Path(file_path).stem.lower()
+            for cache_file in cache_dir.glob("*.json"):
+                cache_name = cache_file.stem.lower()
+                # Check for exact match or common cache naming patterns
+                if (cache_name == file_name or
+                    cache_name.startswith(f"{file_name}_") or
+                    cache_name == f"{file_name}_cache"):
+                    return True
+        except Exception:
+            continue
+    
+    return False
+
+
+def build_execution_plan(config: Dict, job_data: Dict, files: List[Dict]) -> List[Dict]:
+    """
+    Build execution plan showing stages and their status.
+    
+    Args:
+        config: Job configuration dictionary
+        job_data: Job metadata dictionary
+        files: List of files to process
+        
+    Returns:
+        List of stage dictionaries with name, description, status, and estimates
+    """
+    stages = [
+        {
+            "name": "gap_analysis",
+            "display": "Gap Analysis",
+            "description": "Extract research gaps from papers"
+        },
+        {
+            "name": "relevance_scoring",
+            "display": "Relevance Scoring",
+            "description": "Score gaps by relevance to query"
+        },
+        {
+            "name": "deep_review",
+            "display": "Deep Review",
+            "description": "Detailed analysis of top gaps"
+        },
+        {
+            "name": "visualization",
+            "display": "Visualization",
+            "description": "Generate interactive HTML reports"
+        }
+    ]
+    
+    plan = []
+    resume_from = config.get("resume_from_stage")
+    found_resume_stage = False
+    
+    for stage in stages:
+        # Determine if stage will run or be skipped
+        status = "run"
+        estimated_calls = 0
+        estimated_cost = 0.0
+        
+        if resume_from and not found_resume_stage:
+            if stage["name"] == resume_from:
+                found_resume_stage = True
+                status = "run"
+            else:
+                status = "skip"
+        
+        # Calculate estimates only for running stages
+        if status == "run":
+            file_count = len(files)
+            if stage["name"] == "gap_analysis":
+                estimated_calls = file_count * 2  # ~2 calls per paper
+                estimated_cost = estimated_calls * 0.005  # ~$0.005 per call
+            elif stage["name"] == "relevance_scoring":
+                estimated_calls = file_count * 1
+                estimated_cost = estimated_calls * 0.003
+            elif stage["name"] == "deep_review":
+                estimated_calls = min(file_count, 10) * 3  # Top 10 papers
+                estimated_cost = estimated_calls * 0.01
+            elif stage["name"] == "visualization":
+                estimated_calls = 0  # No API calls
+                estimated_cost = 0.0
+        
+        plan.append({
+            "stage": stage["display"],
+            "stage_name": stage["name"],
+            "description": stage["description"],
+            "status": status,
+            "estimated_api_calls": estimated_calls,
+            "estimated_cost": estimated_cost
+        })
+    
+    return plan
+
+
+def estimate_job_resources(execution_plan: List[Dict], files: List[Dict], config: Dict) -> Dict:
+    """
+    Estimate total resources needed for job execution.
+    
+    Args:
+        execution_plan: List of stage dictionaries
+        files: List of files to process
+        config: Job configuration dictionary
+        
+    Returns:
+        Dictionary with api_calls, cost, duration estimates and ranges
+    """
+    total_calls = sum(
+        s["estimated_api_calls"] 
+        for s in execution_plan 
+        if s["status"] == "run"
+    )
+    total_cost = sum(
+        s["estimated_cost"] 
+        for s in execution_plan 
+        if s["status"] == "run"
+    )
+    
+    # Apply variance for range estimates
+    cost_min = total_cost * 0.8
+    cost_max = total_cost * 1.2
+    
+    # Estimate duration (rough: 2-5 papers/minute)
+    papers_per_minute = 3.5
+    file_count = len(files) if files else 1
+    duration_minutes = file_count / papers_per_minute
+    duration_min = int(duration_minutes * 0.7)
+    duration_max = int(duration_minutes * 1.3)
+    
+    # Ensure minimum duration and that max >= min
+    if duration_min < 1:
+        duration_min = 1
+    if duration_max < 1:
+        duration_max = 1
+    if duration_max < duration_min:
+        duration_max = duration_min
+    
+    return {
+        "api_calls": total_calls,
+        "cost": round(total_cost, 2),
+        "cost_min": round(cost_min, 2),
+        "cost_max": round(cost_max, 2),
+        "duration_minutes": round(duration_minutes, 1),
+        "duration_min": duration_min,
+        "duration_max": duration_max
+    }
+
+
+def detect_dry_run_warnings(config: Dict, job_data: Dict, files: List[Dict]) -> List[str]:
+    """
+    Detect potential configuration issues for dry-run warnings.
+    
+    Args:
+        config: Job configuration dictionary
+        job_data: Job metadata dictionary
+        files: List of files to process
+        
+    Returns:
+        List of warning messages
+    """
+    warnings = []
+    
+    # Large dataset warning
+    if len(files) > 100:
+        warnings.append(
+            f"Large dataset ({len(files)} papers). Consider using pre-filter to reduce analysis scope."
+        )
+    
+    # Output directory warning
+    output_dir_path = config.get("output_dir_path") or config.get("output_dir")
+    if output_dir_path:
+        output_dir = Path(output_dir_path)
+        if output_dir.exists():
+            existing_results = list(output_dir.glob("*.csv")) + list(output_dir.glob("*.json"))
+            if existing_results and not config.get("force"):
+                warnings.append(
+                    f"Output directory contains {len(existing_results)} existing files. "
+                    "Use 'Force Re-analysis' to overwrite."
+                )
+    
+    # Resume without existing results
+    if config.get("resume_from_stage"):
+        output_dir_path = config.get("output_dir_path") or config.get("output_dir")
+        if output_dir_path:
+            output_dir = Path(output_dir_path)
+            if not output_dir.exists():
+                warnings.append(
+                    "Resume requested but output directory does not exist. Cannot resume."
+                )
+    
+    # Budget warning
+    budget = config.get("budget")
+    if budget:
+        # Estimate cost
+        execution_plan = build_execution_plan(config, job_data, files)
+        estimates = estimate_job_resources(execution_plan, files, config)
+        
+        if estimates["cost"] > budget:
+            warnings.append(
+                f"Estimated cost (${estimates['cost']:.2f}) exceeds budget (${budget:.2f})"
+            )
+    
+    # No files warning
+    if not files:
+        warnings.append(
+            "No files found for analysis. Please upload PDF files first."
+        )
+    
+    # Force without confirmation
+    if config.get("force") and not config.get("force_confirmed"):
+        warnings.append(
+            "Force re-analysis enabled but not confirmed. This will be blocked on execution."
+        )
+    
+    return warnings
+
+
+@app.post(
+    "/api/jobs/{job_id}/dry-run",
+    tags=["Analysis"],
+    summary="Preview analysis plan without execution",
+    responses={
+        200: {
+            "description": "Dry-run preview results",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Job not found",
+            "model": ErrorResponse
+        }
+    }
+)
+async def dry_run_job(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Perform dry-run: estimate costs and preview execution plan.
+    
+    No actual analysis performed. No API calls made. No charges incurred.
+    
+    This endpoint:
+    1. Loads job configuration and metadata
+    2. Builds execution plan showing stages and order
+    3. Estimates API calls, costs, and duration
+    4. Detects potential configuration issues
+    5. Lists files that will be processed
+    
+    **Use Cases:**
+    - Preview analysis before committing
+    - Validate configuration
+    - Estimate costs for budgeting
+    - Test setup without spending money
+    - See what stages will run (especially with resume)
+    
+    **CLI Equivalent:**
+    ```bash
+    python pipeline_orchestrator.py --dry-run
+    ```
+    
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Returns:**
+    - dry_run: Always True
+    - paper_count: Number of papers to process
+    - estimated_api_calls: Total API calls needed
+    - estimated_cost: Total estimated cost in USD
+    - cost_range: Min and max cost estimates
+    - estimated_duration_minutes: Expected duration
+    - duration_range: Min and max duration estimates
+    - execution_plan: List of stages with status and estimates
+    - configuration: Summary of job configuration
+    - files: List of files to process with cache status
+    - warnings: List of potential issues detected
+    """
+    verify_api_key(api_key)
+    
+    # Load job data
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    
+    # Get job configuration (may not be set yet)
+    config = job_data.get("config", {})
+    
+    # Get file list
+    files = get_job_files_for_dry_run(job_id, job_data)
+    
+    # Build execution plan
+    execution_plan = build_execution_plan(config, job_data, files)
+    
+    # Estimate costs and duration
+    estimates = estimate_job_resources(execution_plan, files, config)
+    
+    # Detect potential issues
+    warnings = detect_dry_run_warnings(config, job_data, files)
+    
+    # Build file list with cache status
+    file_list = []
+    for f in files:
+        cached = check_if_cached(f["path"])
+        file_list.append({
+            "filename": f["filename"],
+            "type": f["type"].upper(),
+            "size_bytes": f["size"],
+            "cached": cached
+        })
+    
+    # Build configuration summary
+    configuration_summary = {
+        "mode": config.get("run_mode", "ONCE"),
+        "output_dir": config.get("output_dir", "auto"),
+        "pre_filter": config.get("pre_filter") or "default",
+        "resume_from_stage": config.get("resume_from_stage"),
+        "force_reanalysis": config.get("force", False),
+        "cache_enabled": not config.get("clear_cache", False),
+        "budget": config.get("budget"),
+        "relevance_threshold": config.get("relevance_threshold", 0.7),
+        "experimental": config.get("experimental", False)
+    }
+    
+    return {
+        "job_id": job_id,
+        "dry_run": True,
+        "paper_count": len(files),
+        "estimated_api_calls": estimates["api_calls"],
+        "estimated_cost": estimates["cost"],
+        "cost_range": {
+            "min": estimates["cost_min"],
+            "max": estimates["cost_max"]
+        },
+        "estimated_duration_minutes": estimates["duration_minutes"],
+        "duration_range": {
+            "min": estimates["duration_min"],
+            "max": estimates["duration_max"]
+        },
+        "execution_plan": execution_plan,
+        "configuration": configuration_summary,
+        "files": file_list,
+        "warnings": warnings
     }
 
 
