@@ -9,6 +9,7 @@ Provides RESTful API and WebSocket endpoints for:
 """
 
 import asyncio
+import hashlib
 import io
 import json
 import logging
@@ -19,7 +20,8 @@ import time
 import traceback
 import uuid
 import zipfile
-from datetime import datetime
+import csv
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Dict, List, Optional
 
@@ -255,6 +257,12 @@ class JobConfig(BaseModel):
         output_dir_path: Custom output directory path (required if output_dir_mode is "custom" or "existing")
         overwrite_existing: Whether to overwrite existing results (default: False)
         
+        Input method options (PARITY-W3-2):
+        input_method: Input method - "upload" or "directory" (default: "upload")
+        data_dir: Server directory path for directory input method
+        scan_recursive: Whether to scan subdirectories (default: True)
+        follow_symlinks: Whether to follow symbolic links (default: False)
+        
         Advanced options:
         dry_run: Validate configuration without making API calls (default: False)
         force: Force re-analysis even if recent results exist (default: False)
@@ -272,6 +280,12 @@ class JobConfig(BaseModel):
     output_dir_mode: str = "auto"  # "auto" | "custom" | "existing"
     output_dir_path: Optional[str] = None
     overwrite_existing: bool = False
+    
+    # Input method options (PARITY-W3-2)
+    input_method: str = "upload"  # "upload" or "directory"
+    data_dir: Optional[str] = None  # Server directory path for directory input
+    scan_recursive: bool = True
+    follow_symlinks: bool = False
     
     # Advanced options
     dry_run: bool = False
@@ -297,6 +311,10 @@ class JobConfig(BaseModel):
                 "output_dir_mode": "auto",
                 "output_dir_path": None,
                 "overwrite_existing": False,
+                "input_method": "upload",
+                "data_dir": None,
+                "scan_recursive": True,
+                "follow_symlinks": False,
                 "dry_run": False,
                 "force": False,
                 "clear_cache": False,
@@ -443,6 +461,69 @@ class CostEstimateRequest(BaseModel):
         }
 
 
+class DirectoryScanRequest(BaseModel):
+    """
+    Request to scan a server directory for paper files (PDFs/CSVs).
+    
+    This enables users to point to existing papers on the server without uploading.
+    
+    Args:
+        path: Absolute path to directory containing papers
+        recursive: Whether to scan subdirectories (default: True)
+        follow_symlinks: Whether to follow symbolic links (default: False)
+    """
+    path: str
+    recursive: bool = True
+    follow_symlinks: bool = False
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "path": "/workspaces/Literature-Review/data/papers",
+                "recursive": True,
+                "follow_symlinks": False
+            }
+        }
+
+
+class DirectoryScanResponse(BaseModel):
+    """Response from directory scan operation."""
+    path: str
+    pdf_count: int
+    csv_count: int
+    total_files: int
+    total_size_bytes: int
+    subdirectory_count: int
+    recursive: bool
+    follow_symlinks: bool
+    files: List[Dict[str, Any]]
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "path": "/workspaces/Literature-Review/data/papers",
+                "pdf_count": 10,
+                "csv_count": 2,
+                "total_files": 12,
+                "total_size_bytes": 52428800,
+                "subdirectory_count": 3,
+                "recursive": True,
+                "follow_symlinks": False,
+                "files": [
+                    {
+                        "filename": "paper1.pdf",
+                        "relative_path": "paper1.pdf",
+                        "absolute_path": "/workspaces/Literature-Review/data/papers/paper1.pdf",
+                        "type": "pdf",
+                        "size_bytes": 1024000,
+                        "modified": "2024-01-15T10:30:00",
+                        "created": "2024-01-10T08:00:00"
+                    }
+                ]
+            }
+        }
+
+
 class PipelineConfig(BaseModel):
     """
     Pipeline configuration schema matching pipeline_config.json.
@@ -515,6 +596,71 @@ def save_job(job_id: str, job_data: dict):
     job_file = get_job_file(job_id)
     with open(job_file, 'w') as f:
         json.dump(job_data, f, indent=2)
+
+
+# Allowed directory prefixes for security (directory input feature)
+# Users can only scan directories within these paths
+ALLOWED_DIRECTORY_PREFIXES = [
+    Path.home(),  # User's home directory
+    Path("/workspaces"),  # GitHub Codespaces workspaces
+    Path("/data"),  # Shared data directory
+    Path("/mnt"),  # Mounted drives
+    Path("/tmp"),  # Temporary directory
+]
+
+
+def get_allowed_directory_prefixes() -> List[Path]:
+    """
+    Get allowed directory prefixes, including the BASE_DIR.
+    
+    Returns:
+        List of Path objects representing allowed directory prefixes
+    """
+    prefixes = list(ALLOWED_DIRECTORY_PREFIXES)
+    # Always allow BASE_DIR (project root)
+    prefixes.append(BASE_DIR)
+    return prefixes
+
+
+def is_path_allowed(path: Path) -> bool:
+    """
+    Check if a path is within allowed directories.
+    
+    Security check to prevent path traversal attacks.
+    
+    Args:
+        path: Resolved absolute path to check
+        
+    Returns:
+        True if path is within an allowed prefix
+    """
+    allowed_prefixes = get_allowed_directory_prefixes()
+    path_str = str(path)
+    return any(path_str.startswith(str(prefix)) for prefix in allowed_prefixes)
+
+
+def extract_file_metadata(file_path: Path, base_dir: Path) -> Dict[str, Any]:
+    """
+    Extract metadata from a file for directory scan results.
+    
+    Args:
+        file_path: Absolute path to the file
+        base_dir: Base directory for computing relative path
+        
+    Returns:
+        Dictionary with file metadata
+    """
+    stat = file_path.stat()
+    
+    return {
+        "filename": file_path.name,
+        "relative_path": str(file_path.relative_to(base_dir)),
+        "absolute_path": str(file_path),
+        "type": file_path.suffix.lstrip('.').lower(),
+        "size_bytes": stat.st_size,
+        "modified": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+        "created": datetime.fromtimestamp(stat.st_ctime).isoformat()
+    }
 
 
 def find_config_overrides(
@@ -1249,6 +1395,175 @@ async def confirm_upload(
         )
 
 @app.post(
+    "/api/directory/scan",
+    response_model=DirectoryScanResponse,
+    tags=["Papers"],
+    summary="Scan server directory for paper files",
+    responses={
+        200: {
+            "description": "Directory scanned successfully",
+        },
+        400: {
+            "description": "Invalid path (not a directory or invalid format)",
+            "model": ErrorResponse
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        403: {
+            "description": "Access denied (path traversal or restricted directory)",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Directory not found or no papers found",
+            "model": ErrorResponse
+        }
+    }
+)
+async def scan_directory(
+    request: DirectoryScanRequest,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Scan a server directory for PDF and CSV paper files.
+    
+    This endpoint enables users to point to existing papers on the server
+    instead of uploading files. The directory is scanned for PDF and CSV files,
+    with optional recursive scanning and symlink following.
+    
+    **Security:**
+    - Only directories within allowed paths can be scanned
+    - Path traversal attempts are rejected
+    - Requires valid API key
+    
+    **Use Cases:**
+    - Papers already exist on the server
+    - Large number of files (50+)
+    - Papers on mounted drives or network shares
+    - Avoiding re-upload of existing files
+    
+    **CLI Equivalent:**
+    This maps to the CLI's `--data-dir` flag.
+    
+    **Request Body:**
+    - path: Absolute path to directory (e.g., "/workspaces/Literature-Review/data/")
+    - recursive: Scan subdirectories (default: true)
+    - follow_symlinks: Follow symbolic links (default: false)
+    
+    **Returns:**
+    - File counts (PDF/CSV)
+    - Total size in bytes
+    - Subdirectory count
+    - List of discovered files with metadata
+    """
+    verify_api_key(api_key)
+    
+    # Validate and resolve path
+    try:
+        directory = Path(request.path).expanduser().resolve()
+    except Exception as e:
+        raise HTTPException(400, f"Invalid path format: {str(e)}")
+    
+    # Security: Must be absolute path (cross-platform)
+    # Use os.path.isabs for proper cross-platform absolute path detection
+    # Also allow ~ expansion (home directory)
+    if not (os.path.isabs(request.path) or request.path.startswith('~')):
+        raise HTTPException(
+            400,
+            "Path must be absolute (e.g., /path/to/directory or C:\\path)"
+        )
+    
+    # Security: Prevent path traversal - check if resolved path is within allowed directories
+    if not is_path_allowed(directory):
+        allowed_list = ", ".join(str(p) for p in get_allowed_directory_prefixes())
+        raise HTTPException(
+            403,
+            f"Access denied. Directory must be within allowed locations: {allowed_list}"
+        )
+    
+    # Check directory exists
+    if not directory.exists():
+        raise HTTPException(404, f"Directory not found: {directory}")
+    
+    # Check is directory (not a file)
+    if not directory.is_dir():
+        raise HTTPException(400, f"Path is not a directory: {directory}")
+    
+    # Check read permissions
+    if not os.access(directory, os.R_OK):
+        raise HTTPException(403, f"No read permission for directory: {directory}")
+    
+    # Scan for files
+    files: List[Dict[str, Any]] = []
+    pdf_count = 0
+    csv_count = 0
+    total_size = 0
+    subdirs: set = set()
+    
+    def process_file(file_path: Path, base_dir: Path) -> None:
+        """Process a file if it matches PDF or CSV extension (case-insensitive)."""
+        nonlocal pdf_count, csv_count, total_size
+        
+        if not file_path.is_file():
+            return
+        
+        # Check symlinks
+        if file_path.is_symlink() and not request.follow_symlinks:
+            return
+        
+        suffix = file_path.suffix.lower()
+        if suffix == '.pdf':
+            files.append(extract_file_metadata(file_path, base_dir))
+            pdf_count += 1
+            total_size += file_path.stat().st_size
+            if file_path.parent != base_dir:
+                subdirs.add(file_path.parent)
+        elif suffix == '.csv':
+            files.append(extract_file_metadata(file_path, base_dir))
+            csv_count += 1
+            total_size += file_path.stat().st_size
+            if file_path.parent != base_dir:
+                subdirs.add(file_path.parent)
+    
+    try:
+        if request.recursive:
+            # Recursive scan using single directory walk
+            for file_path in directory.rglob('*'):
+                process_file(file_path, directory)
+        else:
+            # Non-recursive: only top level
+            for item in directory.iterdir():
+                process_file(item, directory)
+        
+    except PermissionError as e:
+        raise HTTPException(403, f"Permission denied while scanning: {str(e)}")
+    except Exception as e:
+        raise HTTPException(500, f"Error scanning directory: {str(e)}")
+    
+    # Validate found files
+    if pdf_count == 0 and csv_count == 0:
+        raise HTTPException(
+            404,
+            f"No PDF or CSV files found in directory: {directory}"
+        )
+    
+    # Sort files by relative path
+    files.sort(key=lambda f: f["relative_path"])
+    
+    return DirectoryScanResponse(
+        path=str(directory),
+        pdf_count=pdf_count,
+        csv_count=csv_count,
+        total_files=pdf_count + csv_count,
+        total_size_bytes=total_size,
+        subdirectory_count=len(subdirs),
+        recursive=request.recursive,
+        follow_symlinks=request.follow_symlinks,
+        files=files
+    )
+
+@app.post(
     "/api/upload/analyze-directory",
     tags=["Papers"],
     summary="Analyze directory state for fresh analysis detection",
@@ -1637,6 +1952,39 @@ async def configure_job(
     # Fresh analysis is triggered for: not_exist, empty, or has_csv states
     fresh_analysis = dir_state["state"] in ["not_exist", "empty", "has_csv"]
     
+    # Handle directory input method (PARITY-W3-2)
+    if config.input_method == "directory":
+        if not config.data_dir:
+            raise HTTPException(
+                status_code=400,
+                detail="data_dir is required when input_method is 'directory'"
+            )
+        
+        # Validate the data directory using the scan endpoint logic
+        try:
+            scan_request = DirectoryScanRequest(
+                path=config.data_dir,
+                recursive=config.scan_recursive,
+                follow_symlinks=config.follow_symlinks
+            )
+            scan_result = await scan_directory(scan_request, api_key)
+            
+            # Store directory input metadata in job data
+            job_data["input_method"] = "directory"
+            job_data["data_dir"] = scan_result.path
+            job_data["file_count"] = scan_result.total_files
+            job_data["pdf_count"] = scan_result.pdf_count
+            job_data["csv_count"] = scan_result.csv_count
+            job_data["scan_recursive"] = config.scan_recursive
+            job_data["follow_symlinks"] = config.follow_symlinks
+            
+        except HTTPException as e:
+            # Re-raise with more context
+            raise HTTPException(
+                status_code=e.status_code,
+                detail=f"Directory validation failed: {e.detail}"
+            )
+    
     # Update job configuration with resolved output directory
     config_dict = config.dict()
     config_dict["output_dir"] = str(output_dir)
@@ -1650,7 +1998,424 @@ async def configure_job(
         "config": config_dict,
         "output_dir": str(output_dir),
         "fresh_analysis": fresh_analysis,
-        "directory_state": dir_state
+        "directory_state": dir_state,
+        "input_method": job_data.get("input_method", "upload"),
+        "data_dir": job_data.get("data_dir"),
+        "file_count": job_data.get("file_count")
+    }
+
+
+# ============================================================================
+# DRY-RUN MODE HELPER FUNCTIONS (PARITY-W3-3)
+# ============================================================================
+
+def get_job_files_for_dry_run(job_id: str, job_data: Dict) -> List[Dict]:
+    """
+    Get list of files for job dry-run analysis.
+    
+    Args:
+        job_id: Job identifier
+        job_data: Job metadata dictionary
+        
+    Returns:
+        List of file dictionaries with filename, path, type, and size
+    """
+    files = []
+    
+    # Get files from job upload directory
+    job_upload_dir = UPLOADS_DIR / job_id
+    if job_upload_dir.exists():
+        for file_path in job_upload_dir.iterdir():
+            if file_path.suffix.lower() in ['.pdf', '.csv']:
+                files.append({
+                    "filename": file_path.name,
+                    "path": str(file_path),
+                    "type": file_path.suffix.lstrip('.').lower(),
+                    "size": file_path.stat().st_size
+                })
+    
+    # Also check if files list is in job_data
+    if "files" in job_data and not files:
+        for f in job_data["files"]:
+            path = Path(f.get("path", ""))
+            if path.exists():
+                files.append({
+                    "filename": f.get("original_name", path.name),
+                    "path": str(path),
+                    "type": path.suffix.lstrip('.').lower(),
+                    "size": path.stat().st_size if path.exists() else 0
+                })
+    
+    return files
+
+
+def check_if_cached(file_path: str) -> bool:
+    """
+    Check if file results are cached.
+    
+    Args:
+        file_path: Path to the file
+        
+    Returns:
+        True if cached results exist, False otherwise
+    """
+    # Check common cache directories
+    cache_dirs = [
+        BASE_DIR / "gap_extraction_cache",
+        BASE_DIR / "analysis_cache",
+        BASE_DIR / "cache"
+    ]
+    
+    for cache_dir in cache_dirs:
+        if not cache_dir.exists():
+            continue
+        
+        try:
+            # Check if any cache file corresponds to this file
+            # Use exact stem match to avoid false positives
+            file_name = Path(file_path).stem.lower()
+            for cache_file in cache_dir.glob("*.json"):
+                cache_name = cache_file.stem.lower()
+                # Check for exact match or common cache naming patterns
+                if (cache_name == file_name or
+                    cache_name.startswith(f"{file_name}_") or
+                    cache_name == f"{file_name}_cache"):
+                    return True
+        except Exception:
+            continue
+    
+    return False
+
+
+def build_execution_plan(config: Dict, job_data: Dict, files: List[Dict]) -> List[Dict]:
+    """
+    Build execution plan showing stages and their status.
+    
+    Args:
+        config: Job configuration dictionary
+        job_data: Job metadata dictionary
+        files: List of files to process
+        
+    Returns:
+        List of stage dictionaries with name, description, status, and estimates
+    """
+    stages = [
+        {
+            "name": "gap_analysis",
+            "display": "Gap Analysis",
+            "description": "Extract research gaps from papers"
+        },
+        {
+            "name": "relevance_scoring",
+            "display": "Relevance Scoring",
+            "description": "Score gaps by relevance to query"
+        },
+        {
+            "name": "deep_review",
+            "display": "Deep Review",
+            "description": "Detailed analysis of top gaps"
+        },
+        {
+            "name": "visualization",
+            "display": "Visualization",
+            "description": "Generate interactive HTML reports"
+        }
+    ]
+    
+    plan = []
+    resume_from = config.get("resume_from_stage")
+    found_resume_stage = False
+    
+    for stage in stages:
+        # Determine if stage will run or be skipped
+        status = "run"
+        estimated_calls = 0
+        estimated_cost = 0.0
+        
+        if resume_from and not found_resume_stage:
+            if stage["name"] == resume_from:
+                found_resume_stage = True
+                status = "run"
+            else:
+                status = "skip"
+        
+        # Calculate estimates only for running stages
+        if status == "run":
+            file_count = len(files)
+            if stage["name"] == "gap_analysis":
+                estimated_calls = file_count * 2  # ~2 calls per paper
+                estimated_cost = estimated_calls * 0.005  # ~$0.005 per call
+            elif stage["name"] == "relevance_scoring":
+                estimated_calls = file_count * 1
+                estimated_cost = estimated_calls * 0.003
+            elif stage["name"] == "deep_review":
+                estimated_calls = min(file_count, 10) * 3  # Top 10 papers
+                estimated_cost = estimated_calls * 0.01
+            elif stage["name"] == "visualization":
+                estimated_calls = 0  # No API calls
+                estimated_cost = 0.0
+        
+        plan.append({
+            "stage": stage["display"],
+            "stage_name": stage["name"],
+            "description": stage["description"],
+            "status": status,
+            "estimated_api_calls": estimated_calls,
+            "estimated_cost": estimated_cost
+        })
+    
+    return plan
+
+
+def estimate_job_resources(execution_plan: List[Dict], files: List[Dict], config: Dict) -> Dict:
+    """
+    Estimate total resources needed for job execution.
+    
+    Args:
+        execution_plan: List of stage dictionaries
+        files: List of files to process
+        config: Job configuration dictionary
+        
+    Returns:
+        Dictionary with api_calls, cost, duration estimates and ranges
+    """
+    total_calls = sum(
+        s["estimated_api_calls"] 
+        for s in execution_plan 
+        if s["status"] == "run"
+    )
+    total_cost = sum(
+        s["estimated_cost"] 
+        for s in execution_plan 
+        if s["status"] == "run"
+    )
+    
+    # Apply variance for range estimates
+    cost_min = total_cost * 0.8
+    cost_max = total_cost * 1.2
+    
+    # Estimate duration (rough: 2-5 papers/minute)
+    papers_per_minute = 3.5
+    file_count = len(files) if files else 1
+    duration_minutes = file_count / papers_per_minute
+    duration_min = int(duration_minutes * 0.7)
+    duration_max = int(duration_minutes * 1.3)
+    
+    # Ensure minimum duration and that max >= min
+    if duration_min < 1:
+        duration_min = 1
+    if duration_max < 1:
+        duration_max = 1
+    if duration_max < duration_min:
+        duration_max = duration_min
+    
+    return {
+        "api_calls": total_calls,
+        "cost": round(total_cost, 2),
+        "cost_min": round(cost_min, 2),
+        "cost_max": round(cost_max, 2),
+        "duration_minutes": round(duration_minutes, 1),
+        "duration_min": duration_min,
+        "duration_max": duration_max
+    }
+
+
+def detect_dry_run_warnings(config: Dict, job_data: Dict, files: List[Dict]) -> List[str]:
+    """
+    Detect potential configuration issues for dry-run warnings.
+    
+    Args:
+        config: Job configuration dictionary
+        job_data: Job metadata dictionary
+        files: List of files to process
+        
+    Returns:
+        List of warning messages
+    """
+    warnings = []
+    
+    # Large dataset warning
+    if len(files) > 100:
+        warnings.append(
+            f"Large dataset ({len(files)} papers). Consider using pre-filter to reduce analysis scope."
+        )
+    
+    # Output directory warning
+    output_dir_path = config.get("output_dir_path") or config.get("output_dir")
+    if output_dir_path:
+        output_dir = Path(output_dir_path)
+        if output_dir.exists():
+            existing_results = list(output_dir.glob("*.csv")) + list(output_dir.glob("*.json"))
+            if existing_results and not config.get("force"):
+                warnings.append(
+                    f"Output directory contains {len(existing_results)} existing files. "
+                    "Use 'Force Re-analysis' to overwrite."
+                )
+    
+    # Resume without existing results
+    if config.get("resume_from_stage"):
+        output_dir_path = config.get("output_dir_path") or config.get("output_dir")
+        if output_dir_path:
+            output_dir = Path(output_dir_path)
+            if not output_dir.exists():
+                warnings.append(
+                    "Resume requested but output directory does not exist. Cannot resume."
+                )
+    
+    # Budget warning
+    budget = config.get("budget")
+    if budget:
+        # Estimate cost
+        execution_plan = build_execution_plan(config, job_data, files)
+        estimates = estimate_job_resources(execution_plan, files, config)
+        
+        if estimates["cost"] > budget:
+            warnings.append(
+                f"Estimated cost (${estimates['cost']:.2f}) exceeds budget (${budget:.2f})"
+            )
+    
+    # No files warning
+    if not files:
+        warnings.append(
+            "No files found for analysis. Please upload PDF files first."
+        )
+    
+    # Force without confirmation
+    if config.get("force") and not config.get("force_confirmed"):
+        warnings.append(
+            "Force re-analysis enabled but not confirmed. This will be blocked on execution."
+        )
+    
+    return warnings
+
+
+@app.post(
+    "/api/jobs/{job_id}/dry-run",
+    tags=["Analysis"],
+    summary="Preview analysis plan without execution",
+    responses={
+        200: {
+            "description": "Dry-run preview results",
+        },
+        401: {
+            "description": "Invalid or missing API key",
+            "model": ErrorResponse
+        },
+        404: {
+            "description": "Job not found",
+            "model": ErrorResponse
+        }
+    }
+)
+async def dry_run_job(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Perform dry-run: estimate costs and preview execution plan.
+    
+    No actual analysis performed. No API calls made. No charges incurred.
+    
+    This endpoint:
+    1. Loads job configuration and metadata
+    2. Builds execution plan showing stages and order
+    3. Estimates API calls, costs, and duration
+    4. Detects potential configuration issues
+    5. Lists files that will be processed
+    
+    **Use Cases:**
+    - Preview analysis before committing
+    - Validate configuration
+    - Estimate costs for budgeting
+    - Test setup without spending money
+    - See what stages will run (especially with resume)
+    
+    **CLI Equivalent:**
+    ```bash
+    python pipeline_orchestrator.py --dry-run
+    ```
+    
+    **Path Parameters:**
+    - job_id: Unique job identifier
+    
+    **Returns:**
+    - dry_run: Always True
+    - paper_count: Number of papers to process
+    - estimated_api_calls: Total API calls needed
+    - estimated_cost: Total estimated cost in USD
+    - cost_range: Min and max cost estimates
+    - estimated_duration_minutes: Expected duration
+    - duration_range: Min and max duration estimates
+    - execution_plan: List of stages with status and estimates
+    - configuration: Summary of job configuration
+    - files: List of files to process with cache status
+    - warnings: List of potential issues detected
+    """
+    verify_api_key(api_key)
+    
+    # Load job data
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(status_code=404, detail=f"Job {job_id} not found")
+    
+    # Get job configuration (may not be set yet)
+    config = job_data.get("config", {})
+    
+    # Get file list
+    files = get_job_files_for_dry_run(job_id, job_data)
+    
+    # Build execution plan
+    execution_plan = build_execution_plan(config, job_data, files)
+    
+    # Estimate costs and duration
+    estimates = estimate_job_resources(execution_plan, files, config)
+    
+    # Detect potential issues
+    warnings = detect_dry_run_warnings(config, job_data, files)
+    
+    # Build file list with cache status
+    file_list = []
+    for f in files:
+        cached = check_if_cached(f["path"])
+        file_list.append({
+            "filename": f["filename"],
+            "type": f["type"].upper(),
+            "size_bytes": f["size"],
+            "cached": cached
+        })
+    
+    # Build configuration summary
+    configuration_summary = {
+        "mode": config.get("run_mode", "ONCE"),
+        "output_dir": config.get("output_dir", "auto"),
+        "pre_filter": config.get("pre_filter") or "default",
+        "resume_from_stage": config.get("resume_from_stage"),
+        "force_reanalysis": config.get("force", False),
+        "cache_enabled": not config.get("clear_cache", False),
+        "budget": config.get("budget"),
+        "relevance_threshold": config.get("relevance_threshold", 0.7),
+        "experimental": config.get("experimental", False)
+    }
+    
+    return {
+        "job_id": job_id,
+        "dry_run": True,
+        "paper_count": len(files),
+        "estimated_api_calls": estimates["api_calls"],
+        "estimated_cost": estimates["cost"],
+        "cost_range": {
+            "min": estimates["cost_min"],
+            "max": estimates["cost_max"]
+        },
+        "estimated_duration_minutes": estimates["duration_minutes"],
+        "duration_range": {
+            "min": estimates["duration_min"],
+            "max": estimates["duration_max"]
+        },
+        "execution_plan": execution_plan,
+        "configuration": configuration_summary,
+        "files": file_list,
+        "warnings": warnings
     }
 
 
@@ -2980,6 +3745,390 @@ async def get_cost_summary(
             "total_cost": 0,
             "message": f"Error reading cost data: {str(e)}"
         }
+
+
+# ============================================================================
+# Resource Monitoring Endpoint (PARITY-W3-1)
+# ============================================================================
+
+def parse_cost_tracker_csv(job_dir: Path) -> Dict:
+    """
+    Parse cost tracker CSV for resource metrics.
+    
+    Args:
+        job_dir: Path to job directory
+    
+    Returns:
+        Dictionary with parsed cost metrics
+    """
+    cost_file = job_dir / "outputs" / "cost_reports" / "cost_tracker.csv"
+    
+    result = {
+        "total_api_calls": 0,
+        "total_cost": 0.0,
+        "cache_hits": 0,
+        "cache_misses": 0,
+        "cache_savings": 0.0,
+        "by_model": {},
+        "rows": []
+    }
+    
+    if not cost_file.exists():
+        return result
+    
+    try:
+        with open(cost_file, 'r') as f:
+            reader = csv.DictReader(f)
+            rows = list(reader)
+            result["rows"] = rows
+            
+            for row in rows:
+                result["total_api_calls"] += 1
+                cost = float(row.get("cost", 0.0) or 0.0)
+                result["total_cost"] += cost
+                
+                # Check cache hit
+                cache_hit = row.get("cache_hit", "").lower() == "true"
+                if cache_hit:
+                    result["cache_hits"] += 1
+                else:
+                    result["cache_misses"] += 1
+                
+                # Track by model
+                model = row.get("model", "unknown")
+                if model not in result["by_model"]:
+                    result["by_model"][model] = {"calls": 0, "cost": 0.0}
+                result["by_model"][model]["calls"] += 1
+                result["by_model"][model]["cost"] += cost
+        
+        # Estimate savings (cached calls would have cost average)
+        if result["cache_misses"] > 0:
+            avg_cost = result["total_cost"] / result["cache_misses"]
+            result["cache_savings"] = result["cache_hits"] * avg_cost
+        
+    except Exception as e:
+        logger.warning(f"Failed to parse cost tracker CSV: {e}")
+    
+    return result
+
+
+def get_stage_metrics(job_dir: Path, stage_name: str, cost_data: Dict) -> Dict:
+    """
+    Get metrics for specific pipeline stage.
+    
+    Args:
+        job_dir: Path to job directory
+        stage_name: Name of the stage
+        cost_data: Parsed cost tracker data
+    
+    Returns:
+        Dictionary with stage metrics
+    """
+    # Check for stage marker files or completion indicators
+    stage_markers = [
+        job_dir / f".{stage_name}_complete",
+        job_dir / "outputs" / f"{stage_name}_complete.marker",
+    ]
+    
+    # Check orchestrator state for stage status
+    state_file = job_dir / "outputs" / "orchestrator_state.json"
+    stage_status = "Pending"
+    
+    if state_file.exists():
+        try:
+            with open(state_file, 'r') as f:
+                state = json.load(f)
+                stages_state = state.get("stages", {})
+                if stage_name in stages_state:
+                    stage_info = stages_state[stage_name]
+                    if isinstance(stage_info, dict):
+                        stage_status = stage_info.get("status", "Pending")
+                    else:
+                        stage_status = "Completed" if stage_info else "Pending"
+        except Exception:
+            pass
+    
+    # Check marker files as fallback
+    for marker in stage_markers:
+        if marker.exists():
+            stage_status = "Completed"
+            break
+    
+    if stage_status == "Pending":
+        return {"status": "Pending"}
+    
+    # Parse stage-specific cost data
+    stage_costs = [
+        row for row in cost_data.get("rows", [])
+        if stage_name.lower() in (row.get("stage", "") or "").lower()
+    ]
+    
+    stage_cache_hits = sum(1 for row in stage_costs 
+                          if row.get("cache_hit", "").lower() == "true")
+    
+    return {
+        "status": stage_status,
+        "api_calls": len(stage_costs),
+        "cost": sum(float(row.get("cost", 0) or 0) for row in stage_costs),
+        "cache_hits": stage_cache_hits,
+        "duration": 0.0  # Could be calculated from timestamps if available
+    }
+
+
+def get_resource_timeline(job_dir: Path, points: int = 20) -> List[Dict]:
+    """
+    Get timeline of resource usage over job execution.
+    
+    Args:
+        job_dir: Path to job directory
+        points: Number of data points to return
+    
+    Returns:
+        List of data points for charting
+    """
+    cost_file = job_dir / "outputs" / "cost_reports" / "cost_tracker.csv"
+    timeline = []
+    
+    if cost_file.exists():
+        try:
+            with open(cost_file, 'r') as f:
+                reader = csv.DictReader(f)
+                rows = list(reader)
+                
+                if rows:
+                    # Group by timestamp intervals
+                    timestamps = []
+                    for row in rows:
+                        ts = row.get("timestamp")
+                        if ts:
+                            try:
+                                timestamps.append(datetime.fromisoformat(ts))
+                            except (ValueError, TypeError):
+                                pass
+                    
+                    if timestamps:
+                        # Calculate rates over time intervals
+                        min_ts = min(timestamps)
+                        max_ts = max(timestamps)
+                        duration = (max_ts - min_ts).total_seconds()
+                        
+                        if duration > 0:
+                            interval = max(duration / points, 60)  # Ensure minimum 1-minute interval
+                            
+                            for i in range(points):
+                                start = min_ts + timedelta(seconds=i * interval)
+                                end = min_ts + timedelta(seconds=(i + 1) * interval)
+                                
+                                # Count API calls and cost in this interval
+                                interval_rows = []
+                                for row in rows:
+                                    ts_str = row.get("timestamp")
+                                    if not ts_str:
+                                        continue
+                                    try:
+                                        ts = datetime.fromisoformat(ts_str)
+                                        if start <= ts < end:
+                                            interval_rows.append(row)
+                                    except (ValueError, TypeError):
+                                        continue
+                                
+                                api_rate = len(interval_rows) * 60 / interval  # per minute
+                                cost_rate = sum(float(row.get("cost", 0) or 0) 
+                                               for row in interval_rows) * 60 / interval
+                                
+                                timeline.append({
+                                    "timestamp": start.isoformat(),
+                                    "api_rate": round(api_rate, 2),
+                                    "cost_rate": round(cost_rate, 4)
+                                })
+                        
+        except Exception as e:
+            logger.warning(f"Failed to generate resource timeline: {e}")
+    
+    # Return simulated data if no real data available
+    if not timeline:
+        now = datetime.now()
+        for i in range(points):
+            timeline.append({
+                "timestamp": (now - timedelta(minutes=points-i)).isoformat(),
+                "api_rate": 0,
+                "cost_rate": 0
+            })
+    
+    return timeline
+
+
+def format_eta_duration(minutes: float) -> str:
+    """
+    Format ETA in human-readable form.
+    
+    Args:
+        minutes: Estimated time remaining in minutes
+    
+    Returns:
+        Human-readable duration string
+    """
+    if minutes < 0:
+        return "Unknown"
+    elif minutes < 1:
+        return f"{int(minutes * 60)}s"
+    elif minutes < 60:
+        return f"{int(minutes)}m"
+    else:
+        hours = int(minutes / 60)
+        mins = int(minutes % 60)
+        return f"{hours}h {mins}m"
+
+
+@app.get(
+    "/api/jobs/{job_id}/resources",
+    tags=["Monitoring"],
+    summary="Get real-time resource metrics",
+    responses={
+        200: {"description": "Resource metrics for running job"},
+        404: {"description": "Job not found", "model": ErrorResponse}
+    }
+)
+async def get_job_resources(
+    job_id: str,
+    api_key: str = Header(None, alias="X-API-KEY", description="API authentication key")
+):
+    """
+    Get real-time resource consumption metrics for a job.
+    
+    Returns API usage, costs, cache performance, and processing rates.
+    This endpoint is designed for polling during job execution to provide
+    real-time visibility into resource consumption.
+    
+    **Response includes:**
+    - api_calls: Total API calls and budget usage
+    - cost: Total cost, budget, and cost per paper
+    - cache: Cache hits/misses and savings estimate
+    - processing: Rate (papers/minute), ETA, elapsed time
+    - progress: Papers processed, current stage, timestamps
+    - stages: Per-stage metrics breakdown
+    - timeline: Time series data for charting
+    
+    **Use Cases:**
+    - Real-time cost monitoring
+    - Processing progress tracking
+    - Cache effectiveness analysis
+    - Time estimation for completion
+    
+    **Refresh Rate:**
+    - Recommended: Poll every 5 seconds for running jobs
+    - Dashboard auto-refreshes at 5-second intervals
+    """
+    verify_api_key(api_key)
+    
+    job_dir = JOBS_DIR / job_id
+    if not job_dir.exists():
+        # Check if job exists in job files
+        job_file = JOBS_DIR / f"{job_id}.json"
+        if not job_file.exists():
+            raise HTTPException(404, f"Job {job_id} not found")
+        job_dir = JOBS_DIR / job_id
+        job_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Load job metadata
+    job_data = load_job(job_id)
+    if not job_data:
+        raise HTTPException(404, f"Job {job_id} not found")
+    
+    # Parse cost tracker
+    cost_data = parse_cost_tracker_csv(job_dir)
+    
+    # Load orchestrator state
+    state_file = job_dir / "outputs" / "orchestrator_state.json"
+    state = {}
+    if state_file.exists():
+        try:
+            with open(state_file, 'r') as f:
+                state = json.load(f)
+        except Exception:
+            pass
+    
+    # Calculate timing metrics
+    started_at = job_data.get("started_at")
+    now = datetime.now()
+    
+    if started_at:
+        try:
+            # Parse start_time, handling optional timezone
+            start_time = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+            # Convert to timezone-naive for consistent comparison
+            if start_time.tzinfo is not None:
+                start_time = start_time.replace(tzinfo=None)
+        except (ValueError, TypeError):
+            start_time = now
+    else:
+        start_time = now
+    
+    elapsed = max(0, (now - start_time).total_seconds())
+    
+    # Get paper counts
+    papers_processed = state.get("papers_processed", 0)
+    total_papers = state.get("total_papers", 0)
+    
+    # Try to get total papers from job data if not in state
+    if total_papers == 0:
+        if "files" in job_data:
+            total_papers = len(job_data.get("files", []))
+        elif "file_count" in job_data:
+            total_papers = job_data.get("file_count", 0)
+        elif "paper_count" in job_data:
+            total_papers = job_data.get("paper_count", 0)
+    
+    # Calculate processing rate and ETA
+    processing_rate = papers_processed / (elapsed / 60) if elapsed > 0 else 0
+    remaining_papers = max(0, total_papers - papers_processed)
+    eta_minutes = remaining_papers / processing_rate if processing_rate > 0 else 0
+    
+    # Get budget from job config
+    config = job_data.get("config", {})
+    api_budget = config.get("api_budget")
+    cost_budget = config.get("budget", 100.0)
+    
+    return {
+        "api_calls": {
+            "total": cost_data.get("total_api_calls", 0),
+            "budget": api_budget,
+            "remaining": (api_budget - cost_data.get("total_api_calls", 0)) if api_budget else None
+        },
+        "cost": {
+            "total": round(cost_data.get("total_cost", 0.0), 4),
+            "budget": cost_budget,
+            "remaining": round(cost_budget - cost_data.get("total_cost", 0.0), 4) if cost_budget else None,
+            "by_model": cost_data.get("by_model", {})
+        },
+        "cache": {
+            "hits": cost_data.get("cache_hits", 0),
+            "misses": cost_data.get("cache_misses", 0),
+            "total": cost_data.get("cache_hits", 0) + cost_data.get("cache_misses", 0),
+            "savings": round(cost_data.get("cache_savings", 0.0), 4)
+        },
+        "processing": {
+            "rate": round(processing_rate, 2),
+            "elapsed": round(elapsed, 0),
+            "eta": format_eta_duration(eta_minutes),
+            "eta_timestamp": (datetime.now() + timedelta(minutes=eta_minutes)).isoformat() if eta_minutes > 0 else None
+        },
+        "progress": {
+            "papers_processed": papers_processed,
+            "total_papers": total_papers,
+            "current_stage": state.get("current_stage", job_data.get("status", "Unknown")),
+            "stage_number": state.get("stage_number", 0),
+            "start_time": start_time.isoformat()
+        },
+        "stages": {
+            "gap_analysis": get_stage_metrics(job_dir, "gap_analysis", cost_data),
+            "relevance_scoring": get_stage_metrics(job_dir, "relevance_scoring", cost_data),
+            "deep_review": get_stage_metrics(job_dir, "deep_review", cost_data),
+            "visualization": get_stage_metrics(job_dir, "visualization", cost_data)
+        },
+        "timeline": get_resource_timeline(job_dir)
+    }
+
 
 @app.get(
     "/api/jobs/{job_id}/sufficiency-summary",
