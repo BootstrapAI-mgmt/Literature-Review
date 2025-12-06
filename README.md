@@ -554,6 +554,25 @@ python pipeline_orchestrator.py path/to/paper.pdf
 
 See [docs/OUTPUT_FILE_REFERENCE.md](docs/OUTPUT_FILE_REFERENCE.md) for complete file descriptions, sizes, and formats.
 
+## 📚 Documentation
+
+All project documentation is organized in the `docs/` folder:
+
+| Resource | Description |
+|----------|-------------|
+| [docs/README.md](docs/README.md) | Documentation index and quick reference |
+| [docs/USER_MANUAL.md](docs/USER_MANUAL.md) | Complete user manual |
+| [docs/DASHBOARD_GUIDE.md](docs/DASHBOARD_GUIDE.md) | Web dashboard guide |
+| [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | REST API documentation |
+| [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) | Testing procedures |
+| [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Deployment instructions |
+
+### Task Cards
+Implementation task cards are in `task-cards/` - see [task-cards/README.md](task-cards/README.md) for the index.
+
+### Historical Documentation
+Archived implementation summaries, smoke test reports, and PR reviews are in `docs/archive/`.
+
 ## Testing
 
 Run the test suite:
