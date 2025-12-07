@@ -4,6 +4,8 @@ This folder contains all project documentation organized by type and purpose.
 
 > 📊 **See [DOCUMENTATION_MATRIX.md](DOCUMENTATION_MATRIX.md)** for the complete dependency matrix with status tracking, ownership assignments, and cascade update logic.
 
+> 🔄 **See [N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md](N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md)** for the automated documentation update system blueprint using n8n agents.
+
 ## 📁 Folder Structure
 
 ### `/architecture/`

@@ -4,6 +4,10 @@
 
 ---
 
+> 🔄 **Related:** See [N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md](N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md) for the automated update chain system that uses this matrix.
+
+---
+
 ## 🗺️ Matrix Overview
 
 This matrix enables:
