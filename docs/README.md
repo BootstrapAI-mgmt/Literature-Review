@@ -2,6 +2,8 @@
 
 This folder contains all project documentation organized by type and purpose.
 
+> 📊 **See [DOCUMENTATION_MATRIX.md](DOCUMENTATION_MATRIX.md)** for the complete dependency matrix with status tracking, ownership assignments, and cascade update logic.
+
 ## 📁 Folder Structure
 
 ### `/architecture/`

@@ -1,0 +1,433 @@
+{
+  "version": "1.0",
+  "last_updated": "2025-12-06",
+  "description": "Machine-readable documentation dependency matrix",
+  
+  "status_codes": {
+    "current": "Up-to-date with latest code",
+    "review": "May need updates, should review against current code",
+    "complete": "Feature complete and stable",
+    "pending": "Planned but not implemented",
+    "archivable": "Historical, can be moved to archive",
+    "superseded": "Replaced by newer documentation"
+  },
+  
+  "priority_levels": {
+    "L1": "Core documentation - update first, cascades to L2-L3",
+    "L2": "Feature documentation - may cascade to L3",
+    "L3": "Reference/historical - terminal, no cascade"
+  },
+  
+  "owner_domains": {
+    "@core": ["README.md", "docs/USER_MANUAL.md"],
+    "@dashboard": ["docs/DASHBOARD_GUIDE.md", "docs/DASHBOARD_CLI_PARITY.md"],
+    "@evidence": ["docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md", "docs/EVIDENCE_TRIANGULATION_GUIDE.md", "docs/TEMPORAL_COHERENCE_GUIDE.md", "docs/EVIDENCE_EXTRACTION_ENHANCEMENTS.md", "docs/EVIDENCE_SCORING_DOCUMENTATION.md"],
+    "@incremental": ["docs/INCREMENTAL_REVIEW_USER_GUIDE.md", "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md", "docs/guides/RESUME_CONTROLS_USER_GUIDE.md"],
+    "@output": ["docs/OUTPUT_FILE_REFERENCE.md", "docs/OUTPUT_MANAGEMENT_STRATEGY.md"],
+    "@api": ["docs/API_DOCUMENTATION_README.md", "docs/API_DOCUMENTATION_SUMMARY.md", "docs/API_COST_TRACKER.md"],
+    "@testing": ["docs/TESTING_GUIDE.md", "docs/SMOKE_TESTING_BEST_PRACTICES.md", "docs/MANUAL_TESTING_GUIDE.md"],
+    "@architecture": ["docs/architecture/ARCHITECTURE_ANALYSIS.md", "docs/architecture/ARCHITECTURE_REFACTOR.md", "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md", "docs/ORCHESTRATOR_V2_GUIDE.md"],
+    "@deployment": ["docs/DEPLOYMENT_GUIDE.md", "docs/SCALING_GUIDE.md"],
+    "@guides": ["docs/guides/WORKFLOW_EXECUTION_GUIDE.md", "docs/guides/GENEALOGY_USER_GUIDE.md", "docs/guides/PARALLEL_DEVELOPMENT_STRATEGY.md", "docs/guides/GOOGLE_AI_SDK_BEST_PRACTICES.md"],
+    "@parity": ["task-cards/dashboard-cli-parity/PARITY-MASTER.md"],
+    "@roadmap": ["docs/CONSOLIDATED_ROADMAP.md"],
+    "@docs": ["docs/README.md", "docs/DOCUMENTATION_MATRIX.md"]
+  },
+  
+  "script_to_docs": {
+    "pipeline_orchestrator.py": [
+      "README.md",
+      "docs/USER_MANUAL.md",
+      "docs/ORCHESTRATOR_V2_GUIDE.md",
+      "docs/guides/WORKFLOW_EXECUTION_GUIDE.md",
+      "docs/DASHBOARD_CLI_PARITY.md",
+      "docs/INCREMENTAL_REVIEW_USER_GUIDE.md",
+      "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md",
+      "docs/CONSOLIDATED_ROADMAP.md",
+      "docs/API_COST_TRACKER.md"
+    ],
+    "webdashboard/app.py": [
+      "docs/DASHBOARD_GUIDE.md",
+      "docs/DASHBOARD_CLI_PARITY.md",
+      "docs/API_DOCUMENTATION_README.md",
+      "docs/API_DOCUMENTATION_SUMMARY.md",
+      "docs/guides/FRESH_ANALYSIS_TRIGGER_README.md"
+    ],
+    "webdashboard/job_runner.py": [
+      "docs/DASHBOARD_GUIDE.md",
+      "docs/guides/RESUME_CONTROLS_USER_GUIDE.md",
+      "docs/guides/GENEALOGY_USER_GUIDE.md"
+    ],
+    "webdashboard/database_builder.py": [
+      "docs/DASHBOARD_GUIDE.md"
+    ],
+    "literature_review/evidence_scorer.py": [
+      "docs/EVIDENCE_SCORING_DOCUMENTATION.md",
+      "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"
+    ],
+    "literature_review/deep_reviewer.py": [
+      "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"
+    ],
+    "literature_review/journal_reviewer.py": [
+      "docs/USER_MANUAL.md"
+    ]
+  },
+  
+  "documents": [
+    {
+      "path": "README.md",
+      "level": "L1",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@core",
+      "depends_on": ["docs/DASHBOARD_GUIDE.md", "docs/CONSOLIDATED_ROADMAP.md", "docs/INCREMENTAL_REVIEW_USER_GUIDE.md"],
+      "scripts": ["pipeline_orchestrator.py"]
+    },
+    {
+      "path": "docs/README.md",
+      "level": "L1",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@docs",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/DOCUMENTATION_MATRIX.md",
+      "level": "L1",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@docs",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/USER_MANUAL.md",
+      "level": "L1",
+      "status": "review",
+      "last_updated": "2025-11-16",
+      "owner": "@core",
+      "depends_on": ["docs/DASHBOARD_GUIDE.md", "docs/OUTPUT_FILE_REFERENCE.md"],
+      "scripts": ["pipeline_orchestrator.py", "webdashboard/app.py"]
+    },
+    {
+      "path": "docs/DASHBOARD_GUIDE.md",
+      "level": "L1",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@dashboard",
+      "depends_on": ["docs/DASHBOARD_CLI_PARITY.md"],
+      "scripts": ["webdashboard/app.py", "webdashboard/job_runner.py"]
+    },
+    {
+      "path": "docs/CONSOLIDATED_ROADMAP.md",
+      "level": "L1",
+      "status": "review",
+      "last_updated": "2025-11-14",
+      "owner": "@roadmap",
+      "depends_on": ["docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"],
+      "scripts": ["pipeline_orchestrator.py"]
+    },
+    {
+      "path": "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-14",
+      "owner": "@evidence",
+      "depends_on": ["docs/EVIDENCE_TRIANGULATION_GUIDE.md", "docs/TEMPORAL_COHERENCE_GUIDE.md"],
+      "scripts": ["literature_review/evidence_scorer.py"]
+    },
+    {
+      "path": "docs/EVIDENCE_TRIANGULATION_GUIDE.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-14",
+      "owner": "@evidence",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/TEMPORAL_COHERENCE_GUIDE.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-14",
+      "owner": "@evidence",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/EVIDENCE_EXTRACTION_ENHANCEMENTS.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-14",
+      "owner": "@evidence",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/EVIDENCE_SCORING_DOCUMENTATION.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@evidence",
+      "depends_on": [],
+      "scripts": ["literature_review/evidence_scorer.py"]
+    },
+    {
+      "path": "docs/INCREMENTAL_REVIEW_USER_GUIDE.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@incremental",
+      "depends_on": ["docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md"],
+      "scripts": ["pipeline_orchestrator.py"]
+    },
+    {
+      "path": "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@incremental",
+      "depends_on": [],
+      "scripts": ["pipeline_orchestrator.py"]
+    },
+    {
+      "path": "docs/guides/RESUME_CONTROLS_USER_GUIDE.md",
+      "level": "L2",
+      "status": "review",
+      "last_updated": "2025-11-22",
+      "owner": "@incremental",
+      "depends_on": ["docs/DASHBOARD_GUIDE.md"],
+      "scripts": ["webdashboard/job_runner.py", "webdashboard/app.py"]
+    },
+    {
+      "path": "docs/DASHBOARD_CLI_PARITY.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@dashboard",
+      "depends_on": [],
+      "scripts": ["webdashboard/app.py", "pipeline_orchestrator.py"]
+    },
+    {
+      "path": "docs/OUTPUT_FILE_REFERENCE.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@output",
+      "depends_on": ["docs/OUTPUT_MANAGEMENT_STRATEGY.md"],
+      "scripts": []
+    },
+    {
+      "path": "docs/OUTPUT_MANAGEMENT_STRATEGY.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@output",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/API_DOCUMENTATION_README.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@api",
+      "depends_on": ["docs/API_DOCUMENTATION_SUMMARY.md"],
+      "scripts": ["webdashboard/app.py"]
+    },
+    {
+      "path": "docs/API_DOCUMENTATION_SUMMARY.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@api",
+      "depends_on": [],
+      "scripts": ["webdashboard/app.py"]
+    },
+    {
+      "path": "docs/API_COST_TRACKER.md",
+      "level": "L2",
+      "status": "review",
+      "last_updated": "2025-11-16",
+      "owner": "@api",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/TESTING_GUIDE.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@testing",
+      "depends_on": ["tests/README.md"],
+      "scripts": []
+    },
+    {
+      "path": "docs/SMOKE_TESTING_BEST_PRACTICES.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-16",
+      "owner": "@testing",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/MANUAL_TESTING_GUIDE.md",
+      "level": "L2",
+      "status": "review",
+      "last_updated": "2025-11-16",
+      "owner": "@testing",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/architecture/ARCHITECTURE_ANALYSIS.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-14",
+      "owner": "@architecture",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/architecture/ARCHITECTURE_REFACTOR.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-14",
+      "owner": "@architecture",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-14",
+      "owner": "@architecture",
+      "depends_on": [],
+      "scripts": ["pillar_definitions.json"]
+    },
+    {
+      "path": "docs/ORCHESTRATOR_V2_GUIDE.md",
+      "level": "L2",
+      "status": "review",
+      "last_updated": "2025-11-14",
+      "owner": "@architecture",
+      "depends_on": [],
+      "scripts": ["pipeline_orchestrator.py"]
+    },
+    {
+      "path": "docs/DEPLOYMENT_GUIDE.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@deployment",
+      "depends_on": [],
+      "scripts": ["docker-compose.yml"]
+    },
+    {
+      "path": "docs/SCALING_GUIDE.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@deployment",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/guides/WORKFLOW_EXECUTION_GUIDE.md",
+      "level": "L2",
+      "status": "review",
+      "last_updated": "2025-11-16",
+      "owner": "@guides",
+      "depends_on": ["docs/USER_MANUAL.md"],
+      "scripts": ["pipeline_orchestrator.py"]
+    },
+    {
+      "path": "docs/guides/GENEALOGY_USER_GUIDE.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@guides",
+      "depends_on": [],
+      "scripts": ["webdashboard/job_runner.py"]
+    },
+    {
+      "path": "docs/guides/PARALLEL_DEVELOPMENT_STRATEGY.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-14",
+      "owner": "@guides",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/guides/GOOGLE_AI_SDK_BEST_PRACTICES.md",
+      "level": "L2",
+      "status": "complete",
+      "last_updated": "2025-11-14",
+      "owner": "@guides",
+      "depends_on": [],
+      "scripts": []
+    },
+    {
+      "path": "docs/guides/FRESH_ANALYSIS_TRIGGER_README.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@guides",
+      "depends_on": [],
+      "scripts": ["webdashboard/app.py"]
+    },
+    {
+      "path": "task-cards/dashboard-cli-parity/PARITY-MASTER.md",
+      "level": "L2",
+      "status": "review",
+      "last_updated": "2025-11-24",
+      "owner": "@parity",
+      "depends_on": [],
+      "scripts": []
+    }
+  ],
+  
+  "archive_summary": {
+    "docs/archive/implementation-summaries": 36,
+    "docs/archive/smoke-tests": 7,
+    "docs/archive/pr-reviews": 5,
+    "docs/archive/verification-reports": 6,
+    "reviews/pull-requests": 18,
+    "reviews/third-party": 4
+  },
+  
+  "cascade_rules": {
+    "pipeline_orchestrator.py": {
+      "update_order": [
+        "README.md",
+        "docs/USER_MANUAL.md",
+        "docs/ORCHESTRATOR_V2_GUIDE.md",
+        "docs/guides/WORKFLOW_EXECUTION_GUIDE.md",
+        "docs/INCREMENTAL_REVIEW_USER_GUIDE.md"
+      ]
+    },
+    "webdashboard/app.py": {
+      "update_order": [
+        "docs/DASHBOARD_GUIDE.md",
+        "docs/DASHBOARD_CLI_PARITY.md",
+        "docs/API_DOCUMENTATION_README.md"
+      ]
+    },
+    "webdashboard/job_runner.py": {
+      "update_order": [
+        "docs/DASHBOARD_GUIDE.md",
+        "docs/guides/RESUME_CONTROLS_USER_GUIDE.md"
+      ]
+    },
+    "literature_review/evidence_scorer.py": {
+      "update_order": [
+        "docs/EVIDENCE_SCORING_DOCUMENTATION.md",
+        "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"
+      ]
+    }
+  }
+}
