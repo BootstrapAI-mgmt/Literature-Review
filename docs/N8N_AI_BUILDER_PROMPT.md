@@ -38,6 +38,44 @@
 
 ---
 
+## 🔑 Credential Setup
+
+### 1. GitHub API Token (for committing doc updates)
+
+**Create in n8n:** Credentials → Add Credential → **Header Auth**
+
+| Setting | Value |
+|---------|-------|
+| **Credential Name** | `GitHub API Token` |
+| **Name** | `Authorization` |
+| **Value** | `Bearer ghp_YOUR_TOKEN_HERE` |
+
+**Token Requirements:** Create a GitHub PAT at *Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens* with:
+- Repository access: `BootstrapAI-mgmt/Literature-Review`
+- Permissions: `Contents: Read and write`
+
+### 2. Gemini API (for AI agents)
+
+**Create in n8n:** Credentials → Add Credential → **Google Gemini API**
+
+| Setting | Value |
+|---------|-------|
+| **Credential Name** | `Gemini API` |
+| **API Key** | Your Google AI API key |
+
+Get your key at: https://makersuite.google.com/app/apikey
+
+### 3. (Optional) GitHub Webhook Secret
+
+For validating incoming webhooks from GitHub, add a secret query parameter to your webhook URL:
+```
+https://your-n8n.com/webhook/github-doc-trigger?secret=YOUR_SECRET
+```
+
+Then in the Trigger workflow, add validation in the Filter node.
+
+---
+
 ## Pre-Setup Checklist
 
 Before using these prompts:
@@ -47,7 +85,8 @@ Before using these prompts:
    - `Doc Chain - Agent`
    - `Doc Chain - Errors`
 2. [ ] Configure environment variables in n8n Settings
-3. [ ] Set up Gemini API credentials in n8n
+3. [ ] Create `GitHub API Token` credential (Header Auth)
+4. [ ] Create `Gemini API` credential
 
 ---
 
@@ -397,4 +436,91 @@ After building all 4 workflows:
 
 ---
 
-*Prompt Version: 2.0 - Canvas-specific format*
+# 🔧 UPDATE PROMPT: Add Credentials to Existing Workflows
+
+> **Use this prompt if you've already built the 4 workflows and need to add/fix credential configuration.**
+
+**Open each workflow canvas and paste the relevant section below:**
+
+---
+
+## Update: Doc Chain - Agent (Add GitHub Credentials)
+
+```
+I need to update the HTTP Request nodes that call GitHub API to use proper authentication.
+
+FIND AND UPDATE THESE NODES:
+
+1. NODE: "Get File SHA" (HTTP Request)
+   - Keep: Method GET, URL as-is
+   - ADD Authentication:
+     - Auth Type: Predefined Credential Type
+     - Credential Type: Header Auth
+     - Credential: Select "GitHub API Token"
+   - ADD Header:
+     - Name: Accept
+     - Value: application/vnd.github.v3+json
+
+2. NODE: "Commit to GitHub" (HTTP Request)  
+   - Keep: Method PUT, URL as-is, Body as-is
+   - ADD Authentication:
+     - Auth Type: Predefined Credential Type
+     - Credential Type: Header Auth
+     - Credential: Select "GitHub API Token"
+   - ADD Header:
+     - Name: Accept
+     - Value: application/vnd.github.v3+json
+
+Make sure both nodes use the "GitHub API Token" Header Auth credential.
+```
+
+---
+
+## Update: Doc Chain - Trigger (Add Gemini Credentials)
+
+```
+I need to update the AI Agent node to use proper Gemini credentials.
+
+FIND AND UPDATE THIS NODE:
+
+1. NODE: "Task Master" (AI Agent)
+   - Keep: System prompt and User message as-is
+   - UPDATE Credential:
+     - Select "Gemini API" credential
+   - VERIFY Settings:
+     - Model: gemini-1.5-pro (or gemini-1.5-flash)
+     - Temperature: 0.3
+```
+
+---
+
+## Update: Doc Chain - Agent (Add Gemini Credentials)
+
+```
+I need to update the AI Agent node to use proper Gemini credentials.
+
+FIND AND UPDATE THIS NODE:
+
+1. NODE: "Update Document" (AI Agent)
+   - Keep: System prompt and User message as-is
+   - UPDATE Credential:
+     - Select "Gemini API" credential
+   - VERIFY Settings:
+     - Model: gemini-1.5-flash
+     - Temperature: 0.3
+```
+
+---
+
+## Verification After Updates
+
+After applying credential updates:
+
+1. [ ] Test "Get File SHA" node manually - should return file info without 401 error
+2. [ ] Test "Task Master" AI node - should generate JSON task list
+3. [ ] Test "Update Document" AI node - should return update JSON
+4. [ ] Run full workflow test with sample payload
+
+---
+
+*Prompt Version: 2.1 - Added credential setup and update prompts*
