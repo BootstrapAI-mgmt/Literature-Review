@@ -337,17 +337,31 @@ BUILD THESE NODES:
 8. Split In Batches node named "Process Each Task"
    - Batch Size: 1
 
-9. HTTP REQUEST node named "Dispatch to Agent"
+9. CODE node named "Prepare Agent Payload"
+   - JavaScript:
+   const task = $input.first().json;
+   const runnableData = $('Get Runnable Tasks').first().json;
+   return {
+     task: task,
+     list_id: runnableData.list_id,
+     trigger: runnableData.trigger || {}
+   };
+
+10. HTTP REQUEST node named "Dispatch to Agent"
    - Method: POST
    - URL: https://gitlitreview.app.n8n.cloud/webhook/domain-agent
-   - Body: {"task": {{$json}}, "list_id": "{{$('Get Runnable Tasks').first().json.list_id}}", "trigger": {{$('Get Runnable Tasks').first().json.trigger}} }
+   - Body Content Type: JSON
+   - Specify Body: Using Fields Below
+   - Body Parameters (send as JSON):
+     - Add the expression: ={{ $json }}
+   - NOTE: Use "Specify Body" → "Using JSON" and set the body to: ={{ $json }}
 
-10. WAIT node named "Wait for Callback"
+11. WAIT node named "Wait for Callback"
     - Resume: On Webhook Call
-    - Webhook Suffix: task-done-{{$json.task_id}}
+    - Webhook Suffix: task-done-{{$json.task.task_id}}
     - Timeout: 5 minutes
 
-11. CODE node named "Update Task Status"
+12. CODE node named "Update Task Status"
     - JavaScript:
     const staticData = $getWorkflowStaticData('global');
     const state = staticData.state;
@@ -360,12 +374,12 @@ BUILD THESE NODES:
     const pending = state.current_list?.tasks?.filter(t => t.status === 'pending') || [];
     return { all_done: pending.length === 0, state };
 
-12. IF node named "All Done"
+13. IF node named "All Done"
     - Condition: all_done equals true
     - On true: Go to Finalize
     - On false: Loop back to "Get Runnable Tasks"
 
-13. CODE node named "Finalize List"
+14. CODE node named "Finalize List"
     - JavaScript:
     const staticData = $getWorkflowStaticData('global');
     const state = staticData.state;
@@ -377,12 +391,12 @@ BUILD THESE NODES:
     staticData.state = state;
     return { more_queued: state.queue.length > 0 };
 
-14. IF node named "More Queued"
+15. IF node named "More Queued"
     - Condition: more_queued equals true
     - On true: Loop back to "Pop Next List"
     - On false: End
 
-Connect: 1→2→3→4→5→6→7→8→9→10→11→12→13→14
+Connect: 1→2→3→4→5→6→7→8→9→10→11→12→13→14→15
 Create loops as specified in conditions.
 ```
 
