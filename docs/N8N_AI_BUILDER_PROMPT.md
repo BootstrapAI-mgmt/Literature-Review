@@ -106,12 +106,17 @@ BUILD THESE NODES:
    - Respond: Immediately
 
 2. IF node named "Filter Valid Events"
-   - Condition: Check if webhook contains commits array OR (pull_request exists AND pull_request.merged is true)
+   - Condition: Check if webhook body contains commits array OR (pull_request exists AND merged is true)
+   - Use these exact expressions:
+     - `{{ $json.body.commits }}` exists
+     - OR `{{ $json.body.pull_request }}` exists
+     - OR `{{ $json.body.pull_request.merged }}` is equal to `true`
    - On false: connect to a NoOp node to end
+   - NOTE: GitHub webhook data is nested inside `body` - always use `$json.body.` prefix
 
 3. CODE node named "Parse Changes"
    - JavaScript:
-   const event = $input.first().json;
+   const event = $input.first().json.body;  // NOTE: .body is required - GitHub data is nested
    const files = [];
    if (event.commits) {
      event.commits.forEach(c => {
@@ -484,44 +489,66 @@ Under "Which events would you like to trigger this webhook?":
 | **404 Response** | Workflow not active or wrong URL | Activate workflow, verify URL matches exactly |
 | **Ping works, Push doesn't** | Filter node rejecting the event | Check Filter node conditions (see below) |
 | **No delivery shown** | Wrong events selected | Enable "Pushes" event in GitHub webhook settings |
-| **curl works, GitHub doesn't** | URL mismatch or event filtering | Compare exact payload structure |
+| **curl works, GitHub doesn't** | Payload structure difference | Use `$json.body.` prefix (see below) |
+| **Filter always false** | Wrong JSON path | GitHub data is nested in `body` object |
 
-### Debugging the Filter Node
+### ⚠️ Critical: GitHub Webhook Body Nesting
 
-The "Filter Valid Events" node checks for `commits` array. GitHub push events include this, but the structure varies.
+**n8n wraps the GitHub payload inside a `body` object.** This is the #1 cause of filter failures.
 
-**GitHub Push Event Structure (actual):**
+When GitHub sends:
+```json
+{"commits": [...], "ref": "refs/heads/main"}
+```
+
+n8n receives:
 ```json
 {
-  "ref": "refs/heads/main",
-  "before": "abc123...",
-  "after": "def456...",
-  "repository": {...},
-  "pusher": {"name": "username", "email": "..."},
-  "sender": {...},
-  "commits": [
-    {
-      "id": "def456...",
-      "message": "commit message",
-      "added": ["new_file.md"],
-      "removed": [],
-      "modified": ["existing_file.py"]
-    }
-  ],
-  "head_commit": {
-    "id": "def456...",
-    "message": "commit message",
-    ...
+  "headers": {...},
+  "body": {
+    "commits": [...],
+    "ref": "refs/heads/main"
   }
 }
 ```
 
-**Fix for Filter Node:**
-The condition should check: `{{ $json.commits }}` exists (is defined and is an array)
+**Therefore, always use `$json.body.` prefix:**
+- ❌ `$json.commits` - WRONG
+- ✅ `$json.body.commits` - CORRECT
 
-In n8n IF node:
-- Condition: `{{ $json.commits !== undefined }}` equals `true`
-- OR use Expression: `{{ Array.isArray($json.commits) }}`
+### Debugging the Filter Node
+
+The "Filter Valid Events" node must check for `body.commits` array.
+
+**Correct Filter Conditions:**
+```
+{{ $json.body.commits }} exists
+OR
+{{ $json.body.pull_request }} exists
+OR  
+{{ $json.body.pull_request.merged }} is equal to true
+```
+
+**GitHub Push Event Structure (as received by n8n):**
+```json
+{
+  "headers": {"x-github-event": "push", ...},
+  "body": {
+    "ref": "refs/heads/main",
+    "before": "abc123...",
+    "after": "def456...",
+    "commits": [
+      {
+        "id": "def456...",
+        "message": "commit message",
+        "added": ["new_file.md"],
+        "modified": ["existing_file.py"]
+      }
+    ],
+    "head_commit": {...}
+  }
+}
+```
 
 ---
 
