@@ -106,13 +106,11 @@ BUILD THESE NODES:
    - Respond: Immediately
 
 2. IF node named "Filter Valid Events"
-   - Condition: Check if webhook body contains commits array OR (pull_request exists AND merged is true)
-   - Use these exact expressions:
-     - `{{ $json.body.commits }}` exists
-     - OR `{{ $json.body.pull_request }}` exists
-     - OR `{{ $json.body.pull_request.merged }}` is equal to `true`
-   - **IMPORTANT**: Enable "Convert types where required" toggle in the IF node settings
-     - This is required because `$json.body.commits` is an array, and the "exists" operator needs type conversion to handle arrays properly
+   - Condition: Use a single expression that evaluates to boolean
+   - Expression: `{{ ($json.body.commits?.length > 0) || ($json.body.pull_request?.merged === true) }}`
+   - Operator: equals
+   - Compare to: `true`
+   - This checks: commits array has items OR pull request was merged
    - On false: connect to a NoOp node to end
    - NOTE: GitHub webhook data is nested inside `body` - always use `$json.body.` prefix
 
@@ -493,16 +491,27 @@ Under "Which events would you like to trigger this webhook?":
 | **No delivery shown** | Wrong events selected | Enable "Pushes" event in GitHub webhook settings |
 | **curl works, GitHub doesn't** | Payload structure difference | Use `$json.body.` prefix (see below) |
 | **Filter always false** | Wrong JSON path | GitHub data is nested in `body` object |
-| **"Wrong type" error in Filter** | "exists" operator on array type | Enable "Convert types where required" toggle |
+| **"Wrong type" error in Filter** | "exists" operator on array type | Use boolean expression instead (see below) |
 
-### ⚠️ Critical: IF Node Type Conversion
+### ⚠️ Critical: IF Node Array Checking
 
-When using "exists" operator on array fields like `$json.body.commits`, n8n may throw:
+The "exists" operator in n8n IF nodes doesn't handle arrays properly. Instead of using "exists", use a **boolean expression** that checks array length:
+
+**❌ DON'T use "exists" operator:**
 ```
-Wrong type: '[object Object]' is an object but was expecting an object
+$json.body.commits exists
 ```
 
-**Solution:** Enable the **"Convert types where required"** toggle in the IF node settings panel. This allows the "exists" operator to properly handle arrays and nested objects.
+**✅ DO use boolean expression equals true:**
+```
+{{ ($json.body.commits?.length > 0) || ($json.body.pull_request?.merged === true) }}
+```
+Set operator to "equals" and compare to `true`.
+
+This approach:
+- Uses optional chaining (`?.`) to safely handle missing properties
+- Checks array length instead of existence
+- Returns a proper boolean for the IF node to evaluate
 
 ### ⚠️ Critical: GitHub Webhook Body Nesting
 
