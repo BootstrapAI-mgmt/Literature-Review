@@ -136,7 +136,9 @@ BUILD THESE NODES:
 
 5. CODE node named "Find Affected Docs"
    - JavaScript:
-   const matrix = $('Fetch Matrix').first().json;
+   // NOTE: Fetch Matrix returns JSON as a string in .data property - must parse it!
+   const matrixRaw = $('Fetch Matrix').first().json;
+   const matrix = typeof matrixRaw.data === 'string' ? JSON.parse(matrixRaw.data) : matrixRaw;
    const changes = $('Parse Changes').first().json;
    const affected = new Set();
    const newDocs = [];  // Track new docs not yet in matrix
