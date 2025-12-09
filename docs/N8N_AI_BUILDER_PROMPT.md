@@ -258,13 +258,13 @@ BUILD THESE NODES:
      const elapsed = Date.now() - startTime;
      const STALE_THRESHOLD = 10 * 60 * 1000; // 10 minutes
      if (elapsed > STALE_THRESHOLD) {
-       console.log('Recovering stale list:', state.current_list.update_list_id);
-       // Reset tasks to pending and re-queue
-       if (state.current_list.tasks) {
-         state.current_list.tasks.forEach(t => { if (t.status !== 'completed') t.status = 'pending'; });
-       }
-       state.current_list.status = 'queued';
-       state.queue.unshift(state.current_list); // Put back at front of queue
+       // Handle webhook body nesting - tasks may be in .body.tasks or .tasks
+       const tasks = state.current_list.body?.tasks || state.current_list.tasks || [];
+       const listId = state.current_list.body?.update_list_id || state.current_list.update_list_id;
+       console.log('Recovering stale list:', listId);
+       // Reset tasks to pending
+       tasks.forEach(t => { if (t.status !== 'completed') t.status = 'pending'; });
+       // Don't re-queue old stale lists - just clear them (they were never properly processed)
        state.current_list = null;
        staticData.state = state;
      }
