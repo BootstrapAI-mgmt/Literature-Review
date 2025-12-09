@@ -255,10 +255,12 @@ BUILD THESE NODES:
 3. CODE node named "Add To Queue"
    - JavaScript:
    const { state, new_list } = $input.first().json;
-   new_list.status = 'queued';
-   new_list.queued_at = new Date().toISOString();
-   if (new_list.tasks) new_list.tasks.forEach(t => t.status = 'pending');
-   state.queue.push(new_list);
+   // Handle webhook body nesting - task data may be in .body or at root
+   const listData = new_list.body || new_list;
+   listData.status = 'queued';
+   listData.queued_at = new Date().toISOString();
+   if (listData.tasks) listData.tasks.forEach(t => t.status = 'pending');
+   state.queue.push(listData);
    const staticData = $getWorkflowStaticData('global');
    staticData.state = state;
    return { should_process: !state.current_list };
@@ -280,12 +282,16 @@ BUILD THESE NODES:
 6. CODE node named "Get Runnable Tasks"
    - JavaScript:
    const list = $input.first().json.current_list;
-   if (!list || !list.tasks) return { runnable: [], list_id: null };
-   const done = list.tasks.filter(t => t.status === 'completed').map(t => t.task_id);
-   const runnable = list.tasks.filter(t => 
+   // Handle webhook body nesting - tasks may be in .body.tasks or .tasks
+   const tasks = list?.body?.tasks || list?.tasks || [];
+   const listId = list?.body?.update_list_id || list?.update_list_id || null;
+   const trigger = list?.body?.trigger || list?.trigger || {};
+   if (!tasks.length) return { runnable: [], list_id: null };
+   const done = tasks.filter(t => t.status === 'completed').map(t => t.task_id);
+   const runnable = tasks.filter(t => 
      t.status === 'pending' && (!t.depends_on || t.depends_on.every(d => done.includes(d)))
    );
-   return { runnable: runnable, list_id: list.update_list_id, trigger: list.trigger || {} };
+   return { runnable: runnable, list_id: listId, trigger: trigger };
 
 7. IF node named "Has Runnable"
    - Condition: Check if runnable array length > 0
