@@ -111,6 +111,8 @@ BUILD THESE NODES:
      - `{{ $json.body.commits }}` exists
      - OR `{{ $json.body.pull_request }}` exists
      - OR `{{ $json.body.pull_request.merged }}` is equal to `true`
+   - **IMPORTANT**: Enable "Convert types where required" toggle in the IF node settings
+     - This is required because `$json.body.commits` is an array, and the "exists" operator needs type conversion to handle arrays properly
    - On false: connect to a NoOp node to end
    - NOTE: GitHub webhook data is nested inside `body` - always use `$json.body.` prefix
 
@@ -491,6 +493,16 @@ Under "Which events would you like to trigger this webhook?":
 | **No delivery shown** | Wrong events selected | Enable "Pushes" event in GitHub webhook settings |
 | **curl works, GitHub doesn't** | Payload structure difference | Use `$json.body.` prefix (see below) |
 | **Filter always false** | Wrong JSON path | GitHub data is nested in `body` object |
+| **"Wrong type" error in Filter** | "exists" operator on array type | Enable "Convert types where required" toggle |
+
+### ⚠️ Critical: IF Node Type Conversion
+
+When using "exists" operator on array fields like `$json.body.commits`, n8n may throw:
+```
+Wrong type: '[object Object]' is an object but was expecting an object
+```
+
+**Solution:** Enable the **"Convert types where required"** toggle in the IF node settings panel. This allows the "exists" operator to properly handle arrays and nested objects.
 
 ### ⚠️ Critical: GitHub Webhook Body Nesting
 
