@@ -250,6 +250,26 @@ BUILD THESE NODES:
    if (!staticData.state) {
      staticData.state = { queue: [], current_list: null, completed: [] };
    }
+   
+   // Staleness recovery: if current_list has been in_progress > 10 min, reset it
+   const state = staticData.state;
+   if (state.current_list) {
+     const startTime = new Date(state.current_list.started_at || state.current_list.queued_at).getTime();
+     const elapsed = Date.now() - startTime;
+     const STALE_THRESHOLD = 10 * 60 * 1000; // 10 minutes
+     if (elapsed > STALE_THRESHOLD) {
+       console.log('Recovering stale list:', state.current_list.update_list_id);
+       // Reset tasks to pending and re-queue
+       if (state.current_list.tasks) {
+         state.current_list.tasks.forEach(t => { if (t.status !== 'completed') t.status = 'pending'; });
+       }
+       state.current_list.status = 'queued';
+       state.queue.unshift(state.current_list); // Put back at front of queue
+       state.current_list = null;
+       staticData.state = state;
+     }
+   }
+   
    return { state: staticData.state, new_list: $input.first().json };
 
 3. CODE node named "Add To Queue"
@@ -276,17 +296,31 @@ BUILD THESE NODES:
    if (state.queue.length === 0) return { has_work: false };
    state.current_list = state.queue.shift();
    state.current_list.status = 'in_progress';
+   state.current_list.started_at = new Date().toISOString(); // Track when processing started
    staticData.state = state;
    return { has_work: true, current_list: state.current_list };
 
 6. CODE node named "Get Runnable Tasks"
    - JavaScript:
+   const staticData = $getWorkflowStaticData('global');
+   const state = staticData.state;
    const list = $input.first().json.current_list;
+   
    // Handle webhook body nesting - tasks may be in .body.tasks or .tasks
    const tasks = list?.body?.tasks || list?.tasks || [];
    const listId = list?.body?.update_list_id || list?.update_list_id || null;
    const trigger = list?.body?.trigger || list?.trigger || {};
-   if (!tasks.length) return { runnable: [], list_id: null };
+   
+   // If no tasks found, this is an error state - reset and allow retry
+   if (!tasks.length || !listId) {
+     console.error('No tasks found in list - resetting state');
+     if (state.current_list) {
+       state.current_list = null;
+       staticData.state = state;
+     }
+     return { runnable: [], list_id: null, error: 'No tasks found' };
+   }
+   
    const done = tasks.filter(t => t.status === 'completed').map(t => t.task_id);
    const runnable = tasks.filter(t => 
      t.status === 'pending' && (!t.depends_on || t.depends_on.every(d => done.includes(d)))
@@ -483,6 +517,40 @@ After building all 4 workflows:
 3. [ ] Verify the flow: Trigger → Distributor → Agent → Callback → Complete
 4. [ ] Check n8n execution logs for any errors
 5. [ ] Configure GitHub webhook (see section below)
+
+---
+
+## 🔧 Reset Distributor State (Recovery)
+
+If the Distributor gets stuck (e.g., tasks never dispatched, callbacks never received), you can reset its state:
+
+**Option 1: Wait for auto-recovery**
+The Load State node automatically recovers stale lists after 10 minutes of no progress.
+
+**Option 2: Manual reset via Code node**
+Add a temporary Code node at the start of the Distributor workflow:
+
+```javascript
+// TEMPORARY: Reset stuck state - remove after running once
+const staticData = $getWorkflowStaticData('global');
+staticData.state = { queue: [], current_list: null, completed: [] };
+return { reset: true, message: 'State cleared' };
+```
+
+Run the workflow once manually, then delete this node.
+
+**Option 3: Check current state**
+Add a Code node to inspect the current state:
+
+```javascript
+const staticData = $getWorkflowStaticData('global');
+return { 
+  state: staticData.state,
+  queue_length: staticData.state?.queue?.length || 0,
+  current_list_id: staticData.state?.current_list?.update_list_id || null,
+  current_list_status: staticData.state?.current_list?.status || null
+};
+```
 
 ---
 
