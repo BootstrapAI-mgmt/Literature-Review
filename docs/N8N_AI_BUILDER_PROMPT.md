@@ -31,10 +31,11 @@
 - Distributor → Agent: HTTP POST to `/webhook/domain-agent`
 - Agent → Distributor: HTTP POST to `/webhook/task-done-{task_id}`
 
-**Environment Variables (configure in n8n Settings → Variables):**
-- `GITHUB_REPO`: `BootstrapAI-mgmt/Literature-Review`
-- `GITHUB_TOKEN`: Your GitHub PAT with repo scope
-- `N8N_WEBHOOK_URL`: Your n8n instance base URL (e.g., `https://n8n.example.com`)
+**Webhook Base URL:**
+- For this project: `https://gitlitreview.app.n8n.cloud`
+- Replace with your n8n instance URL if different
+
+> ⚠️ **n8n Cloud Limitation:** Environment variables (`$env.*`) are blocked in node expressions on n8n Cloud. Use hardcoded URLs instead of `{{$env.N8N_WEBHOOK_URL}}`.
 
 ---
 
@@ -219,7 +220,7 @@ BUILD THESE NODES:
 
 9. HTTP REQUEST node named "Send to Distributor"
    - Method: POST
-   - URL: {{$env.N8N_WEBHOOK_URL}}/webhook/task-distributor
+   - URL: https://gitlitreview.app.n8n.cloud/webhook/task-distributor
    - Body Type: JSON
    - Body: ={{$json}}
 
@@ -295,7 +296,7 @@ BUILD THESE NODES:
 
 9. HTTP REQUEST node named "Dispatch to Agent"
    - Method: POST
-   - URL: {{$env.N8N_WEBHOOK_URL}}/webhook/domain-agent
+   - URL: https://gitlitreview.app.n8n.cloud/webhook/domain-agent
    - Body: {"task": {{$json}}, "list_id": "{{$('Get Runnable Tasks').first().json.list_id}}", "trigger": {{$('Get Runnable Tasks').first().json.trigger}} }
 
 10. WAIT node named "Wait for Callback"
@@ -405,7 +406,7 @@ BUILD THESE NODES:
 
 9. HTTP REQUEST node named "Send Callback" (connect BOTH paths here - from Changes Needed false AND from Commit)
    - Method: POST
-   - URL: {{$env.N8N_WEBHOOK_URL}}/webhook/task-done-{{$json.task_id}}
+   - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
    - Body: {"task_id":"{{$json.task_id}}","status":"completed","result":{"summary":"{{$json.summary}}"}}
 
 Connect: 1→2→3→4→5→(true: 6→7→8→9, false: 9)
@@ -446,7 +447,7 @@ BUILD THESE NODES:
 
 4. HTTP REQUEST node named "Send Failure Callback"
    - Method: POST
-   - URL: {{$env.N8N_WEBHOOK_URL}}/webhook/task-done-{{$json.task_id}}
+   - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
    - Body: {"task_id":"{{$json.task_id}}","status":"failed","result":{"error":"{{$json.message}}"}}
 
 5. (Optional) Add a Slack/Email node after Log Error to notify your team
