@@ -421,7 +421,107 @@ After building all 4 workflows:
 
 3. [ ] Verify the flow: Trigger → Distributor → Agent → Callback → Complete
 4. [ ] Check n8n execution logs for any errors
-5. [ ] Configure GitHub webhook to point to your Trigger workflow URL
+5. [ ] Configure GitHub webhook (see section below)
+
+---
+
+## 🔗 GitHub Webhook Configuration
+
+### Step 1: Get Your n8n Webhook URL
+
+From n8n, the production webhook URL is:
+```
+https://gitlitreview.app.n8n.cloud/webhook/github-doc-trigger
+```
+
+### Step 2: Configure GitHub Webhook
+
+1. Go to your GitHub repository: **Settings → Webhooks → Add webhook**
+2. Configure as follows:
+
+| Setting | Value |
+|---------|-------|
+| **Payload URL** | `https://gitlitreview.app.n8n.cloud/webhook/github-doc-trigger` |
+| **Content type** | `application/json` |
+| **Secret** | *(leave blank - no auth needed for incoming webhooks)* |
+| **SSL verification** | Enable |
+| **Which events?** | Select: **Pushes** and **Pull requests** |
+| **Active** | ✅ Checked |
+
+### Step 3: Select Events
+
+Under "Which events would you like to trigger this webhook?":
+- Select **"Let me select individual events"**
+- Check: ✅ **Pushes** (for direct commits to main)
+- Check: ✅ **Pull requests** (for merged PRs)
+- Uncheck everything else
+
+### Important Notes
+
+| Topic | Details |
+|-------|---------|
+| **No Authentication Needed** | For incoming webhooks, n8n's Webhook node is public. GitHub doesn't need a token to POST to it. |
+| **GitHub Tokens Are Different** | The `GITHUB_TOKEN` in n8n is for *outgoing* API calls (committing files), not for receiving webhooks. |
+| **Ping Event** | When you first add the webhook, GitHub sends a "ping" event. This is expected and will trigger the workflow (but may fail the filter - that's OK). |
+
+---
+
+## 🔍 Troubleshooting GitHub Webhooks
+
+### Check GitHub Delivery Logs
+
+1. Go to: **Repository → Settings → Webhooks → Click your webhook**
+2. Scroll to **"Recent Deliveries"**
+3. Click on a delivery to see:
+   - **Request** - what GitHub sent
+   - **Response** - what n8n returned
+   - **Status code** - 200 = success
+
+### Common Issues
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| **404 Response** | Workflow not active or wrong URL | Activate workflow, verify URL matches exactly |
+| **Ping works, Push doesn't** | Filter node rejecting the event | Check Filter node conditions (see below) |
+| **No delivery shown** | Wrong events selected | Enable "Pushes" event in GitHub webhook settings |
+| **curl works, GitHub doesn't** | URL mismatch or event filtering | Compare exact payload structure |
+
+### Debugging the Filter Node
+
+The "Filter Valid Events" node checks for `commits` array. GitHub push events include this, but the structure varies.
+
+**GitHub Push Event Structure (actual):**
+```json
+{
+  "ref": "refs/heads/main",
+  "before": "abc123...",
+  "after": "def456...",
+  "repository": {...},
+  "pusher": {"name": "username", "email": "..."},
+  "sender": {...},
+  "commits": [
+    {
+      "id": "def456...",
+      "message": "commit message",
+      "added": ["new_file.md"],
+      "removed": [],
+      "modified": ["existing_file.py"]
+    }
+  ],
+  "head_commit": {
+    "id": "def456...",
+    "message": "commit message",
+    ...
+  }
+}
+```
+
+**Fix for Filter Node:**
+The condition should check: `{{ $json.commits }}` exists (is defined and is an array)
+
+In n8n IF node:
+- Condition: `{{ $json.commits !== undefined }}` equals `true`
+- OR use Expression: `{{ Array.isArray($json.commits) }}`
 
 ---
 
