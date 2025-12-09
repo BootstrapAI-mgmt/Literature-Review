@@ -321,9 +321,12 @@ BUILD THESE NODES:
      return { runnable: [], list_id: null, error: 'No tasks found' };
    }
    
+   // Ensure all tasks have a status (default to 'pending' if missing)
+   tasks.forEach(t => { if (!t.status) t.status = 'pending'; });
+   
    const done = tasks.filter(t => t.status === 'completed').map(t => t.task_id);
    const runnable = tasks.filter(t => 
-     t.status === 'pending' && (!t.depends_on || t.depends_on.every(d => done.includes(d)))
+     t.status === 'pending' && (!t.depends_on || t.depends_on.length === 0 || t.depends_on.every(d => done.includes(d)))
    );
    return { runnable: runnable, list_id: listId, trigger: trigger };
 
