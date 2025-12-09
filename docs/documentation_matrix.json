@@ -102,6 +102,24 @@
       "scripts": []
     },
     {
+      "path": "docs/N8N_AI_BUILDER_PROMPT.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-09",
+      "owner": "@docs",
+      "depends_on": ["docs/DOCUMENTATION_MATRIX.md", "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md"],
+      "scripts": []
+    },
+    {
+      "path": "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-06",
+      "owner": "@docs",
+      "depends_on": ["docs/DOCUMENTATION_MATRIX.md"],
+      "scripts": []
+    },
+    {
       "path": "docs/USER_MANUAL.md",
       "level": "L1",
       "status": "review",

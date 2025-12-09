@@ -139,18 +139,58 @@ BUILD THESE NODES:
    const matrix = $('Fetch Matrix').first().json;
    const changes = $('Parse Changes').first().json;
    const affected = new Set();
+   const newDocs = [];  // Track new docs not yet in matrix
+   
    for (const file of changes.changed_files) {
+     // Check 1: If a script changed, find docs that depend on it
      for (const [script, docs] of Object.entries(matrix.script_to_docs || {})) {
        if (file.includes(script.replace('.py',''))) {
          docs.forEach(d => affected.add(d));
        }
      }
+     
+     // Check 2: If the changed file IS a document in the matrix, include it
+     const docEntry = matrix.documents?.find(d => file.endsWith(d.path) || file === d.path);
+     if (docEntry) {
+       affected.add(docEntry.path);
+       // Also add any docs that depend on this doc (reverse dependency lookup)
+       matrix.documents?.forEach(otherDoc => {
+         if (otherDoc.depends_on?.includes(docEntry.path)) {
+           affected.add(otherDoc.path);
+         }
+       });
+       // Check 3: Add other docs owned by same domain (for index/summary updates)
+       // This ensures domain owners can update their index docs when siblings change
+       if (docEntry.owner) {
+         const domainDocs = matrix.owner_domains?.[docEntry.owner] || [];
+         domainDocs.forEach(d => affected.add(d));
+       }
+     }
+     
+     // Check 4: NEW doc not in matrix - infer domain from path and route to domain owner
+     if (!docEntry && (file.startsWith('docs/') || file.endsWith('.md'))) {
+       newDocs.push(file);
+       // Try to match domain from path patterns
+       for (const [owner, paths] of Object.entries(matrix.owner_domains || {})) {
+         const matchesPattern = paths.some(p => {
+           const dir = p.substring(0, p.lastIndexOf('/'));
+           return file.startsWith(dir) || file.includes(owner.replace('@',''));
+         });
+         if (matchesPattern) {
+           paths.forEach(d => affected.add(d));
+           break;
+         }
+       }
+       // Fallback: always notify @docs domain for any new documentation
+       (matrix.owner_domains?.['@docs'] || []).forEach(d => affected.add(d));
+     }
    }
+   
    const docs = [...affected].map(path => {
      const info = matrix.documents?.find(d => d.path === path) || {level:'L2',owner:'@core'};
      return {path, ...info};
    }).sort((a,b) => a.level.localeCompare(b.level));
-   return { affected_docs: docs, trigger: changes, has_updates: docs.length > 0 };
+   return { affected_docs: docs, trigger: changes, new_docs: newDocs, has_updates: docs.length > 0 };
 
 6. IF node named "Has Updates"
    - Condition: has_updates equals true
@@ -158,8 +198,15 @@ BUILD THESE NODES:
 
 7. AI AGENT node named "Task Master" (use Gemini)
    - Model: gemini-1.5-pro
-   - System: You generate JSON task lists. Output exactly: {"update_list_id":"ul-DATE-TIME","tasks":[{"task_id":"task-001","document":"path","owner":"@domain","update_type":"UPDATE_REFERENCE","description":"what to update","depends_on":[],"priority":1}]}
-   - User message: Create task list for commit: {{$json.trigger.message}}. Affected docs: {{$json.affected_docs.map(d=>d.path).join(', ')}}
+   - System: You generate JSON task lists for documentation updates. Consider these update types:
+     - UPDATE_REFERENCE: Update cross-references when linked docs change
+     - UPDATE_INDEX: Add/update entries in index or summary docs when new docs are added to a domain
+     - CASCADE_UPDATE: Propagate changes to dependent documentation
+     - REVIEW_NEEDED: Flag docs that may need human review due to significant changes
+     Output exactly: {"update_list_id":"ul-DATE-TIME","tasks":[{"task_id":"task-001","document":"path","owner":"@domain","update_type":"TYPE","description":"what to update","depends_on":[],"priority":1}]}
+   - User message: Create task list for commit: {{$json.trigger.message}}. 
+     Affected docs: {{$json.affected_docs.map(d=>d.path + ' (owner: ' + d.owner + ')').join(', ')}}
+     {{$json.new_docs?.length > 0 ? 'NEW docs added (not yet in matrix): ' + $json.new_docs.join(', ') : ''}}
 
 8. CODE node named "Parse AI Response"
    - JavaScript:
