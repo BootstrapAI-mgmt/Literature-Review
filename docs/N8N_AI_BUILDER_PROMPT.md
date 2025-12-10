@@ -464,9 +464,9 @@ BUILD THESE NODES:
 
 3. HTTP REQUEST node named "Fetch Document"
    - Method: GET
-   - URL: https://raw.githubusercontent.com/BootstrapAI-mgmt/Literature-Review/main/{{$json.task.document}}
+   - URL (use expression mode): ={{ "https://raw.githubusercontent.com/BootstrapAI-mgmt/Literature-Review/main/" + $json.task.document }}
    - Response Format: Text
-   - NOTE: Now $json.task.document works because Parse Webhook Data extracted the object
+   - NOTE: Use expression mode (click the "fx" icon) and use string concatenation for reliable URL building
    - IMPORTANT: Hardcode the repo URL - $env.* is blocked on n8n Cloud
 
 4. AI AGENT node named "Update Document" (use Gemini)
