@@ -542,12 +542,31 @@ BUILD THESE NODES:
    - JavaScript:
    const error = $input.first().json;
    console.error('Doc Chain Error:', JSON.stringify(error, null, 2));
+   
+   // Try multiple paths to find task_id - it may be in different locations
+   let task_id = null;
+   
+   // Path 1: From execution data (if workflow passed it through)
+   if (error.execution?.data?.task_id) {
+     task_id = error.execution.data.task_id;
+   }
+   // Path 2: From the HTTP request body that failed (e.g., Send Callback)
+   else if (error.execution?.error?.context?.request?.body?.task_id) {
+     // Remove leading "=" if present (n8n expression artifact)
+     task_id = String(error.execution.error.context.request.body.task_id).replace(/^=/, '');
+   }
+   // Path 3: Parse from the failed URL (e.g., /webhook/task-done-task-001)
+   else if (error.execution?.error?.context?.request?.uri) {
+     const match = error.execution.error.context.request.uri.match(/task-done-([^/]+)$/);
+     if (match) task_id = match[1];
+   }
+   
    return {
      workflow: error.workflow?.name || 'Unknown',
      node: error.execution?.lastNodeExecuted || 'Unknown',
      message: error.execution?.error?.message || 'Unknown error',
      timestamp: new Date().toISOString(),
-     task_id: error.execution?.data?.task_id || null
+     task_id: task_id
    };
 
 3. IF node named "Has Task ID"
