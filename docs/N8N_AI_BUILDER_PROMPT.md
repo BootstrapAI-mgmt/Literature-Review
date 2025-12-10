@@ -479,13 +479,17 @@ BUILD THESE NODES:
    - JavaScript:
    const taskData = $('Parse Webhook Data').first().json;
    const text = $input.first().json.text || $input.first().json.output || '';
-   const match = text.match(/\{[\s\S]*?\}/);
-   let result = { changes_needed: false, summary: 'No changes' };
+   // Use greedy match to capture the FULL JSON object including updated_content
+   const match = text.match(/\{[\s\S]*\}/);
+   let result = { changes_needed: false, summary: 'No changes', updated_content: '' };
    if (match) {
-     try { result = JSON.parse(match[0]); } catch(e) {}
+     try { result = JSON.parse(match[0]); } catch(e) {
+       console.error('Failed to parse AI output:', e.message);
+     }
    }
    return { ...result, task_id: taskData.task.task_id, document: taskData.task.document };
    // NOTE: Access parsed data via $('Parse Webhook Data').first().json
+   // IMPORTANT: Uses greedy regex (.*) not non-greedy (.*?) to capture full JSON with updated_content
 
 6. IF node named "Changes Needed"
    - Condition: changes_needed equals true
