@@ -125,4 +125,4 @@ See `/archive/README.md` for details.
 
 ---
 
-**Last Updated:** December 2025
+**Last Updated:** December 10, 2025
