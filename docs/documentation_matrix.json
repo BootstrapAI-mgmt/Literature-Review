@@ -1,8 +1,7 @@
 {
-  "version": "1.2",
+  "version": "1.3",
   "last_updated": "2025-12-10",
   "description": "Machine-readable documentation dependency matrix with staleness detection support",
-  
   "staleness_config": {
     "enabled": true,
     "default_review_interval_days": 7,
@@ -26,11 +25,14 @@
     },
     "notifications": {
       "create_github_issues": true,
-      "issue_labels": ["documentation", "staleness-review", "automated"],
+      "issue_labels": [
+        "documentation",
+        "staleness-review",
+        "automated"
+      ],
       "digest_enabled": true
     }
   },
-  
   "status_codes": {
     "current": "Up-to-date with latest code",
     "review": "May need updates, should review against current code",
@@ -39,100 +41,200 @@
     "archivable": "Historical, can be moved to archive",
     "superseded": "Replaced by newer documentation"
   },
-  
   "priority_levels": {
     "L1": "Core documentation - update first, cascades to L2-L3",
     "L2": "Feature documentation - may cascade to L3",
     "L3": "Reference/historical - terminal, no cascade"
   },
-  
   "owner_domains": {
     "@core": {
-      "documents": ["README.md", "docs/USER_MANUAL.md"],
+      "documents": [
+        "README.md",
+        "docs/USER_MANUAL.md"
+      ],
       "review_interval_days": 7,
       "priority": "high",
-      "staleness_indicators": ["pipeline_orchestrator.py", "webdashboard/app.py"]
+      "staleness_indicators": [
+        "pipeline_orchestrator.py",
+        "webdashboard/app.py"
+      ]
     },
     "@dashboard": {
-      "documents": ["docs/DASHBOARD_GUIDE.md", "docs/DASHBOARD_CLI_PARITY.md"],
+      "documents": [
+        "docs/DASHBOARD_GUIDE.md",
+        "docs/DASHBOARD_CLI_PARITY.md"
+      ],
       "review_interval_days": 7,
       "priority": "high",
-      "staleness_indicators": ["webdashboard/app.py", "webdashboard/job_runner.py", "webdashboard/templates/"]
+      "staleness_indicators": [
+        "webdashboard/app.py",
+        "webdashboard/job_runner.py",
+        "webdashboard/templates/"
+      ]
     },
     "@evidence": {
-      "documents": ["docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md", "docs/EVIDENCE_TRIANGULATION_GUIDE.md", "docs/TEMPORAL_COHERENCE_GUIDE.md", "docs/EVIDENCE_EXTRACTION_ENHANCEMENTS.md", "docs/EVIDENCE_SCORING_DOCUMENTATION.md"],
+      "documents": [
+        "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md",
+        "docs/EVIDENCE_TRIANGULATION_GUIDE.md",
+        "docs/TEMPORAL_COHERENCE_GUIDE.md",
+        "docs/EVIDENCE_EXTRACTION_ENHANCEMENTS.md",
+        "docs/EVIDENCE_SCORING_DOCUMENTATION.md"
+      ],
       "review_interval_days": 14,
       "priority": "medium",
-      "staleness_indicators": ["literature_review/evidence_scorer.py", "literature_review/utils/evidence_decay.py", "literature_review/utils/decay_presets.py"]
+      "staleness_indicators": [
+        "literature_review/evidence_scorer.py",
+        "literature_review/utils/evidence_decay.py",
+        "literature_review/utils/decay_presets.py"
+      ]
     },
     "@incremental": {
-      "documents": ["docs/INCREMENTAL_REVIEW_USER_GUIDE.md", "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md", "docs/guides/RESUME_CONTROLS_USER_GUIDE.md"],
+      "documents": [
+        "docs/INCREMENTAL_REVIEW_USER_GUIDE.md",
+        "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md",
+        "docs/guides/RESUME_CONTROLS_USER_GUIDE.md"
+      ],
       "review_interval_days": 14,
       "priority": "medium",
-      "staleness_indicators": ["literature_review/utils/state_manager.py", "webdashboard/api/incremental.py", "literature_review/analysis/result_merger.py"]
+      "staleness_indicators": [
+        "literature_review/utils/state_manager.py",
+        "webdashboard/api/incremental.py",
+        "literature_review/analysis/result_merger.py"
+      ]
     },
     "@output": {
-      "documents": ["docs/OUTPUT_FILE_REFERENCE.md", "docs/OUTPUT_MANAGEMENT_STRATEGY.md"],
+      "documents": [
+        "docs/OUTPUT_FILE_REFERENCE.md",
+        "docs/OUTPUT_MANAGEMENT_STRATEGY.md"
+      ],
       "review_interval_days": 14,
       "priority": "medium",
-      "staleness_indicators": ["literature_review/orchestrator.py", "gap_analysis_output/"]
+      "staleness_indicators": [
+        "literature_review/orchestrator.py",
+        "gap_analysis_output/"
+      ]
     },
     "@api": {
-      "documents": ["docs/API_DOCUMENTATION_README.md", "docs/API_DOCUMENTATION_SUMMARY.md", "docs/API_COST_TRACKER.md"],
+      "documents": [
+        "docs/API_DOCUMENTATION_README.md",
+        "docs/API_DOCUMENTATION_SUMMARY.md",
+        "docs/API_COST_TRACKER.md"
+      ],
       "review_interval_days": 7,
       "priority": "high",
-      "staleness_indicators": ["webdashboard/app.py", "webdashboard/api/", "literature_review/utils/api_manager.py"]
+      "staleness_indicators": [
+        "webdashboard/app.py",
+        "webdashboard/api/",
+        "literature_review/utils/api_manager.py"
+      ]
     },
     "@testing": {
-      "documents": ["docs/TESTING_GUIDE.md", "docs/SMOKE_TESTING_BEST_PRACTICES.md", "docs/MANUAL_TESTING_GUIDE.md"],
+      "documents": [
+        "docs/TESTING_GUIDE.md",
+        "docs/SMOKE_TESTING_BEST_PRACTICES.md",
+        "docs/MANUAL_TESTING_GUIDE.md"
+      ],
       "review_interval_days": 14,
       "priority": "medium",
-      "staleness_indicators": ["tests/", "pytest.ini", "e2e_smoke_test.py", ".github/workflows/"]
+      "staleness_indicators": [
+        "tests/",
+        "pytest.ini",
+        "e2e_smoke_test.py",
+        ".github/workflows/"
+      ]
     },
     "@architecture": {
-      "documents": ["docs/architecture/ARCHITECTURE_ANALYSIS.md", "docs/architecture/ARCHITECTURE_REFACTOR.md", "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md", "docs/ORCHESTRATOR_V2_GUIDE.md"],
+      "documents": [
+        "docs/architecture/ARCHITECTURE_ANALYSIS.md",
+        "docs/architecture/ARCHITECTURE_REFACTOR.md",
+        "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md",
+        "docs/ORCHESTRATOR_V2_GUIDE.md"
+      ],
       "review_interval_days": 21,
       "priority": "low",
-      "staleness_indicators": ["literature_review/orchestrator.py", "pillar_definitions.json"]
+      "staleness_indicators": [
+        "literature_review/orchestrator.py",
+        "pillar_definitions.json"
+      ]
     },
     "@deployment": {
-      "documents": ["docs/DEPLOYMENT_GUIDE.md", "docs/SCALING_GUIDE.md"],
+      "documents": [
+        "docs/DEPLOYMENT_GUIDE.md",
+        "docs/SCALING_GUIDE.md"
+      ],
       "review_interval_days": 14,
       "priority": "medium",
-      "staleness_indicators": ["docker-compose.yml", "Dockerfile", "nginx.conf", "requirements.txt"]
+      "staleness_indicators": [
+        "docker-compose.yml",
+        "Dockerfile",
+        "nginx.conf",
+        "requirements.txt"
+      ]
     },
     "@guides": {
-      "documents": ["docs/guides/WORKFLOW_EXECUTION_GUIDE.md", "docs/guides/GENEALOGY_USER_GUIDE.md", "docs/guides/PARALLEL_DEVELOPMENT_STRATEGY.md", "docs/guides/GOOGLE_AI_SDK_BEST_PRACTICES.md"],
+      "documents": [
+        "docs/guides/WORKFLOW_EXECUTION_GUIDE.md",
+        "docs/guides/GENEALOGY_USER_GUIDE.md",
+        "docs/guides/PARALLEL_DEVELOPMENT_STRATEGY.md",
+        "docs/guides/GOOGLE_AI_SDK_BEST_PRACTICES.md"
+      ],
       "review_interval_days": 14,
       "priority": "medium",
-      "staleness_indicators": ["pipeline_orchestrator.py", "webdashboard/job_runner.py"]
+      "staleness_indicators": [
+        "pipeline_orchestrator.py",
+        "webdashboard/job_runner.py"
+      ]
     },
     "@parity": {
-      "documents": ["task-cards/dashboard-cli-parity/PARITY-MASTER.md"],
+      "documents": [
+        "task-cards/dashboard-cli-parity/PARITY-MASTER.md"
+      ],
       "review_interval_days": 7,
       "priority": "high",
-      "staleness_indicators": ["task-cards/dashboard-cli-parity/", "webdashboard/"]
+      "staleness_indicators": [
+        "task-cards/dashboard-cli-parity/",
+        "webdashboard/"
+      ]
     },
     "@roadmap": {
-      "documents": ["docs/CONSOLIDATED_ROADMAP.md"],
+      "documents": [
+        "docs/CONSOLIDATED_ROADMAP.md"
+      ],
       "review_interval_days": 7,
       "priority": "high",
-      "staleness_indicators": ["task-cards/", "docs/archive/implementation-summaries/"]
+      "staleness_indicators": [
+        "task-cards/",
+        "docs/archive/implementation-summaries/"
+      ]
     },
     "@docs": {
-      "documents": ["docs/README.md", "docs/DOCUMENTATION_MATRIX.md", "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md", "docs/N8N_AI_BUILDER_PROMPT.md", "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md", "docs/N8N_STALENESS_REVIEW_BUILDER_PROMPT.md"],
+      "documents": [
+        "docs/README.md",
+        "docs/DOCUMENTATION_MATRIX.md",
+        "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md",
+        "docs/N8N_AI_BUILDER_PROMPT.md",
+        "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md",
+        "docs/N8N_STALENESS_REVIEW_BUILDER_PROMPT.md"
+      ],
       "review_interval_days": 14,
       "priority": "medium",
-      "staleness_indicators": ["docs/documentation_matrix.json"]
+      "staleness_indicators": [
+        "docs/documentation_matrix.json"
+      ]
     },
     "@cicd": {
-      "documents": ["docs/CICD_WORKFLOWS_GUIDE.md"],
+      "documents": [
+        "docs/CICD_WORKFLOWS_GUIDE.md"
+      ],
       "review_interval_days": 7,
       "priority": "high",
-      "staleness_indicators": [".github/workflows/", "pytest.ini", "requirements-dev.txt"]
+      "staleness_indicators": [
+        ".github/workflows/",
+        "pytest.ini",
+        "requirements-dev.txt"
+      ]
     }
   },
-  
   "script_to_docs": {
     "pipeline_orchestrator.py": [
       "README.md",
@@ -188,7 +290,6 @@
       "docs/TESTING_GUIDE.md"
     ]
   },
-  
   "documents": [
     {
       "path": "README.md",
@@ -196,8 +297,18 @@
       "status": "current",
       "last_updated": "2025-12-06",
       "owner": "@core",
-      "depends_on": ["docs/DASHBOARD_GUIDE.md", "docs/CONSOLIDATED_ROADMAP.md", "docs/INCREMENTAL_REVIEW_USER_GUIDE.md"],
-      "scripts": ["pipeline_orchestrator.py"]
+      "depends_on": [
+        "docs/DASHBOARD_GUIDE.md",
+        "docs/CONSOLIDATED_ROADMAP.md",
+        "docs/INCREMENTAL_REVIEW_USER_GUIDE.md"
+      ],
+      "scripts": [
+        "pipeline_orchestrator.py"
+      ],
+      "created_date": "2025-11-11",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 7,
+      "next_review": "2025-12-13"
     },
     {
       "path": "docs/README.md",
@@ -206,7 +317,11 @@
       "last_updated": "2025-12-06",
       "owner": "@docs",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/DOCUMENTATION_MATRIX.md",
@@ -215,7 +330,11 @@
       "last_updated": "2025-12-06",
       "owner": "@docs",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-12-07",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/CICD_WORKFLOWS_GUIDE.md",
@@ -223,8 +342,19 @@
       "status": "current",
       "last_updated": "2025-12-10",
       "owner": "@cicd",
-      "depends_on": ["docs/TESTING_GUIDE.md"],
-      "scripts": [".github/workflows/e2e-tests.yml", ".github/workflows/integration-tests.yml", ".github/workflows/dashboard-e2e-tests.yml", "pytest.ini"]
+      "depends_on": [
+        "docs/TESTING_GUIDE.md"
+      ],
+      "scripts": [
+        ".github/workflows/e2e-tests.yml",
+        ".github/workflows/integration-tests.yml",
+        ".github/workflows/dashboard-e2e-tests.yml",
+        "pytest.ini"
+      ],
+      "created_date": "2025-12-10",
+      "last_reviewed": "2025-12-10",
+      "review_interval_days": 7,
+      "next_review": "2025-12-17"
     },
     {
       "path": "docs/N8N_AI_BUILDER_PROMPT.md",
@@ -232,8 +362,15 @@
       "status": "current",
       "last_updated": "2025-12-09",
       "owner": "@docs",
-      "depends_on": ["docs/DOCUMENTATION_MATRIX.md", "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md"],
-      "scripts": []
+      "depends_on": [
+        "docs/DOCUMENTATION_MATRIX.md",
+        "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md"
+      ],
+      "scripts": [],
+      "created_date": "2025-12-07",
+      "last_reviewed": "2025-12-09",
+      "review_interval_days": 14,
+      "next_review": "2025-12-23"
     },
     {
       "path": "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md",
@@ -241,9 +378,17 @@
       "status": "current",
       "last_updated": "2025-12-06",
       "owner": "@docs",
-      "depends_on": ["docs/DOCUMENTATION_MATRIX.md"],
+      "depends_on": [
+        "docs/DOCUMENTATION_MATRIX.md"
+      ],
       "scripts": [],
-      "staleness_indicators": ["docs/documentation_matrix.json"]
+      "staleness_indicators": [
+        "docs/documentation_matrix.json"
+      ],
+      "created_date": "2025-12-07",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md",
@@ -251,9 +396,18 @@
       "status": "current",
       "last_updated": "2025-12-10",
       "owner": "@docs",
-      "depends_on": ["docs/DOCUMENTATION_MATRIX.md", "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md"],
+      "depends_on": [
+        "docs/DOCUMENTATION_MATRIX.md",
+        "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md"
+      ],
       "scripts": [],
-      "staleness_indicators": ["docs/documentation_matrix.json"]
+      "staleness_indicators": [
+        "docs/documentation_matrix.json"
+      ],
+      "created_date": "2025-12-10",
+      "last_reviewed": "2025-12-10",
+      "review_interval_days": 14,
+      "next_review": "2025-12-24"
     },
     {
       "path": "docs/N8N_STALENESS_REVIEW_BUILDER_PROMPT.md",
@@ -261,9 +415,17 @@
       "status": "current",
       "last_updated": "2025-12-10",
       "owner": "@docs",
-      "depends_on": ["docs/N8N_STALENESS_REVIEW_BLUEPRINT.md"],
+      "depends_on": [
+        "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md"
+      ],
       "scripts": [],
-      "staleness_indicators": ["docs/documentation_matrix.json"]
+      "staleness_indicators": [
+        "docs/documentation_matrix.json"
+      ],
+      "created_date": "2025-12-10",
+      "last_reviewed": "2025-12-10",
+      "review_interval_days": 14,
+      "next_review": "2025-12-24"
     },
     {
       "path": "docs/USER_MANUAL.md",
@@ -271,8 +433,18 @@
       "status": "review",
       "last_updated": "2025-11-16",
       "owner": "@core",
-      "depends_on": ["docs/DASHBOARD_GUIDE.md", "docs/OUTPUT_FILE_REFERENCE.md"],
-      "scripts": ["pipeline_orchestrator.py", "webdashboard/app.py"]
+      "depends_on": [
+        "docs/DASHBOARD_GUIDE.md",
+        "docs/OUTPUT_FILE_REFERENCE.md"
+      ],
+      "scripts": [
+        "pipeline_orchestrator.py",
+        "webdashboard/app.py"
+      ],
+      "created_date": "2025-11-16",
+      "last_reviewed": "2025-11-16",
+      "review_interval_days": 7,
+      "next_review": "2025-11-23"
     },
     {
       "path": "docs/DASHBOARD_GUIDE.md",
@@ -280,8 +452,17 @@
       "status": "current",
       "last_updated": "2025-12-06",
       "owner": "@dashboard",
-      "depends_on": ["docs/DASHBOARD_CLI_PARITY.md"],
-      "scripts": ["webdashboard/app.py", "webdashboard/job_runner.py"]
+      "depends_on": [
+        "docs/DASHBOARD_CLI_PARITY.md"
+      ],
+      "scripts": [
+        "webdashboard/app.py",
+        "webdashboard/job_runner.py"
+      ],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 7,
+      "next_review": "2025-12-13"
     },
     {
       "path": "docs/CONSOLIDATED_ROADMAP.md",
@@ -289,8 +470,16 @@
       "status": "review",
       "last_updated": "2025-11-14",
       "owner": "@roadmap",
-      "depends_on": ["docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"],
-      "scripts": ["pipeline_orchestrator.py"]
+      "depends_on": [
+        "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"
+      ],
+      "scripts": [
+        "pipeline_orchestrator.py"
+      ],
+      "created_date": "2025-11-13",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 7,
+      "next_review": "2025-11-21"
     },
     {
       "path": "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md",
@@ -298,8 +487,17 @@
       "status": "complete",
       "last_updated": "2025-11-14",
       "owner": "@evidence",
-      "depends_on": ["docs/EVIDENCE_TRIANGULATION_GUIDE.md", "docs/TEMPORAL_COHERENCE_GUIDE.md"],
-      "scripts": ["literature_review/evidence_scorer.py"]
+      "depends_on": [
+        "docs/EVIDENCE_TRIANGULATION_GUIDE.md",
+        "docs/TEMPORAL_COHERENCE_GUIDE.md"
+      ],
+      "scripts": [
+        "literature_review/evidence_scorer.py"
+      ],
+      "created_date": "2025-11-13",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 14,
+      "next_review": "2025-11-28"
     },
     {
       "path": "docs/EVIDENCE_TRIANGULATION_GUIDE.md",
@@ -308,7 +506,11 @@
       "last_updated": "2025-11-14",
       "owner": "@evidence",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 14,
+      "next_review": "2025-11-28"
     },
     {
       "path": "docs/TEMPORAL_COHERENCE_GUIDE.md",
@@ -317,7 +519,11 @@
       "last_updated": "2025-11-14",
       "owner": "@evidence",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 14,
+      "next_review": "2025-11-28"
     },
     {
       "path": "docs/EVIDENCE_EXTRACTION_ENHANCEMENTS.md",
@@ -326,7 +532,11 @@
       "last_updated": "2025-11-14",
       "owner": "@evidence",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 14,
+      "next_review": "2025-11-28"
     },
     {
       "path": "docs/EVIDENCE_SCORING_DOCUMENTATION.md",
@@ -335,7 +545,13 @@
       "last_updated": "2025-12-06",
       "owner": "@evidence",
       "depends_on": [],
-      "scripts": ["literature_review/evidence_scorer.py"]
+      "scripts": [
+        "literature_review/evidence_scorer.py"
+      ],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/INCREMENTAL_REVIEW_USER_GUIDE.md",
@@ -343,8 +559,16 @@
       "status": "current",
       "last_updated": "2025-12-06",
       "owner": "@incremental",
-      "depends_on": ["docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md"],
-      "scripts": ["pipeline_orchestrator.py"]
+      "depends_on": [
+        "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md"
+      ],
+      "scripts": [
+        "pipeline_orchestrator.py"
+      ],
+      "created_date": "2025-11-21",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md",
@@ -353,7 +577,13 @@
       "last_updated": "2025-12-06",
       "owner": "@incremental",
       "depends_on": [],
-      "scripts": ["pipeline_orchestrator.py"]
+      "scripts": [
+        "pipeline_orchestrator.py"
+      ],
+      "created_date": "2025-11-21",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/guides/RESUME_CONTROLS_USER_GUIDE.md",
@@ -361,8 +591,17 @@
       "status": "review",
       "last_updated": "2025-11-22",
       "owner": "@incremental",
-      "depends_on": ["docs/DASHBOARD_GUIDE.md"],
-      "scripts": ["webdashboard/job_runner.py", "webdashboard/app.py"]
+      "depends_on": [
+        "docs/DASHBOARD_GUIDE.md"
+      ],
+      "scripts": [
+        "webdashboard/job_runner.py",
+        "webdashboard/app.py"
+      ],
+      "created_date": "2025-11-22",
+      "last_reviewed": "2025-11-22",
+      "review_interval_days": 14,
+      "next_review": "2025-12-06"
     },
     {
       "path": "docs/DASHBOARD_CLI_PARITY.md",
@@ -371,7 +610,14 @@
       "last_updated": "2025-12-06",
       "owner": "@dashboard",
       "depends_on": [],
-      "scripts": ["webdashboard/app.py", "pipeline_orchestrator.py"]
+      "scripts": [
+        "webdashboard/app.py",
+        "pipeline_orchestrator.py"
+      ],
+      "created_date": "2025-11-19",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 7,
+      "next_review": "2025-12-13"
     },
     {
       "path": "docs/OUTPUT_FILE_REFERENCE.md",
@@ -379,8 +625,14 @@
       "status": "current",
       "last_updated": "2025-12-06",
       "owner": "@output",
-      "depends_on": ["docs/OUTPUT_MANAGEMENT_STRATEGY.md"],
-      "scripts": []
+      "depends_on": [
+        "docs/OUTPUT_MANAGEMENT_STRATEGY.md"
+      ],
+      "scripts": [],
+      "created_date": "2025-11-19",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/OUTPUT_MANAGEMENT_STRATEGY.md",
@@ -389,7 +641,11 @@
       "last_updated": "2025-12-06",
       "owner": "@output",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-19",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/API_DOCUMENTATION_README.md",
@@ -397,8 +653,16 @@
       "status": "current",
       "last_updated": "2025-12-06",
       "owner": "@api",
-      "depends_on": ["docs/API_DOCUMENTATION_SUMMARY.md"],
-      "scripts": ["webdashboard/app.py"]
+      "depends_on": [
+        "docs/API_DOCUMENTATION_SUMMARY.md"
+      ],
+      "scripts": [
+        "webdashboard/app.py"
+      ],
+      "created_date": "2025-11-18",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 7,
+      "next_review": "2025-12-13"
     },
     {
       "path": "docs/API_DOCUMENTATION_SUMMARY.md",
@@ -407,7 +671,13 @@
       "last_updated": "2025-12-06",
       "owner": "@api",
       "depends_on": [],
-      "scripts": ["webdashboard/app.py"]
+      "scripts": [
+        "webdashboard/app.py"
+      ],
+      "created_date": "2025-11-18",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 7,
+      "next_review": "2025-12-13"
     },
     {
       "path": "docs/API_COST_TRACKER.md",
@@ -416,7 +686,11 @@
       "last_updated": "2025-11-16",
       "owner": "@api",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-16",
+      "last_reviewed": "2025-11-16",
+      "review_interval_days": 7,
+      "next_review": "2025-11-23"
     },
     {
       "path": "docs/TESTING_GUIDE.md",
@@ -424,8 +698,14 @@
       "status": "current",
       "last_updated": "2025-12-06",
       "owner": "@testing",
-      "depends_on": ["tests/README.md"],
-      "scripts": []
+      "depends_on": [
+        "tests/README.md"
+      ],
+      "scripts": [],
+      "created_date": "2025-11-18",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/SMOKE_TESTING_BEST_PRACTICES.md",
@@ -434,7 +714,11 @@
       "last_updated": "2025-11-16",
       "owner": "@testing",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-16",
+      "last_reviewed": "2025-11-16",
+      "review_interval_days": 14,
+      "next_review": "2025-11-30"
     },
     {
       "path": "docs/MANUAL_TESTING_GUIDE.md",
@@ -443,7 +727,11 @@
       "last_updated": "2025-11-16",
       "owner": "@testing",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-16",
+      "last_reviewed": "2025-11-16",
+      "review_interval_days": 14,
+      "next_review": "2025-11-30"
     },
     {
       "path": "docs/architecture/ARCHITECTURE_ANALYSIS.md",
@@ -452,7 +740,11 @@
       "last_updated": "2025-11-14",
       "owner": "@architecture",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-10",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 21,
+      "next_review": "2025-12-05"
     },
     {
       "path": "docs/architecture/ARCHITECTURE_REFACTOR.md",
@@ -461,7 +753,11 @@
       "last_updated": "2025-11-14",
       "owner": "@architecture",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-13",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 21,
+      "next_review": "2025-12-05"
     },
     {
       "path": "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md",
@@ -470,7 +766,13 @@
       "last_updated": "2025-11-14",
       "owner": "@architecture",
       "depends_on": [],
-      "scripts": ["pillar_definitions.json"]
+      "scripts": [
+        "pillar_definitions.json"
+      ],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 21,
+      "next_review": "2025-12-05"
     },
     {
       "path": "docs/ORCHESTRATOR_V2_GUIDE.md",
@@ -479,7 +781,13 @@
       "last_updated": "2025-11-14",
       "owner": "@architecture",
       "depends_on": [],
-      "scripts": ["pipeline_orchestrator.py"]
+      "scripts": [
+        "pipeline_orchestrator.py"
+      ],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 21,
+      "next_review": "2025-12-05"
     },
     {
       "path": "docs/DEPLOYMENT_GUIDE.md",
@@ -488,7 +796,13 @@
       "last_updated": "2025-12-06",
       "owner": "@deployment",
       "depends_on": [],
-      "scripts": ["docker-compose.yml"]
+      "scripts": [
+        "docker-compose.yml"
+      ],
+      "created_date": "2025-11-17",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/SCALING_GUIDE.md",
@@ -497,7 +811,11 @@
       "last_updated": "2025-12-06",
       "owner": "@deployment",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-18",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/guides/WORKFLOW_EXECUTION_GUIDE.md",
@@ -505,8 +823,16 @@
       "status": "review",
       "last_updated": "2025-11-16",
       "owner": "@guides",
-      "depends_on": ["docs/USER_MANUAL.md"],
-      "scripts": ["pipeline_orchestrator.py"]
+      "depends_on": [
+        "docs/USER_MANUAL.md"
+      ],
+      "scripts": [
+        "pipeline_orchestrator.py"
+      ],
+      "created_date": "2025-11-10",
+      "last_reviewed": "2025-11-16",
+      "review_interval_days": 14,
+      "next_review": "2025-11-30"
     },
     {
       "path": "docs/guides/GENEALOGY_USER_GUIDE.md",
@@ -515,7 +841,13 @@
       "last_updated": "2025-12-06",
       "owner": "@guides",
       "depends_on": [],
-      "scripts": ["webdashboard/job_runner.py"]
+      "scripts": [
+        "webdashboard/job_runner.py"
+      ],
+      "created_date": "2025-11-21",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "docs/guides/PARALLEL_DEVELOPMENT_STRATEGY.md",
@@ -524,7 +856,11 @@
       "last_updated": "2025-11-14",
       "owner": "@guides",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-10",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 14,
+      "next_review": "2025-11-28"
     },
     {
       "path": "docs/guides/GOOGLE_AI_SDK_BEST_PRACTICES.md",
@@ -533,7 +869,11 @@
       "last_updated": "2025-11-14",
       "owner": "@guides",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 14,
+      "next_review": "2025-11-28"
     },
     {
       "path": "docs/guides/FRESH_ANALYSIS_TRIGGER_README.md",
@@ -542,7 +882,13 @@
       "last_updated": "2025-12-06",
       "owner": "@guides",
       "depends_on": [],
-      "scripts": ["webdashboard/app.py"]
+      "scripts": [
+        "webdashboard/app.py"
+      ],
+      "created_date": "2025-11-22",
+      "last_reviewed": "2025-12-06",
+      "review_interval_days": 14,
+      "next_review": "2025-12-20"
     },
     {
       "path": "task-cards/dashboard-cli-parity/PARITY-MASTER.md",
@@ -551,10 +897,13 @@
       "last_updated": "2025-11-24",
       "owner": "@parity",
       "depends_on": [],
-      "scripts": []
+      "scripts": [],
+      "created_date": "2025-11-19",
+      "last_reviewed": "2025-11-24",
+      "review_interval_days": 7,
+      "next_review": "2025-12-01"
     }
   ],
-  
   "archive_summary": {
     "docs/archive/implementation-summaries": 36,
     "docs/archive/smoke-tests": 7,
@@ -563,7 +912,6 @@
     "reviews/pull-requests": 18,
     "reviews/third-party": 4
   },
-  
   "cascade_rules": {
     "pipeline_orchestrator.py": {
       "update_order": [
@@ -605,5 +953,11 @@
         "docs/TESTING_GUIDE.md"
       ]
     }
+  },
+  "field_descriptions": {
+    "created_date": "Date the document was first created (from git history)",
+    "last_reviewed": "Date the document was last reviewed by human or AI agent",
+    "next_review": "Calculated date for next scheduled review",
+    "review_interval_days": "Per-document override for review frequency (defaults to domain setting)"
   }
 }

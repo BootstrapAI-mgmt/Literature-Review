@@ -443,7 +443,7 @@ Create loops as specified in conditions.
 ```
 Build a workflow that uses AI to update documentation files and commits changes to GitHub.
 
-CONTEXT: This is workflow 3 of 4. It receives individual tasks from "Distributor", fetches the target document, uses AI to make updates, commits to GitHub, and sends a completion callback.
+CONTEXT: This is workflow 3 of 4. It receives individual tasks from "Distributor", fetches the target document, uses AI to make updates, commits to GitHub, updates the review tracking in documentation_matrix.json, and sends a completion callback.
 
 BUILD THESE NODES:
 
@@ -493,12 +493,12 @@ BUILD THESE NODES:
 
 6. IF node named "Changes Needed"
    - Condition: changes_needed equals true
-   - On false: Skip to Callback
+   - On false: Skip to Update Review Tracking (node 10)
 
 7. HTTP REQUEST node named "Get File SHA"
    - Method: GET
    - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{$json.document}}
-   - Authentication: Bearer Token (use GITHUB_TOKEN)
+   - Authentication: Predefined Credential Type → Header Auth → "GitHub API Token"
    - Add header: Accept: application/vnd.github.v3+json
 
 8. CODE node named "Prepare Commit"
@@ -511,16 +511,74 @@ BUILD THESE NODES:
 9. HTTP REQUEST node named "Commit to GitHub"
    - Method: PUT
    - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{$json.document}}
-   - Authentication: Bearer Token
+   - Authentication: Predefined Credential Type → Header Auth → "GitHub API Token"
    - Body: {"message":"docs: {{$json.summary}}","content":"{{$json.content_base64}}","sha":"{{$json.sha}}"}
 
-10. HTTP REQUEST node named "Send Callback" (connect BOTH paths here - from Changes Needed false AND from Commit)
-   - Method: POST
-   - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
-   - Body: {"task_id":"{{$json.task_id}}","status":"completed","result":{"summary":"{{$json.summary}}"}}
+--- REVIEW TRACKING NODES (connect both paths here) ---
 
-Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)
-Make sure both paths merge at the Callback node.
+10. HTTP REQUEST node named "Fetch Matrix"
+    - Method: GET
+    - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/docs/documentation_matrix.json
+    - Authentication: Predefined Credential Type → Header Auth → "GitHub API Token"
+    - Add header: Accept: application/vnd.github.v3+json
+    - NOTE: This returns the file content base64-encoded with SHA
+
+11. CODE node named "Update Review Tracking"
+    - JavaScript:
+    const prev = $('Parse AI Output').first().json;
+    const matrixResponse = $input.first().json;
+    
+    // Decode the matrix content from base64
+    const matrixContent = Buffer.from(matrixResponse.content, 'base64').toString('utf8');
+    const matrix = JSON.parse(matrixContent);
+    
+    // Find the document and update review tracking
+    const today = new Date().toISOString().split('T')[0];
+    const doc = matrix.documents.find(d => d.path === prev.document);
+    
+    if (doc) {
+      doc.last_reviewed = today;
+      // Calculate next_review based on review_interval_days
+      const interval = doc.review_interval_days || 7;
+      const nextDate = new Date();
+      nextDate.setDate(nextDate.getDate() + interval);
+      doc.next_review = nextDate.toISOString().split('T')[0];
+      // If changes were made, also update last_updated
+      if (prev.changes_needed) {
+        doc.last_updated = today;
+        doc.status = 'current';
+      }
+    }
+    
+    // Update matrix version timestamp
+    matrix.last_updated = today;
+    
+    // Encode back to base64 for commit
+    const updatedContent = Buffer.from(JSON.stringify(matrix, null, 2)).toString('base64');
+    
+    return {
+      ...prev,
+      matrix_sha: matrixResponse.sha,
+      matrix_content_base64: updatedContent,
+      review_updated: !!doc
+    };
+
+12. HTTP REQUEST node named "Commit Matrix Update"
+    - Method: PUT
+    - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/docs/documentation_matrix.json
+    - Authentication: Predefined Credential Type → Header Auth → "GitHub API Token"
+    - Body: {"message":"chore: update review tracking for {{$json.document}}","content":"{{$json.matrix_content_base64}}","sha":"{{$json.matrix_sha}}"}
+    - IMPORTANT: Under "Options" → "On Error" → select "Continue On Fail"
+    - This prevents failures if another process updated the matrix (race condition)
+
+13. HTTP REQUEST node named "Send Callback"
+    - Method: POST
+    - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
+    - Body: {"task_id":"{{$json.task_id}}","status":"completed","result":{"summary":"{{$json.summary}}"}}
+
+Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)→11→12→13
+Both "Changes Needed" paths merge at "Fetch Matrix" (node 10).
+The review tracking is updated regardless of whether document changes were needed.
 ```
 
 ---
