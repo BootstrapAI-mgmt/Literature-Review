@@ -328,40 +328,33 @@ BUILD THESE NODES:
    const runnable = tasks.filter(t => 
      t.status === 'pending' && (!t.depends_on || t.depends_on.length === 0 || t.depends_on.every(d => done.includes(d)))
    );
-   return { runnable: runnable, list_id: listId, trigger: trigger };
+   // Return each runnable task as a separate item with list_id and trigger attached
+   // n8n will automatically iterate over these items in subsequent nodes
+   return runnable.map(task => ({ task, list_id: listId, trigger }));
 
 7. IF node named "Has Runnable"
-   - Condition: Check if runnable array length > 0
+   - Condition: Use boolean expression
+   - Expression: `{{ $json.task !== undefined }}`
+   - Operator: equals
+   - Compare to: `true`
    - On false: End or loop back
+   - NOTE: Get Runnable Tasks returns multiple items; this checks if any exist
 
-8. Split In Batches node named "Process Each Task"
-   - Batch Size: 1
-
-9. CODE node named "Prepare Agent Payload"
-   - JavaScript:
-   const task = $input.first().json;
-   const runnableData = $('Get Runnable Tasks').first().json;
-   return {
-     task: task,
-     list_id: runnableData.list_id,
-     trigger: runnableData.trigger || {}
-   };
-
-10. HTTP REQUEST node named "Dispatch to Agent"
+8. HTTP REQUEST node named "Dispatch to Agent"
    - Method: POST
    - URL: https://gitlitreview.app.n8n.cloud/webhook/domain-agent
    - Body Content Type: JSON
-   - Specify Body: Using Fields Below
-   - Body Parameters (send as JSON):
-     - Add the expression: ={{ $json }}
-   - NOTE: Use "Specify Body" → "Using JSON" and set the body to: ={{ $json }}
+   - Specify Body: Using JSON
+   - JSON Body: ={{ $json }}
+   - NOTE: n8n automatically runs this once per input item from Get Runnable Tasks
+   - Each item already has {task, list_id, trigger} structure
 
-11. WAIT node named "Wait for Callback"
+9. WAIT node named "Wait for Callback"
     - Resume: On Webhook Call
     - Webhook Suffix: task-done-{{$json.task.task_id}}
     - Timeout: 5 minutes
 
-12. CODE node named "Update Task Status"
+10. CODE node named "Update Task Status"
     - JavaScript:
     const staticData = $getWorkflowStaticData('global');
     const state = staticData.state;
@@ -374,12 +367,12 @@ BUILD THESE NODES:
     const pending = state.current_list?.tasks?.filter(t => t.status === 'pending') || [];
     return { all_done: pending.length === 0, state };
 
-13. IF node named "All Done"
+11. IF node named "All Done"
     - Condition: all_done equals true
     - On true: Go to Finalize
     - On false: Loop back to "Get Runnable Tasks"
 
-14. CODE node named "Finalize List"
+12. CODE node named "Finalize List"
     - JavaScript:
     const staticData = $getWorkflowStaticData('global');
     const state = staticData.state;
@@ -391,12 +384,12 @@ BUILD THESE NODES:
     staticData.state = state;
     return { more_queued: state.queue.length > 0 };
 
-15. IF node named "More Queued"
+13. IF node named "More Queued"
     - Condition: more_queued equals true
     - On true: Loop back to "Pop Next List"
     - On false: End
 
-Connect: 1→2→3→4→5→6→7→8→9→10→11→12→13→14→15
+Connect: 1→2→3→4→5→6→7→8→9→10→11→12→13
 Create loops as specified in conditions.
 ```
 
