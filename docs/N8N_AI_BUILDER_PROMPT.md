@@ -523,7 +523,21 @@ BUILD THESE NODES:
    const prev = $('Parse AI Output').first().json;
    const sha = $input.first().json.sha;
    const content = Buffer.from(prev.updated_content || '').toString('base64');
-   return { ...prev, sha, content_base64: content };
+   // Sanitize summary for commit message (remove special chars that break JSON)
+   const safeSummary = (prev.summary || 'Update documentation')
+     .replace(/[`"\\]/g, '')  // Remove backticks, quotes, backslashes
+     .substring(0, 72);        // Limit length for commit message
+   return { 
+     ...prev, 
+     sha, 
+     content_base64: content,
+     // Pre-build the request body as an object (not string) for the HTTP node
+     commit_body: {
+       message: `docs: ${safeSummary}`,
+       content: content,
+       sha: sha
+     }
+   };
 
 9. HTTP REQUEST node named "Commit to GitHub"
    - Method: PUT
@@ -532,7 +546,10 @@ BUILD THESE NODES:
    - Headers (add under "Send Headers" → "Specify Headers" → "Using Fields"):
      - Name: `Authorization` | Value: `Bearer YOUR_GITHUB_PAT_HERE`
      - Name: `Accept` | Value: `application/vnd.github.v3+json`
-   - Body: {"message":"docs: {{$json.summary}}","content":"{{$json.content_base64}}","sha":"{{$json.sha}}"}
+   - Body Content Type: JSON
+   - Specify Body: Using JSON
+   - JSON: ={{ JSON.stringify($json.commit_body) }}
+   - IMPORTANT: Use JSON.stringify() on the pre-built object to avoid escaping issues
 
 --- REVIEW TRACKING NODES (connect both paths here) ---
 
@@ -582,7 +599,13 @@ BUILD THESE NODES:
       ...prev,
       matrix_sha: matrixResponse.sha,
       matrix_content_base64: updatedContent,
-      review_updated: !!doc
+      review_updated: !!doc,
+      // Pre-build the matrix commit body as an object
+      matrix_commit_body: {
+        message: `chore: update review tracking for ${prev.document}`,
+        content: updatedContent,
+        sha: matrixResponse.sha
+      }
     };
 
 12. HTTP REQUEST node named "Commit Matrix Update"
@@ -592,14 +615,18 @@ BUILD THESE NODES:
     - Headers (add under "Send Headers" → "Specify Headers" → "Using Fields"):
       - Name: `Authorization` | Value: `Bearer YOUR_GITHUB_PAT_HERE`
       - Name: `Accept` | Value: `application/vnd.github.v3+json`
-    - Body: {"message":"chore: update review tracking for {{$json.document}}","content":"{{$json.matrix_content_base64}}","sha":"{{$json.matrix_sha}}"}
+    - Body Content Type: JSON
+    - Specify Body: Using JSON
+    - JSON: ={{ JSON.stringify($json.matrix_commit_body) }}
     - IMPORTANT: Under "Options" → "On Error" → select "Continue On Fail"
     - This prevents failures if another process updated the matrix (race condition)
 
 13. HTTP REQUEST node named "Send Callback"
     - Method: POST
     - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
-    - Body: {"task_id":"{{$json.task_id}}","status":"completed","result":{"summary":"{{$json.summary}}"}}
+    - Body Content Type: JSON
+    - Specify Body: Using JSON
+    - JSON: ={{ JSON.stringify({task_id: $json.task_id, status: "completed", result: {summary: ($json.summary || "").substring(0,100)}}) }}
 
 Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)→11→12→13
 Both "Changes Needed" paths merge at "Fetch Matrix" (node 10).
