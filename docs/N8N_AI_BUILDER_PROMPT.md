@@ -363,7 +363,7 @@ BUILD THESE NODES:
    - URL: https://gitlitreview.app.n8n.cloud/webhook/domain-agent
    - Body Content Type: JSON
    - Specify Body: Using JSON
-   - JSON Body: ={{ $json }}
+   - JSON Body: ={{ JSON.stringify({ task: $json.task, list_id: $json.list_id, trigger: $json.trigger }) }}
    - NOTE: n8n automatically runs this once per input item from Get Runnable Tasks
    - Each item already has {task, list_id, trigger} structure
 
