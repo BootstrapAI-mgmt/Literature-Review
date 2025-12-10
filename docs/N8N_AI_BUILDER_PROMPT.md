@@ -379,19 +379,22 @@ BUILD THESE NODES:
    - Method: POST
    - URL: https://gitlitreview.app.n8n.cloud/webhook/domain-agent
    - Body Content Type: JSON
-   - Specify Body: Using Fields (NOT "Using JSON")
-   - Add these body parameters (click "Add Parameter" for each):
-     - Name: task | Value: ={{ $json.task }}
-     - Name: list_id | Value: ={{ $json.list_id }}
-     - Name: trigger | Value: ={{ $json.trigger }}
-   - IMPORTANT: "Using Fields" mode properly serializes nested objects
-   - This avoids the "JSON parameter needs to be valid JSON" error
+   - Specify Body: Using JSON
+   - JSON Body (raw text, NOT expression):
+     {
+       "task": {{ JSON.stringify($json.task) }},
+       "list_id": "{{ $json.list_id }}",
+       "trigger": "{{ $json.list_id }}"
+     }
+   - IMPORTANT: Use JSON.stringify() for nested objects (task, trigger)
+   - String values like list_id just need quotes and expression
+   - Do NOT use "Using Fields" mode - it converts objects to "[object Object]"
 
 9. WAIT node named "Wait for Callback"
     - Resume: On Webhook Call
-    - Webhook Suffix: task-done-{{$json._task_id}}
+    - Webhook Suffix: task-done-{{$('Prepare Agent Payload').item.json._task_id}}
     - Timeout: 5 minutes
-    - NOTE: Uses _task_id from Prepare Agent Payload node
+    - IMPORTANT: Must reference Prepare Agent Payload directly since $json contains HTTP response
 
 10. CODE node named "Update Task Status"
     - JavaScript:
@@ -451,24 +454,28 @@ BUILD THESE NODES:
 
 2. HTTP REQUEST node named "Fetch Document"
    - Method: GET
-   - URL: https://raw.githubusercontent.com/BootstrapAI-mgmt/Literature-Review/main/{{$json.task.document}}
+   - URL: https://raw.githubusercontent.com/BootstrapAI-mgmt/Literature-Review/main/{{$json.body.task.document}}
    - Response Format: Text
+   - NOTE: Use $json.body.task.document (webhook data is nested in body)
+   - IMPORTANT: Hardcode the repo URL - $env.* is blocked on n8n Cloud
 
 3. AI AGENT node named "Update Document" (use Gemini)
    - Model: gemini-1.5-flash
    - System prompt: You update documentation. Make minimal targeted changes. Preserve formatting. Output JSON: {"changes_needed":true/false,"updated_content":"full updated doc","summary":"brief description"}
-   - User message: Task: {{$json.task.description}}. Document: {{$json.task.document}}. Trigger: {{$json.trigger.message}}. Current content: {{$('Fetch Document').first().json.data}}
+   - User message: Task: {{$('Receive Task').first().json.body.task.description}}. Document: {{$('Receive Task').first().json.body.task.document}}. Trigger: {{$('Receive Task').first().json.body.trigger.message}}. Current content: {{$json.data}}
+   - NOTE: Reference webhook data via $('Receive Task').first().json.body since $json now contains the fetched document
 
 4. CODE node named "Parse AI Output"
    - JavaScript:
-   const input = $('Receive Task').first().json;
+   const webhookData = $('Receive Task').first().json.body;
    const text = $input.first().json.text || $input.first().json.output || '';
    const match = text.match(/\{[\s\S]*?\}/);
    let result = { changes_needed: false, summary: 'No changes' };
    if (match) {
      try { result = JSON.parse(match[0]); } catch(e) {}
    }
-   return { ...result, task_id: input.task.task_id, document: input.task.document };
+   return { ...result, task_id: webhookData.task.task_id, document: webhookData.task.document };
+   // NOTE: Access webhook data via $('Receive Task').first().json.body
 
 5. IF node named "Changes Needed"
    - Condition: changes_needed equals true
