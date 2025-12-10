@@ -964,12 +964,25 @@ dashboard.example.com {
   - S3/cloud storage for uploads
   - Advanced analytics and reporting
 
+## Automated Documentation Updates
+
+This document is automatically reviewed by the n8n documentation chain when:
+- Changes are pushed to `webdashboard/app.py` or related dashboard files
+- The document is flagged as stale based on `documentation_matrix.json` review intervals
+- Related documentation dependencies are updated
+
+Review tracking is maintained in `documentation_matrix.json` with fields like `last_reviewed` and `next_review`.
+
 ## Support
 
 For issues or questions:
 1. Check the [troubleshooting section](#troubleshooting)
 2. Review logs in `/tmp/server.log` (if using run script)
 3. Open an issue on GitHub with error details
+
+---
+
+*Last Updated: December 10, 2025*
 
 ## License
 
