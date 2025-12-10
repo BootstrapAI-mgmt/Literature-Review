@@ -267,4 +267,4 @@ When making changes, update documents in this order:
 ---
 
 *Last Updated: 2025-12-10*
-*Matrix Version: 1.1*
+*Matrix Version: 1.2*
