@@ -73,6 +73,7 @@ See `/archive/README.md` for details.
 | `DASHBOARD_GUIDE.md` | Web dashboard usage guide |
 | `USER_MANUAL.md` | Complete user manual |
 | `TESTING_GUIDE.md` | Testing procedures and guidelines |
+| `CICD_WORKFLOWS_GUIDE.md` | GitHub Actions CI/CD workflows |
 | `DEPLOYMENT_GUIDE.md` | Deployment instructions |
 | `API_REFERENCE.md` | API documentation |
 | `CONSOLIDATED_ROADMAP.md` | Project roadmap and progress |

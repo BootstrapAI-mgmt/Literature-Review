@@ -164,7 +164,9 @@ BUILD THESE NODES:
    for (const file of changes.changed_files) {
      // Check 1: If a script changed, find docs that depend on it
      for (const [script, docs] of Object.entries(matrix.script_to_docs || {})) {
-       if (file.includes(script.replace('.py',''))) {
+       // Handle both exact matches and partial matches (for directories like .github/workflows/)
+       const scriptBase = script.replace('.py','').replace('.yml','').replace('.yaml','');
+       if (file === script || file.includes(scriptBase) || (script.endsWith('/') && file.startsWith(script))) {
          docs.forEach(d => affected.add(d));
        }
      }

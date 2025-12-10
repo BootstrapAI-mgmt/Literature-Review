@@ -1,5 +1,5 @@
 {
-  "version": "1.1",
+  "version": "1.2",
   "last_updated": "2025-12-10",
   "description": "Machine-readable documentation dependency matrix with staleness detection support",
   
@@ -16,7 +16,6 @@
     "ignore_patterns": [
       "test_*.py",
       "tests/**",
-      ".github/workflows/**",
       "*.md"
     ],
     "schedule": {
@@ -88,7 +87,7 @@
       "documents": ["docs/TESTING_GUIDE.md", "docs/SMOKE_TESTING_BEST_PRACTICES.md", "docs/MANUAL_TESTING_GUIDE.md"],
       "review_interval_days": 14,
       "priority": "medium",
-      "staleness_indicators": ["tests/", "pytest.ini", "e2e_smoke_test.py"]
+      "staleness_indicators": ["tests/", "pytest.ini", "e2e_smoke_test.py", ".github/workflows/"]
     },
     "@architecture": {
       "documents": ["docs/architecture/ARCHITECTURE_ANALYSIS.md", "docs/architecture/ARCHITECTURE_REFACTOR.md", "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md", "docs/ORCHESTRATOR_V2_GUIDE.md"],
@@ -125,6 +124,12 @@
       "review_interval_days": 14,
       "priority": "medium",
       "staleness_indicators": ["docs/documentation_matrix.json"]
+    },
+    "@cicd": {
+      "documents": ["docs/CICD_WORKFLOWS_GUIDE.md"],
+      "review_interval_days": 7,
+      "priority": "high",
+      "staleness_indicators": [".github/workflows/", "pytest.ini", "requirements-dev.txt"]
     }
   },
   
@@ -164,6 +169,23 @@
     ],
     "literature_review/journal_reviewer.py": [
       "docs/USER_MANUAL.md"
+    ],
+    ".github/workflows/e2e-tests.yml": [
+      "docs/CICD_WORKFLOWS_GUIDE.md",
+      "docs/TESTING_GUIDE.md"
+    ],
+    ".github/workflows/integration-tests.yml": [
+      "docs/CICD_WORKFLOWS_GUIDE.md",
+      "docs/TESTING_GUIDE.md"
+    ],
+    ".github/workflows/dashboard-e2e-tests.yml": [
+      "docs/CICD_WORKFLOWS_GUIDE.md",
+      "docs/TESTING_GUIDE.md",
+      "docs/DASHBOARD_GUIDE.md"
+    ],
+    "pytest.ini": [
+      "docs/CICD_WORKFLOWS_GUIDE.md",
+      "docs/TESTING_GUIDE.md"
     ]
   },
   
@@ -194,6 +216,15 @@
       "owner": "@docs",
       "depends_on": [],
       "scripts": []
+    },
+    {
+      "path": "docs/CICD_WORKFLOWS_GUIDE.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-10",
+      "owner": "@cicd",
+      "depends_on": ["docs/TESTING_GUIDE.md"],
+      "scripts": [".github/workflows/e2e-tests.yml", ".github/workflows/integration-tests.yml", ".github/workflows/dashboard-e2e-tests.yml", "pytest.ini"]
     },
     {
       "path": "docs/N8N_AI_BUILDER_PROMPT.md",
@@ -560,6 +591,18 @@
       "update_order": [
         "docs/EVIDENCE_SCORING_DOCUMENTATION.md",
         "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"
+      ]
+    },
+    ".github/workflows/": {
+      "update_order": [
+        "docs/CICD_WORKFLOWS_GUIDE.md",
+        "docs/TESTING_GUIDE.md"
+      ]
+    },
+    "pytest.ini": {
+      "update_order": [
+        "docs/CICD_WORKFLOWS_GUIDE.md",
+        "docs/TESTING_GUIDE.md"
       ]
     }
   }
