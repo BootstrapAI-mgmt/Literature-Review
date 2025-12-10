@@ -452,60 +452,70 @@ BUILD THESE NODES:
    - Method: POST
    - Respond: Immediately
 
-2. HTTP REQUEST node named "Fetch Document"
+2. CODE node named "Parse Webhook Data"
+   - JavaScript:
+   // The Distributor sends task/trigger as JSON strings - parse them back to objects
+   const body = $input.first().json.body;
+   const task = typeof body.task === 'string' ? JSON.parse(body.task) : body.task;
+   const trigger = typeof body.trigger === 'string' ? JSON.parse(body.trigger) : (body.trigger || {});
+   const listId = typeof body.list_id === 'string' ? body.list_id.replace(/"/g, '') : body.list_id;
+   return { task, trigger, list_id: listId };
+   - NOTE: Distributor uses JSON.stringify() to avoid [object Object] - we parse it back here
+
+3. HTTP REQUEST node named "Fetch Document"
    - Method: GET
-   - URL: https://raw.githubusercontent.com/BootstrapAI-mgmt/Literature-Review/main/{{$json.body.task.document}}
+   - URL: https://raw.githubusercontent.com/BootstrapAI-mgmt/Literature-Review/main/{{$json.task.document}}
    - Response Format: Text
-   - NOTE: Use $json.body.task.document (webhook data is nested in body)
+   - NOTE: Now $json.task.document works because Parse Webhook Data extracted the object
    - IMPORTANT: Hardcode the repo URL - $env.* is blocked on n8n Cloud
 
-3. AI AGENT node named "Update Document" (use Gemini)
-   - Model: gemini-1.5-flash
+4. AI AGENT node named "Update Document" (use Gemini)
+   - Model: gemini-2.5-flash
    - System prompt: You update documentation. Make minimal targeted changes. Preserve formatting. Output JSON: {"changes_needed":true/false,"updated_content":"full updated doc","summary":"brief description"}
-   - User message: Task: {{$('Receive Task').first().json.body.task.description}}. Document: {{$('Receive Task').first().json.body.task.document}}. Trigger: {{$('Receive Task').first().json.body.trigger.message}}. Current content: {{$json.data}}
-   - NOTE: Reference webhook data via $('Receive Task').first().json.body since $json now contains the fetched document
+   - User message: Task: {{$('Parse Webhook Data').first().json.task.description}}. Document: {{$('Parse Webhook Data').first().json.task.document}}. Trigger: {{$('Parse Webhook Data').first().json.trigger.message}}. Current content: {{$json.data}}
+   - NOTE: Reference parsed webhook data via $('Parse Webhook Data').first().json
 
-4. CODE node named "Parse AI Output"
+5. CODE node named "Parse AI Output"
    - JavaScript:
-   const webhookData = $('Receive Task').first().json.body;
+   const taskData = $('Parse Webhook Data').first().json;
    const text = $input.first().json.text || $input.first().json.output || '';
    const match = text.match(/\{[\s\S]*?\}/);
    let result = { changes_needed: false, summary: 'No changes' };
    if (match) {
      try { result = JSON.parse(match[0]); } catch(e) {}
    }
-   return { ...result, task_id: webhookData.task.task_id, document: webhookData.task.document };
-   // NOTE: Access webhook data via $('Receive Task').first().json.body
+   return { ...result, task_id: taskData.task.task_id, document: taskData.task.document };
+   // NOTE: Access parsed data via $('Parse Webhook Data').first().json
 
-5. IF node named "Changes Needed"
+6. IF node named "Changes Needed"
    - Condition: changes_needed equals true
    - On false: Skip to Callback
 
-6. HTTP REQUEST node named "Get File SHA"
+7. HTTP REQUEST node named "Get File SHA"
    - Method: GET
    - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{$json.document}}
    - Authentication: Bearer Token (use GITHUB_TOKEN)
    - Add header: Accept: application/vnd.github.v3+json
 
-7. CODE node named "Prepare Commit"
+8. CODE node named "Prepare Commit"
    - JavaScript:
    const prev = $('Parse AI Output').first().json;
    const sha = $input.first().json.sha;
    const content = Buffer.from(prev.updated_content || '').toString('base64');
    return { ...prev, sha, content_base64: content };
 
-8. HTTP REQUEST node named "Commit to GitHub"
+9. HTTP REQUEST node named "Commit to GitHub"
    - Method: PUT
    - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{$json.document}}
    - Authentication: Bearer Token
    - Body: {"message":"docs: {{$json.summary}}","content":"{{$json.content_base64}}","sha":"{{$json.sha}}"}
 
-9. HTTP REQUEST node named "Send Callback" (connect BOTH paths here - from Changes Needed false AND from Commit)
+10. HTTP REQUEST node named "Send Callback" (connect BOTH paths here - from Changes Needed false AND from Commit)
    - Method: POST
    - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
    - Body: {"task_id":"{{$json.task_id}}","status":"completed","result":{"summary":"{{$json.summary}}"}}
 
-Connect: 1→2→3→4→5→(true: 6→7→8→9, false: 9)
+Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)
 Make sure both paths merge at the Callback node.
 ```
 
