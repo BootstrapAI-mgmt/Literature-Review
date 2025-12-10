@@ -54,6 +54,18 @@
 
 ### 1. GitHub API Token (for committing doc updates)
 
+> ⚠️ **n8n Cloud Workaround:** The n8n credential system (Header Auth / Multiple Headers Auth) has known issues on n8n Cloud where credentials aren't properly resolved in HTTP Request nodes. **We recommend using manual headers instead** (see Workflow 3 nodes for the exact configuration).
+
+**Option A: Manual Headers (Recommended)**
+
+Instead of using the credential system, add headers directly in each HTTP Request node:
+- Set Authentication: `None`
+- Under "Send Headers" → "Specify Headers" → "Using Fields":
+  - Name: `Authorization` | Value: `Bearer github_pat_YOUR_TOKEN_HERE`
+  - Name: `Accept` | Value: `application/vnd.github.v3+json`
+
+**Option B: Credential-Based (may have issues)**
+
 **Create in n8n:** Credentials → Add Credential → **Header Auth** (or **Multiple Headers Auth** if that's what n8n offers)
 
 | Setting | Value |
@@ -500,8 +512,11 @@ BUILD THESE NODES:
 7. HTTP REQUEST node named "Get File SHA"
    - Method: GET
    - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{$json.document}}
-   - Authentication: Predefined Credential Type → Header Auth → "GitHub API Token"
-   - Add header: Accept: application/vnd.github.v3+json
+   - Authentication: None (we use manual headers instead - more reliable on n8n Cloud)
+   - Headers (add under "Send Headers" → "Specify Headers" → "Using Fields"):
+     - Name: `Authorization` | Value: `Bearer YOUR_GITHUB_PAT_HERE`
+     - Name: `Accept` | Value: `application/vnd.github.v3+json`
+   - NOTE: Replace YOUR_GITHUB_PAT_HERE with your actual GitHub token
 
 8. CODE node named "Prepare Commit"
    - JavaScript:
@@ -513,7 +528,10 @@ BUILD THESE NODES:
 9. HTTP REQUEST node named "Commit to GitHub"
    - Method: PUT
    - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{$json.document}}
-   - Authentication: Predefined Credential Type → Header Auth → "GitHub API Token"
+   - Authentication: None (use manual headers)
+   - Headers (add under "Send Headers" → "Specify Headers" → "Using Fields"):
+     - Name: `Authorization` | Value: `Bearer YOUR_GITHUB_PAT_HERE`
+     - Name: `Accept` | Value: `application/vnd.github.v3+json`
    - Body: {"message":"docs: {{$json.summary}}","content":"{{$json.content_base64}}","sha":"{{$json.sha}}"}
 
 --- REVIEW TRACKING NODES (connect both paths here) ---
@@ -521,8 +539,10 @@ BUILD THESE NODES:
 10. HTTP REQUEST node named "Fetch Matrix"
     - Method: GET
     - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/docs/documentation_matrix.json
-    - Authentication: Predefined Credential Type → Header Auth → "GitHub API Token"
-    - Add header: Accept: application/vnd.github.v3+json
+    - Authentication: None (use manual headers)
+    - Headers (add under "Send Headers" → "Specify Headers" → "Using Fields"):
+      - Name: `Authorization` | Value: `Bearer YOUR_GITHUB_PAT_HERE`
+      - Name: `Accept` | Value: `application/vnd.github.v3+json`
     - NOTE: This returns the file content base64-encoded with SHA
 
 11. CODE node named "Update Review Tracking"
@@ -568,7 +588,10 @@ BUILD THESE NODES:
 12. HTTP REQUEST node named "Commit Matrix Update"
     - Method: PUT
     - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/docs/documentation_matrix.json
-    - Authentication: Predefined Credential Type → Header Auth → "GitHub API Token"
+    - Authentication: None (use manual headers)
+    - Headers (add under "Send Headers" → "Specify Headers" → "Using Fields"):
+      - Name: `Authorization` | Value: `Bearer YOUR_GITHUB_PAT_HERE`
+      - Name: `Accept` | Value: `application/vnd.github.v3+json`
     - Body: {"message":"chore: update review tracking for {{$json.document}}","content":"{{$json.matrix_content_base64}}","sha":"{{$json.matrix_sha}}"}
     - IMPORTANT: Under "Options" → "On Error" → select "Continue On Fail"
     - This prevents failures if another process updated the matrix (race condition)
