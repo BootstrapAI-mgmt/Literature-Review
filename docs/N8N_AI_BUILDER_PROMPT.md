@@ -578,10 +578,21 @@ BUILD THESE NODES:
    - Method: POST
    - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
    - Body: {"task_id":"{{$json.task_id}}","status":"failed","result":{"error":"{{$json.message}}"}}
+   - IMPORTANT: Under "Options" → "On Error" → select "Continue On Fail"
+   - This prevents cascading errors when the Wait node has already timed out
 
-5. (Optional) Add a Slack/Email node after Log Error to notify your team
+5. CODE node named "Log Callback Result" (optional but recommended)
+   - JavaScript:
+   const result = $input.first().json;
+   // Check if callback succeeded or failed (404 = Wait node expired, which is OK)
+   const success = !result.error && !result.errorMessage;
+   const status = success ? 'notified' : 'expired';
+   console.log(`Failure callback ${status} for task: ${$('Log Error').first().json.task_id}`);
+   return { callback_status: status, task_id: $('Log Error').first().json.task_id };
 
-Connect: 1→2→3→(true: 4, false: end)
+6. (Optional) Add a Slack/Email node after Log Error to notify your team
+
+Connect: 1→2→3→(true: 4→5, false: end)
 ```
 
 ---
