@@ -156,6 +156,11 @@ BUILD THESE NODES:
    const affected = new Set();
    const newDocs = [];  // Track new docs not yet in matrix
    
+   // Helper to get documents array from owner_domains (handles both old array and new object format)
+   const getDomainDocs = (domainInfo) => {
+     return Array.isArray(domainInfo) ? domainInfo : (domainInfo?.documents || []);
+   };
+   
    for (const file of changes.changed_files) {
      // Check 1: If a script changed, find docs that depend on it
      for (const [script, docs] of Object.entries(matrix.script_to_docs || {})) {
@@ -177,7 +182,7 @@ BUILD THESE NODES:
        // Check 3: Add other docs owned by same domain (for index/summary updates)
        // This ensures domain owners can update their index docs when siblings change
        if (docEntry.owner) {
-         const domainDocs = matrix.owner_domains?.[docEntry.owner] || [];
+         const domainDocs = getDomainDocs(matrix.owner_domains?.[docEntry.owner]);
          domainDocs.forEach(d => affected.add(d));
        }
      }
@@ -186,7 +191,8 @@ BUILD THESE NODES:
      if (!docEntry && (file.startsWith('docs/') || file.endsWith('.md'))) {
        newDocs.push(file);
        // Try to match domain from path patterns
-       for (const [owner, paths] of Object.entries(matrix.owner_domains || {})) {
+       for (const [owner, domainInfo] of Object.entries(matrix.owner_domains || {})) {
+         const paths = getDomainDocs(domainInfo);
          const matchesPattern = paths.some(p => {
            const dir = p.substring(0, p.lastIndexOf('/'));
            return file.startsWith(dir) || file.includes(owner.replace('@',''));
@@ -197,7 +203,7 @@ BUILD THESE NODES:
          }
        }
        // Fallback: always notify @docs domain for any new documentation
-       (matrix.owner_domains?.['@docs'] || []).forEach(d => affected.add(d));
+       getDomainDocs(matrix.owner_domains?.['@docs']).forEach(d => affected.add(d));
      }
    }
    
