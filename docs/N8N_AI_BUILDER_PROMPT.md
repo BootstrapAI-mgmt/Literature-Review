@@ -360,19 +360,38 @@ BUILD THESE NODES:
    - On false: End or loop back
    - NOTE: Get Runnable Tasks returns multiple items; this checks if any exist
 
+7.5. CODE node named "Prepare Agent Payload"
+   - Mode: Run Once for Each Item
+   - JavaScript:
+   // Flatten and prepare the payload for the HTTP request
+   // This avoids n8n expression evaluation issues with nested objects
+   const item = $input.first().json;
+   return {
+     task: item.task,
+     list_id: item.list_id,
+     trigger: item.trigger || {},
+     // Pass task_id at top level for Wait node
+     _task_id: item.task.task_id
+   };
+   - NOTE: Creates a clean object for the HTTP node to serialize
+
 8. HTTP REQUEST node named "Dispatch to Agent"
    - Method: POST
    - URL: https://gitlitreview.app.n8n.cloud/webhook/domain-agent
    - Body Content Type: JSON
-   - Specify Body: Using JSON
-   - JSON Body: ={{ JSON.stringify({ task: $json.task, list_id: $json.list_id, trigger: $json.trigger }) }}
-   - NOTE: n8n automatically runs this once per input item from Get Runnable Tasks
-   - Each item already has {task, list_id, trigger} structure
+   - Specify Body: Using Fields (NOT "Using JSON")
+   - Add these body parameters (click "Add Parameter" for each):
+     - Name: task | Value: ={{ $json.task }}
+     - Name: list_id | Value: ={{ $json.list_id }}
+     - Name: trigger | Value: ={{ $json.trigger }}
+   - IMPORTANT: "Using Fields" mode properly serializes nested objects
+   - This avoids the "JSON parameter needs to be valid JSON" error
 
 9. WAIT node named "Wait for Callback"
     - Resume: On Webhook Call
-    - Webhook Suffix: task-done-{{$json.task.task_id}}
+    - Webhook Suffix: task-done-{{$json._task_id}}
     - Timeout: 5 minutes
+    - NOTE: Uses _task_id from Prepare Agent Payload node
 
 10. CODE node named "Update Task Status"
     - JavaScript:
