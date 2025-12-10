@@ -54,13 +54,15 @@
 
 ### 1. GitHub API Token (for committing doc updates)
 
-**Create in n8n:** Credentials → Add Credential → **Header Auth**
+**Create in n8n:** Credentials → Add Credential → **Header Auth** (or **Multiple Headers Auth** if that's what n8n offers)
 
 | Setting | Value |
 |---------|-------|
 | **Credential Name** | `GitHub API Token` |
 | **Name** | `Authorization` |
 | **Value** | `Bearer ghp_YOUR_TOKEN_HERE` |
+
+> **Note:** Some HTTP Request nodes may only offer "Multiple Headers Auth" instead of "Header Auth" in the credential type dropdown. Both work the same way - just create the credential with the same Name/Value pair.
 
 **Token Requirements:** Create a GitHub PAT at *Settings → Developer Settings → Personal Access Tokens → Fine-grained tokens* with:
 - Repository access: `BootstrapAI-mgmt/Literature-Review`
