@@ -1,6 +1,8 @@
 # N8N AI Builder Prompts: Documentation Update Chain
 
-> **Instructions:** This system requires **4 separate workflows** built one at a time. Each prompt below is designed for a single n8n canvas. Create each workflow manually in n8n, then use the corresponding prompt to build it.
+> **Instructions:** This system requires **5 separate workflows** built one at a time. Each prompt below is designed for a single n8n canvas. Create each workflow manually in n8n, then use the corresponding prompt to build it.
+>
+> **Note:** Workflows 1-4 handle event-driven documentation updates (triggered by GitHub pushes/merges). Workflow 5 adds proactive staleness detection on a schedule. See [N8N_STALENESS_REVIEW_BUILDER_PROMPT.md](./N8N_STALENESS_REVIEW_BUILDER_PROMPT.md) for Workflow 5.
 
 ---
 
@@ -9,27 +11,36 @@
 ```
 ┌─────────────┐     ┌─────────────────┐     ┌──────────────┐
 │  GitHub     │────▶│  Doc Chain -    │────▶│  Doc Chain - │
-│  Webhook    │     │  Trigger        │     │  Distributor │
-└─────────────┘     └─────────────────┘     └──────┬───────┘
-                                                   │
-                           ┌───────────────────────┘
-                           ▼
-                    ┌──────────────┐     callback     ┌──────────────┐
-                    │  Doc Chain - │─────────────────▶│  Distributor │
-                    │  Agent       │                  │  (continues) │
-                    └──────────────┘                  └──────────────┘
-                           │
-                           ▼
-                    ┌──────────────┐
-                    │  Doc Chain - │ (catches errors from all)
-                    │  Errors      │
-                    └──────────────┘
+│  Webhook    │     │  Trigger        │     │  Distributor │◀───────────────┐
+└─────────────┘     └─────────────────┘     └──────┬───────┘                │
+                                                   │                        │
+                           ┌───────────────────────┘                        │
+                           ▼                                                │
+                    ┌──────────────┐     callback     ┌──────────────┐     │
+                    │  Doc Chain - │─────────────────▶│  Distributor │     │
+                    │  Agent       │                  │  (continues) │     │
+                    └──────────────┘                  └──────────────┘     │
+                           │                                                │
+                           ▼                                                │
+                    ┌──────────────┐                                       │
+                    │  Doc Chain - │ (catches errors from all)             │
+                    │  Errors      │                                       │
+                    └──────────────┘                                       │
+                                                                           │
+┌──────────────────────────────────────────────────────────────────────────┘
+│
+│  ┌───────────────┐     ┌─────────────────┐     (tasks)
+│  │  Schedule/    │────▶│  Doc Chain -    │─────────────┘
+│  │  Manual       │     │  Staleness      │
+│  └───────────────┘     │  Review         │────▶ GitHub Issues
+                         └─────────────────┘      (if manual review needed)
 ```
 
 **Workflow Communication:**
 - Trigger → Distributor: HTTP POST to `/webhook/task-distributor`
 - Distributor → Agent: HTTP POST to `/webhook/domain-agent`
 - Agent → Distributor: HTTP POST to `/webhook/task-done-{task_id}`
+- Staleness Review → Distributor: HTTP POST to `/webhook/task-distributor` (same endpoint)
 
 **Webhook Base URL:**
 - For this project: `https://gitlitreview.app.n8n.cloud`
@@ -80,11 +91,12 @@ Then in the Trigger workflow, add validation in the Filter node.
 ## Pre-Setup Checklist
 
 Before using these prompts:
-1. [ ] Create 4 empty workflows in n8n named exactly:
+1. [ ] Create 5 empty workflows in n8n named exactly:
    - `Doc Chain - Trigger`
    - `Doc Chain - Distributor`
    - `Doc Chain - Agent`
    - `Doc Chain - Errors`
+   - `Doc Chain - Staleness Review` (see [separate prompt](./N8N_STALENESS_REVIEW_BUILDER_PROMPT.md))
 2. [ ] Configure environment variables in n8n Settings
 3. [ ] Create `GitHub API Token` credential (Header Auth)
 4. [ ] Create `Gemini API` credential
@@ -715,6 +727,9 @@ OR
 | Distributor | `/task-distributor` | Queue & orchestration |
 | Agent | `/domain-agent` | AI doc updates |
 | Distributor | `/task-done-{id}` | Completion callbacks |
+| Staleness Review | `/staleness-review` | Manual trigger for proactive review |
+
+> **Workflow 5 (Staleness Review)** is documented separately in [N8N_STALENESS_REVIEW_BUILDER_PROMPT.md](./N8N_STALENESS_REVIEW_BUILDER_PROMPT.md)
 
 ---
 

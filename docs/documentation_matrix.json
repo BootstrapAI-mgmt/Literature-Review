@@ -1,7 +1,36 @@
 {
-  "version": "1.0",
-  "last_updated": "2025-12-06",
-  "description": "Machine-readable documentation dependency matrix",
+  "version": "1.1",
+  "last_updated": "2025-12-10",
+  "description": "Machine-readable documentation dependency matrix with staleness detection support",
+  
+  "staleness_config": {
+    "enabled": true,
+    "default_review_interval_days": 7,
+    "max_inactivity_before_alert_days": 21,
+    "thresholds": {
+      "auto_update": 0.7,
+      "manual_review": 0.5,
+      "create_issue": 0.3,
+      "healthy": 0.0
+    },
+    "ignore_patterns": [
+      "test_*.py",
+      "tests/**",
+      ".github/workflows/**",
+      "*.md"
+    ],
+    "schedule": {
+      "frequency": "weekly",
+      "day": "sunday",
+      "hour_utc": 2,
+      "stagger_domains": false
+    },
+    "notifications": {
+      "create_github_issues": true,
+      "issue_labels": ["documentation", "staleness-review", "automated"],
+      "digest_enabled": true
+    }
+  },
   
   "status_codes": {
     "current": "Up-to-date with latest code",
@@ -19,19 +48,84 @@
   },
   
   "owner_domains": {
-    "@core": ["README.md", "docs/USER_MANUAL.md"],
-    "@dashboard": ["docs/DASHBOARD_GUIDE.md", "docs/DASHBOARD_CLI_PARITY.md"],
-    "@evidence": ["docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md", "docs/EVIDENCE_TRIANGULATION_GUIDE.md", "docs/TEMPORAL_COHERENCE_GUIDE.md", "docs/EVIDENCE_EXTRACTION_ENHANCEMENTS.md", "docs/EVIDENCE_SCORING_DOCUMENTATION.md"],
-    "@incremental": ["docs/INCREMENTAL_REVIEW_USER_GUIDE.md", "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md", "docs/guides/RESUME_CONTROLS_USER_GUIDE.md"],
-    "@output": ["docs/OUTPUT_FILE_REFERENCE.md", "docs/OUTPUT_MANAGEMENT_STRATEGY.md"],
-    "@api": ["docs/API_DOCUMENTATION_README.md", "docs/API_DOCUMENTATION_SUMMARY.md", "docs/API_COST_TRACKER.md"],
-    "@testing": ["docs/TESTING_GUIDE.md", "docs/SMOKE_TESTING_BEST_PRACTICES.md", "docs/MANUAL_TESTING_GUIDE.md"],
-    "@architecture": ["docs/architecture/ARCHITECTURE_ANALYSIS.md", "docs/architecture/ARCHITECTURE_REFACTOR.md", "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md", "docs/ORCHESTRATOR_V2_GUIDE.md"],
-    "@deployment": ["docs/DEPLOYMENT_GUIDE.md", "docs/SCALING_GUIDE.md"],
-    "@guides": ["docs/guides/WORKFLOW_EXECUTION_GUIDE.md", "docs/guides/GENEALOGY_USER_GUIDE.md", "docs/guides/PARALLEL_DEVELOPMENT_STRATEGY.md", "docs/guides/GOOGLE_AI_SDK_BEST_PRACTICES.md"],
-    "@parity": ["task-cards/dashboard-cli-parity/PARITY-MASTER.md"],
-    "@roadmap": ["docs/CONSOLIDATED_ROADMAP.md"],
-    "@docs": ["docs/README.md", "docs/DOCUMENTATION_MATRIX.md"]
+    "@core": {
+      "documents": ["README.md", "docs/USER_MANUAL.md"],
+      "review_interval_days": 7,
+      "priority": "high",
+      "staleness_indicators": ["pipeline_orchestrator.py", "webdashboard/app.py"]
+    },
+    "@dashboard": {
+      "documents": ["docs/DASHBOARD_GUIDE.md", "docs/DASHBOARD_CLI_PARITY.md"],
+      "review_interval_days": 7,
+      "priority": "high",
+      "staleness_indicators": ["webdashboard/app.py", "webdashboard/job_runner.py", "webdashboard/templates/"]
+    },
+    "@evidence": {
+      "documents": ["docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md", "docs/EVIDENCE_TRIANGULATION_GUIDE.md", "docs/TEMPORAL_COHERENCE_GUIDE.md", "docs/EVIDENCE_EXTRACTION_ENHANCEMENTS.md", "docs/EVIDENCE_SCORING_DOCUMENTATION.md"],
+      "review_interval_days": 14,
+      "priority": "medium",
+      "staleness_indicators": ["literature_review/evidence_scorer.py", "literature_review/utils/evidence_decay.py", "literature_review/utils/decay_presets.py"]
+    },
+    "@incremental": {
+      "documents": ["docs/INCREMENTAL_REVIEW_USER_GUIDE.md", "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md", "docs/guides/RESUME_CONTROLS_USER_GUIDE.md"],
+      "review_interval_days": 14,
+      "priority": "medium",
+      "staleness_indicators": ["literature_review/utils/state_manager.py", "webdashboard/api/incremental.py", "literature_review/analysis/result_merger.py"]
+    },
+    "@output": {
+      "documents": ["docs/OUTPUT_FILE_REFERENCE.md", "docs/OUTPUT_MANAGEMENT_STRATEGY.md"],
+      "review_interval_days": 14,
+      "priority": "medium",
+      "staleness_indicators": ["literature_review/orchestrator.py", "gap_analysis_output/"]
+    },
+    "@api": {
+      "documents": ["docs/API_DOCUMENTATION_README.md", "docs/API_DOCUMENTATION_SUMMARY.md", "docs/API_COST_TRACKER.md"],
+      "review_interval_days": 7,
+      "priority": "high",
+      "staleness_indicators": ["webdashboard/app.py", "webdashboard/api/", "literature_review/utils/api_manager.py"]
+    },
+    "@testing": {
+      "documents": ["docs/TESTING_GUIDE.md", "docs/SMOKE_TESTING_BEST_PRACTICES.md", "docs/MANUAL_TESTING_GUIDE.md"],
+      "review_interval_days": 14,
+      "priority": "medium",
+      "staleness_indicators": ["tests/", "pytest.ini", "e2e_smoke_test.py"]
+    },
+    "@architecture": {
+      "documents": ["docs/architecture/ARCHITECTURE_ANALYSIS.md", "docs/architecture/ARCHITECTURE_REFACTOR.md", "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md", "docs/ORCHESTRATOR_V2_GUIDE.md"],
+      "review_interval_days": 21,
+      "priority": "low",
+      "staleness_indicators": ["literature_review/orchestrator.py", "pillar_definitions.json"]
+    },
+    "@deployment": {
+      "documents": ["docs/DEPLOYMENT_GUIDE.md", "docs/SCALING_GUIDE.md"],
+      "review_interval_days": 14,
+      "priority": "medium",
+      "staleness_indicators": ["docker-compose.yml", "Dockerfile", "nginx.conf", "requirements.txt"]
+    },
+    "@guides": {
+      "documents": ["docs/guides/WORKFLOW_EXECUTION_GUIDE.md", "docs/guides/GENEALOGY_USER_GUIDE.md", "docs/guides/PARALLEL_DEVELOPMENT_STRATEGY.md", "docs/guides/GOOGLE_AI_SDK_BEST_PRACTICES.md"],
+      "review_interval_days": 14,
+      "priority": "medium",
+      "staleness_indicators": ["pipeline_orchestrator.py", "webdashboard/job_runner.py"]
+    },
+    "@parity": {
+      "documents": ["task-cards/dashboard-cli-parity/PARITY-MASTER.md"],
+      "review_interval_days": 7,
+      "priority": "high",
+      "staleness_indicators": ["task-cards/dashboard-cli-parity/", "webdashboard/"]
+    },
+    "@roadmap": {
+      "documents": ["docs/CONSOLIDATED_ROADMAP.md"],
+      "review_interval_days": 7,
+      "priority": "high",
+      "staleness_indicators": ["task-cards/", "docs/archive/implementation-summaries/"]
+    },
+    "@docs": {
+      "documents": ["docs/README.md", "docs/DOCUMENTATION_MATRIX.md", "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md", "docs/N8N_AI_BUILDER_PROMPT.md", "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md", "docs/N8N_STALENESS_REVIEW_BUILDER_PROMPT.md"],
+      "review_interval_days": 14,
+      "priority": "medium",
+      "staleness_indicators": ["docs/documentation_matrix.json"]
+    }
   },
   
   "script_to_docs": {
@@ -117,7 +211,28 @@
       "last_updated": "2025-12-06",
       "owner": "@docs",
       "depends_on": ["docs/DOCUMENTATION_MATRIX.md"],
-      "scripts": []
+      "scripts": [],
+      "staleness_indicators": ["docs/documentation_matrix.json"]
+    },
+    {
+      "path": "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-10",
+      "owner": "@docs",
+      "depends_on": ["docs/DOCUMENTATION_MATRIX.md", "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md"],
+      "scripts": [],
+      "staleness_indicators": ["docs/documentation_matrix.json"]
+    },
+    {
+      "path": "docs/N8N_STALENESS_REVIEW_BUILDER_PROMPT.md",
+      "level": "L2",
+      "status": "current",
+      "last_updated": "2025-12-10",
+      "owner": "@docs",
+      "depends_on": ["docs/N8N_STALENESS_REVIEW_BLUEPRINT.md"],
+      "scripts": [],
+      "staleness_indicators": ["docs/documentation_matrix.json"]
     },
     {
       "path": "docs/USER_MANUAL.md",

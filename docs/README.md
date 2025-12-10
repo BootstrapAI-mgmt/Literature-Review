@@ -6,6 +6,8 @@ This folder contains all project documentation organized by type and purpose.
 
 > 🔄 **See [N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md](N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md)** for the automated documentation update system blueprint using n8n agents.
 
+> 🕐 **See [N8N_STALENESS_REVIEW_BLUEPRINT.md](N8N_STALENESS_REVIEW_BLUEPRINT.md)** for the proactive staleness detection workflow that periodically audits documentation domains.
+
 ## 📁 Folder Structure
 
 ### `/architecture/`
@@ -98,6 +100,14 @@ See `/archive/README.md` for details.
 ### Incremental Review
 - `INCREMENTAL_REVIEW_USER_GUIDE.md` - User guide
 - `INCREMENTAL_REVIEW_MIGRATION_GUIDE.md` - Migration guide
+
+### Documentation Automation
+- `N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md` - Event-driven doc update system
+- `N8N_AI_BUILDER_PROMPT.md` - n8n workflow builder prompts (workflows 1-4)
+- `N8N_STALENESS_REVIEW_BLUEPRINT.md` - Proactive staleness detection design
+- `N8N_STALENESS_REVIEW_BUILDER_PROMPT.md` - n8n workflow builder prompt (workflow 5)
+- `DOCUMENTATION_MATRIX.md` - Dependency matrix and ownership
+- `documentation_matrix.json` - Machine-readable matrix with staleness config
 
 ---
 
