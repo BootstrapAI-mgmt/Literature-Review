@@ -531,12 +531,10 @@ BUILD THESE NODES:
      ...prev, 
      sha, 
      content_base64: content,
-     // Pre-build the request body as an object (not string) for the HTTP node
-     commit_body: {
-       message: `docs: ${safeSummary}`,
-       content: content,
-       sha: sha
-     }
+     // Individual fields for commit (for Using Fields mode)
+     commit_message: `docs: ${safeSummary}`,
+     commit_content: content,
+     commit_sha: sha
    };
 
 9. HTTP REQUEST node named "Commit to GitHub"
@@ -547,9 +545,11 @@ BUILD THESE NODES:
      - Name: `Authorization` | Value: `Bearer YOUR_GITHUB_PAT_HERE`
      - Name: `Accept` | Value: `application/vnd.github.v3+json`
    - Body Content Type: JSON
-   - Specify Body: Using JSON
-   - JSON: ={{ JSON.stringify($json.commit_body) }}
-   - IMPORTANT: Use JSON.stringify() on the pre-built object to avoid escaping issues
+   - Specify Body: Using Fields Below
+   - Body Parameters (add 3 fields):
+     - Name: `message` | Value: `{{ $json.commit_message }}`
+     - Name: `content` | Value: `{{ $json.commit_content }}`
+     - Name: `sha` | Value: `{{ $json.commit_sha }}`
 
 --- REVIEW TRACKING NODES (connect both paths here) ---
 
