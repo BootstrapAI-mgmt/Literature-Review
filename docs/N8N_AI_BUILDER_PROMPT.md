@@ -595,6 +595,11 @@ BUILD THESE NODES:
     // Encode back to base64 for commit
     const updatedContent = Buffer.from(JSON.stringify(matrix, null, 2)).toString('base64');
     
+    // Sanitize summary for callback (remove chars that might break JSON)
+    const safeSummary = (prev.summary || 'No changes')
+      .replace(/[`"\\]/g, '')
+      .substring(0, 100);
+    
     return {
       ...prev,
       matrix_sha: matrixResponse.sha,
@@ -605,6 +610,12 @@ BUILD THESE NODES:
         message: `chore: update review tracking for ${prev.document}`,
         content: updatedContent,
         sha: matrixResponse.sha
+      },
+      // Pre-build the callback body as an object
+      callback_body: {
+        task_id: prev.task_id,
+        status: 'completed',
+        result: { summary: safeSummary }
       }
     };
 
@@ -626,7 +637,8 @@ BUILD THESE NODES:
     - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
     - Body Content Type: JSON
     - Specify Body: Using JSON
-    - JSON: ={{ JSON.stringify({task_id: $json.task_id, status: "completed", result: {summary: ($json.summary || "").substring(0,100)}}) }}
+    - JSON: ={{ JSON.stringify($json.callback_body) }}
+    - NOTE: callback_body is pre-built in the Update Review Tracking node to avoid expression syntax issues
 
 Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)→11→12→13
 Both "Changes Needed" paths merge at "Fetch Matrix" (node 10).
