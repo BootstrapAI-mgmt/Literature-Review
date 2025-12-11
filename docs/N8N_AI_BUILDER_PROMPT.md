@@ -153,7 +153,6 @@ BUILD THESE NODES:
        .forEach(c => {
          files.push(...(c.added || []), ...(c.modified || []));
        });
-     });
    }
    return {
      commit_sha: event.after || event.pull_request?.merge_commit_sha,
