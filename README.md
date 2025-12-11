@@ -591,3 +591,7 @@ pytest -m integration   # Integration tests only
 ## License
 
 See [LICENSE](LICENSE) file for details.
+
+---
+
+*Last automated review: December 11, 2025*
