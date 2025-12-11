@@ -134,20 +134,25 @@ BUILD THESE NODES:
 
 2. IF node named "Filter Valid Events"
    - Condition: Use a single expression that evaluates to boolean
-   - Expression: `{{ ($json.body.commits?.length > 0) || ($json.body.pull_request?.merged === true) }}`
+   - Expression: `{{ (($json.body.commits?.length > 0) || ($json.body.pull_request?.merged === true)) && !($json.body.head_commit?.message?.startsWith('chore: update review tracking')) }}`
    - Operator: equals
    - Compare to: `true`
-   - This checks: commits array has items OR pull request was merged
+   - This checks: (commits exist OR PR was merged) AND NOT an automated review tracking commit
    - On false: connect to a NoOp node to end
    - NOTE: GitHub webhook data is nested inside `body` - always use `$json.body.` prefix
+   - IMPORTANT: This filter prevents feedback loops from n8n's own commits
 
 3. CODE node named "Parse Changes"
    - JavaScript:
    const event = $input.first().json.body;  // NOTE: .body is required - GitHub data is nested
    const files = [];
    if (event.commits) {
-     event.commits.forEach(c => {
-       files.push(...(c.added || []), ...(c.modified || []));
+     event.commits
+       // Filter out n8n automated commits to prevent feedback loops
+       .filter(c => !c.message?.startsWith('chore: update review tracking'))
+       .forEach(c => {
+         files.push(...(c.added || []), ...(c.modified || []));
+       });
      });
    }
    return {
