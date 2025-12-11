@@ -1,0 +1,362 @@
+{
+  "Framework_Overview": {
+    "vision": "Create neuromorphic systems that seamlessly manage data flow from input through processing to reaction, with efficient transition from deliberative to reflexive processing, supported by contextually-relevant memory systems",
+    "core_principles": [
+      "Biological fidelity with computational efficiency",
+      "Multi-timescale adaptation and learning",
+      "Energy-efficient sparse computation",
+      "Synergistic integration across all pillars"
+    ],
+    "developmental_sequence": [
+      "Stage 1: Establish basic stimulus-response (Pillars 1-2)",
+      "Stage 2: Integrate memory systems (Pillars 5-6)",
+      "Stage 3: Enable skill automatization (Pillars 3-4)",
+      "Stage 4: Achieve full system integration (Pillar 7)"
+    ]
+  },
+  
+  "Pillar 1: Biological Stimulus-Response": {
+    "description": "Full biological description of the pathway from sensory input to motor/internal response.",
+    "keywords": ["sensory transduction", "neural pathways", "motor cortex", "sensory encoding", "thalamus"],
+    "requirements": {
+      "REQ-B1.1: Sensory Transduction & Encoding": [
+        "Sub-1.1.1: Conclusive model of how raw sensory data is transduced into neural spikes",
+        "Sub-1.1.2: Proven mechanism for sensory feature extraction in early processing",
+        "Sub-1.1.3: Understanding of population coding for complex stimuli",
+        "Sub-1.1.4: Temporal dynamics of spike-timing in sensory encoding"
+      ],
+      "REQ-B1.2: Neural Pathways & Integration": [
+        "Sub-1.2.1: Detailed mapping of thalamic relay pathways for major senses",
+        "Sub-1.2.2: Model of multi-sensory integration in parietal cortex",
+        "Sub-1.2.3: Role of prefrontal cortex in top-down attentional gating",
+        "Sub-1.2.4: Feedback connections from higher to lower processing areas"
+      ],
+      "REQ-B1.3: Decision & Action Selection": [
+        "Sub-1.3.1: Conclusive model of evidence accumulation for decision-making",
+        "Sub-1.3.2: Role of Basal Ganglia loops in action selection",
+        "Sub-1.3.3: Pathway from Primary Motor Cortex to spinal cord",
+        "Sub-1.3.4: Inhibitory control mechanisms for action suppression"
+      ],
+      "REQ-B1.4: Plasticity Timescales": [
+        "Sub-1.4.1: Short-term synaptic facilitation/depression (ms-s)",
+        "Sub-1.4.2: Medium-term STDP mechanisms (s-min)",
+        "Sub-1.4.3: Long-term structural plasticity (hours-days)"
+      ]
+    },
+    "quantitative_metrics": {
+      "latency_target": "< 200ms for reflexive response",
+      "accuracy_target": "> 95% for trained stimuli",
+      "energy_efficiency": "< 20W for full pathway",
+      "adaptation_rate": "Observable changes within 10-100 trials"
+    },
+    "validation_criteria": {
+      "required_evidence": "fMRI, EEG, single-cell recordings, optogenetics",
+      "model_validation": "Match biological response times and patterns",
+      "cross_validation": "Consistency across multiple species/preparations"
+    }
+  },
+  
+  "Pillar 2: AI Stimulus-Response (Bridge)": {
+    "description": "AI/SNN architecture emulating biological stimulus-response with similar efficiency.",
+    "keywords": ["neuromorphic", "spiking neural networks", "event-based", "DVS", "SNN"],
+    "requirements": {
+      "REQ-A2.1: Neuromorphic Sensing & Encoding": [
+        "Sub-2.1.1: Event-based sensor integration with SNNs",
+        "Sub-2.1.2: Efficient SNN algorithms for sparse feature extraction",
+        "Sub-2.1.3: Hardware-agnostic deployment on neuromorphic chips",
+        "Sub-2.1.4: Adaptive sampling based on information content"
+      ],
+      "REQ-A2.2: Deep SNNs for Processing": [
+        "Sub-2.2.1: Scalable training algorithms for deep SNNs",
+        "Sub-2.2.2: SNN architecture for multi-sensory fusion",
+        "Sub-2.2.3: SNN-based attentional mechanism",
+        "Sub-2.2.4: Homeostatic plasticity for network stability"
+      ],
+      "REQ-A2.3: Action Selection & Control": [
+        "Sub-2.3.1: SNN model of evidence accumulation",
+        "Sub-2.3.2: Computational Basal Ganglia for action selection",
+        "Sub-2.3.3: Closed-loop SNN controller for actuators",
+        "Sub-2.3.4: Inhibitory gating for action suppression"
+      ],
+      "REQ-A2.4: Metabolic Efficiency Validation": [
+        "Sub-2.4.1: Sparse coding efficiency metrics (< 10% activation)",
+        "Sub-2.4.2: Event-driven vs clock-driven comparison (>10x improvement)",
+        "Sub-2.4.3: Energy-accuracy trade-off characterization",
+        "Sub-2.4.4: Dynamic voltage/frequency scaling based on task demands"
+      ]
+    },
+    "quantitative_metrics": {
+      "latency_target": "< 10ms end-to-end",
+      "power_efficiency": "< 1W for 1M neurons",
+      "spike_coding_efficiency": "> 90% information preservation",
+      "hardware_utilization": "> 80% on target platform",
+      "sparsity": "< 10% average activation",
+      "energy_per_inference": "< 1mJ per decision"
+    },
+    "validation_criteria": {
+      "benchmark_datasets": ["N-MNIST", "DVS128 Gesture", "NCALTECH101", "DvsGesture"],
+      "baseline_comparison": "Must exceed ANN baseline by 20% on efficiency",
+      "biological_correspondence": "Match biological activation patterns within 15%"
+    }
+  },
+  
+  "Pillar 3: Biological Skill Automatization": {
+    "description": "Biological transition from high-processing task to reflexive muscle memory.",
+    "keywords": ["procedural learning", "skill acquisition", "motor learning", "automatization", "striatum"],
+    "requirements": {
+      "REQ-B3.1: Initial Declarative Learning": [
+        "Sub-3.1.1: Role of Hippocampus/PFC in initial motor task encoding",
+        "Sub-3.1.2: Mechanism of error-correction signals from cerebellum",
+        "Sub-3.1.3: Working memory maintenance during skill acquisition"
+      ],
+      "REQ-B3.2: Procedural Consolidation": [
+        "Sub-3.2.1: Pathway shift from cognitive to motor control",
+        "Sub-3.2.2: Striatum role in habit formation and chunking",
+        "Sub-3.2.3: Sleep spindles and REM in procedural memory",
+        "Sub-3.2.4: Dopaminergic reinforcement signals in skill consolidation"
+      ],
+      "REQ-B3.3: Reflexive Execution": [
+        "Sub-3.3.1: Neural signature of automatized skill",
+        "Sub-3.3.2: Cerebellar role in real-time tuning",
+        "Sub-3.3.3: Reduced prefrontal activation in expert performance"
+      ],
+      "REQ-B3.4: Feedback Integration": [
+        "Sub-3.4.1: Proprioceptive feedback integration",
+        "Sub-3.4.2: Error-based learning signal propagation",
+        "Sub-3.4.3: Prediction error computation in cerebellum"
+      ]
+    },
+    "quantitative_metrics": {
+      "learning_curve": "Exponential decay to plateau (τ < 100 trials)",
+      "consolidation_time": "Hours to days",
+      "execution_speed": "> 10x faster than initial",
+      "cortical_activation_reduction": "> 70% in PFC after automatization",
+      "error_rate_reduction": "> 90% from initial to expert"
+    },
+    "validation_criteria": {
+      "behavioral_markers": "Dual-task performance improvement",
+      "neural_markers": "Shift from cortical to subcortical activation",
+      "temporal_dynamics": "Reduced reaction time variability"
+    }
+  },
+  
+  "Pillar 4: AI Skill Automatization (Bridge)": {
+    "description": "Computational framework mimicking biological skill automatization.",
+    "keywords": ["reinforcement learning", "policy distillation", "hierarchical RL", "continual learning"],
+    "requirements": {
+      "REQ-A4.1: Model-Based Exploration": [
+        "Sub-4.1.1: AI equivalent of declarative learning with world models",
+        "Sub-4.1.2: Architecture showing exploration to exploitation shift",
+        "Sub-4.1.3: Uncertainty-guided exploration strategies"
+      ],
+      "REQ-A4.2: Policy Compilation": [
+        "Sub-4.2.1: Compiling model-based to model-free policy",
+        "Sub-4.2.2: Hierarchical task chunking framework",
+        "Sub-4.2.3: AI sleep consolidation equivalent (offline optimization)",
+        "Sub-4.2.4: Progressive network pruning during consolidation"
+      ],
+      "REQ-A4.3: Efficient Execution": [
+        "Sub-4.3.1: Reduced computational cost after learning (>90% reduction)",
+        "Sub-4.3.2: Cerebellar module for fine-tuning",
+        "Sub-4.3.3: Hardware acceleration for compiled policies"
+      ],
+      "REQ-A4.4: Feedback Integration from Response Execution": [
+        "Sub-4.4.1: Error signal propagation from motor output",
+        "Sub-4.4.2: Credit assignment across temporal delays",
+        "Sub-4.4.3: Online learning during execution",
+        "Sub-4.4.4: Adaptive learning rate based on performance"
+      ],
+      "REQ-A4.5: Transfer Learning & Generalization": [
+        "Sub-4.5.1: Cross-domain skill transfer metrics (>50% transfer efficiency)",
+        "Sub-4.5.2: Noise robustness during automatization",
+        "Sub-4.5.3: Graceful degradation with component failure",
+        "Sub-4.5.4: Compositional skill combination"
+      ]
+    },
+    "quantitative_metrics": {
+      "compilation_efficiency": "> 90% reduction in inference time",
+      "memory_efficiency": "< 10% of exploration phase memory",
+      "adaptation_speed": "< 100 samples for fine-tuning",
+      "transfer_efficiency": "> 50% reduction in learning time for related tasks",
+      "compositionality": "> 10 skills combinable without retraining"
+    },
+    "validation_criteria": {
+      "benchmark_tasks": ["Atari games", "Robotic manipulation", "Navigation"],
+      "human_comparison": "Match human learning curves within 2x samples",
+      "robustness_tests": "Maintain >80% performance with 20% noise"
+    }
+  },
+  
+  "Pillar 5: Biological Memory Systems": {
+    "description": "Biological memory encoding, storage, retrieval, and prioritization.",
+    "keywords": ["hippocampus", "memory consolidation", "synaptic plasticity", "LTP", "engram"],
+    "requirements": {
+      "REQ-B5.1: Encoding & Consolidation": [
+        "Sub-5.1.1: Hippocampal to neocortical consolidation model",
+        "Sub-5.1.2: Synaptic plasticity mechanisms (LTP/LTD)",
+        "Sub-5.1.3: Place and time cells in context encoding",
+        "Sub-5.1.4: Theta-gamma coupling in memory encoding"
+      ],
+      "REQ-B5.2: Retrieval & Prioritization": [
+        "Sub-5.2.1: Pattern completion mechanism",
+        "Sub-5.2.2: Amygdala role in emotional prioritization",
+        "Sub-5.2.3: Memory reconsolidation model",
+        "Sub-5.2.4: Interference resolution mechanisms"
+      ],
+      "REQ-B5.3: Memory Types & Interactions": [
+        "Sub-5.3.1: Working memory maintenance and manipulation",
+        "Sub-5.3.2: Episodic-semantic memory interaction",
+        "Sub-5.3.3: Procedural memory integration"
+      ]
+    },
+    "quantitative_metrics": {
+      "capacity": "Effectively unlimited for consolidated memories",
+      "retrieval_time": "< 500ms for cued recall",
+      "retention": "Decades for consolidated memories",
+      "encoding_rate": "Single exposure for episodic, multiple for semantic",
+      "interference_resistance": "< 20% degradation with competing memories"
+    },
+    "validation_criteria": {
+      "neural_evidence": "Sharp wave ripples, replay sequences",
+      "behavioral_evidence": "Spacing effects, sleep-dependent consolidation",
+      "computational_modeling": "Match forgetting curves, serial position effects"
+    }
+  },
+  
+  "Pillar 6: AI Memory Systems (Bridge)": {
+    "description": "Computational memory architecture emulating biological systems.",
+    "keywords": ["memory networks", "continual learning", "experience replay", "MANN", "Hopfield"],
+    "requirements": {
+      "REQ-A6.1: Encoding & Consolidation": [
+        "Sub-6.1.1: Systems consolidation without catastrophic forgetting",
+        "Sub-6.1.2: Hebbian plasticity implementation",
+        "Sub-6.1.3: Context-binding in memory networks",
+        "Sub-6.1.4: Compression and abstraction during consolidation"
+      ],
+      "REQ-A6.2: Retrieval & Prioritization": [
+        "Sub-6.2.1: Associative cued recall model",
+        "Sub-6.2.2: Salience-based prioritization",
+        "Sub-6.2.3: Memory editing/reconsolidation",
+        "Sub-6.2.4: Similarity-based generalization"
+      ],
+      "REQ-A6.3: Memory-Guided Action Selection": [
+        "Sub-6.3.1: Working memory integration with SNNs",
+        "Sub-6.3.2: Episodic memory retrieval for context-aware responses",
+        "Sub-6.3.3: Predictive coding using stored priors",
+        "Sub-6.3.4: Memory-based planning and simulation"
+      ],
+      "REQ-A6.4: Memory Efficiency & Scaling": [
+        "Sub-6.4.1: Hierarchical memory organization",
+        "Sub-6.4.2: Active forgetting of irrelevant information",
+        "Sub-6.4.3: Memory indexing for rapid retrieval"
+      ]
+    },
+    "quantitative_metrics": {
+      "capacity_efficiency": "> 1000 tasks without forgetting",
+      "retrieval_accuracy": "> 95% for cued recall",
+      "update_efficiency": "< 10 samples for memory update",
+      "compression_ratio": "> 100:1 for consolidated memories",
+      "retrieval_speed": "< 1ms for indexed access"
+    },
+    "validation_criteria": {
+      "continual_learning_benchmarks": ["Split-MNIST", "CORe50", "miniImageNet"],
+      "memory_tests": "Match human performance on recognition, recall tasks",
+      "efficiency_tests": "Sub-linear growth in memory with task number"
+    }
+  },
+  
+  "Pillar 7: System Integration & Orchestration": {
+    "description": "Cross-pillar communication, coordination, and emergent system behavior.",
+    "keywords": ["system integration", "orchestration", "emergence", "global optimization", "coordination"],
+    "requirements": {
+      "REQ-7.1: Cross-Pillar Communication Protocols": [
+        "Sub-7.1.1: Unified spike-based communication format",
+        "Sub-7.1.2: Asynchronous message passing between modules",
+        "Sub-7.1.3: Priority-based routing for time-critical signals",
+        "Sub-7.1.4: Bandwidth allocation based on information content"
+      ],
+      "REQ-7.2: Unified Temporal Coordination": [
+        "Sub-7.2.1: Global clock synchronization mechanisms",
+        "Sub-7.2.2: Multi-timescale integration framework",
+        "Sub-7.2.3: Temporal credit assignment across modules",
+        "Sub-7.2.4: Phase-locking between oscillatory components"
+      ],
+      "REQ-7.3: Global vs Local Optimization Balance": [
+        "Sub-7.3.1: Hierarchical control with local autonomy",
+        "Sub-7.3.2: Conflict resolution between competing objectives",
+        "Sub-7.3.3: Resource allocation across pillars",
+        "Sub-7.3.4: Meta-learning for system-level adaptation"
+      ],
+      "REQ-7.4: Emergent Behavior Validation": [
+        "Sub-7.4.1: Metrics for emergent intelligence",
+        "Sub-7.4.2: Compositional task performance",
+        "Sub-7.4.3: Novel situation adaptation",
+        "Sub-7.4.4: System-level robustness and fault tolerance"
+      ],
+      "REQ-7.5: Development & Bootstrapping": [
+        "Sub-7.5.1: Staged activation of pillars during development",
+        "Sub-7.5.2: Curriculum learning for system maturation",
+        "Sub-7.5.3: Self-organization principles",
+        "Sub-7.5.4: Critical periods for inter-pillar connectivity"
+      ]
+    },
+    "quantitative_metrics": {
+      "integration_overhead": "< 5% additional computational cost",
+      "cross_pillar_latency": "< 1ms for critical paths",
+      "emergence_metrics": "Novel behavior in >20% of test scenarios",
+      "fault_tolerance": "Maintain >70% performance with single pillar degradation",
+      "scalability": "Linear scaling up to 10^9 neurons"
+    },
+    "validation_criteria": {
+      "integration_tests": "End-to-end task requiring all pillars",
+      "ablation_studies": "Performance degradation with pillar removal",
+      "emergence_tests": "Novel solution discovery in unseen problems",
+      "robustness_tests": "Performance under component failure"
+    }
+  },
+  
+  "Cross_Cutting_Requirements": {
+    "plasticity_timescales": {
+      "immediate": "Synaptic facilitation/depression (1-1000ms)",
+      "short_term": "STDP and synaptic plasticity (1s-10min)",
+      "medium_term": "Protein synthesis dependent (10min-hours)",
+      "long_term": "Structural plasticity (hours-days)",
+      "permanent": "Consolidated memories (days-years)"
+    },
+    "energy_efficiency_principles": {
+      "sparse_coding": "< 10% average activation across all pillars",
+      "event_driven": "Computation only on state changes",
+      "local_computation": "Minimize long-range communication",
+      "adaptive_precision": "Bit-width adaptation based on requirements"
+    },
+    "validation_framework": {
+      "unit_tests": "Individual pillar functionality",
+      "integration_tests": "Cross-pillar communication and coordination",
+      "system_tests": "End-to-end task performance",
+      "regression_tests": "Continual learning without forgetting",
+      "stress_tests": "Performance under resource constraints"
+    }
+  },
+  
+  "Success_Criteria": {
+    "primary_objectives": [
+      "Match biological efficiency within 10x on energy",
+      "Achieve human-level performance on benchmark tasks",
+      "Demonstrate seamless automatization of learned skills",
+      "Show robust memory storage and retrieval at scale"
+    ],
+    "key_performance_indicators": {
+      "learning_efficiency": "< 2x human sample complexity",
+      "energy_efficiency": "< 10W for complete system",
+      "adaptation_speed": "< 1000 samples for new task",
+      "memory_capacity": "> 1000 tasks without forgetting",
+      "response_latency": "< 100ms for automated skills"
+    },
+    "validation_milestones": [
+      "M1: Demonstrate working stimulus-response pathway",
+      "M2: Achieve successful skill automatization",
+      "M3: Validate memory systems at scale",
+      "M4: Show emergent intelligence from integrated system"
+    ]
+  }
+}

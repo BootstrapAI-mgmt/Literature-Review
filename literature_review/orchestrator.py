@@ -36,6 +36,13 @@ from literature_review.optimization.search_optimizer import generate_search_plan
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from utils.global_rate_limiter import global_limiter, ErrorAction
 
+# Import research configuration
+from literature_review.config.research_config import (
+    get_config,
+    get_database_filename_safe,
+    is_config_loaded
+)
+
 # --- CONFIGURATION & SETUP ---
 load_dotenv()
 
@@ -60,7 +67,8 @@ def safe_print(message):
 
 # --- File Paths ---
 # 1. Inputs from other scripts
-RESEARCH_DB_FILE = 'neuromorphic-research_database.csv'
+# RESEARCH_DB_FILE is now dynamically loaded from research_config.json
+RESEARCH_DB_FILE = get_database_filename_safe() if is_config_loaded() else 'neuromorphic-research_database.csv'
 DEFINITIONS_FILE = 'pillar_definitions_enhanced.json'
 # DEPRECATED: DEEP_COVERAGE_DB_FILE = 'deep_coverage_database.json'
 # Now using version history as single source of truth (Task Card #4)
@@ -1114,11 +1122,22 @@ def generate_recommendations(results: Dict, database: ResearchDatabase) -> List[
                             'databases': ['Google Scholar', 'arXiv', 'PubMed', 'IEEE Xplore']
                         })
                         
-                        # Add neuromorphic/AI context for AI pillars
+                        # Add context for AI pillars (use config if available)
                         if 'AI' in pillar_name or 'Bridge' in pillar_name:
+                            # Get search prefix from config or use default
+                            search_prefix = 'neuromorphic'
+                            search_context = 'Neuromorphic computing context'
+                            if is_config_loaded():
+                                try:
+                                    cfg = get_config()
+                                    search_prefix = cfg.search_query_prefix or 'neuromorphic'
+                                    search_context = f'{cfg.ai_pillar_context} context' if cfg.ai_pillar_context else 'Neuromorphic computing context'
+                                except Exception:
+                                    pass
+                            
                             searches.append({
-                                'query': f'neuromorphic AND ({req_short})',
-                                'rationale': 'Neuromorphic computing context',
+                                'query': f'{search_prefix} AND ({req_short})',
+                                'rationale': search_context,
                                 'databases': ['arXiv', 'IEEE Xplore', 'Frontiers']
                             })
                             searches.append({

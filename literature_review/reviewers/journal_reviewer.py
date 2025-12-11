@@ -34,6 +34,15 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.global_rate_limiter import global_limiter, ErrorAction
 
+# Import research configuration
+from literature_review.config.research_config import (
+    get_config, 
+    get_research_topic_safe, 
+    get_short_description_safe,
+    get_database_filename_safe,
+    is_config_loaded
+)
+
 # Note: pandas is imported locally in the function that needs it
 # import pandas as pd
 
@@ -62,7 +71,9 @@ load_dotenv()
 # --- CONFIGURATION ---
 PAPERS_FOLDER = 'data/raw'
 REVIEW_LOG_FILE = 'review_log.json'
-OUTPUT_CSV_FILE = 'neuromorphic-research_database.csv'
+# OUTPUT_CSV_FILE is now dynamically loaded from research_config.json
+# Fallback to legacy value if config not loaded
+OUTPUT_CSV_FILE = get_database_filename_safe() if is_config_loaded() else 'neuromorphic-research_database.csv'
 NON_JOURNAL_CSV_FILE = 'non-journal_database.csv'
 DUPLICATE_MODE = 'skip'
 CACHE_DIR = 'cache'
@@ -689,12 +700,16 @@ class PaperAnalyzer:
     @staticmethod
     def get_chunk_summary_prompt(chunk_text: str, chunk_num: int, total_chunks: int, pillar_definitions_str: str) -> str:
         """Creates a prompt to summarize a single chunk of a large document."""
+        # Get research context from configuration
+        short_desc = get_short_description_safe()
+        research_topic = get_research_topic_safe()
+        
         return f"""
 You are a research summarization agent.
-Your task is to read a chunk of a larger academic paper and extract its most critical information relevant to neuromorphic computing and brain-inspired AI.
+Your task is to read a chunk of a larger academic paper and extract its most critical information relevant to {short_desc}.
 This is CHUNK {chunk_num} of {total_chunks}.
 
-Our core research interest is: "The mapping of human brain functions to machine learning frameworks, specifically in the areas of skill acquisition, memory consolidation, and stimulus-response, with emphasis on neuromorphic computing architectures."
+Our core research interest is: "{research_topic}"
 
 --- KEY RESEARCH PILLARS (for context) ---
 We are categorizing research into these pillars. Use these to guide your summary:
@@ -760,12 +775,15 @@ Do not include introductory or concluding phrases.
         """Generate comprehensive analysis prompt for a journal paper, including requirement extraction."""
         is_summarized = "[[[ This document was summarized" in paper_text[:500]
 
+        # Get research context from configuration
+        research_topic = get_research_topic_safe()
+        
         return f"""
 You are an expert research assistant with deep knowledge in Machine Learning, Computational Neuroscience, and Cognitive Science.
 Your task is to analyze an academic paper {'(provided as a compilation of chunk summaries)' if is_summarized else ''} and structure its key information for a master research database.
 
 --- CORE RESEARCH TOPIC ---
-"The mapping of human brain functions to machine learning frameworks, specifically in the areas of skill acquisition, memory consolidation, and stimulus-response, with emphasis on neuromorphic computing architectures."
+"{research_topic}"
 
 --- FULL PILLAR DEFINITIONS (FOR CROSS-REFERENCE) ---
 You *MUST* use this list to identify 'Requirement(s)' claims.
@@ -832,11 +850,14 @@ The JSON object must contain these exact keys (use "N/A" or appropriate defaults
     def get_non_journal_analysis_prompt(paper_text: str, metadata: PaperMetadata) -> str:
         """Generate a simpler analysis prompt for non-journal items like lecture slides."""
         is_summarized = "[[[ This document was summarized" in paper_text[:500]
+        # Get research context from configuration
+        research_topic = get_research_topic_safe()
+        
         return f"""
 You are a research assistant.
 Your task is to analyze a document that is likely NOT a formal academic paper (e.g., lecture slides, notes, a web article).
 Your goal is to extract key topics and search terms that could be useful for finding actual journal papers later.
-Our core research topic is: "The mapping of human brain functions to machine learning frameworks, specifically in the areas of skill acquisition, memory consolidation, and stimulus-response, with emphasis on neuromorphic computing architectures."
+Our core research topic is: "{research_topic}"
 Analyze the provided text below and return a single, clean JSON object.
 Do not include any text before or after the JSON.
 The JSON object must contain these exact keys:

@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0.0",
+  
+  "domain": {
+    "id": "example-domain",
+    "name": "Example Research Domain",
+    "version": "1.0.0",
+    "created_at": "2025-12-10",
+    "description": "Template for creating new research domains"
+  },
+  
+  "research_topic": {
+    "primary": "YOUR PRIMARY RESEARCH QUESTION OR TOPIC GOES HERE. This should be a comprehensive description of what you are investigating.",
+    "short_description": "brief domain focus for prompts",
+    "secondary_questions": [
+      "Secondary research question 1?",
+      "Secondary research question 2?"
+    ]
+  },
+  
+  "prompt_context": {
+    "researcher_role": "PhD-level research assistant specializing in literature review for [YOUR DOMAIN]",
+    "domain_focus": "your domain focus area",
+    "example_domains": ["Example Domain 1", "Example Domain 2", "Example Domain 3"],
+    "example_subdomains": ["Subdomain 1", "Subdomain 2", "Subdomain 3"],
+    "example_keywords": ["Keyword 1", "Keyword 2", "Keyword 3"]
+  },
+  
+  "vocabulary": {
+    "primary_keywords": [
+      "primary-keyword-1",
+      "primary-keyword-2",
+      "primary-keyword-3"
+    ],
+    "secondary_keywords": [
+      "technical-term-1",
+      "technical-term-2"
+    ],
+    "exclusion_keywords": []
+  },
+  
+  "file_naming": {
+    "database": "{domain_id}-research_database.csv",
+    "non_journal": "{domain_id}-non_journal_database.csv",
+    "gap_report": "{domain_id}-gap_analysis_report.json",
+    "deep_coverage": "{domain_id}-deep_coverage.json",
+    "version_history": "review_version_history.json"
+  },
+  
+  "pillar_definitions_file": "pillar_definitions.json",
+  
+  "scoring": {
+    "relevance_thresholds": {
+      "highly_relevant": 80,
+      "moderately_relevant": 50,
+      "tangentially_relevant": 30,
+      "not_relevant": 0
+    },
+    "domain_prioritization": {
+      "Primary Domain": 1.0,
+      "Related Domain 1": 0.8,
+      "Related Domain 2": 0.6
+    }
+  },
+  
+  "search_context": {
+    "default_query_prefix": "your-domain",
+    "ai_pillar_context": "your domain context",
+    "example_searches": [
+      "example search query 1",
+      "example search query 2"
+    ]
+  },
+  
+  "proof_chain": {
+    "ultimate_goal": "Your ultimate research goal statement",
+    "failure_message": "Cannot prove thesis with current evidence"
+  }
+}

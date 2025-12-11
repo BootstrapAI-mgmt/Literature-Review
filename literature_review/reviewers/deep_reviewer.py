@@ -36,13 +36,21 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from utils.global_rate_limiter import global_limiter, ErrorAction
 
+# Import research configuration
+from literature_review.config.research_config import (
+    get_research_topic_safe,
+    get_database_filename_safe,
+    is_config_loaded
+)
+
 # --- CONFIGURATION ---
 load_dotenv()
 
 # 1. Input Files
 # From Journal Reviewer
 PAPERS_FOLDER = 'data/raw'
-RESEARCH_DB_FILE = 'neuromorphic-research_database.csv'
+# RESEARCH_DB_FILE is now dynamically loaded from research_config.json
+RESEARCH_DB_FILE = get_database_filename_safe() if is_config_loaded() else 'neuromorphic-research_database.csv'
 # From Orchestrator
 GAP_REPORT_FILE = 'gap_analysis_output/gap_analysis_report.json'
 DEEP_REVIEW_DIRECTIONS_FILE = 'gap_analysis_output/deep_review_directions.json'
@@ -697,6 +705,9 @@ def build_deep_review_prompt(
     # We send the text page by page to make it easier for the AI
     # to find page numbers and process context.
     full_text_str = "\n".join(paper_pages_text)
+    
+    # Get research context from configuration
+    research_topic = get_research_topic_safe()
 
     return f"""
 You are a "Deep Reviewer" AI agent. Your task is to re-read a paper's full text to find specific, new evidence for a known research gap.
@@ -704,7 +715,7 @@ You are a "Deep Reviewer" AI agent. Your task is to re-read a paper's full text 
 **NOTE:** You are analyzing {page_range} of this document. Focus on evidence within this section.
 
 --- CORE RESEARCH CONTEXT ---
-Our core research topic is: "The mapping of human brain functions to machine learning frameworks, specifically in the areas of skill acquisition, memory consolidation, and stimulus-response, with emphasis on neuromorphic computing architectures."
+Our core research topic is: "{research_topic}"
 
 --- THE GAP TO FILL ---
 Pillar: {gap['pillar']}

@@ -1,0 +1,52 @@
+{
+  "Framework_Overview": {
+    "vision": "YOUR RESEARCH VISION STATEMENT - What you aim to achieve",
+    "core_principles": [
+      "Core Principle 1",
+      "Core Principle 2",
+      "Core Principle 3"
+    ],
+    "developmental_sequence": [
+      "Stage 1: First milestone",
+      "Stage 2: Second milestone",
+      "Stage 3: Final goal"
+    ]
+  },
+  
+  "Pillar 1: First Research Pillar": {
+    "description": "Description of what this pillar covers and why it matters.",
+    "keywords": ["keyword1", "keyword2", "keyword3"],
+    "requirements": {
+      "REQ-1.1: First Requirement Category": [
+        "Sub-1.1.1: First sub-requirement - specific testable claim",
+        "Sub-1.1.2: Second sub-requirement - specific testable claim",
+        "Sub-1.1.3: Third sub-requirement - specific testable claim"
+      ],
+      "REQ-1.2: Second Requirement Category": [
+        "Sub-1.2.1: First sub-requirement",
+        "Sub-1.2.2: Second sub-requirement"
+      ]
+    },
+    "quantitative_metrics": {
+      "metric_1": "Target value or range",
+      "metric_2": "Target value or range"
+    },
+    "validation_criteria": {
+      "required_evidence": "Types of evidence needed",
+      "benchmarks": ["Benchmark 1", "Benchmark 2"]
+    }
+  },
+  
+  "Pillar 2: Second Research Pillar": {
+    "description": "Description of the second pillar.",
+    "keywords": ["keyword4", "keyword5"],
+    "requirements": {
+      "REQ-2.1: Requirement Category": [
+        "Sub-2.1.1: Sub-requirement description",
+        "Sub-2.1.2: Sub-requirement description"
+      ]
+    },
+    "quantitative_metrics": {},
+    "validation_criteria": {}
+  }
+}

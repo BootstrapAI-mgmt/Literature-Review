@@ -10,7 +10,7 @@
 
 ## Overview
 
-The Literature Review Automation System is an AI-powered pipeline for conducting comprehensive literature reviews in neuromorphic computing research. The system automates paper screening, claim extraction, evidence evaluation, gap analysis, and convergence tracking.
+The Literature Review Automation System is an AI-powered pipeline for conducting comprehensive literature reviews across any research domain. The system automates paper screening, claim extraction, evidence evaluation, gap analysis, and convergence tracking. Research domains are fully configurable via `research_config.json`, enabling the same pipeline to analyze neuromorphic computing, climate science, biomedical research, or any other field.
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -53,6 +53,7 @@ The central coordinator that manages the 5-stage review pipeline.
 | 5 | Orchestrator | Gap analysis and convergence |
 
 **Key Features:**
+- `--research-config` - Specify research domain configuration
 - `--resume` - Resume from last checkpoint
 - `--batch-mode` - Non-interactive execution
 - `--prefilter` - Gap-targeted paper filtering
@@ -66,6 +67,8 @@ Core analysis functionality organized into submodules:
 
 ```
 literature_review/
+├── config/             # Research domain configuration
+│   └── research_config.py   # ResearchConfig class & helpers
 ├── analysis/           # Evaluation & scoring
 │   ├── judge.py        # Claim evaluation
 │   ├── proof_chain.py  # Evidence chain analysis
@@ -185,6 +188,21 @@ PDF Papers → Journal Reviewer → Claims Database
 
 ## Configuration
 
+### Research Domain Configuration (`research_config.json`)
+
+Defines the research topic, keywords, pillars, and domain-specific settings:
+
+```json
+{
+  "domain_id": "neuromorphic-computing",
+  "domain_name": "Neuromorphic Computing & Brain-Inspired AI",
+  "research_topic": "neuromorphic computing and brain-inspired artificial intelligence",
+  "pillar_definitions": [...]
+}
+```
+
+Domains can be organized in `domains/{domain-id}/` directories for multi-domain support.
+
 ### Pipeline Configuration (`pipeline_config.json`)
 
 ```json
@@ -207,10 +225,11 @@ PDF Papers → Journal Reviewer → Claims Database
 ### Environment Variables
 
 | Variable | Purpose |
-|----------|---------|
+|----------|---------|---|
 | `GEMINI_API_KEY` | Google AI API access |
 | `DASHBOARD_API_KEY` | Dashboard authentication |
 | `LITERATURE_REVIEW_OUTPUT_DIR` | Custom output path |
+| `LITERATURE_REVIEW_DOMAIN` | Research domain config path |
 
 ---
 
@@ -256,6 +275,7 @@ PDF Papers → Journal Reviewer → Claims Database
 
 ## Related Documentation
 
+- [RESEARCH_AGNOSTIC_ARCHITECTURE.md](../RESEARCH_AGNOSTIC_ARCHITECTURE.md) - Multi-domain configuration
 - [WORKFLOW_EXECUTION_GUIDE.md](../guides/WORKFLOW_EXECUTION_GUIDE.md) - Pipeline execution
 - [DASHBOARD_GUIDE.md](../DASHBOARD_GUIDE.md) - Web interface guide
 - [EVIDENCE_SCORING_DOCUMENTATION.md](../EVIDENCE_SCORING_DOCUMENTATION.md) - Evidence quality

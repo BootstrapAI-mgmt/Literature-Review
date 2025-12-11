@@ -155,9 +155,12 @@
       "priority": "high",
       "staleness_indicators": [
         "literature_review/orchestrator.py",
+        "literature_review/config/research_config.py",
         "pipeline_orchestrator.py",
         "webdashboard/app.py",
-        "pillar_definitions.json"
+        "pillar_definitions.json",
+        "research_config.json",
+        "domains/"
       ]
     },
     "@deployment": {
@@ -782,17 +785,20 @@
     {
       "path": "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md",
       "level": "L2",
-      "status": "complete",
-      "last_updated": "2025-11-14",
+      "status": "current",
+      "last_updated": "2025-12-10",
       "owner": "@architecture",
       "depends_on": [],
       "scripts": [
-        "pillar_definitions.json"
+        "pillar_definitions.json",
+        "research_config.json",
+        "literature_review/config/research_config.py",
+        "domains/"
       ],
       "created_date": "2025-11-14",
-      "last_reviewed": "2025-11-14",
+      "last_reviewed": "2025-12-10",
       "review_interval_days": 21,
-      "next_review": "2025-12-05"
+      "next_review": "2025-12-31"
     },
     {
       "path": "docs/ORCHESTRATOR_V2_GUIDE.md",

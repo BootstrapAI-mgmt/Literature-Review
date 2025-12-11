@@ -30,10 +30,18 @@ from literature_review.utils.api_manager import APIManager
 
 from literature_review.utils.api_manager import APIManager
 
+# Import research configuration
+from literature_review.config.research_config import (
+    get_researcher_role_safe,
+    get_database_filename_safe,
+    is_config_loaded
+)
+
 # --- CONFIGURATION & SETUP ---
 # File paths
 GAP_REPORT_FILE = 'gap_analysis_report.json'
-RESEARCH_DB_FILE = 'data/processed/neuromorphic-research_database.csv'
+# RESEARCH_DB_FILE is now dynamically loaded from research_config.json
+RESEARCH_DB_FILE = f'data/processed/{get_database_filename_safe()}' if is_config_loaded() else 'data/processed/neuromorphic-research_database.csv'
 OUTPUT_FILE = 'suggested_searches.md'
 CACHE_DIR = os.path.join(os.path.dirname(__file__), 'recommender_cache')
 
@@ -179,6 +187,8 @@ def get_existing_keywords(evidence_papers: List[str], db_dataframe: pd.DataFrame
 
 def generate_bridge_queries(gap_info: Dict, existing_keywords: set, api_manager: APIManager) -> List[str]:
     """Generates novel search queries to bridge a specific research gap."""
+    # Get research context from configuration
+    researcher_role = get_researcher_role_safe()
 
     if not existing_keywords:
         existing_keywords_str = "None. This is a completely unaddressed gap."
@@ -186,7 +196,7 @@ def generate_bridge_queries(gap_info: Dict, existing_keywords: set, api_manager:
         existing_keywords_str = ", ".join(sorted(list(existing_keywords)))
 
     prompt = f"""
-You are a PhD-level research assistant specializing in literature review for neuromorphic computing and neuroscience.
+You are a {researcher_role}.
 
 My goal is to find new papers that fill a specific research gap.
 

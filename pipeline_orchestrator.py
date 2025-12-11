@@ -51,6 +51,9 @@ from typing import Optional, Dict, Any, Tuple
 sys.path.insert(0, str(Path(__file__).parent))
 from literature_review.utils.cost_tracker import get_cost_tracker
 
+# Import research configuration
+from literature_review.config.research_config import load_config, get_config, is_config_loaded
+
 
 class RetryPolicy:
     """Manages retry logic and exponential backoff."""
@@ -1030,6 +1033,13 @@ def main():
     parser.add_argument("--log-file", type=str, help="Path to log file (default: no file logging)")
     parser.add_argument("--config", type=str, help="Path to configuration JSON file")
     parser.add_argument(
+        "--research-config",
+        type=str,
+        default="research_config.json",
+        help="Path to research domain configuration (default: research_config.json). "
+             "This defines the research topic, keywords, and pillar definitions."
+    )
+    parser.add_argument(
         "--checkpoint-file",
         type=str,
         default="pipeline_checkpoint.json",
@@ -1135,6 +1145,21 @@ def main():
     )
 
     args = parser.parse_args()
+    
+    # Load research domain configuration first (before any other operations)
+    research_config_path = args.research_config
+    if Path(research_config_path).exists():
+        try:
+            research_cfg = load_config(research_config_path)
+            print(f"🔬 Research Domain: {research_cfg.domain_name}")
+            print(f"   ID: {research_cfg.domain_id}")
+            print(f"   Topic: {research_cfg.short_description}")
+        except Exception as e:
+            print(f"⚠️  Warning: Could not load research config from {research_config_path}: {e}")
+            print("   Using legacy hardcoded values.")
+    else:
+        print(f"⚠️  Research config not found: {research_config_path}")
+        print("   Using legacy hardcoded values. Create research_config.json for research-agnostic mode.")
     
     # Handle cache clearing first
     if args.clear_cache:

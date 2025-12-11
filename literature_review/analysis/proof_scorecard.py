@@ -9,6 +9,12 @@ from typing import Dict, List, Tuple
 from datetime import datetime
 import logging
 
+# Import research configuration
+from literature_review.config.research_config import (
+    get_config,
+    is_config_loaded
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -162,8 +168,18 @@ class ProofScorecardAnalyzer:
         p7_completeness = self._get_average_completeness(['Pillar 7'])
         p7_sufficiency = self._estimate_sufficiency(['Pillar 7'])
         
+        # Get goal text from config or use default
+        integration_goal = 'Integrated system demonstrates framework thesis'
+        if is_config_loaded():
+            try:
+                cfg = get_config()
+                if cfg.proof_goal:
+                    integration_goal = cfg.proof_goal
+            except Exception:
+                pass
+        
         goals.append({
-            'goal': 'Integrated neuromorphic system demonstrates biological fidelity and computational efficiency',
+            'goal': integration_goal,
             'pillars': ['Pillar 7'],
             'completeness': p7_completeness,
             'sufficiency': p7_sufficiency,
@@ -425,7 +441,16 @@ class ProofScorecardAnalyzer:
         elif score >= 20:
             return 'Significant gaps remain - systematic literature search required'
         else:
-            return 'Cannot prove neuromorphic framework with current evidence'
+            # Get failure message from config or use default
+            failure_msg = 'Cannot prove framework thesis with current evidence'
+            if is_config_loaded():
+                try:
+                    cfg = get_config()
+                    if cfg.proof_failure_message:
+                        failure_msg = cfg.proof_failure_message
+                except Exception:
+                    pass
+            return failure_msg
 
 
 def generate_scorecard(gap_analysis_file: str, version_history_file: str, 

@@ -17,6 +17,9 @@ from typing import Dict, Any, Optional, List
 from dataclasses import dataclass, asdict
 from enum import Enum
 
+# Import research configuration
+from literature_review.config.research_config import get_database_filename_safe
+
 
 class JobType(Enum):
     """Type of analysis job."""
@@ -350,7 +353,7 @@ class StateManager:
                 'completed_at': v1_data.get('last_run_timestamp'),
                 'database_hash': '',  # Not available in nested format
                 'database_size': 0,  # Not available in nested format
-                'database_path': 'neuromorphic-research_database.csv',  # Default
+                'database_path': get_database_filename_safe(),  # From research config
                 'analysis_completed': v1_data.get('last_completed_stage') == 'final',
                 'analysis_timestamp': v1_data.get('last_run_timestamp', ''),
                 'total_papers': 0,  # Not available in nested format
@@ -394,7 +397,7 @@ class StateManager:
                 'completed_at': v1_data.get('analysis_timestamp'),
                 'database_hash': v1_data.get('database_hash', ''),
                 'database_size': v1_data.get('database_size', 0),
-                'database_path': 'neuromorphic-research_database.csv',  # Default
+                'database_path': get_database_filename_safe(),  # From research config
                 'analysis_completed': v1_data.get('analysis_completed', False),
                 'analysis_timestamp': v1_data.get('analysis_timestamp', ''),
                 'total_papers': v1_data.get('total_papers', 0),
