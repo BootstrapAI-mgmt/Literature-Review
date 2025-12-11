@@ -244,6 +244,15 @@ BUILD THESE NODES:
      - UPDATE_INDEX: Add/update entries in index or summary docs when new docs are added to a domain
      - CASCADE_UPDATE: Propagate changes to dependent documentation
      - REVIEW_NEEDED: Flag docs that may need human review due to significant changes
+     - STATUS_UPDATE: Update task card status fields (Not Started → In Progress → Complete)
+     - CHECKBOX_TOGGLE: Check/uncheck task checkboxes in task cards
+     - COMPLETION_PERCENTAGE: Update completion counts in roadmaps/indexes
+     
+     TASK CARD AWARENESS:
+     - When task-cards/*.md files change, also update parent indexes (task-cards/README.md, task-cards/INDEX.md)
+     - When individual task cards are marked complete, cascade to docs/CONSOLIDATED_ROADMAP.md
+     - For @task-tracking domain docs, always include STATUS_UPDATE or CHECKBOX_TOGGLE types
+     
      Output exactly: {"update_list_id":"ul-DATE-TIME","tasks":[{"task_id":"task-001","document":"path","owner":"@domain","update_type":"TYPE","description":"what to update","depends_on":[],"priority":1}]}
    - User message: Create task list for commit: {{$json.trigger.message}}. 
      Affected docs: {{$json.affected_docs.map(d=>d.path + ' (owner: ' + d.owner + ')').join(', ')}}
@@ -489,7 +498,25 @@ BUILD THESE NODES:
 
 4. AI AGENT node named "Update Document" (use Gemini)
    - Model: gemini-2.5-flash
-   - System prompt: You update documentation. Make minimal targeted changes. Preserve formatting. Output JSON: {"changes_needed":true/false,"updated_content":"full updated doc","summary":"brief description"}
+   - System prompt: You update documentation and task tracking files. Make minimal targeted changes. Preserve formatting.
+     
+     DOCUMENT TYPES YOU HANDLE:
+     1. **Regular Documentation** - Update prose, references, dates
+     2. **Task Cards** - Update status fields, checkboxes, completion dates
+     3. **Roadmaps/Indexes** - Update completion percentages, status tables
+     
+     TASK CARD UPDATES:
+     - Status field: Change "Status: Not Started" to "Status: Complete" (or In Progress/Blocked)
+     - Checkboxes: Change "- [ ] Task item" to "- [x] Task item" when completed
+     - Completion dates: Add "Completion Date: YYYY-MM-DD" when status changes to Complete
+     - Completion percentage: Calculate from checkbox counts (e.g., "3/5 Complete (60%)")
+     
+     ROADMAP/INDEX UPDATES:
+     - Update status emoji: 🟢 Ready → 🔄 Active → ✅ COMPLETE
+     - Update "Status: X/Y Complete" counts in summary tables
+     - Update wave completion percentages
+     
+     Output JSON: {"changes_needed":true/false,"updated_content":"full updated doc","summary":"brief description","update_type":"PROSE|STATUS|CHECKBOX|PERCENTAGE"}
    - User message: Task: {{$('Parse Webhook Data').first().json.task.description}}. Document: {{$('Parse Webhook Data').first().json.task.document}}. Trigger: {{$('Parse Webhook Data').first().json.trigger.message}}. Current content: {{$json.data}}
    - NOTE: Reference parsed webhook data via $('Parse Webhook Data').first().json
 

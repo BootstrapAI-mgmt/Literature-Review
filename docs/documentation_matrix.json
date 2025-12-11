@@ -202,15 +202,41 @@
         "webdashboard/"
       ]
     },
+    "@task-tracking": {
+      "documents": [
+        "task-cards/README.md",
+        "task-cards/INDEX.md",
+        "task-cards/INCREMENTAL_REVIEW_WAVE_PLAN.md",
+        "task-cards/INDIVIDUAL_TASK_CARDS_SUMMARY.md"
+      ],
+      "review_interval_days": 3,
+      "priority": "high",
+      "staleness_indicators": [
+        "task-cards/**/*.md",
+        "docs/archive/implementation-summaries/"
+      ],
+      "update_types": [
+        "STATUS_UPDATE",
+        "CHECKBOX_TOGGLE",
+        "COMPLETION_PERCENTAGE",
+        "COMPLETION_DATE"
+      ]
+    },
     "@roadmap": {
       "documents": [
-        "docs/CONSOLIDATED_ROADMAP.md"
+        "docs/CONSOLIDATED_ROADMAP.md",
+        "task-cards/INCREMENTAL_REVIEW_WAVE_PLAN.md",
+        "task-cards/INCREMENTAL_REVIEW_EXECUTIVE_SUMMARY.md"
       ],
       "review_interval_days": 7,
       "priority": "high",
       "staleness_indicators": [
         "task-cards/",
         "docs/archive/implementation-summaries/"
+      ],
+      "cascade_from": [
+        "task-cards/README.md",
+        "task-cards/INDEX.md"
       ]
     },
     "@docs": {
@@ -928,6 +954,88 @@
       "last_reviewed": "2025-11-24",
       "review_interval_days": 7,
       "next_review": "2025-12-01"
+    },
+    {
+      "path": "task-cards/README.md",
+      "level": "L1",
+      "status": "review",
+      "last_updated": "2025-11-14",
+      "owner": "@task-tracking",
+      "depends_on": [],
+      "cascades_to": [
+        "docs/CONSOLIDATED_ROADMAP.md",
+        "task-cards/INCREMENTAL_REVIEW_WAVE_PLAN.md"
+      ],
+      "scripts": [],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 3,
+      "next_review": "2025-12-14",
+      "update_triggers": ["STATUS_UPDATE", "COMPLETION_PERCENTAGE"]
+    },
+    {
+      "path": "task-cards/INDEX.md",
+      "level": "L1",
+      "status": "review",
+      "last_updated": "2025-11-16",
+      "owner": "@task-tracking",
+      "depends_on": [],
+      "cascades_to": [
+        "docs/CONSOLIDATED_ROADMAP.md"
+      ],
+      "scripts": [],
+      "created_date": "2025-11-16",
+      "last_reviewed": "2025-11-16",
+      "review_interval_days": 3,
+      "next_review": "2025-12-14",
+      "update_triggers": ["STATUS_UPDATE", "CHECKBOX_TOGGLE"]
+    },
+    {
+      "path": "task-cards/INCREMENTAL_REVIEW_WAVE_PLAN.md",
+      "level": "L1",
+      "status": "review",
+      "last_updated": "2025-11-19",
+      "owner": "@roadmap",
+      "depends_on": [],
+      "cascades_to": [
+        "docs/CONSOLIDATED_ROADMAP.md"
+      ],
+      "scripts": [],
+      "created_date": "2025-11-19",
+      "last_reviewed": "2025-11-19",
+      "review_interval_days": 7,
+      "next_review": "2025-12-18",
+      "update_triggers": ["STATUS_UPDATE", "CHECKBOX_TOGGLE", "COMPLETION_DATE"]
+    },
+    {
+      "path": "task-cards/INCREMENTAL_REVIEW_EXECUTIVE_SUMMARY.md",
+      "level": "L2",
+      "status": "review",
+      "last_updated": "2025-11-19",
+      "owner": "@roadmap",
+      "depends_on": [
+        "task-cards/INCREMENTAL_REVIEW_WAVE_PLAN.md"
+      ],
+      "scripts": [],
+      "created_date": "2025-11-19",
+      "last_reviewed": "2025-11-19",
+      "review_interval_days": 7,
+      "next_review": "2025-12-18"
+    },
+    {
+      "path": "task-cards/INDIVIDUAL_TASK_CARDS_SUMMARY.md",
+      "level": "L2",
+      "status": "review",
+      "last_updated": "2025-11-14",
+      "owner": "@task-tracking",
+      "depends_on": [
+        "task-cards/README.md"
+      ],
+      "scripts": [],
+      "created_date": "2025-11-14",
+      "last_reviewed": "2025-11-14",
+      "review_interval_days": 7,
+      "next_review": "2025-12-18"
     }
   ],
   "archive_summary": {
@@ -978,7 +1086,84 @@
         "docs/CICD_WORKFLOWS_GUIDE.md",
         "docs/TESTING_GUIDE.md"
       ]
+    },
+    "task-cards/incremental-review/": {
+      "description": "Individual incremental review task cards trigger wave plan updates",
+      "update_order": [
+        "task-cards/INCREMENTAL_REVIEW_WAVE_PLAN.md",
+        "task-cards/README.md",
+        "docs/CONSOLIDATED_ROADMAP.md"
+      ],
+      "update_types": ["STATUS_UPDATE", "CHECKBOX_TOGGLE", "COMPLETION_DATE"]
+    },
+    "task-cards/evidence-enhancement/": {
+      "description": "Evidence task cards trigger index and roadmap updates",
+      "update_order": [
+        "task-cards/README.md",
+        "docs/CONSOLIDATED_ROADMAP.md",
+        "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"
+      ],
+      "update_types": ["STATUS_UPDATE", "COMPLETION_DATE"]
+    },
+    "task-cards/agent/": {
+      "description": "Agent task cards trigger index updates",
+      "update_order": [
+        "task-cards/README.md",
+        "docs/CONSOLIDATED_ROADMAP.md"
+      ],
+      "update_types": ["STATUS_UPDATE"]
+    },
+    "task-cards/automation/": {
+      "description": "Automation task cards trigger index updates",
+      "update_order": [
+        "task-cards/README.md",
+        "docs/CONSOLIDATED_ROADMAP.md"
+      ],
+      "update_types": ["STATUS_UPDATE"]
+    },
+    "task-cards/integration/": {
+      "description": "Integration task cards trigger index updates",
+      "update_order": [
+        "task-cards/README.md",
+        "docs/CONSOLIDATED_ROADMAP.md",
+        "docs/TESTING_GUIDE.md"
+      ],
+      "update_types": ["STATUS_UPDATE"]
+    },
+    "task-cards/e2e/": {
+      "description": "E2E task cards trigger index updates",
+      "update_order": [
+        "task-cards/README.md",
+        "docs/CONSOLIDATED_ROADMAP.md",
+        "docs/TESTING_GUIDE.md"
+      ],
+      "update_types": ["STATUS_UPDATE"]
     }
+  },
+  "task_status_mappings": {
+    "status_values": [
+      "Not Started",
+      "In Progress",
+      "Complete",
+      "Blocked",
+      "Deferred"
+    ],
+    "checkbox_patterns": {
+      "unchecked": "- [ ]",
+      "checked": "- [x]"
+    },
+    "status_emoji": {
+      "Not Started": "🟢 Ready",
+      "In Progress": "🔄 Active",
+      "Complete": "✅ COMPLETE",
+      "Blocked": "🔴 Blocked",
+      "Deferred": "🟡 Deferred"
+    },
+    "completion_triggers": [
+      "Status: Complete",
+      "Status: ✅ COMPLETE",
+      "**Status:** Complete"
+    ]
   },
   "field_descriptions": {
     "created_date": "Date the document was first created (from git history)",
