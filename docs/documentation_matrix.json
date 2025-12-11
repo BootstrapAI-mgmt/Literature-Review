@@ -971,7 +971,10 @@
       "last_reviewed": "2025-11-14",
       "review_interval_days": 3,
       "next_review": "2025-12-14",
-      "update_triggers": ["STATUS_UPDATE", "COMPLETION_PERCENTAGE"]
+      "update_triggers": [
+        "STATUS_UPDATE",
+        "COMPLETION_PERCENTAGE"
+      ]
     },
     {
       "path": "task-cards/INDEX.md",
@@ -988,7 +991,10 @@
       "last_reviewed": "2025-11-16",
       "review_interval_days": 3,
       "next_review": "2025-12-14",
-      "update_triggers": ["STATUS_UPDATE", "CHECKBOX_TOGGLE"]
+      "update_triggers": [
+        "STATUS_UPDATE",
+        "CHECKBOX_TOGGLE"
+      ]
     },
     {
       "path": "task-cards/INCREMENTAL_REVIEW_WAVE_PLAN.md",
@@ -1005,7 +1011,11 @@
       "last_reviewed": "2025-11-19",
       "review_interval_days": 7,
       "next_review": "2025-12-18",
-      "update_triggers": ["STATUS_UPDATE", "CHECKBOX_TOGGLE", "COMPLETION_DATE"]
+      "update_triggers": [
+        "STATUS_UPDATE",
+        "CHECKBOX_TOGGLE",
+        "COMPLETION_DATE"
+      ]
     },
     {
       "path": "task-cards/INCREMENTAL_REVIEW_EXECUTIVE_SUMMARY.md",
@@ -1094,7 +1104,11 @@
         "task-cards/README.md",
         "docs/CONSOLIDATED_ROADMAP.md"
       ],
-      "update_types": ["STATUS_UPDATE", "CHECKBOX_TOGGLE", "COMPLETION_DATE"]
+      "update_types": [
+        "STATUS_UPDATE",
+        "CHECKBOX_TOGGLE",
+        "COMPLETION_DATE"
+      ]
     },
     "task-cards/evidence-enhancement/": {
       "description": "Evidence task cards trigger index and roadmap updates",
@@ -1103,7 +1117,10 @@
         "docs/CONSOLIDATED_ROADMAP.md",
         "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"
       ],
-      "update_types": ["STATUS_UPDATE", "COMPLETION_DATE"]
+      "update_types": [
+        "STATUS_UPDATE",
+        "COMPLETION_DATE"
+      ]
     },
     "task-cards/agent/": {
       "description": "Agent task cards trigger index updates",
@@ -1111,7 +1128,9 @@
         "task-cards/README.md",
         "docs/CONSOLIDATED_ROADMAP.md"
       ],
-      "update_types": ["STATUS_UPDATE"]
+      "update_types": [
+        "STATUS_UPDATE"
+      ]
     },
     "task-cards/automation/": {
       "description": "Automation task cards trigger index updates",
@@ -1119,7 +1138,9 @@
         "task-cards/README.md",
         "docs/CONSOLIDATED_ROADMAP.md"
       ],
-      "update_types": ["STATUS_UPDATE"]
+      "update_types": [
+        "STATUS_UPDATE"
+      ]
     },
     "task-cards/integration/": {
       "description": "Integration task cards trigger index updates",
@@ -1128,7 +1149,9 @@
         "docs/CONSOLIDATED_ROADMAP.md",
         "docs/TESTING_GUIDE.md"
       ],
-      "update_types": ["STATUS_UPDATE"]
+      "update_types": [
+        "STATUS_UPDATE"
+      ]
     },
     "task-cards/e2e/": {
       "description": "E2E task cards trigger index updates",
@@ -1137,7 +1160,9 @@
         "docs/CONSOLIDATED_ROADMAP.md",
         "docs/TESTING_GUIDE.md"
       ],
-      "update_types": ["STATUS_UPDATE"]
+      "update_types": [
+        "STATUS_UPDATE"
+      ]
     }
   },
   "task_status_mappings": {
