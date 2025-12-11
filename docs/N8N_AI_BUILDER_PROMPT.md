@@ -605,18 +605,18 @@ BUILD THESE NODES:
       matrix_sha: matrixResponse.sha,
       matrix_content_base64: updatedContent,
       review_updated: !!doc,
-      // Pre-build the matrix commit body as an object
-      matrix_commit_body: {
+      // Pre-stringify the matrix commit body (avoids n8n expression issues)
+      matrix_commit_json: JSON.stringify({
         message: `chore: update review tracking for ${prev.document}`,
         content: updatedContent,
         sha: matrixResponse.sha
-      },
-      // Pre-build the callback body as an object
-      callback_body: {
+      }),
+      // Pre-stringify the callback body (avoids n8n expression issues)
+      callback_json: JSON.stringify({
         task_id: prev.task_id,
         status: 'completed',
         result: { summary: safeSummary }
-      }
+      })
     };
 
 12. HTTP REQUEST node named "Commit Matrix Update"
@@ -628,7 +628,8 @@ BUILD THESE NODES:
       - Name: `Accept` | Value: `application/vnd.github.v3+json`
     - Body Content Type: JSON
     - Specify Body: Using JSON
-    - JSON: ={{ JSON.stringify($json.matrix_commit_body) }}
+    - JSON: ={{ $json.matrix_commit_json }}
+    - NOTE: matrix_commit_json is already a JSON string from the CODE node
     - IMPORTANT: Under "Options" → "On Error" → select "Continue On Fail"
     - This prevents failures if another process updated the matrix (race condition)
 
@@ -637,8 +638,8 @@ BUILD THESE NODES:
     - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
     - Body Content Type: JSON
     - Specify Body: Using JSON
-    - JSON: ={{ JSON.stringify($json.callback_body) }}
-    - NOTE: callback_body is pre-built in the Update Review Tracking node to avoid expression syntax issues
+    - JSON: ={{ $json.callback_json }}
+    - NOTE: callback_json is already a JSON string from the CODE node - no JSON.stringify needed
 
 Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)→11→12→13
 Both "Changes Needed" paths merge at "Fetch Matrix" (node 10).
