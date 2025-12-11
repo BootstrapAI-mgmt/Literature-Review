@@ -154,11 +154,15 @@ BUILD THESE NODES:
          files.push(...(c.added || []), ...(c.modified || []));
        });
    }
+   // Filter out the matrix file itself - it's internal tracking, not a trigger
+   const filteredFiles = [...new Set(files)].filter(f => 
+     f !== 'docs/documentation_matrix.json'
+   );
    return {
      commit_sha: event.after || event.pull_request?.merge_commit_sha,
      author: event.pusher?.name || event.pull_request?.user?.login,
      message: event.head_commit?.message || event.pull_request?.title,
-     changed_files: [...new Set(files)]
+     changed_files: filteredFiles
    };
 
 4. HTTP REQUEST node named "Fetch Matrix"
