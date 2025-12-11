@@ -638,6 +638,8 @@ BUILD THESE NODES:
       - Name: `status` | Value: `{{ $('Update Review Tracking').first().json.callback_status }}`
       - Name: `result` | Value: `{{ JSON.stringify({ summary: $('Update Review Tracking').first().json.callback_summary }) }}`
     - NOTE: References Update Review Tracking directly (not $json) because previous node may be error object
+    - **Settings Tab** → On Error: **Continue (using error output)** 
+      - This allows the Agent to complete even if Distributor's Wait node has timed out
 
 Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)→11→12→13
 Both "Changes Needed" paths merge at "Fetch Matrix" (node 10).
