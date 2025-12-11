@@ -145,15 +145,18 @@
     },
     "@architecture": {
       "documents": [
+        "docs/architecture/SYSTEM_ARCHITECTURE_BLUEPRINT.md",
         "docs/architecture/ARCHITECTURE_ANALYSIS.md",
         "docs/architecture/ARCHITECTURE_REFACTOR.md",
         "docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md",
         "docs/ORCHESTRATOR_V2_GUIDE.md"
       ],
       "review_interval_days": 21,
-      "priority": "low",
+      "priority": "high",
       "staleness_indicators": [
         "literature_review/orchestrator.py",
+        "pipeline_orchestrator.py",
+        "webdashboard/app.py",
         "pillar_definitions.json"
       ]
     },
@@ -732,6 +735,23 @@
       "last_reviewed": "2025-11-16",
       "review_interval_days": 14,
       "next_review": "2025-11-30"
+    },
+    {
+      "path": "docs/architecture/SYSTEM_ARCHITECTURE_BLUEPRINT.md",
+      "level": "L1",
+      "status": "current",
+      "last_updated": "2025-12-11",
+      "owner": "@architecture",
+      "depends_on": [],
+      "scripts": [
+        "pipeline_orchestrator.py",
+        "literature_review/orchestrator.py",
+        "webdashboard/app.py"
+      ],
+      "created_date": "2025-12-11",
+      "last_reviewed": "2025-12-11",
+      "review_interval_days": 14,
+      "next_review": "2025-12-25"
     },
     {
       "path": "docs/architecture/ARCHITECTURE_ANALYSIS.md",
