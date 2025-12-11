@@ -605,18 +605,11 @@ BUILD THESE NODES:
       matrix_sha: matrixResponse.sha,
       matrix_content_base64: updatedContent,
       review_updated: !!doc,
-      // Pre-stringify the matrix commit body (avoids n8n expression issues)
-      matrix_commit_json: JSON.stringify({
-        message: `chore: update review tracking for ${prev.document}`,
-        content: updatedContent,
-        sha: matrixResponse.sha
-      }),
-      // Pre-stringify the callback body (avoids n8n expression issues)
-      callback_json: JSON.stringify({
-        task_id: prev.task_id,
-        status: 'completed',
-        result: { summary: safeSummary }
-      })
+      // Individual fields for matrix commit (for Using Fields mode)
+      matrix_commit_message: `chore: update review tracking for ${prev.document}`,
+      // Individual fields for callback (for Using Fields mode)  
+      callback_status: 'completed',
+      callback_summary: safeSummary
     };
 
 12. HTTP REQUEST node named "Commit Matrix Update"
@@ -627,19 +620,24 @@ BUILD THESE NODES:
       - Name: `Authorization` | Value: `Bearer YOUR_GITHUB_PAT_HERE`
       - Name: `Accept` | Value: `application/vnd.github.v3+json`
     - Body Content Type: JSON
-    - Specify Body: Using JSON
-    - JSON: ={{ $json.matrix_commit_json }}
-    - NOTE: matrix_commit_json is already a JSON string from the CODE node
+    - Specify Body: Using Fields Below
+    - Body Parameters (add 3 fields):
+      - Name: `message` | Value: `{{ $json.matrix_commit_message }}`
+      - Name: `content` | Value: `{{ $json.matrix_content_base64 }}`
+      - Name: `sha` | Value: `{{ $json.matrix_sha }}`
     - IMPORTANT: Under "Options" → "On Error" → select "Continue On Fail"
     - This prevents failures if another process updated the matrix (race condition)
 
 13. HTTP REQUEST node named "Send Callback"
     - Method: POST
-    - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
+    - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{ $('Update Review Tracking').first().json.task_id }}
     - Body Content Type: JSON
-    - Specify Body: Using JSON
-    - JSON: ={{ $json.callback_json }}
-    - NOTE: callback_json is already a JSON string from the CODE node - no JSON.stringify needed
+    - Specify Body: Using Fields Below
+    - Body Parameters (add 3 fields):
+      - Name: `task_id` | Value: `{{ $('Update Review Tracking').first().json.task_id }}`
+      - Name: `status` | Value: `{{ $('Update Review Tracking').first().json.callback_status }}`
+      - Name: `result` | Value: `{{ JSON.stringify({ summary: $('Update Review Tracking').first().json.callback_summary }) }}`
+    - NOTE: References Update Review Tracking directly (not $json) because previous node may be error object
 
 Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)→11→12→13
 Both "Changes Needed" paths merge at "Fetch Matrix" (node 10).
