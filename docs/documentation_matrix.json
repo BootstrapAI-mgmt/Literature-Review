@@ -367,7 +367,7 @@
       "path": "README.md",
       "level": "L1",
       "status": "current",
-      "last_updated": "2025-12-06",
+      "last_updated": "2025-12-15",
       "owner": "@core",
       "depends_on": [
         "docs/DASHBOARD_GUIDE.md",
@@ -378,9 +378,9 @@
         "pipeline_orchestrator.py"
       ],
       "created_date": "2025-11-11",
-      "last_reviewed": "2025-12-06",
+      "last_reviewed": "2025-12-15",
       "review_interval_days": 7,
-      "next_review": "2025-12-13"
+      "next_review": "2025-12-22"
     },
     {
       "path": "docs/README.md",
