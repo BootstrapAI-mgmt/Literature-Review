@@ -144,13 +144,13 @@ BUILD THESE NODES:
 
 2. IF node named "Filter Valid Events"
    - Condition: Use a single expression that evaluates to boolean
-   - Expression: `{{ (($json.body.commits?.length > 0) || ($json.body.pull_request?.merged === true)) && !($json.body.head_commit?.message?.startsWith('chore: update review tracking')) }}`
+   - Expression: `{{ (($json.body.commits?.length > 0) || ($json.body.pull_request?.merged === true)) && !($json.body.head_commit?.message?.startsWith('[n8n]')) }}`
    - Operator: equals
    - Compare to: `true`
-   - This checks: (commits exist OR PR was merged) AND NOT an automated review tracking commit
+   - This checks: (commits exist OR PR was merged) AND NOT an automated n8n commit
    - On false: connect to a NoOp node to end
    - NOTE: GitHub webhook data is nested inside `body` - always use `$json.body.` prefix
-   - IMPORTANT: This filter prevents feedback loops from n8n's own commits
+   - IMPORTANT: This filter prevents feedback loops - ALL n8n commits start with [n8n] prefix
 
 3. CODE node named "Parse Changes"
    - JavaScript:
@@ -158,8 +158,8 @@ BUILD THESE NODES:
    const files = [];
    if (event.commits) {
      event.commits
-       // Filter out n8n automated commits to prevent feedback loops
-       .filter(c => !c.message?.startsWith('chore: update review tracking'))
+       // Filter out ALL n8n automated commits to prevent feedback loops
+       .filter(c => !c.message?.startsWith('[n8n]'))
        .forEach(c => {
          files.push(...(c.added || []), ...(c.modified || []));
        });
@@ -571,13 +571,14 @@ BUILD THESE NODES:
    // Sanitize summary for commit message (remove special chars that break JSON)
    const safeSummary = (prev.summary || 'Update documentation')
      .replace(/[`"\\]/g, '')  // Remove backticks, quotes, backslashes
-     .substring(0, 72);        // Limit length for commit message
+     .substring(0, 68);        // Limit length for commit message (shorter to accommodate prefix)
    return { 
      ...prev, 
      sha, 
      content_base64: content,
      // Individual fields for commit (for Using Fields mode)
-     commit_message: `docs: ${safeSummary}`,
+     // IMPORTANT: [n8n] prefix is used to filter out these commits from triggering the chain again
+     commit_message: `[n8n] docs: ${safeSummary}`,
      commit_content: content,
      commit_sha: sha
    };
@@ -651,7 +652,7 @@ BUILD THESE NODES:
       matrix_content_base64: updatedContent,
       review_updated: !!doc,
       // Individual fields for matrix commit (for Using Fields mode)
-      matrix_commit_message: `chore: update review tracking for ${prev.document}`,
+      matrix_commit_message: `[n8n] chore: update review tracking for ${prev.document}`,
       // Individual fields for callback (for Using Fields mode)  
       callback_status: 'completed',
       callback_summary: safeSummary

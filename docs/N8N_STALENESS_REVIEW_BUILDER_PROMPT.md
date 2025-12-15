@@ -169,8 +169,9 @@ BUILD THESE NODES:
     const domain = $('Calculate Inactivity').first().json;
     const commits = $input.first().json;
     
-    // Patterns to ignore (test, CI, style changes)
+    // Patterns to ignore (test, CI, style changes, and automated n8n commits)
     const ignorePatterns = [
+      /^\[n8n\]/i,    // ALL automated n8n commits
       /^test(\(|:)/i,
       /^ci(\(|:)/i,
       /^chore(\(|:)/i,
