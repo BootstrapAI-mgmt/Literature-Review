@@ -246,7 +246,9 @@
         "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md",
         "docs/N8N_AI_BUILDER_PROMPT.md",
         "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md",
-        "docs/N8N_STALENESS_REVIEW_BUILDER_PROMPT.md"
+        "docs/N8N_STALENESS_REVIEW_BUILDER_PROMPT.md",
+        "docs/N8N_STATE_RECONCILIATION_BUILDER_PROMPT.md",
+        "docs/CURRENT_STATE_SYNC_ANALYSIS.md"
       ],
       "review_interval_days": 14,
       "priority": "medium",
@@ -264,6 +266,44 @@
         ".github/workflows/",
         "pytest.ini",
         "requirements-dev.txt"
+      ]
+    },
+    "@status-reports": {
+      "documents": [
+        "docs/status-reports/EXECUTION_INFRASTRUCTURE_STATUS.md",
+        "docs/status-reports/TESTING_STATUS_SUMMARY.md",
+        "docs/status-reports/TASK_CARD_13.2_COMPLETION_SUMMARY.md",
+        "docs/status-reports/TASK_CARD_4_COMPLETION_SUMMARY.md",
+        "docs/status-reports/TASK_CARD_UPDATE_COMPLETION_SUMMARY.md"
+      ],
+      "review_interval_days": 7,
+      "priority": "high",
+      "staleness_indicators": [
+        "task-cards/",
+        ".github/workflows/",
+        "tests/"
+      ],
+      "cascades_to": [
+        "docs/CONSOLIDATED_ROADMAP.md"
+      ],
+      "update_types": [
+        "STATUS_UPDATE",
+        "COMPLETION_PERCENTAGE"
+      ]
+    },
+    "@assessments": {
+      "documents": [
+        "docs/assessments/REFACTOR_ASSESSMENT.md",
+        "docs/assessments/IMPORT_ANALYSIS.md",
+        "docs/assessments/TESTING_ASSESSMENT.md",
+        "docs/assessments/REFACTOR_IMPACT.md",
+        "docs/assessments/TEST_EVALUATION.md"
+      ],
+      "review_interval_days": 21,
+      "priority": "low",
+      "staleness_indicators": [
+        "literature_review/",
+        "webdashboard/"
       ]
     }
   },
@@ -1163,6 +1203,88 @@
       "update_types": [
         "STATUS_UPDATE"
       ]
+    },
+    "task-cards/dashboard-cli-parity/": {
+      "description": "Dashboard parity task cards trigger master and roadmap updates",
+      "update_order": [
+        "task-cards/dashboard-cli-parity/PARITY-MASTER.md",
+        "task-cards/README.md",
+        "docs/CONSOLIDATED_ROADMAP.md"
+      ],
+      "update_types": [
+        "STATUS_UPDATE",
+        "COMPLETION_PERCENTAGE"
+      ]
+    },
+    "task-cards/testing/": {
+      "description": "Testing task cards trigger index and guide updates",
+      "update_order": [
+        "task-cards/README.md",
+        "docs/TESTING_GUIDE.md"
+      ],
+      "update_types": [
+        "STATUS_UPDATE"
+      ]
+    },
+    "docs/status-reports/": {
+      "description": "Status reports trigger roadmap updates for current state sync",
+      "update_order": [
+        "docs/CONSOLIDATED_ROADMAP.md"
+      ],
+      "update_types": [
+        "STATUS_UPDATE",
+        "COMPLETION_PERCENTAGE"
+      ]
+    }
+  },
+  "state_reconciliation": {
+    "description": "Configuration for ensuring repository reflects current state of all tasks/roadmaps",
+    "enabled": true,
+    "schedule": {
+      "frequency": "daily",
+      "hour_utc": 4,
+      "description": "Runs after staleness review to reconcile state across documents"
+    },
+    "rollup_targets": {
+      "task_cards_to_indexes": {
+        "source_patterns": [
+          "task-cards/**/*.md"
+        ],
+        "target_documents": [
+          "task-cards/README.md",
+          "task-cards/INDEX.md"
+        ],
+        "aggregation": "count_by_status",
+        "description": "Count completed vs total task cards and update index percentages"
+      },
+      "indexes_to_roadmap": {
+        "source_patterns": [
+          "task-cards/README.md",
+          "task-cards/INDEX.md",
+          "task-cards/*/README.md"
+        ],
+        "target_documents": [
+          "docs/CONSOLIDATED_ROADMAP.md"
+        ],
+        "aggregation": "summarize_progress",
+        "description": "Roll up index completion percentages to master roadmap"
+      },
+      "status_reports_to_roadmap": {
+        "source_patterns": [
+          "docs/status-reports/*.md"
+        ],
+        "target_documents": [
+          "docs/CONSOLIDATED_ROADMAP.md"
+        ],
+        "aggregation": "latest_status",
+        "description": "Extract current status from reports to update roadmap"
+      }
+    },
+    "status_extraction_patterns": {
+      "task_card_status": "^Status:\\s*(.+)$",
+      "completion_percentage": "(\\d+)%\\s*(?:complete|done)",
+      "checkbox_count": "- \\[([x ])\\]",
+      "wave_status": "^##\\s*Wave\\s*\\d+.*Status:\\s*(.+)$"
     }
   },
   "task_status_mappings": {

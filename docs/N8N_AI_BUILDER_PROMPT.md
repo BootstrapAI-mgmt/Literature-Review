@@ -1,8 +1,10 @@
 # N8N AI Builder Prompts: Documentation Update Chain
 
-> **Instructions:** This system requires **5 separate workflows** built one at a time. Each prompt below is designed for a single n8n canvas. Create each workflow manually in n8n, then use the corresponding prompt to build it.
+> **Instructions:** This system requires **6 separate workflows** built one at a time. Each prompt below is designed for a single n8n canvas. Create each workflow manually in n8n, then use the corresponding prompt to build it.
 >
-> **Note:** Workflows 1-4 handle event-driven documentation updates (triggered by GitHub pushes/merges). Workflow 5 adds proactive staleness detection on a schedule. See [N8N_STALENESS_REVIEW_BUILDER_PROMPT.md](./N8N_STALENESS_REVIEW_BUILDER_PROMPT.md) for Workflow 5.
+> **Note:** Workflows 1-4 handle event-driven documentation updates (triggered by GitHub pushes/merges). Workflow 5 adds proactive staleness detection on a schedule. Workflow 6 ensures current state accuracy through reconciliation. See:
+> - [N8N_STALENESS_REVIEW_BUILDER_PROMPT.md](./N8N_STALENESS_REVIEW_BUILDER_PROMPT.md) for Workflow 5
+> - [N8N_STATE_RECONCILIATION_BUILDER_PROMPT.md](./N8N_STATE_RECONCILIATION_BUILDER_PROMPT.md) for Workflow 6
 
 ---
 
@@ -28,12 +30,18 @@
                     └──────────────┘                                       │
                                                                            │
 ┌──────────────────────────────────────────────────────────────────────────┘
-│
-│  ┌───────────────┐     ┌─────────────────┐     (tasks)
-│  │  Schedule/    │────▶│  Doc Chain -    │─────────────┘
-│  │  Manual       │     │  Staleness      │
-│  └───────────────┘     │  Review         │────▶ GitHub Issues
-                         └─────────────────┘      (if manual review needed)
+│                                                                          │
+│  ┌───────────────┐     ┌─────────────────┐     (tasks)                   │
+│  │  Schedule     │────▶│  Doc Chain -    │─────────────┘                 │
+│  │  (Weekly)     │     │  Staleness      │                               │
+│  └───────────────┘     │  Review         │────▶ GitHub Issues            │
+│                        └─────────────────┘      (if manual review needed)│
+│                                                                          │
+│  ┌───────────────┐     ┌─────────────────┐     (tasks)                   │
+│  │  Schedule     │────▶│  Doc Chain -    │─────────────┘
+│  │  (Daily)      │     │  State          │
+│  └───────────────┘     │  Reconciliation │────▶ Fixes mismatches
+                         └─────────────────┘      (status vs claimed %)
 ```
 
 **Workflow Communication:**
@@ -41,6 +49,7 @@
 - Distributor → Agent: HTTP POST to `/webhook/domain-agent`
 - Agent → Distributor: HTTP POST to `/webhook/task-done-{task_id}`
 - Staleness Review → Distributor: HTTP POST to `/webhook/task-distributor` (same endpoint)
+- State Reconciliation → Distributor: HTTP POST to `/webhook/task-distributor` (same endpoint)
 
 **Webhook Base URL:**
 - For this project: `https://gitlitreview.app.n8n.cloud`
@@ -105,12 +114,13 @@ Then in the Trigger workflow, add validation in the Filter node.
 ## Pre-Setup Checklist
 
 Before using these prompts:
-1. [ ] Create 5 empty workflows in n8n named exactly:
+1. [ ] Create 6 empty workflows in n8n named exactly:
    - `Doc Chain - Trigger`
    - `Doc Chain - Distributor`
    - `Doc Chain - Agent`
    - `Doc Chain - Errors`
    - `Doc Chain - Staleness Review` (see [separate prompt](./N8N_STALENESS_REVIEW_BUILDER_PROMPT.md))
+   - `Doc Chain - State Reconciliation` (see [separate prompt](./N8N_STATE_RECONCILIATION_BUILDER_PROMPT.md))
 2. [ ] Configure environment variables in n8n Settings
 3. [ ] Create `GitHub API Token` credential (Header Auth)
 4. [ ] Create `Gemini API` credential
@@ -123,7 +133,7 @@ Before using these prompts:
 ```
 Build a workflow that receives GitHub webhooks and identifies which documentation files need updating.
 
-CONTEXT: This is workflow 1 of 4 in a documentation auto-update system. This workflow receives GitHub push/merge events, looks up a dependency matrix to find affected docs, uses AI to create a task list, then sends it to a separate "Distributor" workflow via HTTP.
+CONTEXT: This is workflow 1 of 6 in a documentation auto-update system. This workflow receives GitHub push/merge events, looks up a dependency matrix to find affected docs, uses AI to create a task list, then sends it to a separate "Distributor" workflow via HTTP.
 
 BUILD THESE NODES:
 
