@@ -110,7 +110,7 @@ See `/archive/README.md` for details.
 - `DOCUMENTATION_MATRIX.md` - Dependency matrix and ownership
 - `documentation_matrix.json` - Machine-readable matrix with staleness config
 
-**Note:** N8N workflows described in these documents (especially those interacting with 'Commit to GitHub' or 'Prepare Commit' nodes) are sensitive to changes in JSON serialization and commit body generation logic. Refer to the respective blueprints for operational details.
+**Note:** N8N workflows described in these documents (especially those interacting with 'Commit to GitHub' or 'Prepare Commit' nodes) are sensitive to changes in JSON serialization (e.g., 'Using JSON' mode) and commit body generation logic (e.g., 'Using Fields Below' mode or new outputs). Refer to the respective blueprints for operational details.
 
 ---
 
