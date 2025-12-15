@@ -1,6 +1,6 @@
 {
   "version": "1.3",
-  "last_updated": "2025-12-11",
+  "last_updated": "2025-12-15",
   "description": "Machine-readable documentation dependency matrix with staleness detection support",
   "staleness_config": {
     "enabled": true,
@@ -391,9 +391,9 @@
       "depends_on": [],
       "scripts": [],
       "created_date": "2025-11-14",
-      "last_reviewed": "2025-12-11",
+      "last_reviewed": "2025-12-15",
       "review_interval_days": 14,
-      "next_review": "2025-12-25"
+      "next_review": "2025-12-29"
     },
     {
       "path": "docs/DOCUMENTATION_MATRIX.md",
