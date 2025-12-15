@@ -24,6 +24,7 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install -r requirements-dev.txt
+          pip install -r requirements-dashboard.txt
       
       - name: Run E2E tests
         run: pytest -m e2e -vv --tb=long --showlocals --log-cli-level=INFO --timeout=3600 --ignore=tests/webui
