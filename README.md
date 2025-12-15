@@ -4,7 +4,9 @@
 [![E2E Tests](https://github.com/BootstrapAI-mgmt/Literature-Review/actions/workflows/e2e-tests.yml/badge.svg)](https://github.com/BootstrapAI-mgmt/Literature-Review/actions/workflows/e2e-tests.yml)
 [![codecov](https://codecov.io/gh/BootstrapAI-mgmt/Literature-Review/branch/main/graph/badge.svg)](https://codecov.io/gh/BootstrapAI-mgmt/Literature-Review)
 
-Automated pipeline for conducting comprehensive literature reviews in neuromorphic computing research.
+AI-powered pipeline for conducting comprehensive literature reviews across **any research domain**. Configure your research topic, keywords, and evaluation criteria through simple JSON files—no code changes required.
+
+> **Research-Agnostic**: While originally built for neuromorphic computing research, the pipeline now supports any research domain through configurable `research_config.json` files. See [Research Domain Configuration](#research-domain-configuration-new) below.
 
 ## Quick Start
 
@@ -45,6 +47,11 @@ python pipeline_orchestrator.py --config pipeline_config.json
 **Resume from checkpoint:**
 ```bash
 python pipeline_orchestrator.py --resume
+```
+
+**With custom research domain:**
+```bash
+python pipeline_orchestrator.py --research-config domains/my-domain/research_config.json
 ```
 
 **Resume from specific stage:**
@@ -223,9 +230,16 @@ DASHBOARD_API_KEY=your-secure-api-key  # For dashboard authentication
 
 ```
 Literature-Review/
+├── research_config.json           # 🔬 Active research domain configuration
+├── pillar_definitions.json        # Requirements framework
+├── domains/                        # 🌐 Research domain configurations
+│   ├── neuromorphic-computing/    # Default domain
+│   ├── example-domain/            # Template for new domains
+│   └── README.md                  # Guide for creating domains
 ├── docs/                          # 📚 All documentation
 │   ├── README.md                  # Documentation guide
 │   ├── DASHBOARD_GUIDE.md         # 🌐 Web dashboard guide
+│   ├── RESEARCH_AGNOSTIC_ARCHITECTURE.md  # Multi-domain support
 │   ├── CONSOLIDATED_ROADMAP.md    # ⭐ Master project roadmap
 │   ├── architecture/              # System design & refactoring
 │   ├── guides/                    # Workflow & strategy guides
@@ -244,6 +258,7 @@ Literature-Review/
 │   ├── architecture/              # Design reviews
 │   └── third-party/               # External audits
 ├── literature_review/             # 🐍 Main package code
+│   ├── config/                    # Research domain configuration
 │   ├── analysis/                  # Judge, DRA, Recommendations
 │   ├── reviewers/                 # Journal & Deep reviewers
 │   ├── orchestrator.py            # Pipeline coordination
@@ -269,6 +284,11 @@ Literature-Review/
 - **[docs/guides/WORKFLOW_EXECUTION_GUIDE.md](docs/guides/WORKFLOW_EXECUTION_GUIDE.md)** - How to run the pipeline
 - **[docs/CONSOLIDATED_ROADMAP.md](docs/CONSOLIDATED_ROADMAP.md)** ⭐ - Complete project overview
 - **[docs/DASHBOARD_GUIDE.md](docs/DASHBOARD_GUIDE.md)** - Web dashboard guide
+
+**Research Domain Configuration:**
+- **[docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md](docs/RESEARCH_AGNOSTIC_ARCHITECTURE.md)** - Multi-domain architecture guide
+- **[domains/README.md](domains/README.md)** - Creating new research domains
+- **[research_config.json](research_config.json)** - Example configuration
 
 **Incremental Review Mode:**
 - **[docs/INCREMENTAL_REVIEW_USER_GUIDE.md](docs/INCREMENTAL_REVIEW_USER_GUIDE.md)** - Complete incremental mode guide
@@ -301,10 +321,65 @@ See **[docs/README.md](docs/README.md)** for complete documentation index.
 - ✅ **Automatic Retry**: Retry transient failures with exponential backoff
 - ✅ **Circuit Breaker**: Prevents infinite retry loops
 - ✅ **Retry History**: Track all retry attempts in checkpoint file
-- ✅ **Incremental Review Mode (NEW!)**: Only analyze new papers, preserve previous results, 60-80% faster
+- ✅ **Incremental Review Mode**: Only analyze new papers, preserve previous results, 60-80% faster
 - ✅ **Gap-Targeted Pre-filtering**: Reduce analysis time and API costs by only analyzing papers likely to close open gaps
+- ✅ **Research-Agnostic (NEW!)**: Configure any research domain via `research_config.json`—no code changes required
 
-### Gap-Targeted Pre-filtering (NEW!)
+### Research Domain Configuration (NEW!)
+
+The pipeline now supports **any research domain** through simple JSON configuration. No code changes required to switch between neuromorphic computing, climate science, biomedical research, or any other field.
+
+**How it works:**
+
+1. Create a `research_config.json` defining your research topic, keywords, and evaluation criteria
+2. Optionally create a `pillar_definitions.json` with your requirements framework
+3. Run the pipeline with `--research-config your_config.json`
+
+**Quick Start:**
+```bash
+# Use the default neuromorphic computing domain
+python pipeline_orchestrator.py
+
+# Use a custom research domain
+python pipeline_orchestrator.py --research-config domains/climate-science/research_config.json
+
+# Create a new domain from template
+cp -r domains/example-domain domains/my-research
+# Edit domains/my-research/research_config.json with your topic
+python pipeline_orchestrator.py --research-config domains/my-research/research_config.json
+```
+
+**Configuration File Structure:**
+```json
+{
+  "domain": {
+    "id": "my-research-domain",
+    "name": "My Research Domain"
+  },
+  "research_topic": {
+    "primary": "Your primary research question...",
+    "short_description": "brief domain focus"
+  },
+  "prompt_context": {
+    "researcher_role": "PhD-level research assistant specializing in..."
+  },
+  "vocabulary": {
+    "primary_keywords": ["keyword1", "keyword2"],
+    "secondary_keywords": ["technical-term1"]
+  },
+  "pillar_definitions_file": "pillar_definitions.json"
+}
+```
+
+**Benefits:**
+- **No code changes**: Switch domains by changing a config file
+- **Reproducible**: Share configs for collaborative research
+- **Multi-domain**: Run analyses for different research areas in parallel
+- **Backward compatible**: Existing neuromorphic workflows continue to work
+
+See [domains/README.md](domains/README.md) for complete configuration guide.
+
+### Gap-Targeted Pre-filtering
 
 Reduce analysis time and API costs by intelligently filtering papers before deep analysis. The pre-filter extracts unfilled gaps from previous analyses and scores each paper's relevance to those gaps.
 
@@ -594,4 +669,4 @@ See [LICENSE](LICENSE) file for details.
 
 ---
 
-*Last automated review: December 11, 2025*
+*Last automated review: December 15, 2025*
