@@ -8,7 +8,7 @@
 |---|------|------|
 | 1 | Schedule Trigger | Daily Reconciliation |
 | 2 | Webhook | Manual Trigger |
-| 3 | Merge | Start |
+| 3 | Merge | Start (Mode: Append, Include Unpaired: ✅) |
 | 4 | Code | Workflow Configuration |
 | 5 | HTTP Request | Fetch Matrix |
 | 6 | HTTP Request | List Task Cards |
@@ -50,7 +50,7 @@ return {
 
 ## URLs
 - List Task Cards: `api.github.com/.../git/trees/main?recursive=1`
-- Fetch Contents: `api.github.com/.../contents/{{ $json }}`
+- Fetch Contents: `api.github.com/.../contents/{{ $json.replace(/\/$/, '') }}` (strip trailing slash!)
 - Distributor: `gitlitreview.app.n8n.cloud/webhook/task-distributor`
 
 ## Headers (all GitHub requests)

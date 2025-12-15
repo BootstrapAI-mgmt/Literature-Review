@@ -142,15 +142,40 @@ BUILD THESE NODES:
    - Method: POST
    - Respond: Immediately
 
-2. IF node named "Filter Valid Events"
-   - Condition: Use a single expression that evaluates to boolean
-   - Expression: `{{ (($json.body.commits?.length > 0) || ($json.body.pull_request?.merged === true)) && !($json.body.head_commit?.message?.startsWith('[n8n]')) }}`
-   - Operator: equals
-   - Compare to: `true`
-   - This checks: (commits exist OR PR was merged) AND NOT an automated n8n commit
-   - On false: connect to a NoOp node to end
-   - NOTE: GitHub webhook data is nested inside `body` - always use `$json.body.` prefix
-   - IMPORTANT: This filter prevents feedback loops - ALL n8n commits start with [n8n] prefix
+2. CODE node named "Filter Valid Events"
+   - Mode: Run Once for All Items
+   - JavaScript:
+   ```javascript
+   // CRITICAL: This filter prevents feedback loops from n8n's own commits
+   const body = $input.first().json.body || $input.first().json;
+   
+   // Check if this is a valid event (has commits or merged PR)
+   const hasCommits = Array.isArray(body.commits) && body.commits.length > 0;
+   const isMergedPR = body.pull_request?.merged === true;
+   
+   if (!hasCommits && !isMergedPR) {
+     return []; // No valid event - return empty to stop workflow
+   }
+   
+   // Check if this is an n8n automated commit (feedback loop prevention)
+   const headCommitMsg = body.head_commit?.message || '';
+   if (headCommitMsg.startsWith('[n8n]')) {
+     return []; // n8n commit - return empty to stop workflow
+   }
+   
+   // Also check all individual commits
+   const allCommitsAreN8n = hasCommits && body.commits.every(c => 
+     (c.message || '').startsWith('[n8n]')
+   );
+   if (allCommitsAreN8n) {
+     return []; // All commits are n8n - return empty to stop workflow
+   }
+   
+   // Valid event - pass through
+   return [{ json: { body, is_valid: true } }];
+   ```
+   - NOTE: Returns empty array to stop workflow for invalid/n8n events
+   - Connect to Parse Changes on success
 
 3. CODE node named "Parse Changes"
    - JavaScript:

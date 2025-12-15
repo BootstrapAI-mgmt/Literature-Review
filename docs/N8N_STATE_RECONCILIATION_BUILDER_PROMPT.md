@@ -77,9 +77,11 @@ Ensure you have:
 - **Name:** `Start`
 - **Type:** Merge
 - **Settings:**
-  - Mode: Combine
-  - Combine By: Matching Fields (or Position)
+  - Mode: Append
+  - **Options:** (expand Options section)
+    - Include Any Unpaired Items: ✅ Enabled
 - **Connections:** Node 1 → Input 1, Node 2 → Input 2
+- **Note:** Must use Append mode so workflow runs when only ONE trigger fires (manual OR schedule)
 
 ### Node 4: CODE
 - **Name:** `Workflow Configuration`
@@ -176,10 +178,11 @@ return {
 - **Type:** HTTP Request
 - **Settings:**
   - Method: GET
-  - URL (Expression): `https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{ $json }}`
+  - URL (Expression): `https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{ $json.replace(/\/$/, '') }}`
   - Send Headers: Using Fields Below
     - Header 1: Name=`Authorization`, Value=`Bearer YOUR_GITHUB_PAT`
     - Header 2: Name=`Accept`, Value=`application/vnd.github.v3+json`
+- **Note:** The `.replace(/\/$/, '')` strips trailing slashes from directory paths
 
 ### Node 10: CODE
 - **Name:** `Extract Status from Cards`
@@ -312,40 +315,65 @@ if (indexFile.content) {
   } catch (e) { indexContent = ''; }
 }
 
-// Extract claimed percentages
+// Extract claimed status - handles both "X/Y Complete" and "XX%" formats
+const fractionPattern = /(\d+)\/(\d+)\s*Complete/gi;
 const percentPattern = /(\d+)%/g;
-const claimedMatches = [...indexContent.matchAll(percentPattern)];
-const claimedPercentages = claimedMatches.map(m => parseInt(m[1]));
+
+// Build map of claimed completions per section
+const claimedBySection = {};
+const sections = indexContent.split(/^###?\s+/m);
+
+for (const section of sections) {
+  const lines = section.split('\n');
+  const header = lines[0]?.toLowerCase() || '';
+  
+  // Look for fraction format: "1/4 Complete"
+  const fractionMatch = section.match(/(\d+)\/(\d+)\s*Complete/i);
+  if (fractionMatch) {
+    const complete = parseInt(fractionMatch[1]);
+    const total = parseInt(fractionMatch[2]);
+    const pct = total > 0 ? Math.round((complete / total) * 100) : 0;
+    
+    // Try to match to a directory
+    for (const dir of Object.keys(actual.by_directory)) {
+      const dirName = dir.replace('task-cards/', '').replace(/\/$/, '').toLowerCase();
+      if (header.includes(dirName) || section.toLowerCase().includes(`/${dirName}/`)) {
+        claimedBySection[dir] = { complete, total, percentage: pct };
+      }
+    }
+  }
+}
 
 const mismatches = [];
 
-// Check overall (assume first percentage is overall)
-const claimedOverall = claimedPercentages[0] || 0;
-if (Math.abs(claimedOverall - actual.overall.percentage) > threshold) {
-  mismatches.push({
-    type: 'overall_percentage',
-    document: 'task-cards/README.md',
-    claimed: claimedOverall,
-    actual: actual.overall.percentage,
-    description: `Overall: README claims ${claimedOverall}% but actual is ${actual.overall.percentage}%`
-  });
-}
-
-// Check per-directory percentages
-for (const [dir, summary] of Object.entries(actual.by_directory)) {
-  const dirName = dir.replace('task-cards/', '').replace('/', '');
-  const dirPattern = new RegExp(dirName + '[^0-9]*(\\d+)%', 'i');
-  const dirMatch = indexContent.match(dirPattern);
-  if (dirMatch) {
-    const claimed = parseInt(dirMatch[1]);
-    if (Math.abs(claimed - summary.percentage) > threshold) {
+// Compare each directory's claimed vs actual
+for (const [dir, actualSummary] of Object.entries(actual.by_directory)) {
+  const dirName = dir.replace('task-cards/', '').replace(/\/$/, '');
+  const claimed = claimedBySection[dir];
+  
+  if (claimed) {
+    // Compare complete count (more reliable than percentage)
+    if (claimed.complete !== actualSummary.complete || claimed.total !== actualSummary.total) {
       mismatches.push({
-        type: 'directory_percentage',
+        type: 'completion_count',
         document: 'task-cards/README.md',
         directory: dir,
-        claimed,
-        actual: summary.percentage,
-        description: `${dirName}: claims ${claimed}% but actual is ${summary.percentage}%`
+        claimed: `${claimed.complete}/${claimed.total}`,
+        actual: `${actualSummary.complete}/${actualSummary.total}`,
+        claimed_pct: claimed.percentage,
+        actual_pct: actualSummary.percentage,
+        description: `${dirName}: README claims ${claimed.complete}/${claimed.total} but actual is ${actualSummary.complete}/${actualSummary.total}`
+      });
+    }
+  } else {
+    // No claim found for this directory - report if it has cards
+    if (actualSummary.total > 0) {
+      mismatches.push({
+        type: 'missing_status',
+        document: 'task-cards/README.md',
+        directory: dir,
+        actual: `${actualSummary.complete}/${actualSummary.total}`,
+        description: `${dirName}: No status found in README. Actual: ${actualSummary.complete}/${actualSummary.total} complete`
       });
     }
   }
