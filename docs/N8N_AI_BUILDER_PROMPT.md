@@ -460,6 +460,7 @@ BUILD THESE NODES:
     - Resume: On Webhook Call
     - Webhook Suffix: task-done-{{$('Prepare Agent Payload').item.json._task_id}}
     - Timeout: 5 minutes
+    - **On Timeout:** Continue (not fail) - allows Update Task Status to handle it
     - IMPORTANT: Must reference Prepare Agent Payload directly since $json contains HTTP response
 
 10. CODE node named "Update Task Status"
@@ -467,11 +468,32 @@ BUILD THESE NODES:
     const staticData = $getWorkflowStaticData('global');
     const state = staticData.state;
     const result = $input.first().json;
-    if (state.current_list && state.current_list.tasks) {
-      const task = state.current_list.tasks.find(t => t.task_id === result.task_id);
-      if (task) { task.status = result.status || 'completed'; }
+    
+    // Get the task_id from the callback OR from Prepare Agent Payload (for timeout case)
+    let taskId = result.task_id;
+    let status = result.status || 'completed';
+    
+    // Handle TIMEOUT: If no task_id in result, the Wait node timed out
+    // Get task_id from Prepare Agent Payload and mark as FAILED (not pending!)
+    if (!taskId) {
+      try {
+        taskId = $('Prepare Agent Payload').first().json._task_id;
+        status = 'failed';  // Mark as failed so it doesn't retry infinitely
+        console.log('Wait timed out for task:', taskId);
+      } catch (e) {
+        console.error('Cannot determine task_id on timeout');
+      }
+    }
+    
+    if (state.current_list && state.current_list.tasks && taskId) {
+      const task = state.current_list.tasks.find(t => t.task_id === taskId);
+      if (task) { 
+        task.status = status;
+        task.completed_at = new Date().toISOString();
+      }
     }
     staticData.state = state;
+    // Count tasks not yet done (pending only - failed tasks don't retry)
     const pending = state.current_list?.tasks?.filter(t => t.status === 'pending') || [];
     return { all_done: pending.length === 0, state };
 

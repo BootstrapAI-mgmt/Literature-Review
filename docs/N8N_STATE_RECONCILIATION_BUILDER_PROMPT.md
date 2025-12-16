@@ -86,10 +86,25 @@ Ensure you have:
 ### Node 4: CODE
 - **Name:** `Workflow Configuration`
 - **Type:** Code
-- **Purpose:** Set runtime configuration and thresholds
+- **Purpose:** Set runtime configuration, thresholds, and deduplication
 - **JavaScript:**
 ```javascript
 // Runtime configuration - adjust thresholds here
+const staticData = $getWorkflowStaticData('global');
+
+// Initialize recent corrections tracking (prevents re-sending same tasks)
+if (!staticData.recentCorrections) {
+  staticData.recentCorrections = {};
+}
+
+// Clean up old entries (older than 1 hour)
+const oneHourAgo = Date.now() - (60 * 60 * 1000);
+for (const key of Object.keys(staticData.recentCorrections)) {
+  if (staticData.recentCorrections[key] < oneHourAgo) {
+    delete staticData.recentCorrections[key];
+  }
+}
+
 return {
   mismatch_threshold_percent: 5,  // Ignore differences < 5%
   status_complete_keywords: ['complete', 'done', '✅', 'finished'],
@@ -98,7 +113,8 @@ return {
     'task-cards/README.md',
     'task-cards/INDEX.md'
   ],
-  run_timestamp: new Date().toISOString()
+  run_timestamp: new Date().toISOString(),
+  recent_corrections: staticData.recentCorrections  // Pass to later nodes
 };
 ```
 
@@ -382,12 +398,12 @@ return {
 ## Decision & Action (Nodes 14-17)
 
 ### Node 14: IF
-- **Name:** `Has Mismatches?`
+- **Name:** `Has Discrepancies?`
 - **Type:** If
 - **Settings:**
   - Condition: `{{ $json.has_mismatches }}` equals `true`
   - True Output → Node 15 (Generate Corrections)
-  - False Output → Node 16 (Log In Sync)
+  - False Output → Node 16 (Log Consistent)
 
 ### Node 15: AI AGENT
 - **Name:** `Generate Corrections`
@@ -423,7 +439,7 @@ By directory:
 ```
 
 ### Node 16: CODE
-- **Name:** `Log In Sync`
+- **Name:** `Log Consistent`
 - **Type:** Code
 - **JavaScript:**
 ```javascript
@@ -437,8 +453,57 @@ return {
 ```
 - **Note:** This is the FALSE branch endpoint
 
+### Node 16.5: CODE
+- **Name:** `Filter Recently Corrected`
+- **Type:** Code
+- **Purpose:** Prevent duplicate corrections within 1 hour
+- **JavaScript:**
+```javascript
+const staticData = $getWorkflowStaticData('global');
+const config = $('Workflow Configuration').first().json;
+const input = $input.first().json;
+
+// Filter out tasks for documents corrected in last hour
+const tasks = input.tasks || [];
+const filteredTasks = tasks.filter(task => {
+  const docKey = task.document;
+  const lastCorrected = staticData.recentCorrections?.[docKey];
+  if (lastCorrected && (Date.now() - lastCorrected) < 60 * 60 * 1000) {
+    console.log('Skipping recently corrected:', docKey);
+    return false;
+  }
+  return true;
+});
+
+// If no tasks remain, skip distributor
+if (filteredTasks.length === 0) {
+  return { skip: true, message: 'All corrections already sent recently' };
+}
+
+// Mark these docs as corrected NOW (before sending)
+for (const task of filteredTasks) {
+  staticData.recentCorrections[task.document] = Date.now();
+}
+
+return {
+  skip: false,
+  update_list_id: input.update_list_id,
+  source: input.source,
+  tasks: filteredTasks
+};
+```
+- **Connects from:** Node 15 (Generate Corrections)
+
+### Node 16.6: IF
+- **Name:** `Should Send?`
+- **Type:** If
+- **Settings:**
+  - Condition: `{{ $json.skip }}` equals `false`
+  - True Output → Node 17 (Send to Distributor)
+  - False Output → End (nothing to send)
+
 ### Node 17: HTTP REQUEST
-- **Name:** `Send to Distributor`
+- **Name:** `Send Corrections`
 - **Type:** HTTP Request
 - **Settings:**
   - Method: POST
@@ -446,7 +511,7 @@ return {
   - Body Content Type: JSON
   - Specify Body: Using JSON
   - JSON (Expression): `{{ $json }}`
-- **Connects from:** Node 15 (Generate Corrections)
+- **Connects from:** Node 16.6 True branch (If)
 
 ---
 
