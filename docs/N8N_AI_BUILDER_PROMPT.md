@@ -337,25 +337,44 @@ BUILD THESE NODES:
      staticData.state = { queue: [], current_list: null, completed: [] };
    }
    
-   // Staleness recovery: if current_list has been in_progress > 10 min, reset it
    const state = staticData.state;
-   if (state.current_list) {
-     const startTime = new Date(state.current_list.started_at || state.current_list.queued_at).getTime();
-     const elapsed = Date.now() - startTime;
-     const STALE_THRESHOLD = 10 * 60 * 1000; // 10 minutes
-     if (elapsed > STALE_THRESHOLD) {
-       // Handle webhook body nesting - tasks may be in .body.tasks or .tasks
-       const tasks = state.current_list.body?.tasks || state.current_list.tasks || [];
-       const listId = state.current_list.body?.update_list_id || state.current_list.update_list_id;
-       console.log('Recovering stale list:', listId);
-       // Reset tasks to pending
-       tasks.forEach(t => { if (t.status !== 'completed') t.status = 'pending'; });
-       // Don't re-queue old stale lists - just clear them (they were never properly processed)
-       state.current_list = null;
-       staticData.state = state;
+   const now = Date.now();
+   const ONE_HOUR = 60 * 60 * 1000;
+   
+   // === QUEUE CLEANUP: Remove items older than 1 hour ===
+   if (state.queue && state.queue.length > 0) {
+     const originalLength = state.queue.length;
+     state.queue = state.queue.filter(item => {
+       const queuedAt = new Date(item.queued_at || 0).getTime();
+       const age = now - queuedAt;
+       if (age > ONE_HOUR) {
+         console.log('Removing stale queue item:', item.update_list_id, 'age:', Math.round(age/60000), 'min');
+         return false;
+       }
+       return true;
+     });
+     if (state.queue.length < originalLength) {
+       console.log('Cleaned', originalLength - state.queue.length, 'stale items from queue');
      }
    }
    
+   // === CURRENT LIST RECOVERY: Reset if stuck > 10 min ===
+   if (state.current_list) {
+     const startTime = new Date(state.current_list.started_at || state.current_list.queued_at).getTime();
+     const elapsed = now - startTime;
+     const STALE_THRESHOLD = 10 * 60 * 1000; // 10 minutes
+     if (elapsed > STALE_THRESHOLD) {
+       console.log('Clearing stuck current_list:', state.current_list.update_list_id);
+       state.current_list = null;
+     }
+   }
+   
+   // === COMPLETED LIST CLEANUP: Keep only last 10 ===
+   if (state.completed && state.completed.length > 10) {
+     state.completed = state.completed.slice(-10);
+   }
+   
+   staticData.state = state;
    return { state: staticData.state, new_list: $input.first().json };
 
 3. CODE node named "Add To Queue"
@@ -877,24 +896,54 @@ After building all 4 workflows:
 
 ## 🔧 Reset Distributor State (Recovery)
 
-If the Distributor gets stuck (e.g., tasks never dispatched, callbacks never received), you can reset its state:
+If the Distributor gets stuck (e.g., tasks never dispatched, stale queue items looping), you can reset its state:
 
-**Option 1: Wait for auto-recovery**
-The Load State node automatically recovers stale lists after 10 minutes of no progress.
+**Option 1: Auto-cleanup (built-in)**
+The Load State node automatically:
+- Removes queue items older than 1 hour
+- Clears stuck current_list after 10 minutes
+- Keeps only last 10 completed items
 
-**Option 2: Manual reset via Code node**
-Add a temporary Code node at the start of the Distributor workflow:
+**Option 2: Add a Reset Webhook (recommended)**
+Add a second webhook to the Distributor workflow for manual resets:
 
+1. Add a WEBHOOK node named "Reset State"
+   - Path: `/distributor-reset`
+   - Method: POST
+   
+2. Add a CODE node named "Clear State" connected to it:
 ```javascript
-// TEMPORARY: Reset stuck state - remove after running once
 const staticData = $getWorkflowStaticData('global');
+const oldState = staticData.state || {};
+const queueLength = oldState.queue?.length || 0;
+const currentList = oldState.current_list?.update_list_id || null;
+
+// Reset everything
 staticData.state = { queue: [], current_list: null, completed: [] };
-return { reset: true, message: 'State cleared' };
+staticData.recentDocs = {};  // Also clear deduplication cache
+
+return { 
+  reset: true, 
+  cleared_queue_items: queueLength,
+  cleared_current_list: currentList,
+  message: 'State fully cleared' 
+};
 ```
 
-Run the workflow once manually, then delete this node.
+3. Call it: `POST https://gitlitreview.app.n8n.cloud/webhook/distributor-reset`
 
-**Option 3: Check current state**
+**Option 3: Temporary inline reset**
+Add this to the START of the "Load State" node temporarily:
+
+```javascript
+// EMERGENCY RESET - remove after running once!
+const staticData = $getWorkflowStaticData('global');
+staticData.state = { queue: [], current_list: null, completed: [] };
+staticData.recentDocs = {};
+return { state: staticData.state, new_list: $input.first().json, RESET: true };
+```
+
+**Option 4: Check current state**
 Add a Code node to inspect the current state:
 
 ```javascript
