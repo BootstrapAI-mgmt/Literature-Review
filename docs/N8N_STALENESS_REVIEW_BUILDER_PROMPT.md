@@ -17,6 +17,8 @@ New Addition:
                                     → (issues) → GitHub Issues
 ```
 
+**Note:** The Distributor has built-in deduplication that prevents the same document from being processed more than once per hour. This prevents loops where scheduled reviews send duplicate tasks.
+
 ---
 
 ## Pre-Setup Checklist
