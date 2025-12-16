@@ -463,10 +463,24 @@ const staticData = $getWorkflowStaticData('global');
 const config = $('Workflow Configuration').first().json;
 const input = $input.first().json;
 
+// IMPORTANT: AI Agent with JSON Output Parser nests results under .output
+// Handle both direct input (testing) and nested output (production)
+const aiOutput = input.output || input;
+
 // Filter out tasks for documents corrected in last hour
-const tasks = input.tasks || [];
+const tasks = aiOutput.tasks || [];
+
+// Debug: Log what we received
+console.log('Received tasks count:', tasks.length);
+console.log('Current recentCorrections keys:', Object.keys(staticData.recentCorrections || {}));
+
 const filteredTasks = tasks.filter(task => {
-  const docKey = task.document;
+  // Task may have document, target, or task_id as the key
+  const docKey = task.document || task.target || task.task_id;
+  if (!docKey) {
+    console.log('Task missing document key, including it:', JSON.stringify(task));
+    return true; // Include tasks without document key
+  }
   const lastCorrected = staticData.recentCorrections?.[docKey];
   if (lastCorrected && (Date.now() - lastCorrected) < 60 * 60 * 1000) {
     console.log('Skipping recently corrected:', docKey);
@@ -475,6 +489,8 @@ const filteredTasks = tasks.filter(task => {
   return true;
 });
 
+console.log('Filtered tasks count:', filteredTasks.length);
+
 // If no tasks remain, skip distributor
 if (filteredTasks.length === 0) {
   return { skip: true, message: 'All corrections already sent recently' };
@@ -482,17 +498,21 @@ if (filteredTasks.length === 0) {
 
 // Mark these docs as corrected NOW (before sending)
 for (const task of filteredTasks) {
-  staticData.recentCorrections[task.document] = Date.now();
+  const docKey = task.document || task.target || task.task_id;
+  if (docKey) {
+    staticData.recentCorrections[docKey] = Date.now();
+  }
 }
 
 return {
   skip: false,
-  update_list_id: input.update_list_id,
-  source: input.source,
+  update_list_id: aiOutput.update_list_id,
+  source: aiOutput.source || 'state-reconciliation',
   tasks: filteredTasks
 };
 ```
 - **Connects from:** Node 15 (Generate Corrections)
+- **CRITICAL:** The AI output is nested under `.output` - must unwrap it!
 
 ### Node 16.6: IF
 - **Name:** `Should Send?`
@@ -510,8 +530,11 @@ return {
   - URL: `https://gitlitreview.app.n8n.cloud/webhook/task-distributor`
   - Body Content Type: JSON
   - Specify Body: Using JSON
-  - JSON (Expression): `{{ $json }}`
-- **Connects from:** Node 16.6 True branch (If)
+  - JSON (Expression): `={{ $json }}`
+- **Connects from:** Node 16.6 True branch (Should Send?)
+- **CRITICAL:** The input `$json` must contain `update_list_id`, `source`, and `tasks` array.
+  - This comes from Filter Recently Corrected → Should Send? → Send Corrections
+  - Do NOT connect directly from Generate Corrections (wrong data format)
 
 ---
 
@@ -577,6 +600,36 @@ After building, verify:
 - [ ] Percentage comparison uses threshold (default 5%)
 - [ ] AI Agent has JSON Output Parser attached
 - [ ] Distributor URL is correct
+- [ ] Filter Recently Corrected handles `.output` nesting from AI Agent
+- [ ] Send Corrections receives data from Should Send? node (not directly from AI)
+
+---
+
+## 🔧 Reset State Reconciliation Cache (Recovery)
+
+If corrections are being skipped due to stale cache, reset the recentCorrections:
+
+**Option 1: Temporary reset in Workflow Configuration**
+Add this at the START of Workflow Configuration temporarily:
+
+```javascript
+// EMERGENCY RESET - remove after running once!
+const staticData = $getWorkflowStaticData('global');
+staticData.recentCorrections = {};
+console.log('RESET: Cleared recentCorrections cache');
+```
+
+**Option 2: Add a Reset Webhook**
+Add a second webhook path `/state-reconciliation-reset` with this code:
+
+```javascript
+const staticData = $getWorkflowStaticData('global');
+const oldCount = Object.keys(staticData.recentCorrections || {}).length;
+staticData.recentCorrections = {};
+return { reset: true, cleared_entries: oldCount, message: 'recentCorrections cache cleared' };
+```
+
+Call it: `POST https://gitlitreview.app.n8n.cloud/webhook/state-reconciliation-reset`
 
 ---
 
