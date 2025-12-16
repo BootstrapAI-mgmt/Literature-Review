@@ -146,7 +146,8 @@ BUILD THESE NODES:
    - Mode: Run Once for All Items
    - JavaScript:
    ```javascript
-   // CRITICAL: This filter prevents feedback loops from n8n's own commits
+   // CRITICAL: This filter prevents feedback loops from n8n AUTOMATED commits only
+   // Manual commits with [n8n] prefix (like [n8n] fix:) should still be processed
    const body = $input.first().json.body || $input.first().json;
    
    // Check if this is a valid event (has commits or merged PR)
@@ -157,34 +158,48 @@ BUILD THESE NODES:
      return []; // No valid event - return empty to stop workflow
    }
    
-   // Check if this is an n8n automated commit (feedback loop prevention)
+   // Helper: Check if commit is an n8n AUTOMATED commit (not manual)
+   // Automated commits use: [n8n] docs: or [n8n] chore:
+   const isAutomatedN8nCommit = (msg) => {
+     return msg.startsWith('[n8n] docs:') || msg.startsWith('[n8n] chore:');
+   };
+   
+   // Check if head commit is automated
    const headCommitMsg = body.head_commit?.message || '';
-   if (headCommitMsg.startsWith('[n8n]')) {
-     return []; // n8n commit - return empty to stop workflow
+   if (isAutomatedN8nCommit(headCommitMsg)) {
+     return []; // Automated n8n commit - return empty to stop workflow
    }
    
-   // Also check all individual commits
-   const allCommitsAreN8n = hasCommits && body.commits.every(c => 
-     (c.message || '').startsWith('[n8n]')
+   // Also check all individual commits - only filter if ALL are automated
+   const allCommitsAreAutomated = hasCommits && body.commits.every(c => 
+     isAutomatedN8nCommit(c.message || '')
    );
-   if (allCommitsAreN8n) {
-     return []; // All commits are n8n - return empty to stop workflow
+   if (allCommitsAreAutomated) {
+     return []; // All commits are automated n8n - return empty to stop workflow
    }
    
    // Valid event - pass through
    return [{ json: { body, is_valid: true } }];
    ```
-   - NOTE: Returns empty array to stop workflow for invalid/n8n events
+   - NOTE: Returns empty array to stop workflow for invalid/automated n8n events
+   - Manual [n8n] commits (like `[n8n] fix:`) are processed normally
    - Connect to Parse Changes on success
 
 3. CODE node named "Parse Changes"
    - JavaScript:
    const event = $input.first().json.body;  // NOTE: .body is required - GitHub data is nested
    const files = [];
+   
+   // Helper: Check if commit is an n8n AUTOMATED commit (not manual)
+   const isAutomatedN8nCommit = (msg) => {
+     return msg.startsWith('[n8n] docs:') || msg.startsWith('[n8n] chore:');
+   };
+   
    if (event.commits) {
      event.commits
-       // Filter out ALL n8n automated commits to prevent feedback loops
-       .filter(c => !c.message?.startsWith('[n8n]'))
+       // Filter out only AUTOMATED n8n commits to prevent feedback loops
+       // Manual [n8n] commits (like [n8n] fix:) are processed normally
+       .filter(c => !isAutomatedN8nCommit(c.message || ''))
        .forEach(c => {
          files.push(...(c.added || []), ...(c.modified || []));
        });
