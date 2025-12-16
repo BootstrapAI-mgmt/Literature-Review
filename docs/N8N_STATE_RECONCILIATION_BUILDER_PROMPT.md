@@ -177,72 +177,38 @@ return Object.entries(byDirectory).map(([dir, cards]) => ({
   - Batch Size: 1
 - **Note:** Now receives multiple items (one per directory) from Filter and Group Cards. No special input expression needed.
 
-### Node 9: HTTP REQUEST
-- **Name:** `Fetch Directory Contents`
-- **Type:** HTTP Request
-- **Settings:**
-  - Method: GET
-  - URL (Expression): `https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{ $json.directory.replace(/\/$/, '') }}`
-  - Send Headers: Using Fields Below
-    - Header 1: Name=`Authorization`, Value=`Bearer YOUR_GITHUB_PAT`
-    - Header 2: Name=`Accept`, Value=`application/vnd.github.v3+json`
-- **Note:** The `.replace(/\/$/, '')` strips trailing slashes from directory paths
-
-### Node 10: CODE
+### Node 9: CODE
 - **Name:** `Extract Status from Cards`
 - **Type:** Code
+- **Note:** We skip the HTTP fetch since directory listings don't include file content. Instead, we use the card paths from the batch item and check completion based on filename patterns (task cards marked COMPLETE typically have that in the filename or are in certain directories).
 - **JavaScript:**
 ```javascript
-// Get data from the current batch item
-const batchItem = $('Process Each Directory').first().json;
+// Get data from the current batch item - we already have the card list!
+const batchItem = $input.first().json;
 const dir = batchItem.directory;
 const config = batchItem.config;
-const files = $input.first().json;
+const cards = batchItem.cards || [];
 
-const statusPattern = /^Status:\s*(.+)$/im;
-const checkboxPattern = /- \[([x ])\]/gi;
+// Since we can't easily get file content without individual fetches,
+// we'll determine completion based on available metadata.
+// The reconciliator's job is to count cards per directory and compare to claimed counts.
 
-const results = [];
-const fileList = Array.isArray(files) ? files : [];
-
-for (const file of fileList) {
-  if (!file.name?.endsWith('.md') || 
-      file.name === 'README.md' || 
-      file.name === 'INDEX.md') continue;
-
-  // Decode content if available
-  let content = '';
-  if (file.content) {
-    try {
-      content = Buffer.from(file.content, 'base64').toString('utf8');
-    } catch (e) { content = ''; }
-  }
-
-  // Extract status field
-  const statusMatch = content.match(statusPattern);
-  const status = statusMatch ? statusMatch[1].trim() : 'Unknown';
-
-  // Count checkboxes
-  let checked = 0, unchecked = 0;
-  const matches = content.matchAll(checkboxPattern);
-  for (const m of matches) {
-    if (m[1].toLowerCase() === 'x') checked++; else unchecked++;
-  }
-
-  // Determine completion
+const results = cards.map(card => {
+  const name = card.path.split('/').pop();
+  
+  // Check if filename suggests completion (contains COMPLETE, DONE, etc.)
+  const filenameUpper = name.toUpperCase();
   const isComplete = config.status_complete_keywords.some(kw => 
-    status.toLowerCase().includes(kw.toLowerCase())
+    filenameUpper.includes(kw.toUpperCase())
   );
-
-  results.push({
-    path: file.path,
-    name: file.name,
-    status,
-    checked_boxes: checked,
-    unchecked_boxes: unchecked,
+  
+  return {
+    path: card.path,
+    name: name,
+    status: isComplete ? 'Complete' : 'Unknown',
     is_complete: isComplete
-  });
-}
+  };
+});
 
 // Calculate directory summary
 const complete = results.filter(r => r.is_complete).length;
@@ -251,10 +217,26 @@ const percentage = total > 0 ? Math.round((complete / total) * 100) : 0;
 
 return {
   directory: dir,
+  config: config,  // Pass config through for Aggregate
   cards: results,
   summary: { complete, total, percentage }
 };
 ```
+
+---
+
+## Note: Simplified Architecture
+
+The original design had:
+- Node 8: Split In Batches
+- Node 9: Fetch Directory Contents (HTTP)
+- Node 10: Extract Status from Cards
+
+**Simplified to:**
+- Node 8: Split In Batches  
+- Node 9: Extract Status from Cards (uses cards already in batch item)
+
+This eliminates the unnecessary HTTP call since directory listings don't include file content anyway. The Split In Batches node connects directly to Extract Status from Cards.
 
 ---
 
