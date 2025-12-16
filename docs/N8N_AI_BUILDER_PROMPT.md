@@ -531,10 +531,10 @@ BUILD THESE NODES:
 
 9. WAIT node named "Wait for Callback"
     - Resume: On Webhook Call
-    - Webhook Suffix: task-done-{{$('Prepare Agent Payload').first().json._task_id}}
+    - Webhook Suffix: task-callback
     - Timeout: 30 minutes
     - **On Timeout:** Continue (not fail) - allows Update Task Status to handle it
-    - IMPORTANT: Must use .first().json (not .item.json) to reference the prepared payload
+    - NOTE: Uses static suffix "task-callback" - task matching is done by task_id in the body
     - NOTE: 30-minute timeout required because Agent may take 10+ minutes for AI processing
 
 10. CODE node named "Update Task Status"
@@ -804,7 +804,8 @@ BUILD THESE NODES:
 
 13. HTTP REQUEST node named "Send Callback"
     - Method: POST
-    - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{ $('Update Review Tracking').first().json.task_id }}
+    - URL: https://gitlitreview.app.n8n.cloud/webhook/task-callback
+    - NOTE: Static URL - the task_id is sent in the body for matching
     - Body Content Type: JSON
     - Specify Body: Using Fields Below
     - Body Parameters (add 3 fields):
