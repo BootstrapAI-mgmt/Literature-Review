@@ -530,7 +530,8 @@ return {
   - URL: `https://gitlitreview.app.n8n.cloud/webhook/task-distributor`
   - Body Content Type: JSON
   - Specify Body: Using JSON
-  - JSON (Expression): `={{ $json }}`
+  - JSON (Expression): `{{ $json }}`
+  - **IMPORTANT:** Use `{{ $json }}` WITHOUT the `=` prefix. Click the expression toggle (fx) first.
 - **Connects from:** Node 16.6 True branch (Should Send?)
 - **CRITICAL:** The input `$json` must contain `update_list_id`, `source`, and `tasks` array.
   - This comes from Filter Recently Corrected → Should Send? → Send Corrections
