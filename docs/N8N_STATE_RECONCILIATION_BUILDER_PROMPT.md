@@ -353,7 +353,10 @@ const mismatches = [];
 
 // Compare each directory's claimed vs actual
 for (const [dir, actualSummary] of Object.entries(actual.by_directory)) {
-  const dirName = dir.replace('task-cards/', '').replace(/\/$/, '');
+  // Handle root task-cards/ directory - use 'root' instead of empty string
+  let dirName = dir.replace('task-cards/', '').replace(/\/$/, '');
+  if (!dirName) dirName = 'task-cards';  // Root directory
+  
   const claimed = claimedBySection[dir];
   
   if (claimed) {
