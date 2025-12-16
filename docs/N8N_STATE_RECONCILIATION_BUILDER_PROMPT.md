@@ -153,13 +153,18 @@ for (const card of taskCards) {
   byDirectory[card.directory].push(card);
 }
 
-return {
-  config,
-  directories: Object.keys(byDirectory),
-  by_directory: byDirectory,
-  total_cards: taskCards.length
-};
+// IMPORTANT: Return MULTIPLE ITEMS (one per directory) for Split In Batches
+// Each item contains the directory name and its cards
+return Object.entries(byDirectory).map(([dir, cards]) => ({
+  json: {
+    config,
+    directory: dir,
+    cards: cards,
+    total_cards: taskCards.length
+  }
+}));
 ```
+- **Note:** Returns multiple items (one per directory) so Split In Batches can iterate
 
 ---
 
@@ -170,15 +175,14 @@ return {
 - **Type:** Split In Batches
 - **Settings:**
   - Batch Size: 1
-  - Input: `{{ $json.directories }}`
-- **Note:** This loops over each task-cards subdirectory
+- **Note:** Now receives multiple items (one per directory) from Filter and Group Cards. No special input expression needed.
 
 ### Node 9: HTTP REQUEST
 - **Name:** `Fetch Directory Contents`
 - **Type:** HTTP Request
 - **Settings:**
   - Method: GET
-  - URL (Expression): `https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{ $json.replace(/\/$/, '') }}`
+  - URL (Expression): `https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{ $json.directory.replace(/\/$/, '') }}`
   - Send Headers: Using Fields Below
     - Header 1: Name=`Authorization`, Value=`Bearer YOUR_GITHUB_PAT`
     - Header 2: Name=`Accept`, Value=`application/vnd.github.v3+json`
@@ -189,9 +193,11 @@ return {
 - **Type:** Code
 - **JavaScript:**
 ```javascript
-const dir = $('Process Each Directory').first().json;
+// Get data from the current batch item
+const batchItem = $('Process Each Directory').first().json;
+const dir = batchItem.directory;
+const config = batchItem.config;
 const files = $input.first().json;
-const config = $('Filter and Group Cards').first().json.config;
 
 const statusPattern = /^Status:\s*(.+)$/im;
 const checkboxPattern = /- \[([x ])\]/gi;
@@ -260,7 +266,8 @@ return {
 - **JavaScript:**
 ```javascript
 const loopResults = $input.all().map(item => item.json);
-const config = $('Filter and Group Cards').first().json.config;
+// Get config from the first result (all have same config)
+const config = loopResults[0]?.config || $('Filter and Group Cards').first().json.config;
 
 const summaries = {};
 let totalComplete = 0;
