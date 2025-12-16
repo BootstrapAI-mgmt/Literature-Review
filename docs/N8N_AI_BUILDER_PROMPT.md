@@ -531,10 +531,11 @@ BUILD THESE NODES:
 
 9. WAIT node named "Wait for Callback"
     - Resume: On Webhook Call
-    - Webhook Suffix: task-done-{{$('Prepare Agent Payload').item.json._task_id}}
-    - Timeout: 5 minutes
+    - Webhook Suffix: task-done-{{$('Prepare Agent Payload').first().json._task_id}}
+    - Timeout: 30 minutes
     - **On Timeout:** Continue (not fail) - allows Update Task Status to handle it
-    - IMPORTANT: Must reference Prepare Agent Payload directly since $json contains HTTP response
+    - IMPORTANT: Must use .first().json (not .item.json) to reference the prepared payload
+    - NOTE: 30-minute timeout required because Agent may take 10+ minutes for AI processing
 
 10. CODE node named "Update Task Status"
     - JavaScript:
@@ -620,8 +621,15 @@ BUILD THESE NODES:
    const task = typeof body.task === 'string' ? JSON.parse(body.task) : body.task;
    const trigger = typeof body.trigger === 'string' ? JSON.parse(body.trigger) : (body.trigger || {});
    const listId = typeof body.list_id === 'string' ? body.list_id.replace(/"/g, '') : body.list_id;
+   
+   // Normalize field names: State Reconciliation uses "target", Trigger uses "document"
+   if (task.target && !task.document) {
+     task.document = task.target;
+   }
+   
    return { task, trigger, list_id: listId };
    - NOTE: Distributor uses JSON.stringify() to avoid [object Object] - we parse it back here
+   - NOTE: Normalizes task.target → task.document for State Reconciliation compatibility
 
 3. HTTP REQUEST node named "Fetch Document"
    - Method: GET
