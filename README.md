@@ -637,7 +637,7 @@ All project documentation is organized in the `docs/` folder:
 |----------|-------------|
 | [docs/README.md](docs/README.md) | Documentation index and quick reference |
 | [docs/USER_MANUAL.md](docs/USER_MANUAL.md) | Complete user manual |
-| [docs/DASHBOARD_GUIDE.md](docs/DASHBOARD_GUIDE.md) | Web dashboard guide |
+| [docs/DASHBOARD_GUIDE.md](docs/DASHBOARD_GUIDED.md) | Web dashboard guide |
 | [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | REST API documentation |
 | [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) | Testing procedures |
 | [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Deployment instructions |
@@ -669,4 +669,4 @@ See [LICENSE](LICENSE) file for details.
 
 ---
 
-*Last automated review: July 22, 2024*
+*Last automated review: July 23, 2024*
