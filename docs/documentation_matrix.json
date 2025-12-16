@@ -404,9 +404,9 @@
       "depends_on": [],
       "scripts": [],
       "created_date": "2025-12-07",
-      "last_reviewed": "2025-12-11",
+      "last_reviewed": "2025-12-16",
       "review_interval_days": 14,
-      "next_review": "2025-12-25"
+      "next_review": "2025-12-30"
     },
     {
       "path": "docs/CICD_WORKFLOWS_GUIDE.md",
