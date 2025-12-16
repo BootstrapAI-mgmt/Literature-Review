@@ -291,7 +291,7 @@ Literature-Review/
 - **[research_config.json](research_config.json)** - Example configuration
 
 **Incremental Review Mode:**
-- **[docs/INCREMENTAL_REVIEW_USER_GUIDE.md](docs/INCREMENTAL_REVIEW_USER_GUIDE.md)** - Complete incremental mode guide
+- **[docs/INCREMENTAL_REVIEW_USER_GUIDE.md](docs/guides/INCREMENTAL_REVIEW_USER_GUIDE.md)** - Complete incremental mode guide
 - **[docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md](docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md)** - Migration from previous versions
 - **[docs/api/incremental_endpoints.yaml](docs/api/incremental_endpoints.yaml)** - REST API specification
 - **[examples/incremental_review_examples.py](examples/incremental_review_examples.py)** - Code examples
@@ -614,7 +614,7 @@ gap_analysis_output/
 ├── _Research_Trends.html                 # Trend analysis
 ├── proof_chain.html/json                 # Evidence proof chains
 ├── sufficiency_matrix.html/json          # Evidence sufficiency
-├── triangulation.html/json               # Multi-source verification
+└── triangulation.html/json               # Multi-source verification
 └── suggested_searches.json/md            # Research recommendations
 ```
 
@@ -669,4 +669,4 @@ See [LICENSE](LICENSE) file for details.
 
 ---
 
-*Last automated review: July 02, 2024*
+*Last automated review: July 22, 2024*
