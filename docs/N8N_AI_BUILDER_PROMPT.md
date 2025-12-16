@@ -400,46 +400,19 @@ BUILD THESE NODES:
    // Handle webhook body nesting - task data may be in .body or at root
    const listData = new_list.body || new_list;
    
-   // === DEDUPLICATION: Track recently processed documents ===
-   if (!staticData.recentDocs) staticData.recentDocs = {};
-   
-   // Clean up entries older than 1 hour
-   const oneHourAgo = Date.now() - (60 * 60 * 1000);
-   for (const key of Object.keys(staticData.recentDocs)) {
-     if (staticData.recentDocs[key] < oneHourAgo) {
-       delete staticData.recentDocs[key];
-     }
+   // Validate we have tasks to process
+   if (!listData.tasks || !Array.isArray(listData.tasks) || listData.tasks.length === 0) {
+     console.log('No tasks in list, skipping');
+     return { should_process: false, skipped: true, reason: 'no_tasks' };
    }
    
-   // Filter out tasks for documents processed recently
-   if (listData.tasks && Array.isArray(listData.tasks)) {
-     const originalCount = listData.tasks.length;
-     listData.tasks = listData.tasks.filter(task => {
-       const docKey = task.document || task.path || task.task_id;
-       if (staticData.recentDocs[docKey]) {
-         console.log('Skipping duplicate task for:', docKey);
-         return false;
-       }
-       return true;
-     });
-     
-     // If all tasks filtered out, don't queue this list
-     if (listData.tasks.length === 0) {
-       console.log('All tasks filtered as duplicates, skipping list');
-       return { should_process: false, skipped: true };
-     }
-     
-     // Mark these docs as being processed
-     listData.tasks.forEach(task => {
-       const docKey = task.document || task.path || task.task_id;
-       staticData.recentDocs[docKey] = Date.now();
-     });
-   }
-   // === END DEDUPLICATION ===
+   // NOTE: Cross-list deduplication removed. The Trigger workflow already filters 
+   // [n8n] docs: and [n8n] chore: commits, preventing infinite loops.
+   // Each new task list should be processed fresh.
    
    listData.status = 'queued';
    listData.queued_at = new Date().toISOString();
-   if (listData.tasks) listData.tasks.forEach(t => t.status = 'pending');
+   listData.tasks.forEach(t => t.status = 'pending');
    state.queue.push(listData);
    staticData.state = state;
    return { should_process: !state.current_list };
@@ -944,7 +917,6 @@ const currentList = oldState.current_list?.update_list_id || null;
 
 // Reset everything
 staticData.state = { queue: [], current_list: null, completed: [] };
-staticData.recentDocs = {};  // Also clear deduplication cache
 
 return { 
   reset: true, 
@@ -963,7 +935,6 @@ Add this to the START of the "Load State" node temporarily:
 // EMERGENCY RESET - remove after running once!
 const staticData = $getWorkflowStaticData('global');
 staticData.state = { queue: [], current_list: null, completed: [] };
-staticData.recentDocs = {};
 return { state: staticData.state, new_list: $input.first().json, RESET: true };
 ```
 
