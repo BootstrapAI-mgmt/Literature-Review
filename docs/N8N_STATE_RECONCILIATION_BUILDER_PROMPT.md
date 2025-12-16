@@ -344,7 +344,7 @@ for (const section of sections) {
       const dirName = dir.replace('task-cards/', '').replace(/\/$/, '').toLowerCase();
       if (header.includes(dirName) || section.toLowerCase().includes(`/${dirName}/`)) {
         claimedBySection[dir] = { complete, total, percentage: pct };
-      }
+      } 
     }
   }
 }
@@ -479,7 +479,7 @@ console.log('Current recentCorrections keys:', Object.keys(staticData.recentCorr
 
 const filteredTasks = tasks.filter(task => {
   // Task may have document, target, or task_id as the key
-  const docKey = task.document || task.target || task.task_id;
+  const docKey = task.document || task.task_id;
   if (!docKey) {
     console.log('Task missing document key, including it:', JSON.stringify(task));
     return true; // Include tasks without document key
@@ -501,7 +501,7 @@ if (filteredTasks.length === 0) {
 
 // Mark these docs as corrected NOW (before sending)
 for (const task of filteredTasks) {
-  const docKey = task.document || task.target || task.task_id;
+  const docKey = task.document || task.task_id;
   if (docKey) {
     staticData.recentCorrections[docKey] = Date.now();
   }
