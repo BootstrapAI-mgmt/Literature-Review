@@ -258,6 +258,8 @@ When making changes, update documents in this order:
 3. Update "Last Updated" date in matrix
 4. Review dependent docs for needed updates
 
+**Special Note on `DOCUMENTATION_MATRIX.md` Updates:** Changes made *to this `DOCUMENTATION_MATRIX.md` file itself* (e.g., updating statuses, adding new docs, changing structure) are considered metadata updates and **DO NOT** trigger cascade updates to other documentation files. Other documents are updated *via* the matrix, not *by* changes to the matrix.
+
 ### Archiving Documentation
 1. Confirm doc is superseded or historical
 2. Move to appropriate `archive/` subfolder
