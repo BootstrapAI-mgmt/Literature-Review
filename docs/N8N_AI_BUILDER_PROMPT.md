@@ -46,8 +46,7 @@
 
 **Workflow Communication:**
 - Trigger → Distributor: HTTP POST to `/webhook/task-distributor`
-- Distributor → Agent: HTTP POST to `/webhook/domain-agent`
-- Agent → Distributor: HTTP POST to `/webhook/task-done-{task_id}`
+- Distributor → Agent: HTTP POST to `/webhook/domain-agent` (fire-and-forget)
 - Staleness Review → Distributor: HTTP POST to `/webhook/task-distributor` (same endpoint)
 - State Reconciliation → Distributor: HTTP POST to `/webhook/task-distributor` (same endpoint)
 
@@ -334,240 +333,188 @@ Connect nodes in order: 1→2→3→4→5→6→7→8→9
 **Open the "Doc Chain - Distributor" canvas, then use this prompt:**
 
 ```
-Build a workflow that manages a queue of documentation update tasks and coordinates their execution in dependency order.
+Build a workflow that manages task lists and coordinates task execution with proper dependency ordering.
 
-CONTEXT: This is workflow 2 of 4. It receives task lists from "Trigger" workflow, maintains a queue, dispatches tasks to "Agent" workflow one at a time respecting dependencies, and waits for completion callbacks.
+CONTEXT: This is workflow 2 of 4. It has TWO entry points:
+1. Receive new task lists and queue them
+2. Receive task completion callbacks and dispatch next task
+
+This design uses a separate callback webhook (always registered) instead of Wait nodes (which have timing issues).
 
 BUILD THESE NODES:
+
+=== ENTRY POINT 1: New Task List ===
 
 1. WEBHOOK node named "Receive List"
    - Path: /task-distributor
    - Method: POST
    - Respond: Immediately
 
-2. CODE node named "Load State"
+2. CODE node named "Queue and Dispatch First"
    - JavaScript:
    const staticData = $getWorkflowStaticData('global');
    if (!staticData.state) {
-     staticData.state = { queue: [], current_list: null, completed: [] };
+     staticData.state = { pending_tasks: [], in_progress: null, completed: [] };
+   }
+   const state = staticData.state;
+   
+   // Parse incoming task list
+   const input = $input.first().json;
+   const listData = input.body || input;
+   const tasks = listData.tasks || [];
+   const listId = listData.update_list_id || 'unknown';
+   const trigger = listData.trigger || {};
+   
+   if (!tasks.length) {
+     return { action: 'none', reason: 'no_tasks' };
    }
    
-   const state = staticData.state;
-   const now = Date.now();
-   const ONE_HOUR = 60 * 60 * 1000;
-   
-   // === QUEUE CLEANUP: Remove items older than 1 hour ===
-   if (state.queue && state.queue.length > 0) {
-     const originalLength = state.queue.length;
-     state.queue = state.queue.filter(item => {
-       const queuedAt = new Date(item.queued_at || 0).getTime();
-       const age = now - queuedAt;
-       if (age > ONE_HOUR) {
-         console.log('Removing stale queue item:', item.update_list_id, 'age:', Math.round(age/60000), 'min');
-         return false;
-       }
-       return true;
+   // Add all tasks to pending queue with metadata
+   tasks.forEach(task => {
+     state.pending_tasks.push({
+       task,
+       list_id: listId,
+       trigger,
+       queued_at: new Date().toISOString()
      });
-     if (state.queue.length < originalLength) {
-       console.log('Cleaned', originalLength - state.queue.length, 'stale items from queue');
-     }
-   }
+   });
    
-   // === CURRENT LIST RECOVERY: Reset if stuck > 10 min ===
-   if (state.current_list) {
-     const startTime = new Date(state.current_list.started_at || state.current_list.queued_at).getTime();
-     const elapsed = now - startTime;
-     const STALE_THRESHOLD = 10 * 60 * 1000; // 10 minutes
-     if (elapsed > STALE_THRESHOLD) {
-       console.log('Clearing stuck current_list:', state.current_list.update_list_id);
-       state.current_list = null;
-     }
-   }
+   console.log('Queued', tasks.length, 'tasks. Total pending:', state.pending_tasks.length);
    
-   // === COMPLETED LIST CLEANUP: Keep only last 10 ===
-   if (state.completed && state.completed.length > 10) {
-     state.completed = state.completed.slice(-10);
-   }
-   
-   staticData.state = state;
-   return { state: staticData.state, new_list: $input.first().json };
-
-3. CODE node named "Add To Queue"
-   - JavaScript:
-   const staticData = $getWorkflowStaticData('global');
-   const { state, new_list } = $input.first().json;
-   
-   // Handle webhook body nesting - task data may be in .body or at root
-   const listData = new_list.body || new_list;
-   
-   // Validate we have tasks to process
-   if (!listData.tasks || !Array.isArray(listData.tasks) || listData.tasks.length === 0) {
-     console.log('No tasks in list, skipping');
-     return { should_process: false, skipped: true, reason: 'no_tasks' };
-   }
-   
-   // NOTE: Cross-list deduplication removed. The Trigger workflow already filters 
-   // [n8n] docs: and [n8n] chore: commits, preventing infinite loops.
-   // Each new task list should be processed fresh.
-   
-   listData.status = 'queued';
-   listData.queued_at = new Date().toISOString();
-   listData.tasks.forEach(t => t.status = 'pending');
-   state.queue.push(listData);
-   staticData.state = state;
-   return { should_process: !state.current_list };
-
-4. IF node named "Should Process"
-   - Condition: should_process equals true
-   - On false: End (item is queued, will process later)
-
-5. CODE node named "Pop Next List"
-   - JavaScript:
-   const staticData = $getWorkflowStaticData('global');
-   const state = staticData.state;
-   if (state.queue.length === 0) return { has_work: false };
-   state.current_list = state.queue.shift();
-   state.current_list.status = 'in_progress';
-   state.current_list.started_at = new Date().toISOString(); // Track when processing started
-   staticData.state = state;
-   return { has_work: true, current_list: state.current_list };
-
-6. CODE node named "Get Runnable Tasks"
-   - JavaScript:
-   const staticData = $getWorkflowStaticData('global');
-   const state = staticData.state;
-   const list = $input.first().json.current_list;
-   
-   // Handle webhook body nesting - tasks may be in .body.tasks or .tasks
-   const tasks = list?.body?.tasks || list?.tasks || [];
-   const listId = list?.body?.update_list_id || list?.update_list_id || null;
-   const trigger = list?.body?.trigger || list?.trigger || {};
-   
-   // If no tasks found, this is an error state - reset and allow retry
-   if (!tasks.length || !listId) {
-     console.error('No tasks found in list - resetting state');
-     if (state.current_list) {
-       state.current_list = null;
+   // If nothing in progress, dispatch next task
+   if (!state.in_progress) {
+     const next = state.pending_tasks.shift();
+     if (next) {
+       state.in_progress = next;
+       state.in_progress.started_at = new Date().toISOString();
        staticData.state = state;
+       return { 
+         action: 'dispatch', 
+         task: next.task, 
+         list_id: next.list_id, 
+         trigger: next.trigger 
+       };
      }
-     return { runnable: [], list_id: null, error: 'No tasks found' };
    }
    
-   // Ensure all tasks have a status (default to 'pending' if missing)
-   tasks.forEach(t => { if (!t.status) t.status = 'pending'; });
-   
-   const done = tasks.filter(t => t.status === 'completed').map(t => t.task_id);
-   const runnable = tasks.filter(t => 
-     t.status === 'pending' && (!t.depends_on || t.depends_on.length === 0 || t.depends_on.every(d => done.includes(d)))
-   );
-   // Return each runnable task as a separate item with list_id and trigger attached
-   // n8n will automatically iterate over these items in subsequent nodes
-   return runnable.map(task => ({ task, list_id: listId, trigger }));
+   staticData.state = state;
+   return { action: 'queued', pending_count: state.pending_tasks.length };
 
-7. IF node named "Has Runnable"
-   - Condition: Use boolean expression
-   - Expression: `{{ $json.task !== undefined }}`
-   - Operator: equals
-   - Compare to: `true`
-   - On false: End or loop back
-   - NOTE: Get Runnable Tasks returns multiple items; this checks if any exist
+3. IF node named "Should Dispatch"
+   - Condition: action equals "dispatch"
+   - True: → Dispatch to Agent
+   - False: → End (task is queued, will be dispatched when current completes)
 
-7.5. CODE node named "Prepare Agent Payload"
-   - Mode: Run Once for Each Item
-   - JavaScript:
-   // Flatten and prepare the payload for the HTTP request
-   // This avoids n8n expression evaluation issues with nested objects
-   const item = $input.first().json;
-   return {
-     task: item.task,
-     list_id: item.list_id,
-     trigger: item.trigger || {},
-     // Pass task_id at top level for Wait node
-     _task_id: item.task.task_id
-   };
-   - NOTE: Creates a clean object for the HTTP node to serialize
-
-8. HTTP REQUEST node named "Dispatch to Agent"
+4. HTTP REQUEST node named "Dispatch to Agent"
    - Method: POST
    - URL: https://gitlitreview.app.n8n.cloud/webhook/domain-agent
    - Body Content Type: JSON
    - Specify Body: Using JSON
-   - JSON Body (raw text, NOT expression):
+   - JSON Body:
      {
        "task": {{ JSON.stringify($json.task) }},
        "list_id": "{{ $json.list_id }}",
-       "trigger": "{{ $json.list_id }}"
+       "trigger": {{ JSON.stringify($json.trigger) }}
      }
-   - IMPORTANT: Use JSON.stringify() for nested objects (task, trigger)
-   - String values like list_id just need quotes and expression
-   - Do NOT use "Using Fields" mode - it converts objects to "[object Object]"
 
-9. WAIT node named "Wait for Callback"
-    - Resume: On Webhook Call
-    - Webhook Suffix: task-callback
-    - Timeout: 30 minutes
-    - **On Timeout:** Continue (not fail) - allows Update Task Status to handle it
-    - NOTE: Uses static suffix "task-callback" - task matching is done by task_id in the body
-    - NOTE: 30-minute timeout required because Agent may take 10+ minutes for AI processing
+=== ENTRY POINT 2: Task Callback ===
 
-10. CODE node named "Update Task Status"
+5. WEBHOOK node named "Receive Callback"
+   - Path: /task-callback
+   - Method: POST
+   - Respond: Immediately
+
+6. CODE node named "Process Callback and Dispatch Next"
+   - JavaScript:
+   const staticData = $getWorkflowStaticData('global');
+   if (!staticData.state) {
+     staticData.state = { pending_tasks: [], in_progress: null, completed: [] };
+   }
+   const state = staticData.state;
+   
+   // Parse callback data
+   const input = $input.first().json;
+   const callbackData = input.body || input;
+   const taskId = callbackData.task_id;
+   const status = callbackData.status || 'completed';
+   
+   console.log('Callback received for task:', taskId, 'status:', status);
+   
+   // Mark current task as complete
+   if (state.in_progress) {
+     state.in_progress.status = status;
+     state.in_progress.completed_at = new Date().toISOString();
+     state.completed.push(state.in_progress);
+     // Keep only last 20 completed
+     if (state.completed.length > 20) state.completed = state.completed.slice(-20);
+   }
+   state.in_progress = null;
+   
+   // Dispatch next task if any pending
+   const next = state.pending_tasks.shift();
+   if (next) {
+     state.in_progress = next;
+     state.in_progress.started_at = new Date().toISOString();
+     staticData.state = state;
+     return { 
+       action: 'dispatch', 
+       task: next.task, 
+       list_id: next.list_id, 
+       trigger: next.trigger,
+       pending_remaining: state.pending_tasks.length
+     };
+   }
+   
+   staticData.state = state;
+   return { action: 'done', message: 'All tasks completed', completed_count: state.completed.length };
+
+7. IF node named "Has Next Task"
+   - Condition: action equals "dispatch"
+   - True: → Dispatch Next
+   - False: → End
+
+8. HTTP REQUEST node named "Dispatch Next"
+   - Method: POST
+   - URL: https://gitlitreview.app.n8n.cloud/webhook/domain-agent
+   - Body Content Type: JSON
+   - Specify Body: Using JSON
+   - JSON Body:
+     {
+       "task": {{ JSON.stringify($json.task) }},
+       "list_id": "{{ $json.list_id }}",
+       "trigger": {{ JSON.stringify($json.trigger) }}
+     }
+   - NOTE: Same as node 4 but connected to callback path
+
+=== UTILITY: Reset State ===
+
+9. WEBHOOK node named "Reset State"
+   - Path: /distributor-reset
+   - Method: POST
+   - Respond: When Last Node Finishes
+
+10. CODE node named "Clear State"
     - JavaScript:
     const staticData = $getWorkflowStaticData('global');
-    const state = staticData.state;
-    const result = $input.first().json;
-    
-    // Get the task_id from the callback OR from Prepare Agent Payload (for timeout case)
-    let taskId = result.task_id;
-    let status = result.status || 'completed';
-    
-    // Handle TIMEOUT: If no task_id in result, the Wait node timed out
-    // Get task_id from Prepare Agent Payload and mark as FAILED (not pending!)
-    if (!taskId) {
-      try {
-        taskId = $('Prepare Agent Payload').first().json._task_id;
-        status = 'failed';  // Mark as failed so it doesn't retry infinitely
-        console.log('Wait timed out for task:', taskId);
-      } catch (e) {
-        console.error('Cannot determine task_id on timeout');
-      }
-    }
-    
-    if (state.current_list && state.current_list.tasks && taskId) {
-      const task = state.current_list.tasks.find(t => t.task_id === taskId);
-      if (task) { 
-        task.status = status;
-        task.completed_at = new Date().toISOString();
-      }
-    }
-    staticData.state = state;
-    // Count tasks not yet done (pending only - failed tasks don't retry)
-    const pending = state.current_list?.tasks?.filter(t => t.status === 'pending') || [];
-    return { all_done: pending.length === 0, state };
+    const oldState = staticData.state || {};
+    staticData.state = { pending_tasks: [], in_progress: null, completed: [] };
+    return { 
+      reset: true, 
+      cleared_pending: oldState.pending_tasks?.length || 0,
+      cleared_in_progress: oldState.in_progress?.task?.task_id || null
+    };
 
-11. IF node named "All Done"
-    - Condition: all_done equals true
-    - On true: Go to Finalize
-    - On false: Loop back to "Get Runnable Tasks"
+CONNECTIONS:
+- Entry 1: 1→2→3→(true: 4)
+- Entry 2: 5→6→7→(true: 8)  
+- Utility: 9→10
 
-12. CODE node named "Finalize List"
-    - JavaScript:
-    const staticData = $getWorkflowStaticData('global');
-    const state = staticData.state;
-    if (state.current_list) {
-      state.current_list.status = 'completed';
-      state.completed.push(state.current_list);
-    }
-    state.current_list = null;
-    staticData.state = state;
-    return { more_queued: state.queue.length > 0 };
-
-13. IF node named "More Queued"
-    - Condition: more_queued equals true
-    - On true: Loop back to "Pop Next List"
-    - On false: End
-
-Connect: 1→2→3→4→5→6→7→8→9→10→11→12→13
-Create loops as specified in conditions.
+NOTES:
+- Two separate webhook entry points in the same workflow
+- /task-distributor receives new task lists
+- /task-callback receives completion signals from Agent
+- Tasks are processed one at a time in queue order
+- State persists across executions using staticData
 ```
 
 ---
@@ -778,20 +725,34 @@ BUILD THESE NODES:
 13. HTTP REQUEST node named "Send Callback"
     - Method: POST
     - URL: https://gitlitreview.app.n8n.cloud/webhook/task-callback
-    - NOTE: Static URL - the task_id is sent in the body for matching
     - Body Content Type: JSON
     - Specify Body: Using Fields Below
     - Body Parameters (add 3 fields):
       - Name: `task_id` | Value: `{{ $('Update Review Tracking').first().json.task_id }}`
       - Name: `status` | Value: `{{ $('Update Review Tracking').first().json.callback_status }}`
       - Name: `result` | Value: `{{ JSON.stringify({ summary: $('Update Review Tracking').first().json.callback_summary }) }}`
-    - NOTE: References Update Review Tracking directly (not $json) because previous node may be error object
-    - **Settings Tab** → On Error: **Continue (using error output)** 
-      - This allows the Agent to complete even if Distributor's Wait node has timed out
+    - **Settings Tab** → On Error: **Continue (using error output)**
+      - This allows Agent to complete even if callback fails
+    - NOTE: This callback triggers the Distributor to dispatch the next queued task
 
-Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)→11→12→13
+14. CODE node named "Log Completion"
+    - JavaScript:
+    const prev = $('Update Review Tracking').first().json;
+    const callbackResult = $input.first().json;
+    const callbackSuccess = !callbackResult.error;
+    console.log('Task completed:', prev.task_id, '- callback:', callbackSuccess ? 'sent' : 'failed');
+    return { 
+      task_id: prev.task_id,
+      document: prev.document,
+      changes_made: prev.changes_needed,
+      summary: prev.callback_summary,
+      callback_sent: callbackSuccess
+    };
+
+Connect: 1→2→3→4→5→6→(true: 7→8→9→10, false: 10)→11→12→13→14
 Both "Changes Needed" paths merge at "Fetch Matrix" (node 10).
 The review tracking is updated regardless of whether document changes were needed.
+The callback notifies the Distributor to dispatch the next task.
 ```
 
 ---
@@ -802,34 +763,42 @@ The review tracking is updated regardless of whether document changes were neede
 ```
 Build an error handling workflow that catches failures from the other documentation chain workflows.
 
-CONTEXT: This is workflow 4 of 4. It triggers on errors from workflows 1-3, logs the error, and optionally sends notifications.
+CONTEXT: This is workflow 4 of 4. It triggers on errors from workflows 1-3, logs the error, sends a failure callback to the Distributor so it can continue with the next task, and optionally sends notifications.
 
 BUILD THESE NODES:
 
 1. ERROR TRIGGER node named "Catch Errors"
    - This triggers when any workflow in the instance has an error
 
-2. CODE node named "Log Error"
+2. CODE node named "Extract Error Info"
    - JavaScript:
    const error = $input.first().json;
    console.error('Doc Chain Error:', JSON.stringify(error, null, 2));
    
-   // Try multiple paths to find task_id - it may be in different locations
-   let task_id = null;
+   // Try to extract task_id from various locations
+   let taskId = null;
    
-   // Path 1: From execution data (if workflow passed it through)
-   if (error.execution?.data?.task_id) {
-     task_id = error.execution.data.task_id;
+   // Path 1: From the webhook body that was being processed
+   if (error.execution?.data?.resultData?.runData) {
+     const runData = error.execution.data.resultData.runData;
+     // Look in Parse Webhook Data output
+     const parseNode = runData['Parse Webhook Data'];
+     if (parseNode?.[0]?.data?.main?.[0]?.[0]?.json?.task?.task_id) {
+       taskId = parseNode[0].data.main[0][0].json.task.task_id;
+     }
    }
-   // Path 2: From the HTTP request body that failed (e.g., Send Callback)
-   else if (error.execution?.error?.context?.request?.body?.task_id) {
-     // Remove leading "=" if present (n8n expression artifact)
-     task_id = String(error.execution.error.context.request.body.task_id).replace(/^=/, '');
-   }
-   // Path 3: Parse from the failed URL (e.g., /webhook/task-done-task-001)
-   else if (error.execution?.error?.context?.request?.uri) {
-     const match = error.execution.error.context.request.uri.match(/task-done-([^/]+)$/);
-     if (match) task_id = match[1];
+   
+   // Path 2: From the error context request body
+   if (!taskId && error.execution?.error?.context?.request?.body) {
+     const body = error.execution.error.context.request.body;
+     if (typeof body === 'string') {
+       try {
+         const parsed = JSON.parse(body);
+         taskId = parsed.task?.task_id || parsed.task_id;
+       } catch(e) {}
+     } else {
+       taskId = body.task?.task_id || body.task_id;
+     }
    }
    
    return {
@@ -837,33 +806,41 @@ BUILD THESE NODES:
      node: error.execution?.lastNodeExecuted || 'Unknown',
      message: error.execution?.error?.message || 'Unknown error',
      timestamp: new Date().toISOString(),
-     task_id: task_id
+     task_id: taskId,
+     has_task_id: !!taskId
    };
 
 3. IF node named "Has Task ID"
-   - Condition: Check if task_id is not null
-   - On true: Send failure callback
-   - On false: End
+   - Condition: has_task_id equals true
+   - True: → Send Failure Callback
+   - False: → Log Only (skip callback)
 
 4. HTTP REQUEST node named "Send Failure Callback"
    - Method: POST
-   - URL: https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}
-   - Body: {"task_id":"{{$json.task_id}}","status":"failed","result":{"error":"{{$json.message}}"}}
-   - IMPORTANT: Under "Options" → "On Error" → select "Continue On Fail"
-   - This prevents cascading errors when the Wait node has already timed out
+   - URL: https://gitlitreview.app.n8n.cloud/webhook/task-callback
+   - Body Content Type: JSON
+   - Specify Body: Using Fields Below
+   - Body Parameters:
+     - Name: `task_id` | Value: `{{ $json.task_id }}`
+     - Name: `status` | Value: `failed`
+     - Name: `result` | Value: `{{ JSON.stringify({ error: $json.message }) }}`
+   - **Settings Tab** → On Error: **Continue (using error output)**
+     - Prevents cascading errors
 
-5. CODE node named "Log Callback Result" (optional but recommended)
+5. CODE node named "Log Result"
    - JavaScript:
-   const result = $input.first().json;
-   // Check if callback succeeded or failed (404 = Wait node expired, which is OK)
-   const success = !result.error && !result.errorMessage;
-   const status = success ? 'notified' : 'expired';
-   console.log(`Failure callback ${status} for task: ${$('Log Error').first().json.task_id}`);
-   return { callback_status: status, task_id: $('Log Error').first().json.task_id };
+   const errorInfo = $('Extract Error Info').first().json;
+   const callbackResult = $input.first().json;
+   const callbackSent = !callbackResult?.error;
+   console.log('Error handled:', errorInfo.workflow, '/', errorInfo.node);
+   if (errorInfo.task_id) {
+     console.log('Failure callback sent for task:', errorInfo.task_id, '- success:', callbackSent);
+   }
+   return { ...errorInfo, callback_sent: callbackSent };
 
-6. (Optional) Add a Slack/Email node after Log Error to notify your team
+6. (Optional) Add a Slack/Email node after Log Result to notify your team
 
-Connect: 1→2→3→(true: 4→5, false: end)
+Connect: 1→2→3→(true: 4→5, false: 5)→(optional: 6)
 ```
 
 ---
@@ -891,69 +868,7 @@ After building all 4 workflows:
 
 ---
 
-## 🔧 Reset Distributor State (Recovery)
-
-If the Distributor gets stuck (e.g., tasks never dispatched, stale queue items looping), you can reset its state:
-
-**Option 1: Auto-cleanup (built-in)**
-The Load State node automatically:
-- Removes queue items older than 1 hour
-- Clears stuck current_list after 10 minutes
-- Keeps only last 10 completed items
-
-**Option 2: Add a Reset Webhook (recommended)**
-Add a second webhook to the Distributor workflow for manual resets:
-
-1. Add a WEBHOOK node named "Reset State"
-   - Path: `/distributor-reset`
-   - Method: POST
-   
-2. Add a CODE node named "Clear State" connected to it:
-```javascript
-const staticData = $getWorkflowStaticData('global');
-const oldState = staticData.state || {};
-const queueLength = oldState.queue?.length || 0;
-const currentList = oldState.current_list?.update_list_id || null;
-
-// Reset everything
-staticData.state = { queue: [], current_list: null, completed: [] };
-
-return { 
-  reset: true, 
-  cleared_queue_items: queueLength,
-  cleared_current_list: currentList,
-  message: 'State fully cleared' 
-};
-```
-
-3. Call it: `POST https://gitlitreview.app.n8n.cloud/webhook/distributor-reset`
-
-**Option 3: Temporary inline reset**
-Add this to the START of the "Load State" node temporarily:
-
-```javascript
-// EMERGENCY RESET - remove after running once!
-const staticData = $getWorkflowStaticData('global');
-staticData.state = { queue: [], current_list: null, completed: [] };
-return { state: staticData.state, new_list: $input.first().json, RESET: true };
-```
-
-**Option 4: Check current state**
-Add a Code node to inspect the current state:
-
-```javascript
-const staticData = $getWorkflowStaticData('global');
-return { 
-  state: staticData.state,
-  queue_length: staticData.state?.queue?.length || 0,
-  current_list_id: staticData.state?.current_list?.update_list_id || null,
-  current_list_status: staticData.state?.current_list?.status || null
-};
-```
-
----
-
-## 🔗 GitHub Webhook Configuration
+##  GitHub Webhook Configuration
 
 ### Step 1: Get Your n8n Webhook URL
 
@@ -1101,9 +1016,10 @@ OR
 | Workflow | Webhook Path | Purpose |
 |----------|--------------|---------|
 | Trigger | `/github-doc-trigger` | Entry point from GitHub |
-| Distributor | `/task-distributor` | Queue & orchestration |
+| Distributor | `/task-distributor` | Receives task lists, queues them |
+| Distributor | `/task-callback` | Receives task completion, dispatches next |
+| Distributor | `/distributor-reset` | Clears state (utility) |
 | Agent | `/domain-agent` | AI doc updates |
-| Distributor | `/task-done-{id}` | Completion callbacks |
 | Staleness Review | `/staleness-review` | Manual trigger for proactive review |
 
 > **Workflow 5 (Staleness Review)** is documented separately in [N8N_STALENESS_REVIEW_BUILDER_PROMPT.md](./N8N_STALENESS_REVIEW_BUILDER_PROMPT.md)
