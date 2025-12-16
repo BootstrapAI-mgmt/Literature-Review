@@ -103,7 +103,7 @@ See `/archive/README.md` for details.
 - `INCREMENTAL_REVIEW_MIGRATION_GUIDE.md` - Migration guide
 
 ### Documentation Automation
-- `N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md` - Event-driven doc update system
+- `N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md` - Event-driven documentation update system, now the primary processor for all documentation tasks. It manages the task flow and ensures updates are correctly applied, reflecting the removal of upstream deduplication.
 - `N8N_AI_BUILDER_PROMPT.md` - n8n workflow builder prompts (workflows 1-4)
 - `N8N_STALENESS_REVIEW_BLUEPRINT.md` - Proactive staleness detection design
 - `N8N_STALENESS_REVIEW_BUILDER_PROMPT.md` - n8n workflow builder prompt (workflow 5)
