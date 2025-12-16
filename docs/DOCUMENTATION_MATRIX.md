@@ -103,6 +103,7 @@ This matrix enables:
 | `docs/guides/PARALLEL_DEVELOPMENT_STRATEGY.md` | 2025-11-14 | 📋 Complete | — | — | `@guides` |
 | `docs/guides/GOOGLE_AI_SDK_BEST_PRACTICES.md` | 2025-11-14 | 📋 Complete | — | — | `@guides` |
 | `docs/guides/FRESH_ANALYSIS_TRIGGER_README.md` | 2025-12-06 | ✅ Current | — | app.py | `@guides` |
+| `docs/N8N_STATE_RECONCILIATION_BUILDER_PROMPT.md` | 2025-12-10 | 📋 Pending | — | — | `@guides` |
 
 ### L3 - Status Reports & Assessments
 
@@ -234,12 +235,12 @@ When making changes, update documents in this order:
 | Category | Count | Current | Needs Review | Archivable |
 |----------|-------|---------|--------------|------------|
 | Core Docs | 5 | 4 | 1 | 0 |
-| Feature Docs | 28 | 15 | 5 | 8 |
-| Guides | 5 | 3 | 1 | 1 |
+| Feature Docs | 29 | 15 | 5 | 8 |
+| Guides | 6 | 3 | 1 | 1 |
 | Status/Assessments | 15+ | 0 | 0 | 15+ |
 | Task Cards | 25+ | 1 | 0 | 20+ |
 | Archive | 54 | — | — | — |
-| **Total** | **252** | **~23** | **~7** | **~43** |
+| **Total** | **253** | **~23** | **~7** | **~43** |
 
 ---
 
