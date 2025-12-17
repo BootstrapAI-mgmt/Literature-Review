@@ -421,12 +421,17 @@ Create minimal, targeted updates to bring parent indexes in sync with actual tas
 
 For each mismatch, create a task with:
 - update_type: "COMPLETION_PERCENTAGE" or "STATUS_UPDATE"
-- document: the file path to update
+- document: the file path to update (e.g., "task-cards/README.md")
 - description: specific change needed (include actual numbers)
 - priority: 1 (high) for >20% mismatch, 2 (medium) otherwise
+- target: the file path to update (same as document)
+- task_id: unique identifier like "recon-001", "recon-002", etc.
 
-Output ONLY valid JSON in this exact format:
-{"update_list_id":"ul-recon-TIMESTAMP","source":"state-reconciliation","tasks":[{"update_type":"...","document":"...","description":"...","priority":1}]}
+CRITICAL: Output ONLY raw JSON - NO markdown code blocks, NO backticks, NO formatting.
+Just the raw JSON object starting with { and ending with }
+
+Required format:
+{"update_list_id":"ul-recon-TIMESTAMP","source":"state-reconciliation","tasks":[{"task_id":"recon-001","update_type":"COMPLETION_PERCENTAGE","target":"task-cards/README.md","document":"task-cards/README.md","description":"Update overall status to 0/37 (0%)","priority":1}]}
 ```
   - User Message (Expression):
 ```
