@@ -382,8 +382,37 @@ BUILD THESE NODES:
      }
    }
    
-   // Add all tasks to pending queue with metadata
-   tasks.forEach(task => {
+   // DEDUPLICATION: Skip tasks for documents already in queue or recently completed
+   const oneHourAgo = Date.now() - (60 * 60 * 1000);
+   const pendingDocs = new Set(state.pending_tasks.map(t => t.task?.document || t.task?.target));
+   const recentlyCompletedDocs = new Set(
+     state.completed
+       .filter(t => new Date(t.completed_at).getTime() > oneHourAgo && t.status === 'completed')
+       .map(t => t.task?.document || t.task?.target)
+   );
+   const inProgressDoc = state.in_progress?.task?.document || state.in_progress?.task?.target;
+   
+   let skipped = 0;
+   const newTasks = tasks.filter(task => {
+     const doc = task.document || task.target;
+     if (!doc) return true; // Keep tasks without document
+     if (pendingDocs.has(doc)) { skipped++; return false; }
+     if (inProgressDoc === doc) { skipped++; return false; }
+     if (recentlyCompletedDocs.has(doc)) { skipped++; return false; }
+     pendingDocs.add(doc); // Track this doc as pending now
+     return true;
+   });
+   
+   if (skipped > 0) {
+     console.log('Skipped', skipped, 'duplicate tasks (already pending or recently completed)');
+   }
+   
+   if (!newTasks.length) {
+     return { action: 'skipped', reason: 'all_duplicates', skipped_count: skipped };
+   }
+   
+   // Add filtered tasks to pending queue with metadata
+   newTasks.forEach(task => {
      state.pending_tasks.push({
        task,
        list_id: listId,
@@ -392,7 +421,7 @@ BUILD THESE NODES:
      });
    });
    
-   console.log('Queued', tasks.length, 'tasks. Total pending:', state.pending_tasks.length);
+   console.log('Queued', newTasks.length, 'tasks. Total pending:', state.pending_tasks.length);
    
    // If nothing in progress, dispatch next task
    if (!state.in_progress) {
@@ -411,7 +440,7 @@ BUILD THESE NODES:
    }
    
    staticData.state = state;
-   return { action: 'queued', pending_count: state.pending_tasks.length };
+   return { action: 'queued', pending_count: state.pending_tasks.length, skipped_count: skipped };
 
 3. IF node named "Should Dispatch"
    - Condition: action equals "dispatch"

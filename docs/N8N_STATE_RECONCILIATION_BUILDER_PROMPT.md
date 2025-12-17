@@ -86,24 +86,12 @@ Ensure you have:
 ### Node 4: CODE
 - **Name:** `Workflow Configuration`
 - **Type:** Code
-- **Purpose:** Set runtime configuration, thresholds, and deduplication
+- **Purpose:** Set runtime configuration and thresholds
 - **JavaScript:**
 ```javascript
 // Runtime configuration - adjust thresholds here
-const staticData = $getWorkflowStaticData('global');
-
-// Initialize recent corrections tracking (prevents re-sending same tasks)
-if (!staticData.recentCorrections) {
-  staticData.recentCorrections = {};
-}
-
-// Clean up old entries (older than 1 hour)
-const oneHourAgo = Date.now() - (60 * 60 * 1000);
-for (const key of Object.keys(staticData.recentCorrections)) {
-  if (staticData.recentCorrections[key] < oneHourAgo) {
-    delete staticData.recentCorrections[key];
-  }
-}
+// NOTE: Deduplication is handled by the Distributor, not here
+// State Reconciliation always scans fresh and sends all detected mismatches
 
 return {
   mismatch_threshold_percent: 5,  // Ignore differences < 5%
@@ -113,8 +101,7 @@ return {
     'task-cards/README.md',
     'task-cards/INDEX.md'
   ],
-  run_timestamp: new Date().toISOString(),
-  recent_corrections: staticData.recentCorrections  // Pass to later nodes
+  run_timestamp: new Date().toISOString()
 };
 ```
 
@@ -416,22 +403,27 @@ return {
   - **DO NOT attach JSON Output Parser** - we handle parsing in a separate Code node
   - System Prompt:
 ```
-You generate correction tasks to fix documentation state mismatches.
-Create minimal, targeted updates to bring parent indexes in sync with actual task card status.
+You generate CONSOLIDATED correction tasks to fix documentation state mismatches.
+Your goal is to CREATE THE MINIMUM NUMBER OF TASKS needed to fix all mismatches.
 
-For each mismatch, create a task with:
+CONSOLIDATION RULES:
+1. Group all updates that target the SAME FILE into ONE task
+2. For task-cards/README.md: Create ONE task listing ALL directory completion updates needed
+3. Never create multiple tasks for the same document
+
+Each task must have:
+- task_id: unique identifier (e.g., "recon-readme-001")
 - update_type: "COMPLETION_PERCENTAGE" or "STATUS_UPDATE"
-- document: the file path to update (e.g., "task-cards/README.md")
-- description: specific change needed (include actual numbers)
-- priority: 1 (high) for >20% mismatch, 2 (medium) otherwise
-- target: the file path to update (same as document)
-- task_id: unique identifier like "recon-001", "recon-002", etc.
+- target: the file path to update
+- document: same as target
+- description: COMPREHENSIVE list of ALL changes needed for this file
+- priority: 1 (high) if any mismatch >20%, else 2 (medium)
+- changes: array of specific changes [{section: "...", from: "...", to: "..."}]
 
 CRITICAL: Output ONLY raw JSON - NO markdown code blocks, NO backticks, NO formatting.
-Just the raw JSON object starting with { and ending with }
 
-Required format:
-{"update_list_id":"ul-recon-TIMESTAMP","source":"state-reconciliation","tasks":[{"task_id":"recon-001","update_type":"COMPLETION_PERCENTAGE","target":"task-cards/README.md","document":"task-cards/README.md","description":"Update overall status to 0/37 (0%)","priority":1}]}
+Example - consolidating 8 directory mismatches into 1 task:
+{"update_list_id":"ul-recon-TIMESTAMP","source":"state-reconciliation","tasks":[{"task_id":"recon-readme-001","update_type":"COMPLETION_PERCENTAGE","target":"task-cards/README.md","document":"task-cards/README.md","description":"Update completion counts: task-cards 0/37, agent 0/1, automation 0/4, dashboard-cli-parity 2/18, evidence-enhancement 0/9, incremental-review 0/16, integration 0/15, testing 0/2","priority":1,"changes":[{"section":"task-cards","from":"1/16","to":"0/37"},{"section":"agent","from":"1/4","to":"0/1"}]}]}
 ```
   - User Message (Expression):
 ```
@@ -494,71 +486,43 @@ return {
 - **Note:** This is the FALSE branch endpoint
 
 ### Node 16.5: CODE
-- **Name:** `Filter Recently Corrected`
+- **Name:** `Prepare for Distributor`
 - **Type:** Code
-- **Purpose:** Prevent duplicate corrections within 1 hour
+- **Purpose:** Format tasks for Distributor (deduplication happens at Distributor level)
 - **JavaScript:**
 ```javascript
-const staticData = $getWorkflowStaticData('global');
-const config = $('Workflow Configuration').first().json;
+// State Reconciliation always sends fresh tasks based on current repo state
+// Deduplication is handled by the Distributor, which tracks:
+// 1. Tasks already in pending queue (by document path)
+// 2. Tasks completed in last hour (actual completions, not sends)
 
-// Input is already parsed JSON from Clean AI Output node
 const aiOutput = $input.first().json;
-
-// Filter out tasks for documents corrected in last hour
 const tasks = aiOutput.tasks || [];
 
-// Debug: Log what we received
-console.log('Received tasks count:', tasks.length);
-console.log('Current recentCorrections keys:', Object.keys(staticData.recentCorrections || {}));
+console.log('Sending', tasks.length, 'consolidated tasks to Distributor');
 
-const filteredTasks = tasks.filter(task => {
-  // Task may have document, target, or task_id as the key
-  const docKey = task.document || task.task_id;
-  if (!docKey) {
-    console.log('Task missing document key, including it:', JSON.stringify(task));
-    return true; // Include tasks without document key
-  }
-  const lastCorrected = staticData.recentCorrections?.[docKey];
-  if (lastCorrected && (Date.now() - lastCorrected) < 60 * 60 * 1000) {
-    console.log('Skipping recently corrected:', docKey);
-    return false;
-  }
-  return true;
-});
-
-console.log('Filtered tasks count:', filteredTasks.length);
-
-// If no tasks remain, skip distributor
-if (filteredTasks.length === 0) {
-  return { skip: true, message: 'All corrections already sent recently' };
-}
-
-// Mark these docs as corrected NOW (before sending)
-for (const task of filteredTasks) {
-  const docKey = task.document || task.task_id;
-  if (docKey) {
-    staticData.recentCorrections[docKey] = Date.now();
-  }
+// If no tasks, skip
+if (tasks.length === 0) {
+  return { skip: true, message: 'No corrections needed' };
 }
 
 return {
   skip: false,
-  update_list_id: aiOutput.update_list_id,
-  source: aiOutput.source || 'state-reconciliation',
-  tasks: filteredTasks
+  update_list_id: aiOutput.update_list_id || 'ul-recon-' + Date.now(),
+  source: 'state-reconciliation',
+  tasks: tasks
 };
 ```
 - **Connects from:** Node 15.5 (Clean AI Output)
-- **Note:** Clean AI Output already parsed the JSON, so input is a plain object
+- **Note:** No filtering here - Distributor handles deduplication based on actual completions
 
 ### Node 16.6: IF
-- **Name:** `Should Send?`
+- **Name:** `Has Tasks?`
 - **Type:** If
 - **Settings:**
   - Condition: `{{ $json.skip }}` equals `false`
   - True Output → Node 17 (Send to Distributor)
-  - False Output → End (nothing to send)
+  - False Output → End (no tasks generated)
 
 ### Node 17: HTTP REQUEST
 - **Name:** `Send Corrections`
@@ -627,10 +591,10 @@ Node 2 (Manual Trigger) ────────┘
               Node 15.5 (Clean AI Output)
                         │
                         ▼
-              Node 16.5 (Filter Recently Corrected)
+              Node 16.5 (Prepare for Distributor)
                         │
                         ▼
-              Node 16.6 (Should Send?)
+              Node 16.6 (Has Tasks?)
                         │
                         ▼
               Node 17 (Send to Distributor)
@@ -642,42 +606,36 @@ Node 2 (Manual Trigger) ────────┘
 
 After building, verify:
 - [ ] Both triggers connect to Start merge node
-- [ ] Workflow Configuration provides runtime thresholds
+- [ ] Workflow Configuration provides runtime thresholds (no deduplication - that's in Distributor)
 - [ ] Loop processes all task-cards subdirectories
 - [ ] Status extraction handles base64 decoding
 - [ ] Percentage comparison uses threshold (default 5%)
 - [ ] AI Agent has NO JSON Output Parser (we use Clean AI Output node instead)
+- [ ] AI prompt instructs consolidation (group updates by document)
 - [ ] Clean AI Output strips markdown and parses JSON
 - [ ] Distributor URL is correct
-- [ ] Send Corrections receives data from Should Send? node (not directly from AI)
+- [ ] State Reconciliation sends ALL detected mismatches (deduplication happens at Distributor)
 
 ---
 
-## 🔧 Reset State Reconciliation Cache (Recovery)
+## Design Principles
 
-If corrections are being skipped due to stale cache, reset the recentCorrections:
+### Fresh Eyes Every Time
+State Reconciliation always scans the repository fresh and reports ALL mismatches found. It does NOT track what was previously sent. This ensures:
+- No stale cache issues
+- Repository state is always accurately assessed
+- Tasks are never incorrectly filtered
 
-**Option 1: Temporary reset in Workflow Configuration**
-Add this at the START of Workflow Configuration temporarily:
+### Deduplication at Distributor
+The Distributor is the single source of truth for task state:
+- Skips tasks for documents already in pending queue
+- Skips tasks for documents completed in last hour
+- This prevents duplicate work while allowing fresh scans
 
-```javascript
-// EMERGENCY RESET - remove after running once!
-const staticData = $getWorkflowStaticData('global');
-staticData.recentCorrections = {};
-console.log('RESET: Cleared recentCorrections cache');
-```
-
-**Option 2: Add a Reset Webhook**
-Add a second webhook path `/state-reconciliation-reset` with this code:
-
-```javascript
-const staticData = $getWorkflowStaticData('global');
-const oldCount = Object.keys(staticData.recentCorrections || {}).length;
-staticData.recentCorrections = {};
-return { reset: true, cleared_entries: oldCount, message: 'recentCorrections cache cleared' };
-```
-
-Call it: `POST https://gitlitreview.app.n8n.cloud/webhook/state-reconciliation-reset`
+### Task Consolidation
+The AI prompt instructs consolidation of updates by target document:
+- Multiple directory completion updates → ONE task for README.md
+- This minimizes the number of actual file edits needed
 
 ---
 
