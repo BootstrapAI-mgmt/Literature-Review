@@ -369,6 +369,19 @@ BUILD THESE NODES:
      return { action: 'none', reason: 'no_tasks' };
    }
    
+   // STALE TASK RECOVERY: Clear in_progress if stuck for > 10 minutes
+   if (state.in_progress && state.in_progress.started_at) {
+     const startedAt = new Date(state.in_progress.started_at).getTime();
+     const tenMinutes = 10 * 60 * 1000;
+     if (Date.now() - startedAt > tenMinutes) {
+       console.log('Clearing stale in_progress task:', state.in_progress.task?.task_id || 'unknown');
+       state.in_progress.status = 'timeout';
+       state.in_progress.completed_at = new Date().toISOString();
+       state.completed.push(state.in_progress);
+       state.in_progress = null;
+     }
+   }
+   
    // Add all tasks to pending queue with metadata
    tasks.forEach(task => {
      state.pending_tasks.push({
