@@ -413,7 +413,7 @@ return {
 - **Type:** AI Agent
 - **Settings:**
   - Model: Gemini 2.5 Flash (attach as sub-node)
-  - Output Parser: JSON Output Parser (attach as sub-node)
+  - **DO NOT attach JSON Output Parser** - we handle parsing in a separate Code node
   - System Prompt:
 ```
 You generate correction tasks to fix documentation state mismatches.
@@ -446,6 +446,38 @@ By directory:
 {{ Object.entries($json.actual_state.by_directory).map(([d,s]) => '- ' + d + ': ' + s.complete + '/' + s.total + ' (' + s.percentage + '%)').join('\n') }}
 ```
 
+### Node 15.5: CODE
+- **Name:** `Clean AI Output`
+- **Type:** Code
+- **Purpose:** Strip markdown code blocks that AI may wrap around JSON output
+- **JavaScript:**
+```javascript
+// Get raw AI output (may have markdown code blocks)
+let rawOutput = $input.first().json.output || $input.first().json.text || '';
+
+// If it's already an object, return it
+if (typeof rawOutput === 'object') {
+  return rawOutput;
+}
+
+// Strip markdown code blocks if present
+rawOutput = rawOutput.trim();
+if (rawOutput.startsWith('```json')) {
+  rawOutput = rawOutput.replace(/^```json\n?/, '').replace(/\n?```$/, '');
+} else if (rawOutput.startsWith('```')) {
+  rawOutput = rawOutput.replace(/^```\n?/, '').replace(/\n?```$/, '');
+}
+
+// Parse JSON
+try {
+  return JSON.parse(rawOutput.trim());
+} catch (e) {
+  throw new Error('Failed to parse AI output as JSON: ' + e.message + '\nRaw: ' + rawOutput.substring(0, 200));
+}
+```
+- **Connects from:** Node 15 (Generate Corrections)
+- **Connects to:** Node 16.5 (Filter Recently Corrected)
+
 ### Node 16: CODE
 - **Name:** `Log Consistent`
 - **Type:** Code
@@ -469,11 +501,9 @@ return {
 ```javascript
 const staticData = $getWorkflowStaticData('global');
 const config = $('Workflow Configuration').first().json;
-const input = $input.first().json;
 
-// IMPORTANT: AI Agent with JSON Output Parser nests results under .output
-// Handle both direct input (testing) and nested output (production)
-const aiOutput = input.output || input;
+// Input is already parsed JSON from Clean AI Output node
+const aiOutput = $input.first().json;
 
 // Filter out tasks for documents corrected in last hour
 const tasks = aiOutput.tasks || [];
@@ -519,8 +549,8 @@ return {
   tasks: filteredTasks
 };
 ```
-- **Connects from:** Node 15 (Generate Corrections)
-- **CRITICAL:** The AI output is nested under `.output` - must unwrap it!
+- **Connects from:** Node 15.5 (Clean AI Output)
+- **Note:** Clean AI Output already parsed the JSON, so input is a plain object
 
 ### Node 16.6: IF
 - **Name:** `Should Send?`
@@ -594,6 +624,15 @@ Node 2 (Manual Trigger) ────────┘
               Node 15 (Generate Corrections)  Node 16 (Log In Sync)
                         │
                         ▼
+              Node 15.5 (Clean AI Output)
+                        │
+                        ▼
+              Node 16.5 (Filter Recently Corrected)
+                        │
+                        ▼
+              Node 16.6 (Should Send?)
+                        │
+                        ▼
               Node 17 (Send to Distributor)
 ```
 
@@ -607,9 +646,9 @@ After building, verify:
 - [ ] Loop processes all task-cards subdirectories
 - [ ] Status extraction handles base64 decoding
 - [ ] Percentage comparison uses threshold (default 5%)
-- [ ] AI Agent has JSON Output Parser attached
+- [ ] AI Agent has NO JSON Output Parser (we use Clean AI Output node instead)
+- [ ] Clean AI Output strips markdown and parses JSON
 - [ ] Distributor URL is correct
-- [ ] Filter Recently Corrected handles `.output` nesting from AI Agent
 - [ ] Send Corrections receives data from Should Send? node (not directly from AI)
 
 ---
