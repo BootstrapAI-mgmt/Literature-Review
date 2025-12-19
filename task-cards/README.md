@@ -117,13 +117,14 @@ This folder contains all implementation task cards organized by category and wav
 
 | Category | Total | Complete | In Progress | Ready | Completion % |
 |----------|-------|----------|-------------|-------|--------------|
-| Agent | 4 | 1 | 0 | 3 | 25% |
-| Automation | 4 | 1 | 0 | 3 | 25% |
-| Integration | 5 | 0 | 0 | 5 | 0% |
+| Agent | 4 | 0 | 0 | 4 | 0% |
+| Automation | 4 | 0 | 0 | 4 | 0% |
+| Dashboard-CLI Parity | 18 | 2 | 0 | 16 | 11% |
+| Integration | 15 | 0 | 0 | 15 | 0% |
 | E2E | 2 | 0 | 0 | 2 | 0% |
-| Evidence Enhancement | 8 | 0 | 0 | 8 | 0% |
-| **Incremental Review** ⭐ | **16** | **0** | **0** | **1** | **6%** |
-| **TOTAL** | **39** | **2** | **0** | **22** | **6%** |
+| Evidence Enhancement | 9 | 0 | 0 | 9 | 0% |
+| Incremental Review | 16 | 0 | 0 | 16 | 0% |
+| **TOTAL** | **68** | **2** | **0** | **66** | **3%** |
 
 ---
 
