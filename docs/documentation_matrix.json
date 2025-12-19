@@ -458,9 +458,9 @@
         "docs/documentation_matrix.json"
       ],
       "created_date": "2025-12-07",
-      "last_reviewed": "2025-12-06",
+      "last_reviewed": "2025-12-19",
       "review_interval_days": 14,
-      "next_review": "2025-12-20"
+      "next_review": "2026-01-02"
     },
     {
       "path": "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md",
