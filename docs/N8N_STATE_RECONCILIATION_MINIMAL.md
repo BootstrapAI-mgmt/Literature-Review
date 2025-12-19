@@ -1,6 +1,6 @@
 # State Reconciliation - n8n Builder Prompt (Minimal)
 
-**Workflow 6:** Verify documentation status matches repository state. 17 nodes total.
+**Workflow 6:** Verify documentation file counts match repository state. 17 nodes total.
 
 ## Node List (Build Exactly)
 
@@ -14,43 +14,54 @@
 | 6 | HTTP Request | List Task Cards |
 | 7 | Code | Filter and Group Cards |
 | 8 | Split In Batches | Process Each Directory |
-| 9 | HTTP Request | Fetch Directory Contents |
-| 10 | Code | Extract Status from Cards |
-| 11 | Code | Aggregate All Directories |
-| 12 | HTTP Request | Fetch Current Indexes |
-| 13 | Code | Find Mismatches |
-| 14 | If | Has Mismatches? |
-| 15 | AI Agent | Generate Corrections |
-| 16 | Code | Log In Sync |
-| 17 | HTTP Request | Send to Distributor |
+| 9 | Code | Extract Status from Cards |
+| 10 | Code | Aggregate All Directories |
+| 11 | HTTP Request | Fetch Current Indexes |
+| 12 | Code | Find Mismatches |
+| 13 | If | Has Mismatches? |
+| 14 | AI Agent | Generate Corrections |
+| 15 | Code | Log In Sync |
+| 16 | HTTP Request | Send to Distributor |
 
 ## Key Connections
 
 ```
-1,2 → 3 → 4 → 5 → 6 → 7 → 8 ⟲ 9 → 10 (loop)
+1,2 → 3 → 4 → 5 → 6 → 7 → 8 ⟲ 9 (loop)
                               ↓
-                         11 → 12 → 13 → 14
-                                         ├─ true → 15 → 17
-                                         └─ false → 16
+                         10 → 11 → 12 → 13
+                                         ├─ true → 14 → 16
+                                         └─ false → 15
 ```
 
 ## Node 4 Config (Workflow Configuration)
 ```javascript
+// Compare FILE COUNTS only, not completion status.
+// Task card status is inside file content, not filenames.
 return {
-  mismatch_threshold_percent: 5,
-  status_complete_keywords: ['complete', 'done', '✅'],
   target_indexes: ['task-cards/README.md']
 };
 ```
 
-## Node 15 (AI Agent)
+## Node 9 (Extract Status from Cards)
+```javascript
+// Just count files - don't try to infer completion from filenames
+const batchItem = $input.first().json;
+return {
+  directory: batchItem.directory,
+  config: batchItem.config,
+  cards: batchItem.cards.map(c => ({ path: c.path, name: c.path.split('/').pop() })),
+  summary: { file_count: batchItem.cards.length }
+};
+```
+
+## Node 14 (AI Agent)
 - Model: Gemini 2.5 Flash
-- Output Parser: JSON Output Parser (attached)
-- System: "Generate correction tasks for doc mismatches. Output JSON: {update_list_id, source, tasks[]}"
+- Output Parser: Use Code node (Clean AI Output) instead
+- System: "Generate correction tasks for file count mismatches. Output JSON: {update_list_id, source, tasks[]}"
 
 ## URLs
 - List Task Cards: `api.github.com/.../git/trees/main?recursive=1`
-- Fetch Contents: `api.github.com/.../contents/{{ $json.replace(/\/$/, '') }}` (strip trailing slash!)
+- Fetch Indexes: `api.github.com/.../contents/task-cards/README.md`
 - Distributor: `gitlitreview.app.n8n.cloud/webhook/task-distributor`
 
 ## Headers (all GitHub requests)
