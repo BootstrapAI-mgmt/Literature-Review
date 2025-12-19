@@ -368,7 +368,32 @@ BUILD THESE NODES:
       "tasks": {{ JSON.stringify($json.update_tasks) }}
     }
 
-20. HTTP REQUEST node named "Create Review Issue" (connect from Rules 2 and 3)
+20. HTTP REQUEST node named "Search Existing Issues" (connect from Rules 2 and 3)
+    - Method: GET
+    - URL: https://api.github.com/search/issues?q=repo:BootstrapAI-mgmt/Literature-Review+is:open+label:staleness-review+"{{ $json.domain }}"+in:title
+    - Authentication: Header Auth (GitHub API Token)
+    - Headers:
+      - Accept: application/vnd.github.v3+json
+    - Note: Searches for existing open staleness review issues for this domain
+
+21. IF node named "Issue Exists?"
+    - Condition: {{ $json.total_count > 0 }}
+    - True: → Skip (issue already exists)
+    - False: → Create Review Issue
+
+22. CODE node named "Skip Duplicate Issue" (connect from Issue Exists? true branch)
+    - JavaScript:
+    const prev = $('Parse Assessment').first().json;
+    console.log('Skipping issue creation - existing issue found for domain:', prev.domain);
+    return {
+      domain: prev.domain,
+      status: 'skipped',
+      reason: 'existing_issue',
+      staleness_score: prev.staleness_score,
+      timestamp: new Date().toISOString()
+    };
+
+23. HTTP REQUEST node named "Create Review Issue" (connect from Issue Exists? false branch)
     - Method: POST
     - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/issues
     - Authentication: Header Auth (GitHub API Token)
@@ -376,12 +401,12 @@ BUILD THESE NODES:
       - Accept: application/vnd.github.v3+json
     - Body (JSON):
     {
-      "title": "📚 Staleness Review: {{ $json.domain }} (score: {{ ($json.staleness_score * 100).toFixed(0) }}%)",
-      "body": "## Automated Staleness Review\n\n**Domain:** {{ $json.domain }}\n**Staleness Score:** {{ ($json.staleness_score * 100).toFixed(0) }}%\n**Confidence:** {{ ($json.confidence * 100).toFixed(0) }}%\n**Days Inactive:** {{ $json.days_inactive }}\n\n### Summary\n\n{{ $json.summary }}\n\n### Documents Reviewed\n\n{{ $json.documents.map(d => '- ' + d).join('\\n') }}\n\n### Findings\n\n{{ $json.findings.length > 0 ? $json.findings.map(f => '- **' + f.document + '** (' + f.severity + '): ' + f.description).join('\\n') : 'No specific issues identified.' }}\n\n### Recommended Actions\n\n{{ $json.findings.length > 0 ? $json.findings.map(f => '- [ ] ' + f.suggested_update).join('\\n') : '- [ ] Manual review recommended' }}\n\n---\n*Assessment ID: {{ $json.assessment_id }}*\n*This issue was automatically created by the staleness review workflow.*",
+      "title": "📚 Staleness Review: {{ $('Parse Assessment').first().json.domain }} (score: {{ ($('Parse Assessment').first().json.staleness_score * 100).toFixed(0) }}%)",
+      "body": "## Automated Staleness Review\n\n**Domain:** {{ $('Parse Assessment').first().json.domain }}\n**Staleness Score:** {{ ($('Parse Assessment').first().json.staleness_score * 100).toFixed(0) }}%\n**Confidence:** {{ ($('Parse Assessment').first().json.confidence * 100).toFixed(0) }}%\n**Days Inactive:** {{ $('Parse Assessment').first().json.days_inactive }}\n\n### Summary\n\n{{ $('Parse Assessment').first().json.summary }}\n\n### Documents Reviewed\n\n{{ $('Parse Assessment').first().json.documents.map(d => '- ' + d).join('\\n') }}\n\n### Findings\n\n{{ $('Parse Assessment').first().json.findings.length > 0 ? $('Parse Assessment').first().json.findings.map(f => '- **' + f.document + '** (' + f.severity + '): ' + f.description).join('\\n') : 'No specific issues identified.' }}\n\n### Recommended Actions\n\n{{ $('Parse Assessment').first().json.findings.length > 0 ? $('Parse Assessment').first().json.findings.map(f => '- [ ] ' + f.suggested_update).join('\\n') : '- [ ] Manual review recommended' }}\n\n---\n*Assessment ID: {{ $('Parse Assessment').first().json.assessment_id }}*\n*This issue was automatically created by the staleness review workflow.*",
       "labels": ["documentation", "staleness-review", "automated"]
     }
 
-21. CODE node named "Log Healthy" (connect from Needs Review? false, Has Relevant Changes? false, and Route By Score fallback)
+24. CODE node named "Log Healthy" (connect from Needs Review? false, Has Relevant Changes? false, and Route By Score fallback)
     - JavaScript:
     const input = $input.first().json;
     console.log(`Domain ${input.domain || 'unknown'} is healthy (score: ${input.staleness_score || 'N/A'})`);
@@ -393,12 +418,12 @@ BUILD THESE NODES:
       timestamp: new Date().toISOString()
     };
 
-22. MERGE node named "Collect Results"
+25. MERGE node named "Collect Results"
     - Mode: Append
-    - Connect all terminal nodes: Send to Distributor, Create Review Issue, Log Healthy
+    - Connect all terminal nodes: Send to Distributor, Create Review Issue, Skip Duplicate Issue, Log Healthy
     - This collects all results for the digest
 
-23. CODE node named "Generate Digest"
+26. CODE node named "Generate Digest"
     - JavaScript:
     const results = $items('Collect Results');
     const now = new Date();
@@ -432,12 +457,12 @@ BUILD THESE NODES:
     
     return digest;
 
-24. IF node named "Has Findings?"
+27. IF node named "Has Findings?"
     - Condition: {{ $json.summary.domains_need_attention > 0 }}
     - On true: Create digest issue
     - On false: End (silent success)
 
-25. HTTP REQUEST node named "Create Digest Issue"
+28. HTTP REQUEST node named "Create Digest Issue"
     - Method: POST
     - URL: https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/issues
     - Authentication: Header Auth (GitHub API Token)
@@ -457,24 +482,27 @@ CONNECT NODES:
 7 → 8 (Calculate Inactivity)
 8 → 9 (Needs Review?)
 9 true → 10 (Fetch Recent Changes)
-9 false → 21 (Log Healthy)
+9 false → 24 (Log Healthy)
 10 → 11 (Filter Relevant Changes)
 11 → 12 (Has Relevant Changes?)
 12 true → 13 (Fetch Doc Contents)
-12 false → 21 (Log Healthy)
+12 false → 24 (Log Healthy)
 13 → 14 (Get Document Content)
 14 → 15 (Aggregate Doc Contents)
 15 → 16 (AI Staleness Assessment)
 16 → 17 (Parse Assessment)
 17 → 18 (Route By Score)
 18 Rule1 → 19 (Send to Distributor)
-18 Rule2,3 → 20 (Create Review Issue)
-18 Fallback → 21 (Log Healthy)
-19, 20, 21 → 22 (Collect Results)
-22 → 23 (Generate Digest)
-23 → 24 (Has Findings?)
-24 true → 25 (Create Digest Issue)
-24 false → End
+18 Rule2,3 → 20 (Search Existing Issues)
+20 → 21 (Issue Exists?)
+21 true → 22 (Skip Duplicate Issue)
+21 false → 23 (Create Review Issue)
+18 Fallback → 24 (Log Healthy)
+19, 22, 23, 24 → 25 (Collect Results)
+25 → 26 (Generate Digest)
+26 → 27 (Has Findings?)
+27 true → 28 (Create Digest Issue)
+27 false → End
 
 LOOP: After 22 (Collect Results), check if more domains in batch. 
 The Split In Batches node automatically loops back for remaining items.
