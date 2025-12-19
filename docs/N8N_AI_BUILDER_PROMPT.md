@@ -528,14 +528,47 @@ BUILD THESE NODES:
      }
    - NOTE: Same as node 4 but connected to callback path
 
+=== UTILITY: Get Status (for debugging) ===
+
+9. WEBHOOK node named "Get Status"
+   - Path: /distributor-status
+   - Method: POST (or GET)
+   - Respond: When Last Node Finishes
+
+10. CODE node named "Return Status"
+    - JavaScript:
+    const staticData = $getWorkflowStaticData('global');
+    const state = staticData.state || { pending_tasks: [], in_progress: null, completed: [] };
+    return {
+      status: 'ok',
+      pending_count: state.pending_tasks?.length || 0,
+      pending_tasks: state.pending_tasks?.map(t => ({
+        task_id: t.task?.task_id,
+        document: t.task?.document,
+        queued_at: t.queued_at
+      })) || [],
+      in_progress: state.in_progress ? {
+        task_id: state.in_progress.task?.task_id,
+        document: state.in_progress.task?.document,
+        started_at: state.in_progress.started_at
+      } : null,
+      completed_count: state.completed?.length || 0,
+      recent_completed: (state.completed || []).slice(-5).map(t => ({
+        task_id: t.task?.task_id,
+        status: t.status,
+        completed_at: t.completed_at
+      })),
+      timestamp: new Date().toISOString()
+    };
+
 === UTILITY: Reset State ===
 
-9. WEBHOOK node named "Reset State"
+11. WEBHOOK node named "Reset State"
    - Path: /distributor-reset
    - Method: POST
    - Respond: When Last Node Finishes
 
-10. CODE node named "Clear State"
+12. CODE node named "Clear State"
     - JavaScript:
     const staticData = $getWorkflowStaticData('global');
     const oldState = staticData.state || {};
@@ -549,7 +582,8 @@ BUILD THESE NODES:
 CONNECTIONS:
 - Entry 1: 1→2→3→(true: 4)
 - Entry 2: 5→6→7→(true: 8)  
-- Utility: 9→10
+- Utility Status: 9→10
+- Utility Reset: 11→12
 
 NOTES:
 - Two separate webhook entry points in the same workflow
