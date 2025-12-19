@@ -4,7 +4,7 @@ This folder contains all implementation task cards organized by category and wav
 
 ## 📁 Folder Structure
 
-### `/agent/` - Core Agent Tasks (4 cards)
+### `/agent/` - Core Agent Tasks (1 card)
 **Critical path tasks for agent functionality improvements**
 
 **Files:**
@@ -15,7 +15,7 @@ This folder contains all implementation task cards organized by category and wav
   - Task #4: Deep Coverage Database Decision (2-3h) - ✅ COMPLETE
 
 **Wave:** Wave 1 (Foundation)  
-**Status:** 1/4 Complete
+**Status:** 0/1 Complete
 
 ---
 
@@ -29,11 +29,11 @@ This folder contains all implementation task cards organized by category and wav
 - `AUTOMATION_TASK_CARD_15.md` - Health Checks (3-4h) - 🟢 Ready
 
 **Wave:** Wave 2  
-**Status:** 1/4 Complete
+**Status:** 0/4 Complete
 
 ---
 
-### `/integration/` - Integration Tests (5 cards)
+### `/integration/` - Integration Tests (15 cards)
 **Component-level integration test specifications**
 
 **Files:**
@@ -44,7 +44,7 @@ This folder contains all implementation task cards organized by category and wav
 - `INTEGRATION_TASK_CARD_9.md` - INT-004/005: Orchestrator Integration (8-10h) - 🟢 Ready
 
 **Wave:** Wave 2-3  
-**Status:** 0/5 Complete (enhanced scope with evidence quality features)  
+**Status:** 0/15 Complete (enhanced scope with evidence quality features)  
 **Dependencies:** Evidence enhancement cards #16-21
 
 ---
@@ -62,7 +62,7 @@ This folder contains all implementation task cards organized by category and wav
 
 ---
 
-### `/evidence-enhancement/` - Evidence Quality Features (8 cards)
+### `/evidence-enhancement/` - Evidence Quality Features (9 cards)
 **Advanced evidence quality assessment features**
 
 **Files:**
@@ -77,7 +77,7 @@ This folder contains all implementation task cards organized by category and wav
 - `TASK-23-Conflict-of-Interest-Analysis.md` - COI analysis (4-6h) - 🟡 Optional
 
 **Wave:** Waves 2-4  
-**Status:** 0/8 Complete  
+**Status:** 0/9 Complete  
 **Priority:** Core features (#16-21) required for integration tests
 
 ---
@@ -95,7 +95,7 @@ This folder contains all implementation task cards organized by category and wav
 
 **Waves:** 4 waves (Foundation → Integration → UX → Advanced)  
 **Effort:** 85-110 hours (10-14 developer-days)  
-**Status:** 1/16 Complete (6% specified)  
+**Status:** 0/16 Complete (0% specified)  
 **Priority:** 🔴 Critical for production readiness
 
 **Wave Breakdown:**
@@ -117,14 +117,14 @@ This folder contains all implementation task cards organized by category and wav
 
 | Category | Total | Complete | In Progress | Ready | Completion % |
 |----------|-------|----------|-------------|-------|--------------|
-| Agent | 4 | 0 | 0 | 4 | 0% |
+| Agent | 1 | 0 | 0 | 1 | 0% |
 | Automation | 4 | 0 | 0 | 4 | 0% |
 | Dashboard-CLI Parity | 18 | 2 | 0 | 16 | 11% |
 | Integration | 15 | 0 | 0 | 15 | 0% |
 | E2E | 2 | 0 | 0 | 2 | 0% |
 | Evidence Enhancement | 9 | 0 | 0 | 9 | 0% |
 | Incremental Review | 16 | 0 | 0 | 16 | 0% |
-| **TOTAL** | **68** | **2** | **0** | **66** | **3%** |
+| **TOTAL** | **37** | **0** | **0** | **37** | **0%** |
 
 ---
 
