@@ -5,7 +5,7 @@
 ## Workflow Overview
 
 **Name:** Doc Chain - State Reconciliation  
-**Purpose:** Proactively verify that documentation status matches actual repository state  
+**Purpose:** Proactively verify that documentation file counts match actual repository state  
 **Trigger:** Daily at 4 AM UTC + Manual webhook  
 **Total Nodes:** 17
 
@@ -25,11 +25,11 @@
                                 │
         ┌───────────────────────┘
         ▼
-   List Task Cards ──▶ Filter & Group ──▶ [LOOP: Fetch Contents ──▶ Extract Status]
+   List Task Cards ──▶ Filter & Group ──▶ [LOOP: Count Files per Directory]
                                                          │
         ┌────────────────────────────────────────────────┘
         ▼
-   Aggregate Results ──▶ Fetch Indexes ──▶ Find Mismatches
+   Aggregate Counts ──▶ Fetch Indexes ──▶ Find Mismatches (file counts)
                                                 │
                                ┌────────────────┴────────────────┐
                                ▼                                 ▼
@@ -37,7 +37,7 @@
                                │ (true)                    (false branch)
                                ▼
                     Generate Corrections ──▶ Send to Distributor
-                    (AI + JSON Parser)              │
+                    (AI + Code parser)              │
                                                     ▼
                                               Summary Report
 ```
@@ -86,17 +86,20 @@ Ensure you have:
 ### Node 4: CODE
 - **Name:** `Workflow Configuration`
 - **Type:** Code
-- **Purpose:** Set runtime configuration and thresholds
+- **Purpose:** Set runtime configuration
 - **JavaScript:**
 ```javascript
-// Runtime configuration - adjust thresholds here
+// Runtime configuration
 // NOTE: Deduplication is handled by the Distributor, not here
 // State Reconciliation always scans fresh and sends all detected mismatches
+// 
+// IMPORTANT: This workflow compares FILE COUNTS only, not completion status.
+// Task card completion status is stored inside file content, which would
+// require individual API calls to read. Instead, we trust the README as
+// the source of truth for completion counts and only flag mismatches when
+// file counts differ (files added/removed).
 
 return {
-  mismatch_threshold_percent: 5,  // Ignore differences < 5%
-  status_complete_keywords: ['complete', 'done', '✅', 'finished'],
-  status_in_progress_keywords: ['in progress', 'started', '🔄', 'wip'],
   target_indexes: [
     'task-cards/README.md',
     'task-cards/INDEX.md'
@@ -183,7 +186,7 @@ return Object.entries(byDirectory).map(([dir, cards]) => ({
 ### Node 9: CODE
 - **Name:** `Extract Status from Cards`
 - **Type:** Code
-- **Note:** We skip the HTTP fetch since directory listings don't include file content. Instead, we use the card paths from the batch item and check completion based on filename patterns (task cards marked COMPLETE typically have that in the filename or are in certain directories).
+- **Note:** We count files per directory rather than trying to determine completion status from filenames. Task card status is stored inside file content (e.g., `**Status:** Complete`), which requires individual API calls to read. Instead, we use file counts and compare against README-claimed totals.
 - **JavaScript:**
 ```javascript
 // Get data from the current batch item - we already have the card list!
@@ -192,37 +195,22 @@ const dir = batchItem.directory;
 const config = batchItem.config;
 const cards = batchItem.cards || [];
 
-// Since we can't easily get file content without individual fetches,
-// we'll determine completion based on available metadata.
-// The reconciliator's job is to count cards per directory and compare to claimed counts.
+// Just count files - don't try to determine completion from filenames.
+// Task card completion status is stored inside file content, not filenames.
+// README is the source of truth for completion counts.
 
-const results = cards.map(card => {
-  const name = card.path.split('/').pop();
-  
-  // Check if filename suggests completion (contains COMPLETE, DONE, etc.)
-  const filenameUpper = name.toUpperCase();
-  const isComplete = config.status_complete_keywords.some(kw => 
-    filenameUpper.includes(kw.toUpperCase())
-  );
-  
-  return {
-    path: card.path,
-    name: name,
-    status: isComplete ? 'Complete' : 'Unknown',
-    is_complete: isComplete
-  };
-});
-
-// Calculate directory summary
-const complete = results.filter(r => r.is_complete).length;
-const total = results.length;
-const percentage = total > 0 ? Math.round((complete / total) * 100) : 0;
+const results = cards.map(card => ({
+  path: card.path,
+  name: card.path.split('/').pop()
+}));
 
 return {
   directory: dir,
   config: config,  // Pass config through for Aggregate
   cards: results,
-  summary: { complete, total, percentage }
+  summary: { 
+    file_count: results.length 
+  }
 };
 ```
 
@@ -237,9 +225,9 @@ The original design had:
 
 **Simplified to:**
 - Node 8: Split In Batches  
-- Node 9: Extract Status from Cards (uses cards already in batch item)
+- Node 9: Extract Status from Cards (counts files only, no HTTP fetch)
 
-This eliminates the unnecessary HTTP call since directory listings don't include file content anyway. The Split In Batches node connects directly to Extract Status from Cards.
+This eliminates the unnecessary HTTP call since directory listings don't include file content anyway. Task card completion status is stored inside file content (e.g., `**Status:** Complete`), not in filenames. Reading individual file contents would require N API calls per run. Instead, we count files per directory and compare to README-claimed totals.
 
 ---
 
@@ -255,28 +243,19 @@ const loopResults = $input.all().map(item => item.json);
 const config = loopResults[0]?.config || $('Filter and Group Cards').first().json.config;
 
 const summaries = {};
-let totalComplete = 0;
-let totalCards = 0;
+let totalFiles = 0;
 
 for (const result of loopResults) {
   if (result.directory && result.summary) {
     summaries[result.directory] = result.summary;
-    totalComplete += result.summary.complete;
-    totalCards += result.summary.total;
+    totalFiles += result.summary.file_count;
   }
 }
-
-const overallPercentage = totalCards > 0 ? 
-  Math.round((totalComplete / totalCards) * 100) : 0;
 
 return {
   config,
   by_directory: summaries,
-  overall: {
-    complete: totalComplete,
-    total: totalCards,
-    percentage: overallPercentage
-  },
+  overall: { total_files: totalFiles },
   timestamp: new Date().toISOString()
 };
 ```
@@ -294,11 +273,11 @@ return {
 ### Node 13: CODE
 - **Name:** `Find Mismatches`
 - **Type:** Code
+- **Note:** Compares file counts per directory against README-claimed totals. Since task card completion status is stored inside file content (not filenames), we only flag mismatches when file counts don't match. This avoids false positives from "Unknown" status detection.
 - **JavaScript:**
 ```javascript
 const actual = $('Aggregate All Directories').first().json;
 const indexFile = $input.first().json;
-const threshold = actual.config.mismatch_threshold_percent;
 
 let indexContent = '';
 if (indexFile.content) {
@@ -307,70 +286,42 @@ if (indexFile.content) {
   } catch (e) { indexContent = ''; }
 }
 
-// Extract claimed status - handles both "X/Y Complete" and "XX%" formats
-const fractionPattern = /(\d+)\/(\d+)\s*Complete/gi;
-const percentPattern = /(\d+)%/g;
-
-// Build map of claimed completions per section
+// Extract claimed totals from README: "X/Y Complete" → Y is total file count
 const claimedBySection = {};
 const sections = indexContent.split(/^###?\s+/m);
 
 for (const section of sections) {
-  const lines = section.split('\n');
-  const header = lines[0]?.toLowerCase() || '';
-  
-  // Look for fraction format: "1/4 Complete"
   const fractionMatch = section.match(/(\d+)\/(\d+)\s*Complete/i);
   if (fractionMatch) {
-    const complete = parseInt(fractionMatch[1]);
-    const total = parseInt(fractionMatch[2]);
-    const pct = total > 0 ? Math.round((complete / total) * 100) : 0;
+    const claimedTotal = parseInt(fractionMatch[2]);
     
-    // Try to match to a directory
+    // Match to directory
     for (const dir of Object.keys(actual.by_directory)) {
       const dirName = dir.replace('task-cards/', '').replace(/\/$/, '').toLowerCase();
+      const header = section.split('\n')[0]?.toLowerCase() || '';
       if (header.includes(dirName) || section.toLowerCase().includes(`/${dirName}/`)) {
-        claimedBySection[dir] = { complete, total, percentage: pct };
-      } 
+        claimedBySection[dir] = { claimed_total: claimedTotal };
+      }
     }
   }
 }
 
 const mismatches = [];
 
-// Compare each directory's claimed vs actual
+// Compare each directory's claimed total vs actual file count
 for (const [dir, actualSummary] of Object.entries(actual.by_directory)) {
-  // Handle root task-cards/ directory - use 'root' instead of empty string
-  let dirName = dir.replace('task-cards/', '').replace(/\/$/, '');
-  if (!dirName) dirName = 'task-cards';  // Root directory
-  
+  const dirName = dir.replace('task-cards/', '').replace(/\/$/, '') || 'task-cards';
   const claimed = claimedBySection[dir];
   
-  if (claimed) {
-    // Compare complete count (more reliable than percentage)
-    if (claimed.complete !== actualSummary.complete || claimed.total !== actualSummary.total) {
-      mismatches.push({
-        type: 'completion_count',
-        document: 'task-cards/README.md',
-        directory: dir,
-        claimed: `${claimed.complete}/${claimed.total}`,
-        actual: `${actualSummary.complete}/${actualSummary.total}`,
-        claimed_pct: claimed.percentage,
-        actual_pct: actualSummary.percentage,
-        description: `${dirName}: README claims ${claimed.complete}/${claimed.total} but actual is ${actualSummary.complete}/${actualSummary.total}`
-      });
-    }
-  } else {
-    // No claim found for this directory - report if it has cards
-    if (actualSummary.total > 0) {
-      mismatches.push({
-        type: 'missing_status',
-        document: 'task-cards/README.md',
-        directory: dir,
-        actual: `${actualSummary.complete}/${actualSummary.total}`,
-        description: `${dirName}: No status found in README. Actual: ${actualSummary.complete}/${actualSummary.total} complete`
-      });
-    }
+  if (claimed && claimed.claimed_total !== actualSummary.file_count) {
+    mismatches.push({
+      type: 'file_count_mismatch',
+      document: 'task-cards/README.md',
+      directory: dir,
+      claimed_total: claimed.claimed_total,
+      actual_total: actualSummary.file_count,
+      description: `${dirName}: README claims total of ${claimed.claimed_total} files but directory has ${actualSummary.file_count} files`
+    });
   }
 }
 
@@ -403,39 +354,43 @@ return {
   - **DO NOT attach JSON Output Parser** - we handle parsing in a separate Code node
   - System Prompt:
 ```
-You generate CONSOLIDATED correction tasks to fix documentation state mismatches.
+You generate CONSOLIDATED correction tasks to fix documentation file count mismatches.
 Your goal is to CREATE THE MINIMUM NUMBER OF TASKS needed to fix all mismatches.
+
+IMPORTANT: Mismatches are about FILE COUNTS, not completion status.
+The README shows "X/Y Complete" where Y is the total file count for that directory.
+When Y doesn't match the actual file count, the README needs updating.
 
 CONSOLIDATION RULES:
 1. Group all updates that target the SAME FILE into ONE task
-2. For task-cards/README.md: Create ONE task listing ALL directory completion updates needed
+2. For task-cards/README.md: Create ONE task listing ALL directory file count updates needed
 3. Never create multiple tasks for the same document
 
 Each task must have:
 - task_id: unique identifier (e.g., "recon-readme-001")
-- update_type: "COMPLETION_PERCENTAGE" or "STATUS_UPDATE"
+- update_type: "FILE_COUNT_UPDATE"
 - target: the file path to update
 - document: same as target
-- description: COMPREHENSIVE list of ALL changes needed for this file
-- priority: 1 (high) if any mismatch >20%, else 2 (medium)
-- changes: array of specific changes [{section: "...", from: "...", to: "..."}]
+- description: COMPREHENSIVE list of ALL file count corrections needed
+- priority: 1 (high) if files were added/removed, else 2 (medium)
+- changes: array of specific changes [{section: "directory name", from: "old_total", to: "new_total"}]
 
 CRITICAL: Output ONLY raw JSON - NO markdown code blocks, NO backticks, NO formatting.
 
-Example - consolidating 8 directory mismatches into 1 task:
-{"update_list_id":"ul-recon-TIMESTAMP","source":"state-reconciliation","tasks":[{"task_id":"recon-readme-001","update_type":"COMPLETION_PERCENTAGE","target":"task-cards/README.md","document":"task-cards/README.md","description":"Update completion counts: task-cards 0/37, agent 0/1, automation 0/4, dashboard-cli-parity 2/18, evidence-enhancement 0/9, incremental-review 0/16, integration 0/15, testing 0/2","priority":1,"changes":[{"section":"task-cards","from":"1/16","to":"0/37"},{"section":"agent","from":"1/4","to":"0/1"}]}]}
+Example - consolidating file count mismatches into 1 task:
+{"update_list_id":"ul-recon-TIMESTAMP","source":"state-reconciliation","tasks":[{"task_id":"recon-readme-001","update_type":"FILE_COUNT_UPDATE","target":"task-cards/README.md","document":"task-cards/README.md","description":"Update file counts: automation 0/4 → 0/5 (1 file added), integration 0/15 → 0/14 (1 file removed)","priority":1,"changes":[{"section":"automation","from":"4","to":"5"},{"section":"integration","from":"15","to":"14"}]}]}
 ```
   - User Message (Expression):
 ```
-Fix these documentation state mismatches:
+Fix these documentation file count mismatches:
 
 {{ $json.mismatches.map(m => '- ' + m.description).join('\n') }}
 
 Actual state as of {{ $json.check_timestamp }}:
-- Overall: {{ $json.actual_state.overall.complete }}/{{ $json.actual_state.overall.total }} ({{ $json.actual_state.overall.percentage }}%)
+- Total files: {{ $json.actual_state.overall.total_files }}
 
-By directory:
-{{ Object.entries($json.actual_state.by_directory).map(([d,s]) => '- ' + d + ': ' + s.complete + '/' + s.total + ' (' + s.percentage + '%)').join('\n') }}
+By directory (file counts):
+{{ Object.entries($json.actual_state.by_directory).map(([d,s]) => '- ' + d + ': ' + s.file_count + ' files').join('\n') }}
 ```
 
 ### Node 15.5: CODE
@@ -564,10 +519,7 @@ Node 2 (Manual Trigger) ────────┘
                               Node 8 (Process Each Directory) ◀──┐
                                       │                          │
                                       ▼                          │
-                              Node 9 (Fetch Directory Contents)  │
-                                      │                          │
-                                      ▼                          │
-                              Node 10 (Extract Status from Cards)│
+                              Node 9 (Extract Status from Cards) │
                                       │                          │
                                       └─── (loop back) ──────────┘
                                       │
@@ -606,12 +558,12 @@ Node 2 (Manual Trigger) ────────┘
 
 After building, verify:
 - [ ] Both triggers connect to Start merge node
-- [ ] Workflow Configuration provides runtime thresholds (no deduplication - that's in Distributor)
+- [ ] Workflow Configuration provides runtime settings (no deduplication - that's in Distributor)
 - [ ] Loop processes all task-cards subdirectories
-- [ ] Status extraction handles base64 decoding
-- [ ] Percentage comparison uses threshold (default 5%)
+- [ ] Extract Status from Cards counts files only (does NOT try to infer completion from filenames)
+- [ ] Find Mismatches compares file counts to README-claimed totals
 - [ ] AI Agent has NO JSON Output Parser (we use Clean AI Output node instead)
-- [ ] AI prompt instructs consolidation (group updates by document)
+- [ ] AI prompt focuses on file count corrections (not completion status)
 - [ ] Clean AI Output strips markdown and parses JSON
 - [ ] Distributor URL is correct
 - [ ] State Reconciliation sends ALL detected mismatches (deduplication happens at Distributor)
@@ -626,6 +578,13 @@ State Reconciliation always scans the repository fresh and reports ALL mismatche
 - Repository state is always accurately assessed
 - Tasks are never incorrectly filtered
 
+### File Count Comparison (Not Completion Status)
+Task card completion status is stored inside file content (e.g., `**Status:** Complete`), not in filenames. Reading individual file contents would require N API calls per run. Instead, we:
+- Count files per directory (fast, single API call)
+- Compare file counts to README-claimed totals
+- Only flag mismatches when files are added/removed
+- Trust README as source of truth for completion counts
+
 ### Deduplication at Distributor
 The Distributor is the single source of truth for task state:
 - Skips tasks for documents already in pending queue
@@ -634,7 +593,7 @@ The Distributor is the single source of truth for task state:
 
 ### Task Consolidation
 The AI prompt instructs consolidation of updates by target document:
-- Multiple directory completion updates → ONE task for README.md
+- Multiple directory file count updates → ONE task for README.md
 - This minimizes the number of actual file edits needed
 
 ---
