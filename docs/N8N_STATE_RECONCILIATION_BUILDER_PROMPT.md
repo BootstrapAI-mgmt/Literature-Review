@@ -320,7 +320,7 @@ for (const [dir, actualSummary] of Object.entries(actual.by_directory)) {
       directory: dir,
       claimed_total: claimed.claimed_total,
       actual_total: actualSummary.file_count,
-      description: `${dirName}: README claims X/${claimed.claimed_total} but directory has ${actualSummary.file_count} files`
+      description: `${dirName}: README claims total of ${claimed.claimed_total} files but directory has ${actualSummary.file_count} files`
     });
   }
 }
@@ -378,7 +378,7 @@ Each task must have:
 CRITICAL: Output ONLY raw JSON - NO markdown code blocks, NO backticks, NO formatting.
 
 Example - consolidating file count mismatches into 1 task:
-{"update_list_id":"ul-recon-TIMESTAMP","source":"state-reconciliation","tasks":[{"task_id":"recon-readme-001","update_type":"FILE_COUNT_UPDATE","target":"task-cards/README.md","document":"task-cards/README.md","description":"Update file counts: automation X/4 → X/5 (1 file added), integration X/15 → X/14 (1 file removed)","priority":1,"changes":[{"section":"automation","from":"4","to":"5"},{"section":"integration","from":"15","to":"14"}]}]}
+{"update_list_id":"ul-recon-TIMESTAMP","source":"state-reconciliation","tasks":[{"task_id":"recon-readme-001","update_type":"FILE_COUNT_UPDATE","target":"task-cards/README.md","document":"task-cards/README.md","description":"Update file counts: automation 0/4 → 0/5 (1 file added), integration 0/15 → 0/14 (1 file removed)","priority":1,"changes":[{"section":"automation","from":"4","to":"5"},{"section":"integration","from":"15","to":"14"}]}]}
 ```
   - User Message (Expression):
 ```

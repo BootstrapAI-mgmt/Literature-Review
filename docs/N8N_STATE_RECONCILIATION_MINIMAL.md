@@ -43,6 +43,7 @@ return {
 ```
 
 ## Node 9 (Extract Status from Cards)
+Note: Despite its name, this node now counts files rather than extracting status from filenames.
 ```javascript
 // Just count files - don't try to infer completion from filenames
 const batchItem = $input.first().json;
