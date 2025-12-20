@@ -194,6 +194,14 @@ When making changes, update documents in this order:
 4. **L3 Reference** → Status reports, assessments (usually no update needed)
 5. **Archive** → Move superseded docs to archive/
 
+**Special Note on `DOCUMENTATION_MATRIX.md` Updates:** Changes made *to this `DOCUMENTATION_MATRIX.md` file itself* (e.g., updating statuses, adding new docs, changing structure) are considered metadata updates and **DO NOT** trigger cascade updates to other documentation files. Other documents are updated *via* the matrix, not *by* changes to the matrix.
+
+### Archiving Documentation
+1. Confirm doc is superseded or historical
+2. Move to appropriate `archive/` subfolder
+3. Update this matrix (remove from active, add to archive count)
+4. Update `archive/README.md` if needed
+
 ---
 
 ## 👥 Agent Ownership Domains
@@ -235,11 +243,11 @@ When making changes, update documents in this order:
 | Category | Count | Current | Needs Review | Archivable |
 |----------|-------|---------|--------------|------------|
 | Core Docs | 5 | 4 | 1 | 0 |
-| Feature Docs | 29 | 15 | 5 | 8 |
-| Guides | 6 | 3 | 1 | 1 |
+| Feature Docs | 27 | 19 | 4 | 4 |
+| Guides | 6 | 4 | 1 | 0 |
 | Status/Assessments | 15+ | 0 | 0 | 15+ |
-| Task Cards | 25+ | 1 | 0 | 20+ |
-| Archive | 54 | — | — | — |
+| Task Cards | 26 | 17 | 1 | 4 |
+| Archive | 76 | — | — | — |
 | **Total** | **253** | **~23** | **~7** | **~43** |
 
 ---
