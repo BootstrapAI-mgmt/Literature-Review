@@ -448,19 +448,21 @@
       "path": "docs/N8N_DOCUMENTATION_CHAIN_BLUEPRINT.md",
       "level": "L2",
       "status": "current",
-      "last_updated": "2025-12-06",
+      "last_updated": "2025-12-20",
       "owner": "@docs",
       "depends_on": [
-        "docs/DOCUMENTATION_MATRIX.md"
+        "docs/DOCUMENTATION_MATRIX.md",
+        "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md",
+        "docs/N8N_STATE_RECONCILIATION_BUILDER_PROMPT.md"
       ],
       "scripts": [],
       "staleness_indicators": [
         "docs/documentation_matrix.json"
       ],
       "created_date": "2025-12-07",
-      "last_reviewed": "2025-12-19",
+      "last_reviewed": "2025-12-20",
       "review_interval_days": 14,
-      "next_review": "2026-01-02"
+      "next_review": "2026-01-03"
     },
     {
       "path": "docs/N8N_STALENESS_REVIEW_BLUEPRINT.md",
