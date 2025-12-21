@@ -3,8 +3,8 @@
 > **Status:** Current State Snapshot  
 > **Purpose:** Documents the implemented architecture as of this date. This is NOT a roadmap—see [MASTER_REPOSITORY_ROADMAP.md](MASTER_REPOSITORY_ROADMAP.md) for planned work.
 
-**Version:** 1.0.0  
-**Created:** December 19, 2025  
+**Version:** 1.1.0  
+**Updated:** December 21, 2025  
 **Scope:** Repository architecture only (excludes external automation/n8n)
 
 ---
@@ -158,15 +158,94 @@ literature_review/
 ```
 webdashboard/
 ├── __init__.py
-├── app.py                      # FastAPI application
-├── database_builder.py         # Job state persistence
+├── app.py                      # FastAPI application (main entry)
+├── database_builder.py         # Job state persistence (SQLite)
 ├── duplicate_detector.py       # Paper deduplication
-├── eta_calculator.py           # Progress estimation
-├── job_runner.py               # Job execution
-├── prompt_handler.py           # User prompt handling
-├── api/                        # REST API endpoints
+├── eta_calculator.py           # Adaptive progress estimation
+├── job_runner.py               # Background job execution
+├── prompt_handler.py           # User prompt handling (WebSocket)
+│
+├── api/                        # REST API modules
+│   ├── __init__.py
+│   ├── bulk_operations.py      # Multi-select, delete, export, compare
+│   ├── incremental.py          # Gap-targeted job continuation
+│   └── system_metrics.py       # Real-time resource monitoring
+│
 ├── templates/                  # Jinja2 HTML templates
-└── static/                     # CSS, JavaScript, assets
+└── static/                     # CSS, JavaScript, D3.js assets
+```
+
+### Scripts: `scripts/`
+
+Standalone utilities and demo scripts for various pipeline operations.
+
+```
+scripts/
+├── analyze_evidence_decay.py       # Decay analysis utility
+├── analyze_proof_chain.py          # Proof chain analysis
+├── analyze_triangulation.py        # Triangulation analysis
+├── deduplicate_papers.py           # Paper deduplication CLI
+├── demo_adaptive_optimizer.py      # ROI optimizer demo
+├── demo_cost_aware_search.py       # Cost-aware search demo
+├── demo_decay_presets.py           # Decay presets demo
+├── diagnostics.py                  # System diagnostics
+├── generate_cost_report.py         # Cost report generation
+├── generate_decay_impact_report.py # Decay impact reports
+├── generate_deep_review_directions.py # Deep review guidance
+├── generate_plots.py               # Visualization generation
+├── incremental_status.py           # Incremental review status
+├── migrate_deep_coverage.py        # Data migration (PR #4)
+├── migrate_state.py                # State migration utility
+├── optimize_searches.py            # Search optimization
+├── post_merge_validation.py        # Post-merge checks
+├── sync_history_to_db.py           # History sync utility
+│
+└── demos/                          # Demo scripts
+    ├── demo_decay_impact.py
+    ├── demo_fuzzy_matching.py
+    ├── demo_mock_api.py
+    ├── demo_temporal_priority.py
+    └── demo_validate_data.py
+```
+
+### Test Infrastructure: `tests/`
+
+Comprehensive test suite with multi-tier testing strategy.
+
+```
+tests/
+├── conftest.py                 # Shared pytest fixtures
+├── README.md                   # Testing guide
+├── INTEGRATION_TESTING_GUIDE.md
+│
+├── unit/                       # Isolated unit tests
+├── component/                  # Component tests with mocks
+├── integration/                # Multi-component tests
+├── e2e/                        # End-to-end pipeline tests
+├── webui/                      # Dashboard UI tests
+├── performance/                # Performance benchmarks
+│
+├── fixtures/                   # Test data generators
+├── mock_scripts/               # Mock implementations
+│
+├── test_pr1_version_history.py # PR #1 validation
+├── test_pr2_dra_fix.py         # PR #2 validation
+├── test_pr3_chunking.py        # PR #3 validation
+├── test_pr4_migration.py       # PR #4 validation
+├── test_research_config.py     # Config tests
+├── test_google_ai_sdk_imports.py
+└── test_api_documentation.py
+```
+
+### CI/CD: `.github/workflows/`
+
+GitHub Actions workflows for automated testing and deployment.
+
+```
+.github/workflows/
+├── integration-tests.yml       # Integration test suite
+├── e2e-tests.yml               # End-to-end tests
+└── dashboard-e2e-tests.yml     # Playwright browser tests
 ```
 
 ---
@@ -280,14 +359,28 @@ Identifies research gaps and generates recommendations.
 
 **File:** `webdashboard/app.py`
 
-FastAPI-based web interface for job management.
+FastAPI-based web interface for comprehensive job management and monitoring.
 
-**Capabilities:**
+**Core Capabilities:**
 - Job creation and management
-- Real-time progress via SSE
-- Evidence browser
+- Real-time progress via Server-Sent Events (SSE)
+- Evidence browser with quality visualization
 - Gap visualization
-- SQLite persistence
+- SQLite persistence for job state
+
+**Advanced Features (PRs #30-91):**
+- Bulk operations: multi-select, delete, export, compare (#80)
+- Job genealogy visualization with D3.js (#78)
+- Real-time system resource monitoring (#79, #88)
+- Incremental review mode with gap-targeted analysis (#71-76)
+- Advanced options panel for CLI parity (#82)
+- Configuration file upload (#84)
+- Resume controls (#86)
+- Pre-filter configuration (#87)
+- Dry-run mode for analysis preview (#90)
+- Experimental features toggle (#91)
+- Adaptive ETA calculation with historical learning (#50)
+- Side-by-side job comparison (#52)
 
 **API Endpoints:**
 | Method | Endpoint | Purpose |
@@ -297,6 +390,9 @@ FastAPI-based web interface for job management.
 | POST | `/jobs/{id}/retry` | Retry failed job |
 | GET | `/jobs/{id}/stream` | SSE progress stream |
 | GET | `/evidence` | Browse evidence |
+| POST | `/jobs/{id}/continue` | Continue incremental job |
+| GET | `/api/system/metrics` | Real-time system metrics |
+| POST | `/api/bulk/*` | Bulk operations |
 
 ---
 
@@ -465,14 +561,13 @@ Defines research pillars with requirements and thresholds for evidence evaluatio
 
 ## Test Infrastructure
 
-```
-tests/
-├── unit/           # Isolated unit tests
-├── component/      # Component tests with mocks
-├── integration/    # Multi-component tests
-├── e2e/            # End-to-end pipeline tests
-└── fixtures/       # Test data generators
-```
+**Test Directory:** `tests/` (see detailed structure in Package Structure section above)
+
+**Test Statistics:**
+- 745+ unit tests passing
+- Integration tests: Journal→Judge, CSV Sync, Appeal Flow, Orchestrator
+- E2E tests: Full pipeline, Convergence loop
+- Dashboard E2E: Playwright browser automation
 
 **Test Markers:**
 - `@pytest.mark.unit` - Fast, isolated tests
@@ -480,6 +575,12 @@ tests/
 - `@pytest.mark.integration` - Cross-component tests
 - `@pytest.mark.e2e` - Full pipeline tests
 - `@pytest.mark.slow` - Long-running tests
+- `@pytest.mark.webui` - Dashboard UI tests
+
+**CI/CD Workflows:**
+- `integration-tests.yml` - Runs integration tests on PR
+- `e2e-tests.yml` - Runs end-to-end pipeline tests
+- `dashboard-e2e-tests.yml` - Playwright browser tests
 
 ---
 

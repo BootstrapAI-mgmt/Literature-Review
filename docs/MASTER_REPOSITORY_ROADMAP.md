@@ -3,8 +3,8 @@
 > **Status:** Living Document - Updated with each wave completion  
 > **Purpose:** Tracks completed work and planned development for the Literature Review repository
 
-**Version:** 2.0.0  
-**Created:** December 19, 2025  
+**Version:** 2.1.0  
+**Updated:** December 21, 2025  
 **Supersedes:** CONSOLIDATED_ROADMAP.md (Version 1.3, November 14, 2025)
 
 ---
@@ -19,17 +19,17 @@ This roadmap consolidates all development waves for the Literature Review Automa
 |------|--------|------------|-------|------------|
 | Wave 1: Foundation | ✅ Complete | 100% | ~40h | 5 |
 | Wave 2: Core Features | ✅ Complete | 100% | ~45h | 6 |
-| Wave 3: Advanced Features | ✅ Near Complete | 86% | ~52h | 7 |
-| Wave 4: Production Polish | 📋 Planned | 0% | 108-145h | 8 |
+| Wave 3: Advanced Features | ✅ Complete | 100% | ~52h | 7 |
+| Wave 4: Production Polish | ✅ Complete | 100% | ~108h | 8 |
+| Agent Task Cards | ✅ Complete | 100% | ~14h | 4 |
 | Enhancement Wave 1 | ✅ Complete | 100% | ~25h | 4 |
 | Enhancement Wave 2 | ✅ Complete | 100% | ~24h | 3 |
 | Enhancement Wave 3 | ✅ Complete | 100% | ~32h | 4 |
 | **Operationalization Wave** | 📋 Planned | 0% | 80-100h | 8 |
 
-**Total Task Cards:** 45  
-**Completed:** 29  
-**In Progress:** 1 (Temporal Coherence)  
-**Planned:** 15
+**Total Task Cards:** 49  
+**Completed:** 41  
+**Planned:** 8 (Operationalization Wave)
 
 ---
 
@@ -140,29 +140,53 @@ This roadmap consolidates all development waves for the Literature Review Automa
 
 ---
 
-## Planned Development
-
-### 📋 Wave 4: Production Polish (Planned)
+### ✅ Wave 4: Production Polish (Complete - November 14-18, 2025)
 
 **Objective:** Web dashboard, E2E testing, CI/CD, advanced evidence quality
 
-**Estimated Effort:** 108-145 hours
+| Task | Description | PR | Status |
+|------|-------------|----|----|----|
+| #15 Web Dashboard | Full-featured job management UI | #26 | ✅ Merged |
+| #20 Evidence Triangulation | Cross-source contradiction flagging | #23 | ✅ Merged |
+| #21 GRADE Assessment | Evidence quality level assignment | #24 | ✅ Merged |
+| #22 Publication Bias | Bias detection and adjustment | #25 | ✅ Merged |
+| #10 E2E-001 Full Pipeline | End-to-end pipeline test | #27 | ✅ Merged |
+| #11 E2E-002 Convergence | Convergence loop testing | #28 | ✅ Merged |
+| #12 GitHub Actions CI/CD | Automated testing pipeline | #29 | ✅ Merged |
+| Dashboard E2E Tests | Playwright browser automation | #62 | ✅ Merged |
 
-| Task | Description | Priority | Effort |
-|------|-------------|----------|--------|
-| #15 Web Dashboard | Full-featured job management UI | 🟢 Medium | 40-60h |
-| #20 Evidence Triangulation | Cross-source contradiction flagging | 🟢 Medium | 10-12h |
-| #21 GRADE Assessment | Evidence quality level assignment | 🟢 Low | 8-10h |
-| #22 Publication Bias | Bias detection and adjustment | 🟢 Low | 12-15h |
-| #23 Conflict-of-Interest | COI analysis for sources | 🟢 Low | 10-12h |
-| #10 E2E-001 Full Pipeline | End-to-end pipeline test | 🔴 Critical | 12-16h |
-| #11 E2E-002 Convergence | Convergence loop testing | 🟡 High | 10-12h |
-| #12 GitHub Actions CI/CD | Automated testing pipeline | 🟢 Medium | 6-8h |
+**Achievements:**
+- Full-featured web dashboard with job management
+- Evidence triangulation for cross-paper validation
+- GRADE quality assessment framework
+- Publication bias detection
+- Complete E2E test coverage
+- GitHub Actions CI/CD pipeline
 
-**Dependencies:**
-- Web Dashboard builds on completed pipeline
-- E2E tests require all integration tests complete
-- CI/CD wraps all test infrastructure
+**Note:** Task #23 (Conflict-of-Interest Analysis) was deferred as optional.
+
+---
+
+### ✅ Agent Task Cards (Complete - November 10, 2025)
+
+These were the **first 4 PRs** of the repository, implementing core AI agent improvements.
+
+| Card | Name | PR | Status |
+|------|------|----|----|----|
+| #1 | Fix DRA Prompting for Judge Alignment | #2 | ✅ Merged |
+| #2 | Refactor Judge to Use Version History | #1 | ✅ Merged |
+| #3 | Implement Large Document Chunking | #3 | ✅ Merged |
+| #4 | Design Decision - Deep Coverage Database | #4 | ✅ Merged |
+
+**Achievements:**
+- DRA prompts aligned with Judge validation criteria
+- Version history as single source of truth
+- Large document chunking for Judge, DRA, and Deep Reviewer
+- Deep coverage claims migrated to version history
+
+---
+
+## Planned Development
 
 ---
 
@@ -262,61 +286,34 @@ All task cards are located in `task-cards/`:
 
 ---
 
-## Agent Task Cards (Critical Path - Optional)
-
-These cards address core AI agent improvements. They can be implemented at any time.
-
-| Card | Name | Priority | Effort | Status |
-|------|------|----------|--------|--------|
-| #1 | Fix DRA Prompting for Judge Alignment | 🔴 Critical | 2-3h | 📋 Ready |
-| #2 | Refactor Judge to Use Version History | 🔴 Critical | 4-6h | 📋 Ready |
-| #3 | Implement Large Document Chunking | 🟡 Important | 4-6h | 📋 Ready |
-| #4 | Design Decision - Deep Coverage Database | 🟢 Minor | 3-4h | 📋 Ready |
-
-**Total Agent Cards Effort:** 14-20 hours
-
----
-
 ## Development Priority Order
 
 ### Immediate (Next Sprint)
 
-1. **Complete Wave 3** (8-10h)
-   - Task #19: Temporal Coherence Analysis
-
-2. **Begin Operationalization Wave 1** (8h)
+1. **Begin Operationalization Wave 1** (8h)
    - OP-W1-1: Schema Foundation
 
 ### Short Term (Next 2-4 Weeks)
 
-3. **Operationalization Wave 2** (20h)
+2. **Operationalization Wave 2** (20h)
    - OP-W2-1: Action Extraction (12h)
    - OP-W2-2: Benchmark Extraction (8h)
 
-4. **Agent Cards** (14-20h - can be parallel)
-   - #1: DRA Prompting Fix
-   - #2: Judge Version History
-
 ### Medium Term (4-8 Weeks)
 
-5. **Operationalization Wave 3** (22h)
+3. **Operationalization Wave 3** (22h)
    - OP-W3-1: Validation Tracker (10h)
    - OP-W3-2: Action Vector Generator (12h)
 
-6. **Wave 4: Production Polish** (108-145h)
-   - Begin with E2E testing and CI/CD
-   - Dashboard as major undertaking
-
 ### Long Term (8+ Weeks)
 
-7. **Operationalization Wave 4** (28h)
+4. **Operationalization Wave 4** (28h)
    - OP-W4-1: Pillar Research Log (8h)
    - OP-W4-2: Modification Proposals (12h)
    - OP-W4-3: Stakeholder Matrix (8h)
 
-8. **Optional Evidence Enhancements**
-   - Publication Bias Detection
-   - Conflict-of-Interest Analysis
+5. **Optional Enhancements**
+   - Conflict-of-Interest Analysis (deferred from Wave 4)
 
 ---
 
@@ -329,17 +326,19 @@ These cards address core AI agent improvements. They can be implemented at any t
 | Unit Tests Passing | >700 | 745+ | ✅ Exceeded |
 | Wave 1 Completion | 100% | 100% | ✅ Met |
 | Wave 2 Completion | 100% | 100% | ✅ Met |
-| Wave 3 Completion | 100% | 86% | 🔄 In Progress |
+| Wave 3 Completion | 100% | 100% | ✅ Met |
+| Wave 4 Completion | 100% | 100% | ✅ Met |
+| Agent Cards Completion | 100% | 100% | ✅ Met |
 | Integration Test Coverage | >80% | ~85% | ✅ Exceeded |
 | Pipeline Reliability | >95% | >98% | ✅ Exceeded |
+| E2E Test Coverage | 100% critical flows | 100% | ✅ Met |
+| Dashboard Operational | Yes | Yes | ✅ Met |
+| CI/CD Pipeline | Automated | Automated | ✅ Met |
 
 ### Target Metrics
 
 | Metric | Target | Current | Wave |
 |--------|--------|---------|------|
-| E2E Test Coverage | 100% critical flows | 0% | Wave 4 |
-| Dashboard Operational | Yes | No | Wave 4 |
-| CI/CD Pipeline | Automated | Manual | Wave 4 |
 | Actionable Outputs | All claims → actions | None | OP Wave |
 
 ---
@@ -349,14 +348,11 @@ These cards address core AI agent improvements. They can be implemented at any t
 ### 🟢 Low Risk
 
 - **Operationalization Wave 1-2**: Clear designs, builds on existing infrastructure
-- **Agent Cards**: Isolated changes, low integration risk
-- **Temporal Coherence**: Structure validated, algorithm straightforward
+- **All completed waves**: Validated and merged
 
 ### 🟡 Medium Risk
 
 - **Operationalization Wave 3-4**: New output formats may require iteration
-- **Web Dashboard**: Large effort, full-stack development
-- **E2E Testing**: Complex setup, environment dependencies
 
 ### 🔴 High Risk
 
@@ -378,8 +374,7 @@ These cards address core AI agent improvements. They can be implemented at any t
 ## Document History
 
 | Version | Date | Changes |
-|---------|------|---------|
-| 2.0.0 | December 19, 2025 | Complete rewrite; added Operationalization Wave (8 cards, 80-100h); consolidated all waves; supersedes CONSOLIDATED_ROADMAP.md |
+|---------|------|---------|| 2.1.0 | December 21, 2025 | Corrected completion status based on PR review; Agent Cards #1-4 marked complete (PRs #1-4); Wave 3 marked complete (PR #22); Wave 4 marked complete (PRs #23-29, #62); Updated metrics || 2.0.0 | December 19, 2025 | Complete rewrite; added Operationalization Wave (8 cards, 80-100h); consolidated all waves; supersedes CONSOLIDATED_ROADMAP.md |
 | 1.3 | November 14, 2025 | (Previous version in CONSOLIDATED_ROADMAP.md) |
 
 ---
