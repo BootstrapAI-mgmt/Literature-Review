@@ -66,6 +66,20 @@ See `/archive/README.md` for details.
 
 ---
 
+### `/claude-integration/`
+**Purpose:** Claude Desktop integration with GitHub and n8n automation
+
+**Files:**
+- `README.md` - Integration overview and quick links
+- `ARCHITECTURE.md` - Technical architecture and MCP server design
+- `ROADMAP.md` - Implementation phases and milestones
+- `SETUP.md` - Configuration and setup guide
+- `CHANGELOG.md` - Version history and implementation log
+
+See [claude-integration/README.md](claude-integration/README.md) for details.
+
+---
+
 ## 📄 Core Documentation Files
 
 | Document | Purpose |
@@ -127,4 +141,4 @@ See `/archive/README.md` for details.
 
 ---
 
-**Last Updated:** December 10, 2025
+**Last Updated:** December 23, 2024
