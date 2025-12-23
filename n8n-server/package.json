@@ -1,0 +1,18 @@
+{
+  "name": "n8n-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "n8n start"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@leonardsellem/n8n-mcp-server": "^0.1.8",
+    "n8n": "^2.1.3"
+  }
+}

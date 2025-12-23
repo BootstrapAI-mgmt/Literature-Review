@@ -1,0 +1,785 @@
+{
+  "name": "Doc Chain - Distributor",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "task-distributor",
+        "options": {}
+      },
+      "id": "a5506156-551e-47d6-a5af-0cfce0dd4f08",
+      "name": "Receive List",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -320
+      ],
+      "webhookId": "172049ca-9a4a-4e5d-b5cd-b8caa8359bea"
+    },
+    {
+      "parameters": {
+        "jsCode": "   const staticData = $getWorkflowStaticData('global');\n   if (!staticData.state) {\n     staticData.state = { queue: [], current_list: null, completed: [] };\n   }\n   \n   const state = staticData.state;\n   const now = Date.now();\n   const ONE_HOUR = 60 * 60 * 1000;\n   \n   // === QUEUE CLEANUP: Remove items older than 1 hour ===\n   if (state.queue && state.queue.length > 0) {\n     const originalLength = state.queue.length;\n     state.queue = state.queue.filter(item => {\n       const queuedAt = new Date(item.queued_at || 0).getTime();\n       const age = now - queuedAt;\n       if (age > ONE_HOUR) {\n         console.log('Removing stale queue item:', item.update_list_id, 'age:', Math.round(age/60000), 'min');\n         return false;\n       }\n       return true;\n     });\n     if (state.queue.length < originalLength) {\n       console.log('Cleaned', originalLength - state.queue.length, 'stale items from queue');\n     }\n   }\n   \n   // === CURRENT LIST RECOVERY: Reset if stuck > 10 min ===\n   if (state.current_list) {\n     const startTime = new Date(state.current_list.started_at || state.current_list.queued_at).getTime();\n     const elapsed = now - startTime;\n     const STALE_THRESHOLD = 10 * 60 * 1000; // 10 minutes\n     if (elapsed > STALE_THRESHOLD) {\n       console.log('Clearing stuck current_list:', state.current_list.update_list_id);\n       state.current_list = null;\n     }\n   }\n   \n   // === COMPLETED LIST CLEANUP: Keep only last 10 ===\n   if (state.completed && state.completed.length > 10) {\n     state.completed = state.completed.slice(-10);\n   }\n   \n   staticData.state = state;\n   return { state: staticData.state, new_list: $input.first().json };"
+      },
+      "id": "8aa6db4c-f70f-4605-9283-bca294eae780",
+      "name": "Load State",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1328,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "   const staticData = $getWorkflowStaticData('global');\n   const { state, new_list } = $input.first().json;\n   \n   // Handle webhook body nesting - task data may be in .body or at root\n   const listData = new_list.body || new_list;\n   \n   // Validate we have tasks to process\n   if (!listData.tasks || !Array.isArray(listData.tasks) || listData.tasks.length === 0) {\n     console.log('No tasks in list, skipping');\n     return { should_process: false, skipped: true, reason: 'no_tasks' };\n   }\n   \n   // NOTE: Cross-list deduplication removed. The Trigger workflow already filters \n   // [n8n] docs: and [n8n] chore: commits, preventing infinite loops.\n   // Each new task list should be processed fresh.\n   \n   listData.status = 'queued';\n   listData.queued_at = new Date().toISOString();\n   listData.tasks.forEach(t => t.status = 'pending');\n   state.queue.push(listData);\n   staticData.state = state;\n   return { should_process: !state.current_list };"
+      },
+      "id": "4399a2df-16ca-4e6c-8ada-fe256301bea7",
+      "name": "Add To Queue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1104,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.should_process }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "733f0126-12d2-4f0d-9329-dc6c0732a311",
+      "name": "Should Process",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -880,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "   const staticData = $getWorkflowStaticData('global');\n   const state = staticData.state;\n   if (state.queue.length === 0) return { has_work: false };\n   state.current_list = state.queue.shift();\n   state.current_list.status = 'in_progress';\n   state.current_list.started_at = new Date().toISOString(); // Track when processing started\n   staticData.state = state;\n   return { has_work: true, current_list: state.current_list };"
+      },
+      "id": "7ff5ac69-2ebf-4114-b624-2a10a1d38049",
+      "name": "Pop Next List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -624,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "   const staticData = $getWorkflowStaticData('global');\n   const state = staticData.state;\n   const list = $input.first().json.current_list;\n   \n   // Handle webhook body nesting - tasks may be in .body.tasks or .tasks\n   const tasks = list?.body?.tasks || list?.tasks || [];\n   const listId = list?.body?.update_list_id || list?.update_list_id || null;\n   const trigger = list?.body?.trigger || list?.trigger || {};\n   \n   // If no tasks found, this is an error state - reset and allow retry\n   if (!tasks.length || !listId) {\n     console.error('No tasks found in list - resetting state');\n     if (state.current_list) {\n       state.current_list = null;\n       staticData.state = state;\n     }\n     return { runnable: [], list_id: null, error: 'No tasks found' };\n   }\n   \n   // Ensure all tasks have a status (default to 'pending' if missing)\n   tasks.forEach(t => { if (!t.status) t.status = 'pending'; });\n   \n   const done = tasks.filter(t => t.status === 'completed').map(t => t.task_id);\n   const runnable = tasks.filter(t => \n     t.status === 'pending' && (!t.depends_on || t.depends_on.length === 0 || t.depends_on.every(d => done.includes(d)))\n   );\n   // Return each runnable task as a separate item with list_id and trigger attached\n   // n8n will automatically iterate over these items in subsequent nodes\n   return runnable.map(task => ({ task, list_id: listId, trigger }));"
+      },
+      "id": "549549f1-12f9-4fed-ba87-f9196b76bed8",
+      "name": "Get Runnable Tasks",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -400,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.task !== undefined }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "ceb5a230-ca8e-4d09-9a9f-fcf8a202bcfa",
+      "name": "Has Runnable",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "limitWaitTime": true,
+        "resumeAmount": 10,
+        "resumeUnit": "minutes",
+        "options": {
+          "webhookSuffix": "task-callback"
+        }
+      },
+      "id": "50b7d545-220a-4907-9788-6a51dd3234a1",
+      "name": "Wait for Callback",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        960
+      ],
+      "webhookId": "740471e5-2b32-4b30-acc7-e8bc577e3b2e",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "    const staticData = $getWorkflowStaticData('global');\n    const state = staticData.state;\n    const result = $input.first().json;\n    \n    // Get the task_id from the callback OR from Prepare Agent Payload (for timeout case)\n    let taskId = result.task_id;\n    let status = result.status || 'completed';\n    \n    // Handle TIMEOUT: If no task_id in result, the Wait node timed out\n    // Get task_id from Prepare Agent Payload and mark as FAILED (not pending!)\n    if (!taskId) {\n      try {\n        taskId = $('Prepare Agent Payload').first().json._task_id;\n        status = 'failed';  // Mark as failed so it doesn't retry infinitely\n        console.log('Wait timed out for task:', taskId);\n      } catch (e) {\n        console.error('Cannot determine task_id on timeout');\n      }\n    }\n    \n    if (state.current_list && state.current_list.tasks && taskId) {\n      const task = state.current_list.tasks.find(t => t.task_id === taskId);\n      if (task) { \n        task.status = status;\n        task.completed_at = new Date().toISOString();\n      }\n    }\n    staticData.state = state;\n    // Count tasks not yet done (pending only - failed tasks don't retry)\n    const pending = state.current_list?.tasks?.filter(t => t.status === 'pending') || [];\n    return { all_done: pending.length === 0, state };"
+      },
+      "id": "5707e8c0-d2e1-40de-b2e0-3bf556450b2e",
+      "name": "Update Task Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.all_done }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "74a05675-fc19-4759-b128-251e0fe47719",
+      "name": "All Done",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        720,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const staticData = $getWorkflowStaticData('global');\nconst state = staticData.state;\nif (state.current_list) {\n  state.current_list.status = 'completed';\n  state.completed.push(state.current_list);\n}\nstate.current_list = null;\nstaticData.state = state;\nreturn { more_queued: state.queue.length > 0 };"
+      },
+      "id": "d5bdbd84-b0d0-432c-b2a2-b77f92efaea5",
+      "name": "Finalize List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.more_queued }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "e91415a5-f249-466b-b7c1-9d5207c5971d",
+      "name": "More Queued",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1168,
+        1104
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Flatten and prepare the payload for the HTTP request\n// This avoids n8n expression evaluation issues with nested objects\nconst item = $input.first().json;\nreturn {\n  task: item.task,\n  list_id: item.list_id,\n  trigger: item.trigger || {},\n  _task_id: item.task.task_id\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        16,
+        880
+      ],
+      "id": "f72f5be6-e682-4d90-92aa-0d21b1a09f16",
+      "name": "Prepare Agent Payload"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/distributor-reset",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        384
+      ],
+      "id": "b5b9e391-98fc-427b-a0dc-7214454b810f",
+      "name": "Reset State",
+      "webhookId": "54f3b61f-650a-4e38-b527-46ebfd317b3a"
+    },
+    {
+      "parameters": {
+        "jsCode": "    const staticData = $getWorkflowStaticData('global');\n    const oldState = staticData.state || {};\n    staticData.state = { pending_tasks: [], in_progress: null, completed: [] };\n    return { \n      reset: true, \n      cleared_pending: oldState.pending_tasks?.length || 0,\n      cleared_in_progress: oldState.in_progress?.task?.task_id || null\n    };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        384
+      ],
+      "id": "d5e82670-83d9-4163-bc7f-5f3d1e9f347b",
+      "name": "Clear State"
+    },
+    {
+      "parameters": {
+        "jsCode": "   const staticData = $getWorkflowStaticData('global');\n   if (!staticData.state) {\n     staticData.state = { pending_tasks: [], in_progress: null, completed: [] };\n   }\n   const state = staticData.state;\n   \n   // Parse incoming task list\n   const input = $input.first().json;\n   const listData = input.body || input;\n   const tasks = listData.tasks || [];\n   const listId = listData.update_list_id || 'unknown';\n   const trigger = listData.trigger || {};\n   \n   if (!tasks.length) {\n     return { action: 'none', reason: 'no_tasks' };\n   }\n   \n   // STALE TASK RECOVERY: Clear in_progress if stuck for > 10 minutes\n   if (state.in_progress && state.in_progress.started_at) {\n     const startedAt = new Date(state.in_progress.started_at).getTime();\n     const tenMinutes = 10 * 60 * 1000;\n     if (Date.now() - startedAt > tenMinutes) {\n       console.log('Clearing stale in_progress task:', state.in_progress.task?.task_id || 'unknown');\n       state.in_progress.status = 'timeout';\n       state.in_progress.completed_at = new Date().toISOString();\n       state.completed.push(state.in_progress);\n       state.in_progress = null;\n     }\n   }\n   \n   // DEDUPLICATION: Skip tasks for documents already in queue or recently completed\n   const oneHourAgo = Date.now() - (60 * 60 * 1000);\n   const pendingDocs = new Set(state.pending_tasks.map(t => t.task?.document || t.task?.target));\n   const recentlyCompletedDocs = new Set(\n     state.completed\n       .filter(t => new Date(t.completed_at).getTime() > oneHourAgo && t.status === 'completed')\n       .map(t => t.task?.document || t.task?.target)\n   );\n   const inProgressDoc = state.in_progress?.task?.document || state.in_progress?.task?.target;\n   \n   let skipped = 0;\n   const newTasks = tasks.filter(task => {\n     const doc = task.document || task.target;\n     if (!doc) return true; // Keep tasks without document\n     if (pendingDocs.has(doc)) { skipped++; return false; }\n     if (inProgressDoc === doc) { skipped++; return false; }\n     if (recentlyCompletedDocs.has(doc)) { skipped++; return false; }\n     pendingDocs.add(doc); // Track this doc as pending now\n     return true;\n   });\n   \n   if (skipped > 0) {\n     console.log('Skipped', skipped, 'duplicate tasks (already pending or recently completed)');\n   }\n   \n   if (!newTasks.length) {\n     return { action: 'skipped', reason: 'all_duplicates', skipped_count: skipped };\n   }\n   \n   // Add filtered tasks to pending queue with metadata\n   newTasks.forEach(task => {\n     state.pending_tasks.push({\n       task,\n       list_id: listId,\n       trigger,\n       queued_at: new Date().toISOString()\n     });\n   });\n   \n   console.log('Queued', newTasks.length, 'tasks. Total pending:', state.pending_tasks.length);\n   \n   // If nothing in progress, dispatch next task\n   if (!state.in_progress) {\n     const next = state.pending_tasks.shift();\n     if (next) {\n       state.in_progress = next;\n       state.in_progress.started_at = new Date().toISOString();\n       staticData.state = state;\n       return { \n          action: 'dispatch',\n          should_dispatch: true,\n          task: next.task, \n          list_id: next.list_id, \n          trigger: next.trigger \n      };\n     }\n   }\n   \n   staticData.state = state;\n   return { \n  action: 'queued', \n  should_dispatch: false,  // ADD THIS\n  pending_count: state.pending_tasks.length, \n  skipped_count: skipped \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -256,
+        -320
+      ],
+      "id": "0989fad6-71f5-4f84-804d-03b14e53c305",
+      "name": "Queue and Dispatch First"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6612b233-6df0-47ef-aafd-10da34f1ae79",
+              "leftValue": "=$json.should_dispatch",
+              "rightValue": "dispatch",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        -320
+      ],
+      "id": "ba2a0123-c89f-4dc0-8821-7bb4198f7c9b",
+      "name": "Should Dispatch?"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/task-callback",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -448,
+        -64
+      ],
+      "id": "52a6478a-73fe-4f9c-bd8d-29a782e6a788",
+      "name": "Receive Callback",
+      "webhookId": "760afceb-36ca-415e-923d-af2f2a3cfd52"
+    },
+    {
+      "parameters": {
+        "jsCode": "   const staticData = $getWorkflowStaticData('global');\n   if (!staticData.state) {\n     staticData.state = { pending_tasks: [], in_progress: null, completed: [] };\n   }\n   const state = staticData.state;\n   \n   // Parse callback data\n   const input = $input.first().json;\n   const callbackData = input.body || input;\n   const taskId = callbackData.task_id;\n   const status = callbackData.status || 'completed';\n   \n   console.log('Callback received for task:', taskId, 'status:', status);\n   \n   // Mark current task as complete\n   if (state.in_progress) {\n     state.in_progress.status = status;\n     state.in_progress.completed_at = new Date().toISOString();\n     state.completed.push(state.in_progress);\n     // Keep only last 20 completed\n     if (state.completed.length > 20) state.completed = state.completed.slice(-20);\n   }\n   state.in_progress = null;\n   \n   // Dispatch next task if any pending\n   const next = state.pending_tasks.shift();\n   if (next) {\n     state.in_progress = next;\n     state.in_progress.started_at = new Date().toISOString();\n     staticData.state = state;\n     return { \n       action: 'dispatch', \n       task: next.task, \n       list_id: next.list_id, \n       trigger: next.trigger,\n       pending_remaining: state.pending_tasks.length\n     };\n   }\n   \n   staticData.state = state;\n   return { action: 'done', message: 'All tasks completed', completed_count: state.completed.length };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -64
+      ],
+      "id": "e547580e-134e-4f92-90eb-2b9dff622f42",
+      "name": "Process Callback and Dispatch Next"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e6a29450-2828-4ff9-a610-d295bdc70d22",
+              "leftValue": "action",
+              "rightValue": "dispatch",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -32,
+        -64
+      ],
+      "id": "182babdf-8efd-4bac-bbff-0a2d26e59db3",
+      "name": "Has Next Task"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gitlitreview.app.n8n.cloud/webhook/domain-agent",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task",
+              "value": "={{ JSON.stringify($json.task) }}"
+            },
+            {
+              "name": "list_id",
+              "value": "=\"{{ $json.list_id }}\""
+            },
+            {
+              "name": "trigger",
+              "value": "={{ JSON.stringify($json.trigger) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eb1eb713-90d6-43a6-a252-36370685af89",
+      "name": "Dispatch to Agent-old",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        192,
+        960
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "    const staticData = $getWorkflowStaticData('global');\n    const state = staticData.state || { pending_tasks: [], in_progress: null, completed: [] };\n    return {\n      status: 'ok',\n      pending_count: state.pending_tasks?.length || 0,\n      pending_tasks: state.pending_tasks?.map(t => ({\n        task_id: t.task?.task_id,\n        document: t.task?.document,\n        queued_at: t.queued_at\n      })) || [],\n      in_progress: state.in_progress ? {\n        task_id: state.in_progress.task?.task_id,\n        document: state.in_progress.task?.document,\n        started_at: state.in_progress.started_at\n      } : null,\n      completed_count: state.completed?.length || 0,\n      recent_completed: (state.completed || []).slice(-5).map(t => ({\n        task_id: t.task?.task_id,\n        status: t.status,\n        completed_at: t.completed_at\n      })),\n      timestamp: new Date().toISOString()\n    };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -16,
+        176
+      ],
+      "id": "6d273673-79b4-4fbc-add3-62dd69e6c2d2",
+      "name": "Return Status"
+    },
+    {
+      "parameters": {
+        "path": "/distributor-status",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        176
+      ],
+      "id": "668b7b51-beb3-4525-822f-3dba68acbb15",
+      "name": "Get Status",
+      "webhookId": "0e6e7725-05dd-4310-a48b-ca8a6f727787"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gitlitreview.app.n8n.cloud/webhook/domain-agent",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task",
+              "value": "={{ JSON.stringify($json.task) }}"
+            },
+            {
+              "name": "list_id",
+              "value": "=\"{{ $json.list_id }}\""
+            },
+            {
+              "name": "trigger",
+              "value": "={{ JSON.stringify($json.trigger) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8380fa01-a33f-498c-9993-f59379b660e4",
+      "name": "Dispatch to Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        -336
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gitlitreview.app.n8n.cloud/webhook/domain-agent",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task",
+              "value": "={{ JSON.stringify($json.task) }}"
+            },
+            {
+              "name": "list_id",
+              "value": "=\"{{ $json.list_id }}\""
+            },
+            {
+              "name": "trigger",
+              "value": "={{ JSON.stringify($json.trigger) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "94a14d80-34ae-498e-ae57-6611603e1498",
+      "name": "Dispatch to Next",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        224,
+        -96
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Receive List": {
+      "main": [
+        [
+          {
+            "node": "Queue and Dispatch First",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load State": {
+      "main": [
+        [
+          {
+            "node": "Add To Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add To Queue": {
+      "main": [
+        [
+          {
+            "node": "Should Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Process": {
+      "main": [
+        [
+          {
+            "node": "Pop Next List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pop Next List": {
+      "main": [
+        [
+          {
+            "node": "Get Runnable Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Runnable Tasks": {
+      "main": [
+        [
+          {
+            "node": "Has Runnable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Runnable": {
+      "main": [
+        [
+          {
+            "node": "Prepare Agent Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Callback": {
+      "main": [
+        [
+          {
+            "node": "Update Task Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Task Status": {
+      "main": [
+        [
+          {
+            "node": "All Done",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "All Done": {
+      "main": [
+        [
+          {
+            "node": "Finalize List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Runnable Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize List": {
+      "main": [
+        [
+          {
+            "node": "More Queued",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "More Queued": {
+      "main": [
+        [
+          {
+            "node": "Pop Next List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Agent Payload": {
+      "main": [
+        [
+          {
+            "node": "Dispatch to Agent-old",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset State": {
+      "main": [
+        [
+          {
+            "node": "Clear State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear State": {
+      "main": [
+        []
+      ]
+    },
+    "Queue and Dispatch First": {
+      "main": [
+        [
+          {
+            "node": "Should Dispatch?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Dispatch?": {
+      "main": [
+        [
+          {
+            "node": "Dispatch to Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Callback": {
+      "main": [
+        [
+          {
+            "node": "Process Callback and Dispatch Next",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Callback and Dispatch Next": {
+      "main": [
+        [
+          {
+            "node": "Has Next Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Next Task": {
+      "main": [
+        [
+          {
+            "node": "Dispatch to Next",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dispatch to Agent-old": {
+      "main": [
+        [
+          {
+            "node": "Wait for Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Status": {
+      "main": [
+        [
+          {
+            "node": "Return Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": true,
+    "errorWorkflow": "btKQeVWvPRe6eqPP",
+    "timeSavedPerExecution": 15
+  },
+  "versionId": "dc31a32d-62f7-4838-be85-aef3bdec8872",
+  "meta": {
+    "instanceId": "c35948e3a4ea91090c34dd56b4c00b8293566b38836ef2e11975263b28584306"
+  },
+  "id": "9kOmwTpPU5SAPvxE",
+  "tags": []
+}

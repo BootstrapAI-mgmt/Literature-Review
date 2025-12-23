@@ -1,0 +1,149 @@
+{
+  "name": "Doc Chain - Errors",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "1fc766ab-817d-4137-9e00-b9281f07f195",
+      "name": "Catch Errors",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "   const error = $input.first().json;\n   console.error('Doc Chain Error:', JSON.stringify(error, null, 2));\n   \n   // Try multiple paths to find task_id - it may be in different locations\n   let task_id = null;\n   \n   // Path 1: From execution data (if workflow passed it through)\n   if (error.execution?.data?.task_id) {\n     task_id = error.execution.data.task_id;\n   }\n   // Path 2: From the HTTP request body that failed (e.g., Send Callback)\n   else if (error.execution?.error?.context?.request?.body?.task_id) {\n     // Remove leading \"=\" if present (n8n expression artifact)\n     task_id = String(error.execution.error.context.request.body.task_id).replace(/^=/, '');\n   }\n   // Path 3: Parse from the failed URL (e.g., /webhook/task-done-task-001)\n   else if (error.execution?.error?.context?.request?.uri) {\n     const match = error.execution.error.context.request.uri.match(/task-done-([^/]+)$/);\n     if (match) task_id = match[1];\n   }\n   \n   return {\n     workflow: error.workflow?.name || 'Unknown',\n     node: error.execution?.lastNodeExecuted || 'Unknown',\n     message: error.execution?.error?.message || 'Unknown error',\n     timestamp: new Date().toISOString(),\n     task_id: task_id\n   };"
+      },
+      "id": "2c12eca1-0589-4991-b882-2d1b1f4d52c1",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.task_id }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "57957407-8ba3-4fff-97ee-bb5cc7600503",
+      "name": "Has Task ID",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://gitlitreview.app.n8n.cloud/webhook/task-done-{{$json.task_id}}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"task_id\":\"{{$json.task_id}}\",\"status\":\"failed\",\"result\":{\"error\":\"{{$json.message}}\"}}",
+        "options": {}
+      },
+      "id": "756fc0c6-d852-4bcb-a2bd-14ab77080571",
+      "name": "Send Failure Callback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        672,
+        0
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "   const result = $input.first().json;\n   // Check if callback succeeded or failed (404 = Wait node expired, which is OK)\n   const success = !result.error && !result.errorMessage;\n   const status = success ? 'notified' : 'expired';\n   console.log(`Failure callback ${status} for task: ${$('Log Error').first().json.task_id}`);\n   return { callback_status: status, task_id: $('Log Error').first().json.task_id };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        912,
+        0
+      ],
+      "id": "b29efc54-b384-4b54-81a4-063dc6cee697",
+      "name": "Log Callback Result"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Catch Errors": {
+      "main": [
+        [
+          {
+            "node": "Log Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error": {
+      "main": [
+        [
+          {
+            "node": "Has Task ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Task ID": {
+      "main": [
+        [
+          {
+            "node": "Send Failure Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Failure Callback": {
+      "main": [
+        [
+          {
+            "node": "Log Callback Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c4d0df9a-8284-46fe-9622-3e605219b91a",
+  "meta": {
+    "instanceId": "c35948e3a4ea91090c34dd56b4c00b8293566b38836ef2e11975263b28584306"
+  },
+  "id": "btKQeVWvPRe6eqPP",
+  "tags": []
+}
