@@ -1,9 +1,9 @@
 # Doc Chain - Distributor Workflow Review
 
 > **Workflow ID:** 3lTsmIsQFmzpwLE8  
-> **Status:** ⚠️ Active (Dual Architecture Detected)  
-> **Version:** DIST-V001  
-> **Last Updated:** 2025-12-23T17:11:33.660Z
+> **Status:** ✅ Active (Cleaned Up)  
+> **Version:** DIST-V002  
+> **Last Updated:** 2025-12-24T17:29:41.662Z
 
 ---
 
@@ -11,31 +11,20 @@
 
 | Field | Value |
 |-------|-------|
-| **Review Status** | 📋 Ready for Review |
-| **Checked Out By** | - |
-| **Checkout Time** | - |
-| **Sign-off By** | - |
-| **Sign-off Time** | - |
+| **Review Status** | ✅ Cleanup Verified |
+| **Checked Out By** | Claude |
+| **Checkout Time** | 2024-12-24 |
+| **Sign-off By** | Josh (manual cleanup) |
+| **Sign-off Time** | 2024-12-24 |
 
 ---
 
-## ⚠️ CRITICAL: Dual Architecture Issue
+## ✅ Cleanup Complete
 
-This workflow contains **24 nodes** with **TWO distinct processing architectures**:
+The dual architecture issue has been resolved. The workflow now uses a clean **callback-based sequential dispatch** pattern.
 
-### OLD Architecture (Nodes 2-12, 14, 22)
-- Queue-based processing
-- Uses `Wait` node with 10-minute timeout
-- Dependency resolution before dispatch
-- May have orphaned/disconnected nodes
-
-### NEW Architecture (Nodes 1, 15-21, 23-24)
-- Callback-based sequential dispatch
-- Deduplication logic (pending + recently completed)
-- Stale task recovery (>10 min in_progress cleared)
-- Appears to be the active architecture
-
-**RECOMMENDATION:** Audit which architecture is actually connected and remove orphaned nodes.
+**Before:** 24 nodes (old queue+Wait + new callback architectures mixed)
+**After:** 12 nodes (callback-based only)
 
 ---
 
@@ -56,230 +45,138 @@ Receives task lists from Trigger/StateRecon/Staleness workflows, manages task qu
 
 ---
 
+## Node Architecture (12 Nodes - Cleaned)
+
+### Main Flow: Task Reception
+```
+Receive List → Queue and Dispatch First → Should Dispatch? → Dispatch to Agent
+```
+
+### Callback Flow: Task Completion
+```
+Receive Callback → Process Callback and Dispatch Next → Has Next Task → Dispatch to Next
+```
+
+### Utility Flows
+```
+Get Status → Return Status
+Reset State → Clear State
+```
+
+---
+
 ## Node-by-Node Validation
 
-### NEW ARCHITECTURE NODES
-
-#### Node 1: Receive List (Webhook)
+### Node 1: Receive List (Webhook)
 | Check | Status | Notes |
 |-------|--------|-------|
-| Path correct | [ ] | `task-distributor` |
-| Method: POST | [ ] | |
-| Response mode | [ ] | `lastNode` |
+| Path correct | [x] | `task-distributor` |
+| Method: POST | [x] | |
 
 ---
 
-#### Node 15: Queue and Dispatch First
+### Node 2: Queue and Dispatch First
 | Check | Status | Notes |
 |-------|--------|-------|
-| Loads existing state | [ ] | `$getWorkflowStaticData('global')` |
-| Deduplication logic | [ ] | Filters pending + recent completed |
-| First task extraction | [ ] | |
-| State persistence | [ ] | |
+| Loads existing state | [x] | `$getWorkflowStaticData('global')` |
+| Stale task recovery | [x] | Clears >10 min in_progress |
+| Deduplication logic | [x] | Filters pending + recent completed |
+| First task extraction | [x] | |
+| State persistence | [x] | |
 
-**State Structure:**
-```javascript
-{
-  pending_tasks: [],      // Queue of tasks waiting
-  in_progress: null,      // Currently executing task
-  completed: [],          // Recently completed (within 1 hour)
-  last_trigger: {}        // Last trigger context
-}
-```
-
-**Deduplication Logic:**
-```javascript
-// Skip if already pending
-if (state.pending_tasks.some(p => p.document === task.document)) skip;
-// Skip if completed within 1 hour
-if (state.completed.some(c => c.document === task.document && 
-    (Date.now() - c.completed_at) < 3600000)) skip;
-```
+**Key Features:**
+- Initializes state if missing: `{ pending_tasks: [], in_progress: null, completed: [] }`
+- Stale recovery: Clears tasks stuck >10 minutes
+- Deduplication: Skips docs already pending or completed within 1 hour
+- Returns `should_dispatch: true` if dispatching, `false` if just queued
 
 ---
 
-#### Node 16: Should Dispatch? (IF)
+### Node 3: Should Dispatch? (IF)
 | Check | Status | Notes |
 |-------|--------|-------|
-| Condition | [ ] | `firstTask !== null && !in_progress` |
-| True → Dispatch to Agent | [ ] | |
-| False → End (queue updated) | [ ] | |
+| Condition | [x] | `$json.should_dispatch === true` |
+| True → Dispatch to Agent | [x] | |
+| False → End (queue updated) | [x] | |
 
 ---
 
-#### Node 17: Dispatch to Agent
+### Node 4: Dispatch to Agent
 | Check | Status | Notes |
 |-------|--------|-------|
-| URL correct | [ ] | `/webhook/domain-agent` |
-| Method: POST | [ ] | |
-| Stringifies task/trigger | [ ] | JSON.stringify for nested objects |
-
-**Request Body:**
-```json
-{
-  "task": "{...stringified...}",
-  "trigger": "{...stringified...}",
-  "list_id": "ul-..."
-}
-```
+| URL correct | [x] | `https://gitlitreview.app.n8n.cloud/webhook/domain-agent` |
+| Method: POST | [x] | |
+| Stringifies task/trigger | [x] | JSON.stringify for nested objects |
 
 ---
 
-#### Node 18: Receive Callback (Webhook)
+### Node 5: Receive Callback (Webhook)
 | Check | Status | Notes |
 |-------|--------|-------|
-| Path correct | [ ] | `task-callback` |
-| Method: POST | [ ] | |
-
-**Expected Callback:**
-```json
-{
-  "task_id": "task-001",
-  "status": "completed",
-  "result": { "summary": "..." }
-}
-```
+| Path correct | [x] | `/task-callback` |
+| Method: POST | [x] | |
 
 ---
 
-#### Node 19: Process Callback and Dispatch Next
+### Node 6: Process Callback and Dispatch Next
 | Check | Status | Notes |
 |-------|--------|-------|
-| Clears in_progress | [ ] | |
-| Adds to completed[] | [ ] | With timestamp |
-| Extracts next task | [ ] | From pending_tasks |
-| Stale recovery | [ ] | Clears >10 min in_progress |
-
-**Stale Task Recovery:**
-```javascript
-if (state.in_progress && 
-    (Date.now() - state.in_progress.started_at) > 600000) {
-  state.in_progress = null;  // Clear stale task
-}
-```
+| Clears in_progress | [x] | |
+| Adds to completed[] | [x] | With timestamp |
+| Keeps last 20 completed | [x] | Prevents unbounded growth |
+| Extracts next task | [x] | From pending_tasks |
+| Returns action | [x] | `dispatch` or `done` |
 
 ---
 
-#### Node 20: Has Next Task (IF)
+### Node 7: Has Next Task (IF)
 | Check | Status | Notes |
 |-------|--------|-------|
-| Condition | [ ] | `nextTask !== null` |
-| True → Dispatch to Next | [ ] | |
-| False → End (queue empty) | [ ] | |
+| Condition | [x] | `action === 'dispatch'` |
+| True → Dispatch to Next | [x] | |
+| False → End (queue empty) | [x] | |
 
 ---
 
-#### Node 21: Dispatch to Next
+### Node 8: Dispatch to Next
 | Check | Status | Notes |
 |-------|--------|-------|
-| Same as Node 17 | [ ] | |
-| Updates in_progress | [ ] | |
+| Same config as Dispatch to Agent | [x] | |
 
 ---
 
-#### Node 23: Reset State (Webhook)
+### Node 9: Get Status (Webhook)
 | Check | Status | Notes |
 |-------|--------|-------|
-| Path correct | [ ] | `distributor-reset` |
-| Clears all state | [ ] | |
+| Path correct | [x] | `/distributor-status` |
+| Method: GET | [x] | |
+| Response mode: lastNode | [x] | |
 
 ---
 
-#### Node 24: Get Status (Webhook)
+### Node 10: Return Status
 | Check | Status | Notes |
 |-------|--------|-------|
-| Path correct | [ ] | `distributor-status` |
-| Method: GET | [ ] | |
-| Returns counts | [ ] | pending/in_progress/completed |
+| Returns pending count | [x] | |
+| Returns in_progress | [x] | |
+| Returns completed count | [x] | |
+| Returns recent_completed (last 5) | [x] | |
 
 ---
 
-### OLD ARCHITECTURE NODES (May be orphaned)
-
-#### Node 2: Load State
+### Node 11: Reset State (Webhook)
 | Check | Status | Notes |
 |-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 3: Add To Queue
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 4: Should Process (IF)
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 5: Pop Next List
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 6: Get Runnable Tasks
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 7: Has Runnable (IF)
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 8: Prepare Agent Payload
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 9: Dispatch to Agent-old
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 10: Wait for Callback
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-| Timeout: 10 min | [ ] | |
-
-#### Node 11: Update Task Status
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 12: All Done (IF)
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 14: Finalize List
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
-
-#### Node 22: More Queued (IF)
-| Check | Status | Notes |
-|-------|--------|-------|
-| Connected? | [ ] | **VERIFY CONNECTION** |
+| Path correct | [x] | `/distributor-reset` |
+| Method: POST | [x] | |
 
 ---
 
-## Connection Map
-
-### NEW Architecture Connections
-| From | To | Connected? |
-|------|-----|-----------|
-| Receive List | Queue and Dispatch First | [ ] |
-| Queue and Dispatch First | Should Dispatch? | [ ] |
-| Should Dispatch? (true) | Dispatch to Agent | [ ] |
-| Receive Callback | Process Callback and Dispatch Next | [ ] |
-| Process Callback... | Has Next Task | [ ] |
-| Has Next Task (true) | Dispatch to Next | [ ] |
-| Reset State | (terminal) | [ ] |
-| Get Status | (terminal) | [ ] |
-
-### OLD Architecture Connections
-**ACTION REQUIRED:** Verify if these are connected or orphaned.
+### Node 12: Clear State
+| Check | Status | Notes |
+|-------|--------|-------|
+| Clears all state | [x] | Resets to empty arrays |
+| Returns cleared counts | [x] | For confirmation |
 
 ---
 
@@ -295,39 +192,42 @@ const state = $getWorkflowStaticData('global');
 |-------|------|---------|
 | `pending_tasks` | Array | Tasks waiting to be processed |
 | `in_progress` | Object/null | Currently executing task with `started_at` |
-| `completed` | Array | Tasks completed within last hour |
-| `last_trigger` | Object | Context from triggering workflow |
+| `completed` | Array | Last 20 completed tasks |
 
 ---
 
-## Issues Found
+## Connection Validation
 
-| # | Severity | Description | Recommendation |
-|---|----------|-------------|----------------|
-| 1 | 🔴 HIGH | Dual architecture - 24 nodes with 2 patterns | Audit connections, remove orphaned nodes |
-| 2 | 🟡 MED | Old Wait node (10 min timeout) may cause issues | Ensure old architecture is disconnected |
-| 3 | 🟢 LOW | Completed array cleanup not visible | Verify 1-hour cleanup happens |
+| From | To | Connected? |
+|------|-----|-----------|
+| Receive List | Queue and Dispatch First | [x] |
+| Queue and Dispatch First | Should Dispatch? | [x] |
+| Should Dispatch? (true) | Dispatch to Agent | [x] |
+| Receive Callback | Process Callback and Dispatch Next | [x] |
+| Process Callback... | Has Next Task | [x] |
+| Has Next Task (true) | Dispatch to Next | [x] |
+| Get Status | Return Status | [x] |
+| Reset State | Clear State | [x] |
 
 ---
 
-## Architecture Cleanup Recommendations
+## Issues Resolved
 
-1. **Export current workflow JSON** for backup
-2. **Map all node connections** visually in n8n UI
-3. **Identify disconnected nodes** (no incoming connections)
-4. **Remove orphaned OLD architecture nodes** if not connected
-5. **Test after cleanup** with manual webhook trigger
+| # | Issue | Status |
+|---|-------|--------|
+| 1 | Dual architecture (old + new) | ✅ RESOLVED - Old nodes removed |
+| 2 | Potential orphaned nodes | ✅ RESOLVED - Clean 12-node architecture |
+| 3 | Wait node timeout issues | ✅ RESOLVED - Callback-based now |
 
 ---
 
 ## Sign-off
 
-- [ ] New architecture nodes validated
-- [ ] Old architecture nodes audited
-- [ ] Orphaned nodes identified
-- [ ] Connection map verified
-- [ ] State management confirmed
+- [x] All 12 nodes validated
+- [x] All connections verified  
+- [x] State management confirmed
+- [x] Dual architecture cleaned up
 
-**Reviewer:** ________________________  
-**Date:** ________________________  
-**Signature:** ________________________
+**Reviewer:** Claude  
+**Date:** 2024-12-24  
+**Signature:** ✅ Verified after cleanup
