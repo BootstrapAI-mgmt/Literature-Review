@@ -9,9 +9,50 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Planned
-- n8n workflow execution from Claude
-- GitHub Issues/PR management
-- Automated documentation pipelines
+- Distributor dual architecture cleanup
+- End-to-end workflow testing
+- Manual webhook trigger validation
+
+---
+
+## [0.3.0] - 2024-12-24
+
+### Added
+- Comprehensive workflow review documentation system
+- Created `/docs/claude-integration/workflow-reviews/` with:
+  - `MASTER-REVIEW.md` - System overview and critical findings
+  - `TRIGGER-REVIEW.md` - GitHub webhook trigger validation
+  - `DISTRIBUTOR-REVIEW.md` - Task orchestration review
+  - `AGENT-REVIEW.md` - Document processing agent review
+  - `STATE-RECON-REVIEW.md` - Daily reconciliation review
+  - `STALENESS-REVIEW.md` - Weekly staleness check review
+  - `ERRORS-REVIEW.md` - Global error handler review
+- Checkout/sign-off tracking system for workflow reviews
+- Node-by-node validation checklists for all 6 workflows
+
+### Analyzed
+- All 6 Doc Chain workflows retrieved and documented
+- 116 total nodes mapped across all workflows
+- Input/output schemas documented
+- Connection maps created
+
+### Identified Issues
+| Priority | Issue | Workflow |
+|----------|-------|----------|
+| 🔴 HIGH | Dual architecture (old + new) with potential orphaned nodes | Distributor |
+| 🟡 MED | Callback URL pattern differs from Agent | Errors |
+| 🟡 MED | Merge timing with empty status reports | State Reconciliation |
+| 🟢 LOW | Placeholder value in config (unused) | Staleness |
+
+### Workflow Inventory
+| Workflow | ID | Nodes | Status |
+|----------|-----|-------|--------|
+| Trigger | qQKXewWTby495ix7 | 11 | ✅ Active |
+| Distributor | 3lTsmIsQFmzpwLE8 | 24 | ⚠️ Active (needs cleanup) |
+| Agent | 5vQ8lMCyatxB8Fdd | 14 | ✅ Active |
+| State Reconciliation | JVAjIrsS4yKbYIxW | 34 | ✅ Active |
+| Staleness | WRzBAw1oMYLbnu7d | 28 | ✅ Active |
+| Errors | gplUON3gG47QIMpi | 5 | ✅ Active |
 
 ---
 
@@ -78,6 +119,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 | Version | Date | Description |
 |---------|------|-------------|
+| 0.3.0 | 2024-12-24 | Comprehensive workflow review documentation |
+| 0.2.0 | 2024-12-23 | Full integration test suite |
 | 0.1.0 | 2024-12-23 | Initial setup and documentation |
 
 ---
