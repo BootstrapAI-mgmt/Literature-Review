@@ -27,8 +27,15 @@ The Claude Desktop integration enables AI-assisted development, documentation, a
 |-----------|--------|-------|
 | Desktop Commander MCP | ✅ Active | Full filesystem access |
 | Filesystem MCP | ✅ Active | Repository access configured |
-| n8n MCP Server | 🔧 Configured | Awaiting API key |
-| GitHub MCP Server | 🔧 Configured | Awaiting PAT |
+| n8n MCP Server | ✅ Active | Connected and verified |
+| GitHub MCP Server | ✅ Active | Connected and verified |
+
+## Recent Test Results (2024-12-23)
+
+All integrations verified working:
+- GitHub Issue #93 created programmatically
+- n8n test workflow created
+- Full read/write access confirmed
 
 ## Integration Goals
 

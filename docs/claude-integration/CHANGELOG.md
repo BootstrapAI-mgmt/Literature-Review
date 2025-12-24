@@ -15,6 +15,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [0.2.0] - 2024-12-23
+
+### Added
+- Full integration test suite execution
+- Test workflow "Integration Test - Hello World" created in n8n
+- GitHub Issue #93 created programmatically as test verification
+
+### Verified
+- n8n MCP Server connection (list, get, create workflows)
+- GitHub MCP Server connection (commits, issues, create issue, add comment)
+- Desktop Commander filesystem access
+- Cross-platform communication between all components
+
+### Test Results
+| Component | Status |
+|-----------|--------|
+| n8n List Workflows | ✅ PASS |
+| n8n Get Workflow | ✅ PASS |
+| n8n Create Workflow | ✅ PASS |
+| GitHub List Commits | ✅ PASS |
+| GitHub List Issues | ✅ PASS |
+| GitHub Create Issue | ✅ PASS |
+| GitHub Add Comment | ✅ PASS |
+| Desktop Commander | ✅ PASS |
+
+---
+
 ## [0.1.0] - 2024-12-23
 
 ### Added
