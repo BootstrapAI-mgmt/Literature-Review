@@ -12,7 +12,7 @@
 **Status**: 🟡 PHASE 3 IN PROGRESS
 
 ### Active Task
-Phase 3: Workflow Cleanup & Testing - Distributor verified, testing guide created
+Phase 3: Running manual webhook tests per TESTING-GUIDE.md
 
 ### Completed This Session
 
@@ -34,12 +34,14 @@ Phase 3: Workflow Cleanup & Testing - Distributor verified, testing guide create
 | 14 | Added memory edits for checkpoint protocol | - | NOW |
 | 15 | Created checkpoint-workflow skill | c61ddc3 | NOW |
 | 16 | Verified Distributor cleanup (24→12 nodes) | c12675c | NOW |
-| 17 | Created TESTING-GUIDE.md | PENDING | NOW |
+| 17 | Created TESTING-GUIDE.md | 84b7e24 | - |
+| 18 | Updated CHECKPOINT-SYSTEM.md v2 | 2ed3847 | - |
+| 19 | Running webhook tests | IN PROGRESS | NOW |
 
 ### Current State
 - **Working Directory**: `C:\Users\jpcol\Documents\Literature-Review\Literature-Review`
 - **Branch**: main
-- **Last Commit**: c61ddc3
+- **Last Commit**: 2ed3847
 - **Files Modified**: CHECKPOINT-SYSTEM.md, PROGRESS.md (this file)
 
 ### Next Actions
