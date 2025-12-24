@@ -4,7 +4,7 @@ This folder contains all implementation task cards organized by category and wav
 
 ## 📁 Folder Structure
 
-### `/agent/` - Core Agent Tasks (1 card)
+### `/agent/` - Core Agent Tasks (4 cards)
 **Critical path tasks for agent functionality improvements**
 
 **Files:**
@@ -15,11 +15,11 @@ This folder contains all implementation task cards organized by category and wav
   - Task #4: Deep Coverage Database Decision (2-3h) - ✅ COMPLETE
 
 **Wave:** Wave 1 (Foundation)  
-**Status:** 0/1 Complete
+**Status:** 1/4 Complete
 
 ---
 
-### `/automation/` - Automation & Error Handling (4 cards)
+### `/automation/` - Automation & Error Handling (5 cards)
 **Reliability and operational improvements**
 
 **Files:**
@@ -27,9 +27,10 @@ This folder contains all implementation task cards organized by category and wav
 - `AUTOMATION_TASK_CARD_13.2.md` - File Locking & Concurrency (4-6h) - ✅ COMPLETE
 - `AUTOMATION_TASK_CARD_14.md` - Improved Logging (4-6h) - 🟢 Ready
 - `AUTOMATION_TASK_CARD_15.md` - Health Checks (3-4h) - 🟢 Ready
+- `N8N_STATE_RECON_STATUS_DETECTION.md` - N8N-RECON-001 (4-6h) - ✅ COMPLETE
 
 **Wave:** Wave 2  
-**Status:** 0/4 Complete
+**Status:** 2/5 Complete
 
 ---
 
@@ -117,14 +118,14 @@ This folder contains all implementation task cards organized by category and wav
 
 | Category | Total | Complete | In Progress | Ready | Completion % |
 |----------|-------|----------|-------------|-------|--------------|
-| Agent | 1 | 0 | 0 | 1 | 0% |
-| Automation | 4 | 0 | 0 | 4 | 0% |
+| Agent | 4 | 1 | 0 | 3 | 25% |
+| Automation | 5 | 2 | 0 | 3 | 40% |
 | Dashboard-CLI Parity | 18 | 2 | 0 | 16 | 11% |
 | Integration | 15 | 0 | 0 | 15 | 0% |
 | E2E | 2 | 0 | 0 | 2 | 0% |
 | Evidence Enhancement | 9 | 0 | 0 | 9 | 0% |
 | Incremental Review | 16 | 0 | 0 | 16 | 0% |
-| **TOTAL** | **37** | **0** | **0** | **37** | **0%** |
+| **TOTAL** | **69** | **5** | **0** | **64** | **7%** |
 
 ---
 
@@ -221,6 +222,6 @@ Each task card includes:
 
 ---
 
-**Last Updated:** November 14, 2025  
+**Last Updated:** 2024-05-15  
 **Next Milestone:** Complete Wave 2 (Evidence Enhancement #16-17, Integration Tests #6-7)  
 **Reference:** `/docs/CONSOLIDATED_ROADMAP.md` for complete project overview
