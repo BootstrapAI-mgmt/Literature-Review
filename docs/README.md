@@ -75,6 +75,7 @@ See `/archive/README.md` for details.
 - `ROADMAP.md` - Implementation phases and milestones
 - `SETUP.md` - Configuration and setup guide
 - `CHANGELOG.md` - Version history and implementation log
+- `PROGRESS.md` - Progress tracking and status updates
 
 See [claude-integration/README.md](claude-integration/README.md) for details.
 
