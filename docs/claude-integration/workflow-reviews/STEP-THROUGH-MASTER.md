@@ -53,28 +53,80 @@
 
 ## Validation Criteria
 
+### Three Dimensions of Validation
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    VALIDATION FRAMEWORK                                  │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  DIMENSION 1: FUNCTIONAL CORRECTNESS                                     │
+│  "Does the node/workflow execute without errors?"                        │
+│  → Configuration validity, credential access, API connectivity           │
+│                                                                          │
+│  DIMENSION 2: LOGIC ALIGNMENT                                            │
+│  "Does the workflow architecture produce expected transformations?"      │
+│  → Input/output matching, flow sequencing, conditional routing           │
+│                                                                          │
+│  DIMENSION 3: REPOSITORY STATE ALIGNMENT                                 │
+│  "Do outputs accurately reflect the actual repository content?"          │
+│  → File counts match reality, statuses match task cards, paths exist     │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
 ### For Each Node, Verify:
 
-1. **Configuration Validity**
-   - [ ] Parameters match expected values
-   - [ ] Credentials referenced correctly
-   - [ ] Position in workflow makes sense
+#### Dimension 1: Functional Correctness
+- [ ] Parameters match expected values
+- [ ] Credentials referenced correctly and accessible
+- [ ] Position in workflow makes sense
+- [ ] Node executes without errors (test execution)
+- [ ] API endpoints respond correctly
+- [ ] Error handling paths function
 
-2. **Input Expectations**
-   - [ ] Expected input format documented
-   - [ ] Handles edge cases (empty, null, malformed)
-   - [ ] Previous node output matches this node's input
+#### Dimension 2: Logic Alignment  
+- [ ] Expected input format documented
+- [ ] Handles edge cases (empty, null, malformed)
+- [ ] Previous node output matches this node's input
+- [ ] Output schema documented
+- [ ] Output matches next node's expected input
+- [ ] Conditional logic routes correctly (IF nodes tested both paths)
+- [ ] Loop nodes iterate expected number of times
+- [ ] Data transformations produce expected structure
 
-3. **Output Verification**
-   - [ ] Output schema documented
-   - [ ] Output matches next node's expected input
-   - [ ] Error paths handled appropriately
+#### Dimension 3: Repository State Alignment
+- [ ] URLs/paths reference correct repo (BootstrapAI-mgmt/Literature-Review)
+- [ ] Branch references correct (main)
+- [ ] File paths referenced actually exist in repo
+- [ ] **File counts in output match actual repo file counts**
+- [ ] **Status values extracted match actual task card content**
+- [ ] **Completion percentages calculated match reality**
+- [ ] **Directory structures match current repo state**
+- [ ] **Cross-references (README↔task-cards↔ROADMAP) are accurate**
 
-4. **Repository Alignment**
-   - [ ] URLs/paths reference correct repo (BootstrapAI-mgmt/Literature-Review)
-   - [ ] Branch references correct (main)
-   - [ ] File paths exist in repo
-   - [ ] API endpoints valid
+### Live Validation Protocol
+
+For workflows that read/analyze repository content, perform **live validation**:
+
+1. **Baseline Capture**: Before test, document actual repo state
+   ```
+   - Count files in task-cards/: ___
+   - Count Complete tasks: ___
+   - Count In Progress tasks: ___
+   - README claimed completion: ___
+   ```
+
+2. **Execute Workflow**: Trigger manually via webhook
+
+3. **Compare Outputs**: Verify workflow outputs match baseline
+   ```
+   - Workflow reported file count: ___ (matches baseline? Y/N)
+   - Workflow reported Complete: ___ (matches baseline? Y/N)
+   - Mismatches detected: ___ (accurate? Y/N)
+   ```
+
+4. **Document Discrepancies**: Any delta between workflow output and reality
 
 ---
 
@@ -103,6 +155,39 @@ Agent D: RELEASE-STEP.md + PR-REVIEW-STEP.md
 |-----------|-------|--------|----------|-------|
 | 2024-12-24T01:00:00Z | Setup | Created master doc | ALL | Initial setup |
 | 2024-12-25T15:30:00Z | Claude | Created all step-through docs | ALL | 8/8 workflows documented, 127 total nodes |
+| 2024-12-25T16:00:00Z | Claude | Enhanced validation criteria | ALL | Added 3 dimensions: Functional, Logic, Repo State |
+
+---
+
+## Cross-Workflow Integration Matrix
+
+Workflows must be validated not just individually but at integration points:
+
+| Source Workflow | Integration Point | Target Workflow | Validation Check |
+|-----------------|-------------------|-----------------|------------------|
+| Trigger | `/webhook/task-distributor` | Distributor | Task payload schema matches |
+| State Reconciliation | `/webhook/task-distributor` | Distributor | Correction tasks dispatched correctly |
+| Staleness | `/webhook/task-distributor` | Distributor | Update tasks dispatched correctly |
+| Distributor | `/webhook/doc-agent` | Agent | Individual tasks route correctly |
+| Agent | GitHub Commits API | Repository | Commits actually appear in repo |
+| PR Review | PR Comments API | Repository | Review comments posted correctly |
+| Errors | GitHub Issues API | Repository | Error issues created correctly |
+| Release | GitHub Releases API | Repository | Releases created correctly |
+
+---
+
+## Workflow-Specific Live Validation Requirements
+
+| Workflow | Live Validation Required | What to Check |
+|----------|--------------------------|---------------|
+| State Reconciliation | **CRITICAL** | File counts, completion %, status accuracy |
+| Staleness | **CRITICAL** | Domain activity dates, staleness scores vs reality |
+| Trigger | Medium | Webhook receives and parses correctly |
+| Distributor | Medium | Tasks route to correct agents |
+| Agent | High | Commits match task descriptions |
+| Errors | Medium | Issues created with correct content |
+| Release | Medium | Release notes accurate |
+| PR Review | High | Doc impact analysis accuracy |
 
 ---
 
