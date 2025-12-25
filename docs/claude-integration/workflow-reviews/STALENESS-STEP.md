@@ -21,52 +21,53 @@
 
 ```
 ┌─ Weekly Review (2 AM) ─┐
-│                        ├→ Start Review → Workflow Configuration → Fetch Matrix
-└─ Manual Trigger ───────┘                                              │
-                                                                   Get Domains
-                                                                        │
-                                                              Process Each Domain
-                                                                        │
-                                                              Get Last Activity
-                                                                        │
-                                                             Calculate Inactivity
-                                                                        │
-                                                               Needs Review?
-                                                        (yes) ↓           ↓ (no)
-                                                   Fetch Recent Changes   │
-                                                           ↓              │
-                                                     Filter Changes       │
-                                                           ↓              │
-                                                      Has Changes?        │
-                                                  (yes) ↓       ↓ (no)    │
-                                               Prep Doc Fetch   │         │
-                                                     ↓          │         │
-                                               Get Doc Content  │         │
-                                                     ↓          │         │
-                                               Aggregate Docs   │         │
-                                                     ↓          │         │
-                                            Staleness Assessment│         │
-                                              (AI + Parser)     │         │
-                                                     ↓          │         │
-                                             Parse Assessment   │         │
-                                                     ↓          │         │
-                                              Route By Score    │         │
-                               ┌────────┬────────┬────────┬─────┘         │
-                               ↓        ↓        ↓        ↓               ↓
-                          Auto Update  Manual   Create   Healthy ←────────┘
-                               ↓       Review   Issue      ↓
-                          Send to       ↓        ↓         ↓
-                         Distributor  Search Issues → Create/Skip
-                               │        │        │         │
-                               └────────┴────────┴─────────┘
-                                            ↓
-                                     Collect Results
-                                            ↓
-                                     Generate Digest
-                                            ↓
-                                      Has Findings?
-                                            ↓ (yes)
-                                    Create Digest Issue
+│                        ├→ Start Review → Workflow Config → Fetch Matrix → Get Domains
+└─ Manual Trigger ───────┘                                                      │
+                                                                                ↓
+                                                                   Process Each Domain
+                                                                                ↓
+                                                                    Get Last Activity
+                                                                                ↓
+                                                                  Calculate Inactivity
+                                                                                ↓
+                                                                     Needs Review?
+                                                           (yes) ↓              ↓ (no)
+                                                     Fetch Recent Changes   Log Healthy
+                                                                ↓
+                                                         Filter Changes
+                                                                ↓
+                                                          Has Changes?
+                                                    (yes) ↓         ↓ (no)
+                                                  Prep Doc Fetch  Log Healthy
+                                                        ↓
+                                                  Get Doc Content
+                                                        ↓
+                                                   Aggregate Docs
+                                                        ↓
+                                              Staleness Assessment (AI)
+                                                        ↓
+                                                 Parse Assessment
+                                                        ↓
+                                                  Route By Score
+                           ┌──────────┬──────────┬──────────┐
+                           ↓          ↓          ↓          ↓
+                     Auto Update  Manual Rev  Create Issue  Healthy
+                           ↓          ↓          ↓          ↓
+                     Send to     Search     Search        Log
+                     Distributor  Issues    Issues       Healthy
+                                     ↓          ↓
+                                Issue Exists? → Create Review Issue
+                                     ↓
+                              Skip Duplicate
+                                     └──────────┬──────────┘
+                                                ↓
+                                         Collect Results
+                                                ↓
+                                         Generate Digest
+                                                ↓
+                                          Has Findings?
+                                                ↓ (yes)
+                                        Create Digest Issue
 ```
 
 ---
@@ -82,7 +83,8 @@
 | Check | Status | Notes |
 |-------|--------|-------|
 | Type: Schedule Trigger | [ ] | |
-| Interval: Weekly at 2 AM | [ ] | `field: "weeks"` |
+| Interval: Weekly | [ ] | `field: "weeks"` |
+| Time: 2 AM | [ ] | `triggerAtHour: 2` |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -108,6 +110,7 @@
 | Check | Status | Notes |
 |-------|--------|-------|
 | Mode: combine by position | [ ] | |
+| Merges both triggers | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -121,12 +124,10 @@
 
 | Field | Value | Status |
 |-------|-------|--------|
-| matrixUrl | `https://raw.githubusercontent.com/.../documentation_matrix.json` | [ ] |
+| matrixUrl | Raw GitHub URL | [ ] |
 | githubRepo | `BootstrapAI-mgmt/Literature-Review` | [ ] |
 | githubBranch | `main` | [ ] |
-| distributorWebhook | ⚠️ PLACEHOLDER | [ ] |
-
-**⚠️ ACTION REQUIRED**: `distributorWebhook` has placeholder value - verify if used.
+| distributorWebhook | ⚠️ PLACEHOLDER | [ ] Needs update |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -138,7 +139,7 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| URL: Raw GitHub matrix | [ ] | |
+| URL: Raw GitHub matrix URL | [ ] | |
 | Response format: JSON | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
@@ -153,10 +154,11 @@
 
 | Logic Check | Status | Notes |
 |-------------|--------|-------|
-| Parses `owner_domains` from matrix | [ ] | |
-| Handles array and object formats | [ ] | |
-| Supports stagger_day scheduling | [ ] | |
-| Extracts staleness_indicators | [ ] | |
+| Reads staleness_config | [ ] | Default 7 days |
+| Handles old format (array) | [ ] | |
+| Handles new format (object) | [ ] | |
+| Respects stagger_day if set | [ ] | |
+| Adds staleness_indicators | [ ] | |
 | Deduplicates indicators | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
@@ -169,7 +171,7 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Maps domains to items | [ ] | |
+| Maps domains for iteration | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -181,9 +183,10 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| URL: GitHub Commits API | [ ] | |
-| Query: path, per_page=1 | [ ] | First doc or `docs/` |
-| Uses Header Auth credential | [ ] | Not hardcoded |
+| URL: Commits API | [ ] | |
+| Query: path from first document | [ ] | |
+| Query: per_page=1 | [ ] | Most recent only |
+| Uses Header Auth credential | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -195,10 +198,10 @@
 
 | Logic Check | Status | Notes |
 |-------------|--------|-------|
-| Calculates days since last commit | [ ] | |
-| Compares to review_interval_days | [ ] | Default: 7 days |
-| Sets needs_review flag | [ ] | |
-| Handles empty commits | [ ] | Defaults to 2000-01-01 |
+| Extracts last commit date | [ ] | |
+| Fallback date: 2000-01-01 | [ ] | If no commits |
+| Calculates days inactive | [ ] | |
+| Sets needs_review flag | [ ] | If >= review_interval_days |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -210,9 +213,9 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Condition: `needs_review === true` | [ ] | |
+| Condition: needs_review === true | [ ] | |
 | True → Fetch Recent Changes | [ ] | |
-| False → Log Healthy | [ ] | Skip domain |
+| False → Log Healthy | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -226,6 +229,7 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
+| URL: Commits API | [ ] | |
 | Query: since=last_activity | [ ] | |
 | Query: per_page=100 | [ ] | |
 | Uses Header Auth | [ ] | |
@@ -241,16 +245,9 @@
 | Logic Check | Status | Notes |
 |-------------|--------|-------|
 | Ignores test/ci/chore/style/docs commits | [ ] | Regex patterns |
-| Checks staleness_indicators relevance | [ ] | |
+| Checks staleness_indicators | [ ] | |
 | Limits to 20 relevant changes | [ ] | |
 | Sets has_relevant_changes flag | [ ] | |
-
-**Ignore Patterns**:
-- `^test(\(|:)` - Test commits
-- `^ci(\(|:)` - CI commits
-- `^chore(\(|:)` - Chores
-- `^style(\(|:)` - Style changes
-- `^docs(\(|:)` - Doc commits (checking FOR staleness)
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -262,7 +259,7 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Condition: `has_relevant_changes === true` | [ ] | |
+| Condition: has_relevant_changes === true | [ ] | |
 | True → Prep Doc Fetch | [ ] | |
 | False → Log Healthy | [ ] | |
 
@@ -270,16 +267,16 @@
 
 ---
 
-### Document Fetch Section
+### Document Fetching Section
 
 #### Node 14: Prep Doc Fetch
 | ID | `912ce88a-d8f9-4bf7-bb07-2a354c0669e6` |
 |----|-------|
 
-| Logic Check | Status | Notes |
-|-------------|--------|-------|
-| Limits to 3 documents | [ ] | Performance |
-| Spreads domain data to each | [ ] | |
+| Check | Status | Notes |
+|-------|--------|-------|
+| Limits to 3 documents | [ ] | Context size control |
+| Prepares current_doc for each | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -291,7 +288,7 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| URL: Raw GitHub content | [ ] | Dynamic path |
+| URL: Raw GitHub content | [ ] | |
 | Response format: text | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
@@ -304,7 +301,7 @@
 
 | Logic Check | Status | Notes |
 |-------------|--------|-------|
-| Combines document contents | [ ] | |
+| Collects all doc contents | [ ] | |
 | Truncates to 2000 chars each | [ ] | Context limit |
 | Formats with headers | [ ] | |
 
@@ -320,14 +317,15 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| System message defines review criteria | [ ] | |
-| Includes staleness scoring guide | [ ] | 0.0-1.0 scale |
-| Specifies JSON output format | [ ] | |
-| Has output parser connected | [ ] | |
+| System message defines criteria | [ ] | |
+| Staleness scoring defined | [ ] | 0.0-1.0 scale |
+| Output format: JSON | [ ] | |
+| Uses Output Parser | [ ] | |
+| Uses Gemini sub-node | [ ] | |
 
-**Staleness Scoring Guide (from prompt)**:
-| Score Range | Meaning |
-|-------------|---------|
+**Staleness Score Thresholds**:
+| Range | Meaning |
+|-------|---------|
 | 0.0-0.2 | Healthy |
 | 0.2-0.4 | Minor drift |
 | 0.4-0.6 | Moderate staleness |
@@ -354,12 +352,12 @@
 | ID | `7ea3db7c-bafd-4d9c-becf-3bd31fa0abb9` |
 |----|-------|
 
-| Schema Field | Type | Required | Status |
-|--------------|------|----------|--------|
-| staleness_score | number | Yes | [ ] |
-| findings | array[string] | Yes | [ ] |
-| recommended_action | enum | Yes | [ ] |
-| update_tasks | array[string] | No | [ ] |
+| Schema Field | Type | Status |
+|--------------|------|--------|
+| staleness_score | number | [ ] |
+| findings | array of strings | [ ] |
+| recommended_action | enum | [ ] |
+| update_tasks | array of strings | [ ] |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -371,19 +369,11 @@
 
 | Logic Check | Status | Notes |
 |-------------|--------|-------|
-| Extracts JSON from markdown blocks | [ ] | |
-| Normalizes score to 0-1 | [ ] | |
-| Generates assessment_id | [ ] | |
-| Determines recommended_action | [ ] | Based on score thresholds |
-| Normalizes update_tasks | [ ] | |
-
-**Action Thresholds**:
-| Score | Action |
-|-------|--------|
-| >= 0.7 | auto_update |
-| >= 0.5 | manual_review |
-| >= 0.3 | create_issue |
-| < 0.3 | healthy |
+| Extracts JSON from response | [ ] | Handles code blocks |
+| Fallback on parse failure | [ ] | confidence: 0.3 |
+| Normalizes score 0-1 | [ ] | |
+| Creates assessment_id | [ ] | |
+| Maps recommended_action | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -391,22 +381,22 @@
 
 ### Routing Section
 
-#### Node 19: Route By Score (Switch)
+#### Node 19: Route By Score
 | ID | `f386d2e5-45fd-4815-93a2-22f2bd094000` |
 |----|-------|
 
-| Output | Condition | Destination | Status |
-|--------|-----------|-------------|--------|
-| Auto Update | score >= 0.7 AND tasks not empty | Send to Distributor | [ ] |
-| Manual Review | 0.5 <= score < 0.7 | Search Existing Issues | [ ] |
-| Create Issue | 0.3 <= score < 0.5 | Search Existing Issues | [ ] |
-| Healthy (fallback) | score < 0.3 | Log Healthy | [ ] |
+| Route | Condition | Destination | Status |
+|-------|-----------|-------------|--------|
+| Auto Update | score >= 0.7 AND update_tasks not empty | Send to Distributor | [ ] |
+| Manual Review | score >= 0.5 AND < 0.7 | Search Existing Issues | [ ] |
+| Create Issue | score >= 0.3 AND < 0.5 | Search Existing Issues | [ ] |
+| Healthy | fallback (score < 0.3) | Log Healthy | [ ] |
 
 **Sign-off**: [ ] ________ Date: ________
 
 ---
 
-### Auto Update Path
+### Action Section
 
 #### Node 20: Send to Distributor
 | ID | `9a6c894b-5c0b-4caf-9c02-6af0a7044720` |
@@ -416,8 +406,9 @@
 |-------|--------|-------|
 | URL: `/webhook/task-distributor` | [ ] | |
 | Method: POST | [ ] | |
-| Body includes update_tasks | [ ] | |
-| Source: staleness_review | [ ] | |
+| Includes update_list_id | [ ] | |
+| Includes staleness trigger info | [ ] | |
+| Includes update_tasks | [ ] | |
 
 **Integration Check**:
 | This Workflow | Connects To | Status |
@@ -428,17 +419,14 @@
 
 ---
 
-### Issue Creation Path
-
 #### Node 21: Search Existing Issues
 | ID | `efa21e21-a156-4c42-bb82-455a8e86738d` |
 |----|-------|
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| URL: GitHub Search Issues API | [ ] | |
-| Query: repo + is:open + label:staleness-review | [ ] | |
-| Searches domain in title | [ ] | Deduplication |
+| URL: Search Issues API | [ ] | |
+| Query: open + staleness-review label + domain | [ ] | |
 | Uses Header Auth | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
@@ -451,7 +439,7 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Condition: `total_count > 0` | [ ] | |
+| Condition: total_count > 0 | [ ] | |
 | True → Skip Duplicate Issue | [ ] | |
 | False → Create Review Issue | [ ] | |
 
@@ -466,7 +454,7 @@
 | Check | Status | Notes |
 |-------|--------|-------|
 | Logs skip reason | [ ] | |
-| Returns status: skipped | [ ] | |
+| Returns skipped status | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -478,17 +466,15 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| URL: GitHub Issues API | [ ] | |
+| URL: Issues API | [ ] | |
 | Method: POST | [ ] | |
 | Title includes domain and score | [ ] | |
-| Body includes findings | [ ] | |
+| Body includes summary and findings | [ ] | |
 | Labels: documentation, staleness-review, automated | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
 ---
-
-### Results Collection
 
 #### Node 25: Log Healthy
 | ID | `291a4c74-cf3f-4f39-bbb1-d5acddb774e7` |
@@ -496,20 +482,23 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Mode: runOnceForEachItem | [ ] | |
-| Returns healthy status | [ ] | |
+| Logs domain as healthy | [ ] | |
+| Returns status: healthy | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
 ---
 
-#### Node 26: Collect Results (Merge)
+### Digest Section
+
+#### Node 26: Collect Results
 | ID | `253e822d-735d-4e65-a684-6797515703f5` |
 |----|-------|
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| numberInputs: 4 | [ ] | All paths |
+| 4 inputs configured | [ ] | |
+| Collects all paths | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -521,25 +510,11 @@
 
 | Logic Check | Status | Notes |
 |-------------|--------|-------|
-| Calculates week number | [ ] | YYYY-Wxx format |
-| Counts domains by health | [ ] | |
+| Calculates week number | [ ] | |
+| Counts domains reviewed | [ ] | |
+| Counts healthy vs need attention | [ ] | |
 | Calculates average staleness | [ ] | |
-| Maps domain statuses | [ ] | |
-
-**Digest Output Schema**:
-```json
-{
-  "digest_id": "digest-2024-W52",
-  "week": "2024-W52",
-  "summary": {
-    "domains_reviewed": 5,
-    "domains_healthy": 3,
-    "domains_need_attention": 2,
-    "avg_staleness": 0.35
-  },
-  "domain_statuses": [...]
-}
-```
+| Creates domain_statuses array | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -551,7 +526,7 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Condition: `domains_need_attention > 0` | [ ] | |
+| Condition: domains_need_attention > 0 | [ ] | |
 | True → Create Digest Issue | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
@@ -564,8 +539,9 @@
 
 | Check | Status | Notes |
 |-------|--------|-------|
+| URL: Issues API | [ ] | |
 | Title: Weekly Staleness Digest | [ ] | |
-| Body: Table of domain statuses | [ ] | |
+| Body: Summary table + domain statuses | [ ] | |
 | Labels: documentation, staleness-digest, automated | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
@@ -574,60 +550,52 @@
 
 ## Test Scenarios
 
-### Scenario 1: Weekly Run - All Healthy
+### Scenario 1: All Domains Healthy
 | Step | Expected | Status |
 |------|----------|--------|
 | Fetch matrix | Domains extracted | [ ] |
-| Check each domain | All < 7 days inactive | [ ] |
-| Log Healthy | All domains logged | [ ] |
-| Digest | domains_need_attention: 0 | [ ] |
-| No digest issue | Skipped | [ ] |
+| Check activity | All recent | [ ] |
+| No reviews triggered | Log Healthy for all | [ ] |
+| No digest issue | domains_need_attention = 0 | [ ] |
 
-### Scenario 2: Stale Domain with Auto Update
+### Scenario 2: Stale Domain - Auto Update
 | Step | Expected | Status |
 |------|----------|--------|
-| Domain inactive > 7 days | needs_review: true | [ ] |
-| Relevant changes found | has_relevant_changes: true | [ ] |
-| AI assessment | staleness_score: 0.75 | [ ] |
-| Route | Auto Update path | [ ] |
-| Send to Distributor | Tasks sent | [ ] |
+| Domain inactive > interval | needs_review = true | [ ] |
+| Relevant changes found | has_relevant_changes = true | [ ] |
+| AI assessment | staleness_score >= 0.7 | [ ] |
+| Tasks generated | update_tasks not empty | [ ] |
+| Sent to Distributor | Task list dispatched | [ ] |
 
 ### Scenario 3: Stale Domain - Create Issue
 | Step | Expected | Status |
 |------|----------|--------|
-| AI assessment | staleness_score: 0.4 | [ ] |
-| Route | Create Issue path | [ ] |
+| AI assessment | score 0.3-0.5 | [ ] |
 | Search existing | No duplicate | [ ] |
-| Create issue | GitHub issue created | [ ] |
+| Create issue | Issue created with labels | [ ] |
 
 ### Scenario 4: Duplicate Issue Prevention
 | Step | Expected | Status |
 |------|----------|--------|
-| Search existing | Finds open issue | [ ] |
-| Skip duplicate | Logged and skipped | [ ] |
+| Search existing | total_count > 0 | [ ] |
+| Skip creation | status: skipped | [ ] |
 
-### Scenario 5: Manual Trigger
+### Scenario 5: Weekly Digest
 | Step | Expected | Status |
 |------|----------|--------|
-| POST to webhook | Workflow starts | [ ] |
-| Full review runs | All domains checked | [ ] |
+| Multiple domains processed | Results collected | [ ] |
+| Some need attention | domains_need_attention > 0 | [ ] |
+| Digest issue created | Summary table in body | [ ] |
 
 ---
 
 ## Configuration Notes
 
-### ⚠️ Placeholder Value
-The `distributorWebhook` in Workflow Configuration contains a placeholder:
-```
-<__PLACEHOLDER_VALUE__Task Distributor Webhook URL__>
-```
-**Note**: This appears to be unused - the Send to Distributor node uses a hardcoded URL instead.
+### ⚠️ Issues Found During Review
 
-### Domain Staggering
-The workflow supports domain staggering via `stagger_day` in the matrix:
-- If `config.schedule.stagger_domains` is enabled
-- Only domains scheduled for the current day are processed
-- Otherwise all domains are processed in weekly batch
+| Item | Issue | Action Required |
+|------|-------|-----------------|
+| distributorWebhook | Placeholder value | Update to actual URL |
 
 ---
 
@@ -642,7 +610,7 @@ The workflow supports domain staggering via `stagger_day` in the matrix:
 ### Issues Found
 | Node | Issue | Severity | Resolution |
 |------|-------|----------|------------|
-| | | | |
+| Workflow Configuration | Placeholder webhook URL | Medium | Update value |
 
 ---
 
