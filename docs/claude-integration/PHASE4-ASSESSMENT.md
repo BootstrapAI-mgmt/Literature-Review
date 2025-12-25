@@ -60,16 +60,32 @@ The workflow finds mismatches but doesn't create issues. Could add:
 - Create issue for unresolved mismatches
 - Weekly reconciliation digest issue
 
-### 4.1.4 🔴 Release Automation
-**Status**: Not Implemented
+### 4.1.4 ✅ Release Automation
+**Status**: IMPLEMENTED
 
-New workflow: `Doc Chain - Release`
-- Trigger: GitHub tag push or manual
-- Actions:
-  1. Generate changelog from commits since last tag
-  2. Create GitHub release with notes
-  3. Update VERSION file if present
-  4. Notify via issue or comment
+New workflow: `Doc Chain - Release` (ID: pwtrU5ucVt4AKvZF)
+
+**Trigger**: POST to `/webhook/release-automation`
+- Body: `{"tag": "v1.0.0"}` for specific tag
+- Body: `{}` or `{"tag": "latest"}` for latest tag
+
+**Flow**:
+```
+Release Trigger → Configuration → Get Recent Tags → Parse Tags
+                                                        ↓
+Has Tags? → Get Commits Since Previous → Generate Changelog → Create GitHub Release → Log Success
+    ↓ (no tags)
+Log Error
+```
+
+**Features**:
+- Categorizes commits by conventional commit type (feat, fix, docs, etc.)
+- Generates formatted changelog with emoji headers
+- Creates GitHub release with changelog as body
+- Auto-detects prerelease from tag name (e.g., v1.0.0-beta)
+- Skips merge commits and [n8n] automated commits
+
+**Note**: Requires manual activation in n8n UI
 
 ---
 
@@ -81,10 +97,12 @@ New workflow: `Doc Chain - Release`
 **Risk**: Low
 **Implemented**: 2024-12-24
 
-### Priority 2: Release Automation Workflow
+### Priority 2: Release Automation Workflow ✅ COMPLETE
 **Value**: Medium - streamlines release process
 **Effort**: Medium - new workflow ~10 nodes
 **Risk**: Low
+**Implemented**: 2024-12-24
+**Note**: Requires manual activation in n8n UI
 
 ### Priority 3: State Reconciliation Issues
 **Value**: Medium - better mismatch visibility
@@ -95,11 +113,12 @@ New workflow: `Doc Chain - Release`
 
 ## Next Steps
 
-1. [ ] Implement Error Handler GitHub issue creation
-2. [ ] Test error issue creation
-3. [ ] Create Release Automation workflow
-4. [ ] Test release workflow with mock tag
-5. [ ] Document all changes
+1. [x] Implement Error Handler GitHub issue creation
+2. [x] Create Release Automation workflow
+3. [ ] Activate Release workflow in n8n UI
+4. [ ] Test release workflow with existing tag
+5. [ ] (Optional) Enhance State Reconciliation with issues
+6. [ ] Document all changes in workflow reviews
 
 ---
 
