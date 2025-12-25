@@ -1010,9 +1010,9 @@
       ],
       "scripts": [],
       "created_date": "2025-11-14",
-      "last_reviewed": "2025-12-24",
+      "last_reviewed": "2025-12-25",
       "review_interval_days": 3,
-      "next_review": "2025-12-27",
+      "next_review": "2025-12-28",
       "update_triggers": [
         "STATUS_UPDATE",
         "COMPLETION_PERCENTAGE"
