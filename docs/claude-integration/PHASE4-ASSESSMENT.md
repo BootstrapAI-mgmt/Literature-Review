@@ -115,11 +115,135 @@ Log Error
 
 1. [x] Implement Error Handler GitHub issue creation
 2. [x] Create Release Automation workflow
-3. [ ] Activate Release workflow in n8n UI
+3. [x] Activate Release workflow in n8n UI
 4. [ ] Test release workflow with existing tag
 5. [ ] (Optional) Enhance State Reconciliation with issues
 6. [ ] Document all changes in workflow reviews
 
 ---
 
-*Created: 2024-12-24*
+## Phase 4.2: Documentation Pipeline
+
+### 4.2.1 ✅ Auto-generate README Updates on Code Changes
+**Status**: Already Implemented
+- Domain Agent workflow processes documentation updates
+- Triggered by Doc Trigger when code files change
+- AI analyzes changes and updates relevant docs
+- Commits with `[n8n] docs:` prefix
+
+### 4.2.2 ✅ Create Changelog Entries from Commits
+**Status**: IMPLEMENTED via Release Workflow
+- Release workflow categorizes commits by type
+- Generates formatted changelog with:
+  - ✨ Features (feat:)
+  - 🐛 Bug Fixes (fix:)
+  - 📚 Documentation (docs:)
+  - 🔧 Maintenance (chore:)
+  - ♻️ Refactoring (refactor:)
+  - 🧪 Tests (test:)
+
+### 4.2.3 🟡 Update API Documentation Automatically
+**Status**: Partial - Domain Agent handles general docs
+
+**Enhancement Option**: Create specialized API doc workflow
+- Trigger: Changes to API files (routes, schemas)
+- Action: Generate OpenAPI/Swagger updates
+- **Decision**: Defer - current Agent handles this adequately
+
+### 4.2.4 🔴 Generate Coverage Reports
+**Status**: Not Implemented
+
+**Would require**:
+- pytest/jest integration
+- Coverage output parsing
+- Report generation workflow
+
+**Decision**: Out of scope for Phase 4 - requires CI/CD integration
+
+---
+
+## Phase 4.3: Intelligent Assistance
+
+### 4.3.1 🟡 Proactive Code Review Suggestions
+**Status**: Enhancement Opportunity
+
+**Option A**: PR Review Workflow (New)
+- Trigger: GitHub PR webhook
+- Action: AI reviews PR diff, adds review comments
+- **Value**: High for team collaboration
+- **Effort**: Medium (new workflow)
+
+**Option B**: Enhance Domain Agent
+- Add PR context awareness
+- Suggest doc updates needed for PR
+
+### 4.3.2 ✅ Documentation Gap Detection
+**Status**: Already Implemented
+- Staleness Review workflow scans docs weekly
+- AI assesses staleness score (0-1)
+- Creates GitHub issues for stale docs
+- Generates weekly digest
+
+### 4.3.3 🔴 Dependency Update Notifications
+**Status**: Not Implemented (GitHub Dependabot exists)
+
+**Decision**: Use GitHub Dependabot instead
+- Already integrated with GitHub
+- Automatic PR creation for updates
+- Security vulnerability detection built-in
+
+### 4.3.4 🔴 Security Vulnerability Alerts
+**Status**: Not Implemented (GitHub Security exists)
+
+**Decision**: Use GitHub Security features
+- Code scanning
+- Secret scanning
+- Dependency vulnerability alerts
+- Already configured at repo level
+
+---
+
+## Phase 4.2/4.3 Summary
+
+### Already Complete (Existing Workflows)
+
+| Feature | Workflow | Notes |
+|---------|----------|-------|
+| Auto-update docs | Domain Agent | ✅ Working |
+| Changelog generation | Release | ✅ New |
+| Gap detection | Staleness Review | ✅ Working |
+
+### Recommended New Implementation
+
+| Feature | Priority | Effort | Value |
+|---------|----------|--------|-------|
+| PR Review Workflow | P1 | Medium | High |
+
+### Deferred to GitHub Native Features
+
+| Feature | GitHub Feature | Reason |
+|---------|----------------|--------|
+| Dependency updates | Dependabot | Already exists, well-maintained |
+| Security alerts | Security tab | Already exists, comprehensive |
+| Coverage reports | Actions | Requires CI/CD setup |
+
+---
+
+## Implementation: PR Review Workflow
+
+### Workflow Design: `Doc Chain - PR Review`
+
+**Trigger**: GitHub PR webhook (opened, synchronize)
+
+**Flow**:
+```
+PR Webhook → Filter Bot PRs → Get PR Diff → AI Review
+                                              ↓
+                            Check Doc Impact → Add Review Comment
+```
+
+**Features**:
+- Analyzes PR diff for documentation impact
+- Suggests which docs may need updates
+- Adds review comment with recommendations
+- Labels PR if doc updates needed
