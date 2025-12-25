@@ -1,7 +1,7 @@
 # Doc Chain - PR Review: Step-Through Validation
 
 > **Workflow ID**: `03ONuhFTJGDhmtJ9`  
-> **Version**: PRR-V001 (Phase 4 New)  
+> **Version**: PRR-V001 (Phase 4.3 New)  
 > **Total Nodes**: 12 (including AI sub-node)  
 > **Last n8n Update**: 2025-12-25T00:56:13.724Z
 
@@ -21,19 +21,20 @@
 
 ```
 PR Webhook → Configuration → Is Human PR?
-                                ↓ (yes)           ↓ (no)
-                          Get PR Files        Skip Bot PR
+                                ↓ (yes)              ↓ (no)
+                           Get PR Files         Skip Bot PR
                                 ↓
                           Analyze Files
                                 ↓
-                      AI Doc Impact Analysis (+ Gemini)
+                      AI Doc Impact Analysis
+                         (+ Gemini Chat)
                                 ↓
                         Parse AI Response
                                 ↓
                          Has Doc Impact?
-                        (≥60% confidence)
-                      ↙                ↘
-              Post Review Comment    Log No Action
+                    (needs_doc_update && confidence >= 60%)
+                         ↓ (yes)              ↓ (no)
+                  Post Review Comment      Log No Action
 ```
 
 ---
@@ -48,12 +49,14 @@ PR Webhook → Configuration → Is Human PR?
 |-------|--------|-------|
 | Path: `/pr-review` | [ ] | |
 | Method: POST | [ ] | |
-| Expects GitHub PR webhook payload | [ ] | `opened`, `synchronize` events |
+| Webhook ID configured | [ ] | `pr-review-webhook` |
 
-**⚠️ Prerequisite**: GitHub webhook must be configured:
-- URL: `https://gitlitreview.app.n8n.cloud/webhook/pr-review`
-- Events: Pull requests (opened, synchronize)
-- Content type: application/json
+**GitHub Webhook Configuration Required**:
+| Setting | Value | Status |
+|---------|-------|--------|
+| URL | `https://gitlitreview.app.n8n.cloud/webhook/pr-review` | [ ] |
+| Content type | `application/json` | [ ] |
+| Events | Pull requests (opened, synchronize) | [ ] |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -63,15 +66,15 @@ PR Webhook → Configuration → Is Human PR?
 | ID | `config` |
 |----|-------|
 
-| Check | Status | Notes |
-|-------|--------|-------|
-| Extracts pr_number | [ ] | From `pull_request.number` |
-| Extracts pr_title | [ ] | |
-| Extracts pr_author | [ ] | `user.login` |
-| Extracts pr_action | [ ] | `opened`, `synchronize` |
-| Sets repo_owner | [ ] | `BootstrapAI-mgmt` |
-| Sets repo_name | [ ] | `Literature-Review` |
-| Detects is_bot | [ ] | `user.type === 'Bot'` |
+| Field | Source | Status |
+|-------|--------|--------|
+| pr_number | `body.pull_request.number` | [ ] |
+| pr_title | `body.pull_request.title` | [ ] |
+| pr_author | `body.pull_request.user.login` | [ ] |
+| pr_action | `body.action` | [ ] |
+| repo_owner | `BootstrapAI-mgmt` (hardcoded) | [ ] |
+| repo_name | `Literature-Review` (hardcoded) | [ ] |
+| is_bot | Checks user.type === 'Bot' | [ ] |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -84,8 +87,8 @@ PR Webhook → Configuration → Is Human PR?
 | Check | Status | Notes |
 |-------|--------|-------|
 | Condition: `is_bot === false` | [ ] | |
-| True → Get PR Files | [ ] | Human PRs processed |
-| False → Skip Bot PR | [ ] | Dependabot, etc. skipped |
+| True → Get PR Files | [ ] | Human PRs |
+| False → Skip Bot PR | [ ] | Dependabot, etc. |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -97,8 +100,8 @@ PR Webhook → Configuration → Is Human PR?
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Returns skipped status | [ ] | |
-| Logs pr_author | [ ] | For debugging |
+| Returns skip status | [ ] | |
+| Logs reason: bot_pr | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -110,9 +113,9 @@ PR Webhook → Configuration → Is Human PR?
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| URL: PR Files API | [ ] | `/pulls/{pr_number}/files` |
-| Uses Header Auth | [ ] | Not hardcoded |
-| Returns file list | [ ] | Array of file objects |
+| URL: GitHub PR Files API | [ ] | `/pulls/{pr_number}/files` |
+| Uses Header Auth credential | [ ] | Not hardcoded |
+| Response format: JSON | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -125,18 +128,18 @@ PR Webhook → Configuration → Is Human PR?
 | Logic Check | Status | Notes |
 |-------------|--------|-------|
 | Categorizes code files | [ ] | py, js, ts, jsx, tsx, java, go, rs |
-| Categorizes doc files | [ ] | docs/*, *.md, *.rst |
+| Categorizes doc files | [ ] | docs/, .md, .rst |
 | Categorizes config files | [ ] | json, yaml, yml, toml, ini, env |
-| Includes patch (truncated) | [ ] | First 500 chars for AI context |
-| Preserves config from previous node | [ ] | `...config` spread |
+| Truncates patches to 500 chars | [ ] | Prevents token overflow |
+| Generates summary | [ ] | File count by type |
 
 **Output Schema**:
 ```json
 {
   "pr_number": 123,
-  "pr_title": "...",
+  "pr_title": "Add feature",
   "total_files": 5,
-  "code_files": [{ "path": "...", "status": "modified", "changes": 42, "patch": "..." }],
+  "code_files": [...],
   "doc_files": [...],
   "config_files": [...],
   "code_changed": true,
@@ -155,27 +158,28 @@ PR Webhook → Configuration → Is Human PR?
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| System message defines role | [ ] | Documentation impact analyzer |
-| Prompt includes file categories | [ ] | Code, docs, config |
-| Prompt includes code patches | [ ] | First 3 files |
-| Expects JSON response | [ ] | Specified format |
-| Uses Gemini sub-node | [ ] | |
+| System message defines analysis criteria | [ ] | |
+| Includes PR title and author | [ ] | |
+| Lists changed files by category | [ ] | |
+| Includes truncated code patches | [ ] | First 3 files |
+| Specifies JSON output format | [ ] | |
+| Uses Gemini Chat sub-node | [ ] | |
 
-**AI Considerations Verified**:
-- [ ] New features needing docs
-- [ ] Changed behavior
+**Analysis Criteria (from system message)**:
+- [ ] New features/APIs needing docs
+- [ ] Changed behavior affecting docs
 - [ ] Removed functionality
-- [ ] Config changes
-- [ ] Existing doc coverage
+- [ ] Configuration changes
+- [ ] Whether docs already included
 
-**Expected AI Output**:
+**Expected Output**:
 ```json
 {
   "needs_doc_update": true,
   "confidence": 0.8,
-  "affected_docs": ["docs/API.md", "README.md"],
-  "suggestions": ["Add section for new endpoint"],
-  "summary": "New API endpoint added without documentation"
+  "affected_docs": ["docs/README.md"],
+  "suggestions": ["Add API documentation"],
+  "summary": "New API endpoint added without docs"
 }
 ```
 
@@ -189,7 +193,8 @@ PR Webhook → Configuration → Is Human PR?
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Credential configured | [ ] | Google Gemini API |
+| Uses Google Gemini API credential | [ ] | |
+| Default options | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -201,10 +206,10 @@ PR Webhook → Configuration → Is Human PR?
 
 | Logic Check | Status | Notes |
 |-------------|--------|-------|
-| Handles ```json code blocks | [ ] | Regex extraction |
-| Handles raw JSON | [ ] | Fallback regex |
-| Provides default on parse failure | [ ] | needs_doc_update: false |
-| Preserves config from Analyze Files | [ ] | `...config` spread |
+| Handles ```json``` code blocks | [ ] | |
+| Handles raw JSON | [ ] | |
+| Fallback on parse failure | [ ] | confidence: 0.3 |
+| Preserves config from Analyze Files | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -216,14 +221,17 @@ PR Webhook → Configuration → Is Human PR?
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Condition: needs_doc_update AND confidence ≥ 0.6 | [ ] | Threshold prevents false positives |
+| Condition: `needs_doc_update === true` | [ ] | |
+| AND: `confidence >= 0.6` | [ ] | 60% threshold |
 | True → Post Review Comment | [ ] | |
 | False → Log No Action | [ ] | |
 
-**Threshold Logic**:
-- 60% confidence = moderate certainty
-- Prevents spam on uncertain analysis
-- Errs on side of not commenting
+**Threshold Verification**:
+| Confidence | needs_doc_update | Result |
+|------------|------------------|--------|
+| 0.8 | true | Post comment |
+| 0.5 | true | No action (low confidence) |
+| 0.9 | false | No action (no impact) |
 
 **Sign-off**: [ ] ________ Date: ________
 
@@ -237,20 +245,18 @@ PR Webhook → Configuration → Is Human PR?
 |-------|--------|-------|
 | URL: PR Reviews API | [ ] | `/pulls/{pr_number}/reviews` |
 | Method: POST | [ ] | |
-| Event: COMMENT | [ ] | Not APPROVE or REQUEST_CHANGES |
-| Body includes confidence % | [ ] | |
-| Body includes affected docs | [ ] | |
-| Body includes suggestions | [ ] | |
+| Event: COMMENT | [ ] | Not REQUEST_CHANGES |
+| Body formatted with markdown | [ ] | |
 | Uses Header Auth | [ ] | |
 
 **Comment Template Verification**:
 | Section | Included | Status |
 |---------|----------|--------|
-| 📚 Header | [ ] | |
-| AI confidence | [ ] | |
-| Summary | [ ] | |
+| Header (📚 Documentation Review) | [ ] | |
+| Confidence percentage | [ ] | |
+| AI summary | [ ] | |
 | Affected docs list | [ ] | |
-| Numbered suggestions | [ ] | |
+| Suggestions list | [ ] | |
 | Footer attribution | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
@@ -263,22 +269,26 @@ PR Webhook → Configuration → Is Human PR?
 
 | Check | Status | Notes |
 |-------|--------|-------|
-| Returns status: no_action | [ ] | |
-| Returns reason | [ ] | `low_confidence` or `no_doc_impact` |
-| Logs pr details | [ ] | For debugging |
+| Returns no_action status | [ ] | |
+| Logs reason (low_confidence or no_doc_impact) | [ ] | |
+| Includes PR details | [ ] | |
 
 **Sign-off**: [ ] ________ Date: ________
 
 ---
 
-## GitHub Webhook Setup Required
+## GitHub Webhook Setup (REQUIRED)
 
-| Check | Status | Notes |
-|-------|--------|-------|
-| Webhook URL configured | [ ] | `https://gitlitreview.app.n8n.cloud/webhook/pr-review` |
-| Content-Type: application/json | [ ] | |
-| Events: Pull requests | [ ] | |
-| Active: Yes | [ ] | |
+**⚠️ ACTION REQUIRED**: This workflow requires a GitHub webhook to function.
+
+| Step | Status | Notes |
+|------|--------|-------|
+| Navigate to repo settings/hooks | [ ] | |
+| Add new webhook | [ ] | |
+| URL: `https://gitlitreview.app.n8n.cloud/webhook/pr-review` | [ ] | |
+| Content type: application/json | [ ] | |
+| Events: Pull requests | [ ] | opened, synchronize |
+| Active: checked | [ ] | |
 
 ---
 
@@ -287,30 +297,32 @@ PR Webhook → Configuration → Is Human PR?
 ### Scenario 1: Human PR with Code Changes
 | Step | Expected | Status |
 |------|----------|--------|
-| PR opened by human | is_bot = false | [ ] |
-| Files fetched | Array of files | [ ] |
-| Files analyzed | code_files > 0 | [ ] |
-| AI analyzes | JSON response | [ ] |
-| High confidence + needs update | Comment posted | [ ] |
+| Receive PR webhook | is_bot = false | [ ] |
+| Get files | Code files returned | [ ] |
+| Analyze | Code changed, no docs | [ ] |
+| AI analysis | needs_doc_update = true | [ ] |
+| Comment posted | Review visible on PR | [ ] |
 
 ### Scenario 2: Bot PR (Dependabot)
 | Step | Expected | Status |
 |------|----------|--------|
-| PR from dependabot[bot] | is_bot = true | [ ] |
-| Skipped | No further processing | [ ] |
+| Receive PR webhook | user.type = 'Bot' | [ ] |
+| Is Human? | False | [ ] |
+| Skip Bot PR | Logged and ended | [ ] |
 
-### Scenario 3: Low Confidence Analysis
+### Scenario 3: PR Already Has Docs
 | Step | Expected | Status |
 |------|----------|--------|
-| AI returns confidence < 0.6 | Goes to Log No Action | [ ] |
-| No comment posted | Avoids spam | [ ] |
+| Get files | doc_files.length > 0 | [ ] |
+| AI analysis | needs_doc_update = false | [ ] |
+| No comment posted | Log No Action | [ ] |
 
-### Scenario 4: PR Already Has Docs
+### Scenario 4: Low Confidence
 | Step | Expected | Status |
 |------|----------|--------|
-| PR includes doc files | AI sees docs_included | [ ] |
-| AI determines adequate | needs_doc_update: false | [ ] |
-| No comment posted | [ ] | |
+| AI says needs_doc = true | confidence = 0.4 | [ ] |
+| Has Doc Impact? | False (< 0.6) | [ ] |
+| No comment posted | reason: low_confidence | [ ] |
 
 ---
 
@@ -321,6 +333,11 @@ PR Webhook → Configuration → Is Human PR?
 | | | |
 
 **Workflow Approved**: [ ] Yes [ ] No
+
+### Issues Found
+| Node | Issue | Severity | Resolution |
+|------|-------|----------|------------|
+| | | | |
 
 ---
 
