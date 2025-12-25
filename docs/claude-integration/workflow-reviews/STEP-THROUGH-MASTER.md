@@ -36,18 +36,19 @@
 
 | # | Workflow | Doc | Status | Checked Out By | Nodes | Progress |
 |---|----------|-----|--------|----------------|-------|----------|
-| 1 | Doc Chain - Trigger | [TRIGGER-STEP.md](./TRIGGER-STEP.md) | 📋 Ready | - | 11 | 0/11 |
-| 2 | Doc Chain - Distributor | [DISTRIBUTOR-STEP.md](./DISTRIBUTOR-STEP.md) | 📋 Ready | - | 12 | 0/12 |
-| 3 | Doc Chain - Agent | [AGENT-STEP.md](./AGENT-STEP.md) | 📋 Ready | - | 14 | 0/14 |
-| 4 | Doc Chain - State Reconciliation | [STATE-RECON-STEP.md](./STATE-RECON-STEP.md) | ⚠️ Issues Found | Claude-Session | 32 | Live ✅ (AI ⚠️) |
-| 5 | Doc Chain - Staleness | [STALENESS-STEP.md](./STALENESS-STEP.md) | 🔒 Locked | Claude-Session | 29 | 0/29 |
+| 1 | Doc Chain - Trigger | [TRIGGER-STEP.md](./TRIGGER-STEP.md) | ✅ Static Complete | - | 11 | Static ✅ |
+| 2 | Doc Chain - Distributor | [DISTRIBUTOR-STEP.md](./DISTRIBUTOR-STEP.md) | ✅ Static Complete | - | 24 | Static ✅ |
+| 3 | Doc Chain - Agent | [AGENT-STEP.md](./AGENT-STEP.md) | 🔴 CRITICAL ISSUE | - | 14 | ISSUE-002 |
+| 4 | Doc Chain - State Reconciliation | [STATE-RECON-STEP.md](./STATE-RECON-STEP.md) | ⚠️ Issues Found | - | 32 | ISSUE-001 |
+| 5 | Doc Chain - Staleness | [STALENESS-STEP.md](./STALENESS-STEP.md) | ✅ Static Complete | - | 31 | Live ⏸️ |
 | 6 | Doc Chain - Errors | [ERRORS-STEP.md](./ERRORS-STEP.md) | 📋 Ready | - | 8 | 0/8 |
 | 7 | Doc Chain - Release | [RELEASE-STEP.md](./RELEASE-STEP.md) | 📋 Ready | - | 10 | 0/10 |
 | 8 | Doc Chain - PR Review | [PR-REVIEW-STEP.md](./PR-REVIEW-STEP.md) | 📋 Ready | - | 12 | 0/12 |
 
-**Total Nodes**: 127  
-**Reviewed**: 0  
-**Remaining**: 127
+**Total Nodes**: 142 (updated count)  
+**Reviewed**: 112 (static)
+**Critical Issues**: 1 (ISSUE-002: Exposed Token)
+**Medium Issues**: 1 (ISSUE-001: AI Pipeline)
 
 ---
 
@@ -156,6 +157,10 @@ Agent D: RELEASE-STEP.md + PR-REVIEW-STEP.md
 | 2024-12-24T01:00:00Z | Setup | Created master doc | ALL | Initial setup |
 | 2024-12-25T15:30:00Z | Claude | Created all step-through docs | ALL | 8/8 workflows documented, 127 total nodes |
 | 2024-12-25T16:00:00Z | Claude | Enhanced validation criteria | ALL | Added 3 dimensions: Functional, Logic, Repo State |
+| 2025-12-25T17:00:00Z | Claude | Static validation | State Recon | Live test: Detection ✅, AI remediation ❌ (ISSUE-001) |
+| 2025-12-25T17:15:00Z | Claude | Static validation | Staleness | 31 nodes, live test triggered (async) |
+| 2025-12-25T17:30:00Z | Claude | Static validation | Core Chain | Trigger (11), Distributor (24), Agent (14) |
+| 2025-12-25T17:30:00Z | Claude | 🔴 CRITICAL FINDING | Agent | Exposed GitHub PAT in nodes array (ISSUE-002) |
 
 ---
 
