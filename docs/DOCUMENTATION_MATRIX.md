@@ -75,6 +75,13 @@ This matrix enables:
 | `docs/API_DOCUMENTATION_SUMMARY.md` | 2025-12-06 | ✅ Current | — | app.py | `@api` |
 | `docs/API_COST_TRACKER.md` | 2025-11-16 | ⚠️ Review | — | cost_tracker.py | `@api` |
 
+#### Claude Integration
+| Document | Last Updated | Status | Dependencies | Script References | Owner |
+|----------|--------------|--------|--------------|-------------------|-------|
+| `docs/claude-integration/PROGRESS.md` | 2025-12-10 | 📋 Pending | — | — | `@claude` |
+| `docs/claude-integration/workflow-reviews/SIGN-OFF.md` | 2025-12-10 | 📋 Pending | — | — | `@claude` |
+| `docs/claude-integration/ROADMAP.md` | 2025-12-10 | 📋 Pending | — | — | `@claude` |
+
 #### Testing
 | Document | Last Updated | Status | Dependencies | Script References | Owner |
 |----------|--------------|--------|--------------|-------------------|-------|
@@ -214,6 +221,7 @@ When making changes, update documents in this order:
 | Incremental | `@incremental` | Resume, incremental review | INCREMENTAL_REVIEW_* docs |
 | Output | `@output` | File outputs, formats | OUTPUT_* docs |
 | API | `@api` | REST API, SDK | API_DOCUMENTATION_* |
+| Claude Integration | `@claude` | Claude integration, AI model specifics | claude-integration/ |
 | Testing | `@testing` | Test guides, procedures | TESTING_*, tests/README |
 | Architecture | `@architecture` | System design | architecture/, ORCHESTRATOR_V2 |
 | Deployment | `@deployment` | Docker, scaling | DEPLOYMENT_GUIDE, SCALING_GUIDE |
@@ -243,12 +251,12 @@ When making changes, update documents in this order:
 | Category | Count | Current | Needs Review | Archivable |
 |----------|-------|---------|--------------|------------|
 | Core Docs | 5 | 4 | 1 | 0 |
-| Feature Docs | 27 | 19 | 4 | 4 |
+| Feature Docs | 30 | 19 | 4 | 4 |
 | Guides | 6 | 4 | 1 | 0 |
 | Status/Assessments | 15+ | 0 | 0 | 15+ |
 | Task Cards | 26 | 17 | 1 | 4 |
 | Archive | 76 | — | — | — |
-| **Total** | **253** | **~23** | **~7** | **~43** |
+| **Total** | **256** | **~23** | **~7** | **~43** |
 
 ---
 
