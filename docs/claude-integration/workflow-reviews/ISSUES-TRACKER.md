@@ -1,5 +1,5 @@
 # Workflow Issues Tracker
-**Last Updated:** 2025-12-25T14:30:00Z
+**Last Updated:** 2025-12-26T09:20:00Z
 
 ---
 
@@ -46,37 +46,26 @@ Manual review of mismatch detection output until fixed.
 | **Workflow** | Doc Chain - Agent |
 | **Workflow ID** | 5vQ8lMCyatxB8Fdd |
 | **Severity** | 🔴 CRITICAL |
-| **Status** | 🔴 Open |
+| **Status** | 🟢 Resolved |
 | **Discovered** | 2025-12-25 |
+| **Resolved** | 2025-12-26 |
 
 **Symptom:**
 - GitHub Personal Access Token exposed in workflow nodes array
 - Token visible in: Get File SHA, Commit to GitHub, Fetch Matrix, Commit Matrix Update
 - Token format: `ghp_****REDACTED****` (40 char PAT)
 
-**Impact:**
-- Security vulnerability - token could be exposed via n8n API
-- Potential unauthorized repository access
-- Token may already be compromised
-
-**Root Cause:**
-- Workflow edited in n8n UI but not published
-- Current nodes have hardcoded token
-- activeVersion correctly uses `{{ env.GITHUB_TOKEN }}`
-
-**Immediate Actions Required:**
-1. [ ] Rotate the exposed GitHub PAT immediately
-2. [ ] Update workflow nodes to use only `{{ env.GITHUB_TOKEN }}`
-3. [ ] Publish new workflow version
-4. [ ] Verify no unauthorized access occurred
-
-**Note:** The activeVersion (deployed) uses env vars correctly. The issue is in unpublished edits.
+**Resolution:**
+- ✅ GitHub PAT rotated on 2025-12-26
+- ✅ New token configured in n8n credentials
+- ✅ activeVersion correctly uses `{{ env.GITHUB_TOKEN }}`
 
 ---
 
 ## Resolved Issues
 
-(None yet)
+### ISSUE-002 (Resolved 2025-12-26)
+See above - GitHub PAT rotated successfully.
 
 ---
 
