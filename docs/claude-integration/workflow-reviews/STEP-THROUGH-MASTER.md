@@ -40,15 +40,15 @@
 | 2 | Doc Chain - Distributor | [DISTRIBUTOR-STEP.md](./DISTRIBUTOR-STEP.md) | ✅ Static Complete | - | 24 | Static ✅ |
 | 3 | Doc Chain - Agent | [AGENT-STEP.md](./AGENT-STEP.md) | 🔴 CRITICAL ISSUE | - | 14 | ISSUE-002 |
 | 4 | Doc Chain - State Reconciliation | [STATE-RECON-STEP.md](./STATE-RECON-STEP.md) | ⚠️ Issues Found | - | 32 | ISSUE-001 |
-| 5 | Doc Chain - Staleness | [STALENESS-STEP.md](./STALENESS-STEP.md) | ✅ Static Complete | - | 31 | Live ⏸️ |
-| 6 | Doc Chain - Errors | [ERRORS-STEP.md](./ERRORS-STEP.md) | 📋 Ready | - | 8 | 0/8 |
-| 7 | Doc Chain - Release | [RELEASE-STEP.md](./RELEASE-STEP.md) | 📋 Ready | - | 10 | 0/10 |
-| 8 | Doc Chain - PR Review | [PR-REVIEW-STEP.md](./PR-REVIEW-STEP.md) | 📋 Ready | - | 12 | 0/12 |
+| 5 | Doc Chain - Staleness | [STALENESS-STEP.md](./STALENESS-STEP.md) | ✅ Static Complete | - | 31 | Static ✅ |
+| 6 | Doc Chain - Errors | [ERRORS-STEP.md](./ERRORS-STEP.md) | ✅ Static Complete | - | 8 | Static ✅ |
+| 7 | Doc Chain - Release | [RELEASE-STEP.md](./RELEASE-STEP.md) | ✅ Static Complete | - | 10 | Static ✅ |
+| 8 | Doc Chain - PR Review | [PR-REVIEW-STEP.md](./PR-REVIEW-STEP.md) | ✅ Static Complete | - | 12 | Static ✅ |
 
-**Total Nodes**: 142 (updated count)  
-**Reviewed**: 112 (static)
-**Critical Issues**: 1 (ISSUE-002: Exposed Token)
-**Medium Issues**: 1 (ISSUE-001: AI Pipeline)
+**Total Nodes**: 142
+**Static Validated**: 142 (all workflows)
+**Critical Issues**: 1 (ISSUE-002: Exposed Token in Agent)
+**Medium Issues**: 1 (ISSUE-001: AI Pipeline in State Recon)
 
 ---
 
