@@ -1,8 +1,8 @@
 # E2E Test Trigger Document
 
 **Purpose:** Trigger Core Chain workflow validation
-**Created:** 2025-12-25T09:15:00Z
-**Test ID:** E2E-001
+**Created:** 2025-12-27T10:30:00Z
+**Test ID:** E2E-002
 
 ## Expected Flow
 
@@ -19,7 +19,14 @@
 - [ ] Trigger identifies docs/ path changes
 - [ ] Distributor receives task list
 - [ ] Agent receives task dispatch
+- [ ] Agent commits changes to GitHub (NEW TOKEN TEST)
 - [ ] Agent callback completes
+
+## Test Notes
+
+- Previous test (E2E-001): Agent failed due to invalid GitHub token
+- This test (E2E-002): Token has been rotated and updated in Agent workflow
+- Testing full end-to-end flow with new credentials
 
 ---
 
