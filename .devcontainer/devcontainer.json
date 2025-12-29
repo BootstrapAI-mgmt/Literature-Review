@@ -1,0 +1,54 @@
+{
+  "name": "Literature Review - n8n Integration",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "22"
+    }
+  },
+  
+  "forwardPorts": [5678, 8080],
+  "portsAttributes": {
+    "5678": {
+      "label": "n8n Server",
+      "onAutoForward": "notify"
+    },
+    "8080": {
+      "label": "Dashboard",
+      "onAutoForward": "notify"
+    }
+  },
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "GitHub.vscode-pull-request-github",
+        "eamodio.gitlens"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.terminal.activateEnvironment": true,
+        "editor.formatOnSave": true
+      }
+    }
+  },
+  
+  "postCreateCommand": "pip install -r requirements.txt && cd n8n-server && npm install",
+  
+  "postStartCommand": "echo 'To start n8n: cd n8n-server && ./start-n8n-local.sh'",
+  
+  "remoteEnv": {
+    "N8N_API_URL": "${localEnv:N8N_API_URL:http://localhost:5678/api/v1}"
+  },
+  
+  "secrets": {
+    "N8N_API_KEY": {
+      "description": "API key for n8n server access. Generate in n8n Settings > Personal API Keys."
+    }
+  }
+}

@@ -96,3 +96,9 @@ gap_analysis_output/
 proof_scorecard_output/
 outputs/
 *_output/
+
+# n8n integration symlink (points to n8n-server/)
+n8n_server
+
+# n8n data directory (created when running locally)
+.n8n/
