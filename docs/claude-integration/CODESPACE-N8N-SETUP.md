@@ -2,44 +2,68 @@
 
 This guide covers setting up and using n8n workflow management directly from a GitHub Codespace. This enables AI coding assistants (like GitHub Copilot or Claude) to interact with, view, and manage n8n workflows for more efficient building and troubleshooting.
 
+## 🚀 One-Line Bootstrap
+
+For any new Codespace in this repository, run:
+
+```bash
+source ./bootstrap-n8n.sh
+```
+
+This will:
+- Set up the n8n Cloud URL (`gitlitreview.app.n8n.cloud`)
+- Check for the API key (must be added as a Codespace secret)
+- Install dependencies if needed
+- Test the connection
+
+## Prerequisites (One-Time Setup)
+
+**Add the N8N_API_KEY as a Codespace Secret:**
+
+1. Go to: [Repository Secrets](https://github.com/BootstrapAI-mgmt/Literature-Review/settings/secrets/codespaces)
+2. Click **New repository secret**
+3. Name: `N8N_API_KEY`
+4. Value: Get from n8n Cloud → Settings → Personal API Keys
+5. Click **Add secret**
+
+> **Note**: After adding the secret, you must rebuild the codespace or run `source /etc/environment` for it to take effect.
+
 ## Architecture Overview
 
 ```
 ┌────────────────────────────────────────────────────────────────────┐
 │                      GITHUB CODESPACE                               │
 │  ┌──────────────────┐     ┌──────────────────┐                     │
-│  │  AI Assistant    │────▶│  n8n MCP Server  │                     │
-│  │  (Copilot/Chat)  │◀────│  (Python)        │                     │
+│  │  AI Assistant    │────▶│  bridge.py       │                     │
+│  │  (Copilot/Chat)  │◀────│  (CLI & Library) │                     │
 │  └──────────────────┘     └────────┬─────────┘                     │
-│                                    │                               │
-│  ┌──────────────────┐              │                               │
-│  │  bridge.py       │◀─────────────┘                               │
-│  │  (CLI & Library) │                                              │
-│  └────────┬─────────┘                                              │
-└───────────┼────────────────────────────────────────────────────────┘
-            │
-            ▼ HTTP API
+└───────────────────────────────────┼────────────────────────────────┘
+                                    │
+                                    ▼ HTTP API (JWT Auth)
 ┌──────────────────────────────────────────────────────────────────┐
-│                     n8n SERVER                                    │
+│              n8n CLOUD: gitlitreview.app.n8n.cloud               │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐                 │
 │  │ Doc Chain   │ │ Staleness   │ │   State     │                 │
-│  │ Workflows   │ │ Review      │ │   Recon     │                 │
+│  │ Workflows   │ │ Review      │ │   Recon     │ + 8 more        │
 │  └─────────────┘ └─────────────┘ └─────────────┘                 │
-│                                                                   │
-│  Location: localhost:5678 (local) or external URL (remote)       │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
 ## Quick Start
 
-### Option 1: Connect to Remote n8n Server
-
-If you have n8n running externally (e.g., on a VPS or n8n.cloud):
+### Using the Bootstrap Script (Recommended)
 
 ```bash
-# Set environment variables
-export N8N_API_URL='https://your-n8n-instance.example.com/api/v1'
-export N8N_API_KEY='your-api-key-here'
+# Run once when opening a new codespace
+source ./bootstrap-n8n.sh
+```
+
+### Manual Setup (Alternative)
+
+```bash
+# Set environment variables (already configured via Codespace secret)
+export N8N_API_URL='https://gitlitreview.app.n8n.cloud/api/v1'
+# N8N_API_KEY should be set via Codespace secret
 
 # Test connection
 python3 n8n-server/bridge.py health
@@ -48,7 +72,7 @@ python3 n8n-server/bridge.py health
 python3 n8n-server/bridge.py list
 ```
 
-### Option 2: Run n8n Locally in Codespace
+### Running n8n Locally (Development Only)
 
 For development/testing with a local n8n instance:
 

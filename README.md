@@ -10,6 +10,16 @@ AI-powered pipeline for conducting comprehensive literature reviews across **any
 
 ## Quick Start
 
+### 🔧 GitHub Codespace Setup
+
+For Codespaces, bootstrap the n8n integration with:
+
+```bash
+source ./bootstrap-n8n.sh
+```
+
+This enables AI-assisted workflow management. See [Codespace n8n Setup](docs/claude-integration/CODESPACE-N8N-SETUP.md) for details.
+
 ### 🌐 Web Dashboard (NEW!)
 
 Launch the web dashboard for a user-friendly interface:

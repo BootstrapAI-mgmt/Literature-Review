@@ -11,7 +11,7 @@
   "forwardPorts": [5678, 8080],
   "portsAttributes": {
     "5678": {
-      "label": "n8n Server",
+      "label": "n8n Server (local)",
       "onAutoForward": "notify"
     },
     "8080": {
@@ -38,17 +38,17 @@
     }
   },
   
-  "postCreateCommand": "pip install -r requirements.txt && cd n8n-server && npm install",
+  "postCreateCommand": "pip install -r requirements.txt && cd n8n-server && npm install && chmod +x *.sh 2>/dev/null || true",
   
-  "postStartCommand": "echo 'To start n8n: cd n8n-server && ./start-n8n-local.sh'",
+  "postStartCommand": "echo '✅ n8n integration ready. Run: python3 n8n-server/bridge.py health'",
   
   "remoteEnv": {
-    "N8N_API_URL": "${localEnv:N8N_API_URL:http://localhost:5678/api/v1}"
+    "N8N_API_URL": "https://gitlitreview.app.n8n.cloud/api/v1"
   },
   
   "secrets": {
     "N8N_API_KEY": {
-      "description": "API key for n8n server access. Generate in n8n Settings > Personal API Keys."
+      "description": "API key for n8n Cloud (gitlitreview.app.n8n.cloud). Get from n8n Settings > Personal API Keys."
     }
   }
 }
