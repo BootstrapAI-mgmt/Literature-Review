@@ -1314,6 +1314,11 @@
       "**Status:** Complete"
     ]
   },
+  "script_to_docs": {
+    "pipeline_orchestrator.py": [
+      "docs/USER_MANUAL.md"
+    ]
+  },
   "field_descriptions": {
     "created_date": "Date the document was first created (from git history)",
     "last_reviewed": "Date the document was last reviewed by human or AI agent",
