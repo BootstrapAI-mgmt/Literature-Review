@@ -13,6 +13,7 @@
   "type": "commonjs",
   "dependencies": {
     "@leonardsellem/n8n-mcp-server": "^0.1.8",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "n8n": "^2.1.3"
   }
 }

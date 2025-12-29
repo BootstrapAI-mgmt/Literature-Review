@@ -1,0 +1,963 @@
+﻿{
+    "updatedAt":  "2025-12-25T00:56:13.724Z",
+    "createdAt":  "2025-12-25T00:56:13.724Z",
+    "id":  "03ONuhFTJGDhmtJ9",
+    "name":  "Doc Chain - PR Review",
+    "description":  null,
+    "active":  true,
+    "isArchived":  false,
+    "nodes":  [
+                  {
+                      "id":  "pr-webhook",
+                      "name":  "PR Webhook",
+                      "type":  "n8n-nodes-base.webhook",
+                      "notes":  "Receives GitHub PR webhooks for opened and synchronize events",
+                      "position":  [
+                                       0,
+                                       0
+                                   ],
+                      "webhookId":  "pr-review-webhook",
+                      "parameters":  {
+                                         "path":  "/pr-review",
+                                         "options":  {
+
+                                                     },
+                                         "httpMethod":  "POST"
+                                     },
+                      "typeVersion":  2.1
+                  },
+                  {
+                      "id":  "config",
+                      "name":  "Configuration",
+                      "type":  "n8n-nodes-base.set",
+                      "position":  [
+                                       224,
+                                       0
+                                   ],
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "assignments":  {
+                                                             "assignments":  [
+                                                                                 {
+                                                                                     "id":  "c1",
+                                                                                     "name":  "pr_number",
+                                                                                     "type":  "number",
+                                                                                     "value":  "={{ $json.body?.pull_request?.number || $json.body?.number }}"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "c2",
+                                                                                     "name":  "pr_title",
+                                                                                     "type":  "string",
+                                                                                     "value":  "={{ $json.body?.pull_request?.title || \u0027Unknown\u0027 }}"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "c3",
+                                                                                     "name":  "pr_author",
+                                                                                     "type":  "string",
+                                                                                     "value":  "={{ $json.body?.pull_request?.user?.login || \u0027unknown\u0027 }}"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "c4",
+                                                                                     "name":  "pr_action",
+                                                                                     "type":  "string",
+                                                                                     "value":  "={{ $json.body?.action || \u0027unknown\u0027 }}"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "c5",
+                                                                                     "name":  "repo_owner",
+                                                                                     "type":  "string",
+                                                                                     "value":  "BootstrapAI-mgmt"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "c6",
+                                                                                     "name":  "repo_name",
+                                                                                     "type":  "string",
+                                                                                     "value":  "Literature-Review"
+                                                                                 },
+                                                                                 {
+                                                                                     "id":  "c7",
+                                                                                     "name":  "is_bot",
+                                                                                     "type":  "boolean",
+                                                                                     "value":  "={{ $json.body?.pull_request?.user?.type === \u0027Bot\u0027 || $json.body?.sender?.type === \u0027Bot\u0027 }}"
+                                                                                 }
+                                                                             ]
+                                                         },
+                                         "includeOtherFields":  false
+                                     },
+                      "typeVersion":  3.4
+                  },
+                  {
+                      "id":  "is-human",
+                      "name":  "Is Human PR?",
+                      "type":  "n8n-nodes-base.if",
+                      "position":  [
+                                       448,
+                                       0
+                                   ],
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "version":  2,
+                                                                            "leftValue":  "",
+                                                                            "caseSensitive":  true,
+                                                                            "typeValidation":  "strict"
+                                                                        },
+                                                            "combinator":  "and",
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "human-check",
+                                                                                   "operator":  {
+                                                                                                    "type":  "boolean",
+                                                                                                    "operation":  "false",
+                                                                                                    "singleValue":  true
+                                                                                                },
+                                                                                   "leftValue":  "={{ $json.is_bot }}"
+                                                                               }
+                                                                           ]
+                                                        }
+                                     },
+                      "typeVersion":  2.2
+                  },
+                  {
+                      "id":  "skip-bot",
+                      "name":  "Skip Bot PR",
+                      "type":  "n8n-nodes-base.code",
+                      "position":  [
+                                       672,
+                                       100
+                                   ],
+                      "parameters":  {
+                                         "jsCode":  "return { status: \u0027skipped\u0027, reason: \u0027bot_pr\u0027, pr_author: $json.pr_author };"
+                                     },
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "get-files",
+                      "name":  "Get PR Files",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "position":  [
+                                       672,
+                                       -100
+                                   ],
+                      "parameters":  {
+                                         "url":  "=https://api.github.com/repos/{{ $json.repo_owner }}/{{ $json.repo_name }}/pulls/{{ $json.pr_number }}/files",
+                                         "options":  {
+                                                         "response":  {
+                                                                          "response":  {
+                                                                                           "responseFormat":  "json"
+                                                                                       }
+                                                                      }
+                                                     },
+                                         "sendHeaders":  true,
+                                         "authentication":  "genericCredentialType",
+                                         "genericAuthType":  "httpHeaderAuth",
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Accept",
+                                                                                         "value":  "application/vnd.github.v3+json"
+                                                                                     }
+                                                                                 ]
+                                                              }
+                                     },
+                      "credentials":  {
+                                          "httpHeaderAuth":  {
+                                                                 "id":  "Ho5S7HOxBPdmEAL0",
+                                                                 "name":  "Header Auth account"
+                                                             }
+                                      },
+                      "typeVersion":  4.3
+                  },
+                  {
+                      "id":  "analyze-files",
+                      "name":  "Analyze Files",
+                      "type":  "n8n-nodes-base.code",
+                      "position":  [
+                                       896,
+                                       -100
+                                   ],
+                      "parameters":  {
+                                         "jsCode":  "const config = $(\u0027Configuration\u0027).first().json;\nconst files = $input.first().json;\n\n// Handle array response\nconst fileList = Array.isArray(files) ? files : [];\n\n// Categorize files\nconst codeFiles = [];\nconst docFiles = [];\nconst configFiles = [];\n\nfor (const file of fileList) {\n  const path = file.filename || \u0027\u0027;\n  const ext = path.split(\u0027.\u0027).pop()?.toLowerCase() || \u0027\u0027;\n  \n  if (path.startsWith(\u0027docs/\u0027) || path.endsWith(\u0027.md\u0027) || path.endsWith(\u0027.rst\u0027)) {\n    docFiles.push({ path, status: file.status, changes: file.changes });\n  } else if ([\u0027py\u0027, \u0027js\u0027, \u0027ts\u0027, \u0027jsx\u0027, \u0027tsx\u0027, \u0027java\u0027, \u0027go\u0027, \u0027rs\u0027].includes(ext)) {\n    codeFiles.push({ path, status: file.status, changes: file.changes, patch: file.patch?.slice(0, 500) });\n  } else if ([\u0027json\u0027, \u0027yaml\u0027, \u0027yml\u0027, \u0027toml\u0027, \u0027ini\u0027, \u0027env\u0027].includes(ext) || path.includes(\u0027config\u0027)) {\n    configFiles.push({ path, status: file.status, changes: file.changes });\n  }\n}\n\nreturn {\n  ...config,\n  total_files: fileList.length,\n  code_files: codeFiles,\n  doc_files: docFiles,\n  config_files: configFiles,\n  code_changed: codeFiles.length \u003e 0,\n  docs_included: docFiles.length \u003e 0,\n  summary: `${codeFiles.length} code, ${docFiles.length} docs, ${configFiles.length} config files`\n};"
+                                     },
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "ai-analysis",
+                      "name":  "AI Doc Impact Analysis",
+                      "type":  "@n8n/n8n-nodes-langchain.agent",
+                      "position":  [
+                                       1120,
+                                       -100
+                                   ],
+                      "parameters":  {
+                                         "text":  "=Analyze this Pull Request for documentation impact.\n\nPR Title: {{ $json.pr_title }}\nPR Author: {{ $json.pr_author }}\n\nCode files changed ({{ $json.code_files.length }}):\n{{ $json.code_files.map(f =\u003e \u0027- \u0027 + f.path + \u0027 (\u0027 + f.status + \u0027, \u0027 + f.changes + \u0027 changes)\u0027).join(\u0027\\n\u0027) || \u0027None\u0027 }}\n\nDoc files changed ({{ $json.doc_files.length }}):\n{{ $json.doc_files.map(f =\u003e \u0027- \u0027 + f.path + \u0027 (\u0027 + f.status + \u0027)\u0027).join(\u0027\\n\u0027) || \u0027None\u0027 }}\n\nConfig files changed ({{ $json.config_files.length }}):\n{{ $json.config_files.map(f =\u003e \u0027- \u0027 + f.path).join(\u0027\\n\u0027) || \u0027None\u0027 }}\n\nCode patches (truncated):\n{{ $json.code_files.slice(0, 3).map(f =\u003e \u0027### \u0027 + f.path + \u0027\\n```\\n\u0027 + (f.patch || \u0027No patch available\u0027) + \u0027\\n```\u0027).join(\u0027\\n\\n\u0027) }}\n\nRespond with JSON only:\n{\n  \"needs_doc_update\": true/false,\n  \"confidence\": 0.0-1.0,\n  \"affected_docs\": [\"list of docs that may need updates\"],\n  \"suggestions\": [\"specific suggestions for documentation\"],\n  \"summary\": \"brief explanation\"\n}",
+                                         "options":  {
+                                                         "systemMessage":  "You are a documentation impact analyzer. Review pull request changes and determine if documentation updates are needed.\n\nConsider:\n1. New features or APIs that need documenting\n2. Changed behavior that affects existing docs\n3. Removed functionality that should be removed from docs\n4. Configuration changes that need doc updates\n5. Whether doc files are already included in the PR\n\nBe conservative - only flag needs_doc_update=true if there\u0027s a clear documentation gap.\nIf docs are already included and appear adequate, needs_doc_update should be false."
+                                                     },
+                                         "promptType":  "define"
+                                     },
+                      "typeVersion":  3
+                  },
+                  {
+                      "id":  "gemini",
+                      "name":  "Gemini Chat",
+                      "type":  "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+                      "position":  [
+                                       1120,
+                                       100
+                                   ],
+                      "parameters":  {
+                                         "options":  {
+
+                                                     }
+                                     },
+                      "credentials":  {
+                                          "googlePalmApi":  {
+                                                                "id":  "kJmLsDFHzgrlPJhY",
+                                                                "name":  "Google Gemini(PaLM) Api account"
+                                                            }
+                                      },
+                      "typeVersion":  1
+                  },
+                  {
+                      "id":  "parse-response",
+                      "name":  "Parse AI Response",
+                      "type":  "n8n-nodes-base.code",
+                      "position":  [
+                                       1344,
+                                       -100
+                                   ],
+                      "parameters":  {
+                                         "jsCode":  "const config = $(\u0027Analyze Files\u0027).first().json;\nconst response = $input.first().json;\nconst text = response.output || response.text || JSON.stringify(response);\n\nlet analysis;\ntry {\n  const jsonMatch = text.match(/```json\\n?([\\s\\S]*?)\\n?```/) || text.match(/\\{[\\s\\S]*\\}/);\n  analysis = JSON.parse(jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text);\n} catch (e) {\n  analysis = {\n    needs_doc_update: false,\n    confidence: 0.3,\n    affected_docs: [],\n    suggestions: [],\n    summary: \u0027Could not parse AI response\u0027\n  };\n}\n\nreturn {\n  ...config,\n  needs_doc_update: analysis.needs_doc_update === true,\n  confidence: analysis.confidence || 0.5,\n  affected_docs: analysis.affected_docs || [],\n  suggestions: analysis.suggestions || [],\n  ai_summary: analysis.summary || \u0027Analysis complete\u0027\n};"
+                                     },
+                      "typeVersion":  2
+                  },
+                  {
+                      "id":  "has-impact",
+                      "name":  "Has Doc Impact?",
+                      "type":  "n8n-nodes-base.if",
+                      "position":  [
+                                       1568,
+                                       -100
+                                   ],
+                      "parameters":  {
+                                         "options":  {
+
+                                                     },
+                                         "conditions":  {
+                                                            "options":  {
+                                                                            "version":  2,
+                                                                            "leftValue":  "",
+                                                                            "caseSensitive":  true,
+                                                                            "typeValidation":  "strict"
+                                                                        },
+                                                            "combinator":  "and",
+                                                            "conditions":  [
+                                                                               {
+                                                                                   "id":  "impact-check",
+                                                                                   "operator":  {
+                                                                                                    "type":  "boolean",
+                                                                                                    "operation":  "true",
+                                                                                                    "singleValue":  true
+                                                                                                },
+                                                                                   "leftValue":  "={{ $json.needs_doc_update === true \u0026\u0026 $json.confidence \u003e= 0.6 }}"
+                                                                               }
+                                                                           ]
+                                                        }
+                                     },
+                      "typeVersion":  2.2
+                  },
+                  {
+                      "id":  "post-comment",
+                      "name":  "Post Review Comment",
+                      "type":  "n8n-nodes-base.httpRequest",
+                      "position":  [
+                                       1792,
+                                       -180
+                                   ],
+                      "parameters":  {
+                                         "url":  "=https://api.github.com/repos/{{ $json.repo_owner }}/{{ $json.repo_name }}/pulls/{{ $json.pr_number }}/reviews",
+                                         "method":  "POST",
+                                         "options":  {
+
+                                                     },
+                                         "jsonBody":  "={\n  \"body\": \"## 📚 Documentation Review\\n\\n**AI Analysis** (confidence: {{ ($json.confidence * 100).toFixed(0) }}%)\\n\\n{{ $json.ai_summary }}\\n\\n### Affected Documentation\\n\\n{{ $json.affected_docs.length \u003e 0 ? $json.affected_docs.map(d =\u003e \u0027- `\u0027 + d + \u0027`\u0027).join(\u0027\\\\n\u0027) : \u0027No specific docs identified\u0027 }}\\n\\n### Suggestions\\n\\n{{ $json.suggestions.length \u003e 0 ? $json.suggestions.map((s, i) =\u003e (i+1) + \u0027. \u0027 + s).join(\u0027\\\\n\u0027) : \u0027No specific suggestions\u0027 }}\\n\\n---\\n*This review was generated automatically by Doc Chain - PR Review*\",\n  \"event\": \"COMMENT\"\n}",
+                                         "sendBody":  true,
+                                         "sendHeaders":  true,
+                                         "specifyBody":  "json",
+                                         "authentication":  "genericCredentialType",
+                                         "genericAuthType":  "httpHeaderAuth",
+                                         "headerParameters":  {
+                                                                  "parameters":  [
+                                                                                     {
+                                                                                         "name":  "Accept",
+                                                                                         "value":  "application/vnd.github.v3+json"
+                                                                                     }
+                                                                                 ]
+                                                              }
+                                     },
+                      "credentials":  {
+                                          "httpHeaderAuth":  {
+                                                                 "id":  "Ho5S7HOxBPdmEAL0",
+                                                                 "name":  "Header Auth account"
+                                                             }
+                                      },
+                      "typeVersion":  4.3
+                  },
+                  {
+                      "id":  "log-no-action",
+                      "name":  "Log No Action",
+                      "type":  "n8n-nodes-base.code",
+                      "position":  [
+                                       1792,
+                                       -20
+                                   ],
+                      "parameters":  {
+                                         "jsCode":  "return {\n  status: \u0027no_action\u0027,\n  pr_number: $json.pr_number,\n  pr_title: $json.pr_title,\n  reason: $json.needs_doc_update ? \u0027low_confidence\u0027 : \u0027no_doc_impact\u0027,\n  confidence: $json.confidence,\n  summary: $json.ai_summary\n};"
+                                     },
+                      "typeVersion":  2
+                  }
+              ],
+    "connections":  {
+                        "Configuration":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Is Human PR?",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "Is Human PR?":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "Get PR Files",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ],
+                                                          [
+                                                              {
+                                                                  "node":  "Skip Bot PR",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                                      ]
+                                         },
+                        "PR Webhook":  {
+                                           "main":  [
+                                                        [
+                                                            {
+                                                                "node":  "Configuration",
+                                                                "type":  "main",
+                                                                "index":  0
+                                                            }
+                                                        ]
+                                                    ]
+                                       },
+                        "Get PR Files":  {
+                                             "main":  [
+                                                          [
+                                                              {
+                                                                  "node":  "Analyze Files",
+                                                                  "type":  "main",
+                                                                  "index":  0
+                                                              }
+                                                          ]
+                                                      ]
+                                         },
+                        "Analyze Files":  {
+                                              "main":  [
+                                                           [
+                                                               {
+                                                                   "node":  "Has Doc Impact?",
+                                                                   "type":  "main",
+                                                                   "index":  0
+                                                               }
+                                                           ]
+                                                       ]
+                                          },
+                        "Has Doc Impact?":  {
+                                                "main":  [
+                                                             [
+                                                                 {
+                                                                     "node":  "Post Review Comment",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ],
+                                                             [
+                                                                 {
+                                                                     "node":  "Log No Action",
+                                                                     "type":  "main",
+                                                                     "index":  0
+                                                                 }
+                                                             ]
+                                                         ]
+                                            },
+                        "Gemini Chat":  {
+                                            "ai_languageModel":  [
+                                                                     [
+                                                                         {
+                                                                             "node":  "AI Doc Impact Analysis",
+                                                                             "type":  "ai_languageModel",
+                                                                             "index":  0
+                                                                         }
+                                                                     ]
+                                                                 ]
+                                        },
+                        "AI Doc Impact Analysis":  {
+                                                       "main":  [
+                                                                    [
+                                                                        {
+                                                                            "node":  "Parse AI Response",
+                                                                            "type":  "main",
+                                                                            "index":  0
+                                                                        }
+                                                                    ]
+                                                                ]
+                                                   },
+                        "Parse AI Response":  {
+                                                  "main":  [
+                                                               [
+                                                                   {
+                                                                       "node":  "Has Doc Impact?",
+                                                                       "type":  "main",
+                                                                       "index":  0
+                                                                   }
+                                                               ]
+                                                           ]
+                                              }
+                    },
+    "settings":  {
+                     "saveExecutionProgress":  true,
+                     "saveManualExecutions":  true,
+                     "saveDataErrorExecution":  "all",
+                     "saveDataSuccessExecution":  "all",
+                     "executionTimeout":  3600,
+                     "timezone":  "UTC",
+                     "callerPolicy":  "workflowsFromSameOwner",
+                     "availableInMCP":  false
+                 },
+    "staticData":  null,
+    "meta":  null,
+    "pinData":  null,
+    "versionId":  "4074216b-ab80-464e-ac1c-fc44ae40bc13",
+    "activeVersionId":  "4074216b-ab80-464e-ac1c-fc44ae40bc13",
+    "versionCounter":  4,
+    "triggerCount":  1,
+    "shared":  [
+                   {
+                       "updatedAt":  "2025-12-25T00:56:13.727Z",
+                       "createdAt":  "2025-12-25T00:56:13.727Z",
+                       "role":  "workflow:owner",
+                       "workflowId":  "03ONuhFTJGDhmtJ9",
+                       "projectId":  "PRnR04izdxw9gkqL",
+                       "project":  {
+                                       "updatedAt":  "2025-12-23T16:37:31.675Z",
+                                       "createdAt":  "2025-12-23T16:08:01.602Z",
+                                       "id":  "PRnR04izdxw9gkqL",
+                                       "name":  "Joshua Coleman \u003cjcoleman@captech.edu\u003e",
+                                       "type":  "personal",
+                                       "icon":  null,
+                                       "description":  null,
+                                       "creatorId":  "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+                                       "projectRelations":  [
+                                                                {
+                                                                    "updatedAt":  "2025-12-23T16:08:01.602Z",
+                                                                    "createdAt":  "2025-12-23T16:08:01.602Z",
+                                                                    "userId":  "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+                                                                    "projectId":  "PRnR04izdxw9gkqL",
+                                                                    "user":  {
+                                                                                 "updatedAt":  "2025-12-28T19:01:34.000Z",
+                                                                                 "createdAt":  "2025-12-23T16:08:01.276Z",
+                                                                                 "id":  "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+                                                                                 "email":  "jcoleman@captech.edu",
+                                                                                 "firstName":  "Joshua",
+                                                                                 "lastName":  "Coleman",
+                                                                                 "personalizationAnswers":  {
+                                                                                                                "version":  "v4",
+                                                                                                                "personalization_survey_submitted_at":  "2025-12-23T16:37:34.976Z",
+                                                                                                                "personalization_survey_n8n_version":  "2.1.3"
+                                                                                                            },
+                                                                                 "settings":  {
+                                                                                                  "userActivated":  true,
+                                                                                                  "easyAIWorkflowOnboarded":  true,
+                                                                                                  "firstSuccessfulWorkflowId":  "5vQ8lMCyatxB8Fdd",
+                                                                                                  "userActivatedAt":  1766948206272
+                                                                                              },
+                                                                                 "disabled":  false,
+                                                                                 "mfaEnabled":  false,
+                                                                                 "lastActiveAt":  "2025-12-27",
+                                                                                 "isPending":  false
+                                                                             }
+                                                                }
+                                                            ]
+                                   }
+                   }
+               ],
+    "tags":  [
+
+             ],
+    "activeVersion":  {
+                          "updatedAt":  "2025-12-25T00:58:12.000Z",
+                          "createdAt":  "2025-12-25T00:56:13.731Z",
+                          "versionId":  "4074216b-ab80-464e-ac1c-fc44ae40bc13",
+                          "workflowId":  "03ONuhFTJGDhmtJ9",
+                          "nodes":  [
+                                        {
+                                            "id":  "pr-webhook",
+                                            "name":  "PR Webhook",
+                                            "type":  "n8n-nodes-base.webhook",
+                                            "notes":  "Receives GitHub PR webhooks for opened and synchronize events",
+                                            "position":  [
+                                                             0,
+                                                             0
+                                                         ],
+                                            "webhookId":  "pr-review-webhook",
+                                            "parameters":  {
+                                                               "path":  "/pr-review",
+                                                               "options":  {
+
+                                                                           },
+                                                               "httpMethod":  "POST"
+                                                           },
+                                            "typeVersion":  2.1
+                                        },
+                                        {
+                                            "id":  "config",
+                                            "name":  "Configuration",
+                                            "type":  "n8n-nodes-base.set",
+                                            "position":  [
+                                                             224,
+                                                             0
+                                                         ],
+                                            "parameters":  {
+                                                               "options":  {
+
+                                                                           },
+                                                               "assignments":  {
+                                                                                   "assignments":  [
+                                                                                                       {
+                                                                                                           "id":  "c1",
+                                                                                                           "name":  "pr_number",
+                                                                                                           "type":  "number",
+                                                                                                           "value":  "={{ $json.body?.pull_request?.number || $json.body?.number }}"
+                                                                                                       },
+                                                                                                       {
+                                                                                                           "id":  "c2",
+                                                                                                           "name":  "pr_title",
+                                                                                                           "type":  "string",
+                                                                                                           "value":  "={{ $json.body?.pull_request?.title || \u0027Unknown\u0027 }}"
+                                                                                                       },
+                                                                                                       {
+                                                                                                           "id":  "c3",
+                                                                                                           "name":  "pr_author",
+                                                                                                           "type":  "string",
+                                                                                                           "value":  "={{ $json.body?.pull_request?.user?.login || \u0027unknown\u0027 }}"
+                                                                                                       },
+                                                                                                       {
+                                                                                                           "id":  "c4",
+                                                                                                           "name":  "pr_action",
+                                                                                                           "type":  "string",
+                                                                                                           "value":  "={{ $json.body?.action || \u0027unknown\u0027 }}"
+                                                                                                       },
+                                                                                                       {
+                                                                                                           "id":  "c5",
+                                                                                                           "name":  "repo_owner",
+                                                                                                           "type":  "string",
+                                                                                                           "value":  "BootstrapAI-mgmt"
+                                                                                                       },
+                                                                                                       {
+                                                                                                           "id":  "c6",
+                                                                                                           "name":  "repo_name",
+                                                                                                           "type":  "string",
+                                                                                                           "value":  "Literature-Review"
+                                                                                                       },
+                                                                                                       {
+                                                                                                           "id":  "c7",
+                                                                                                           "name":  "is_bot",
+                                                                                                           "type":  "boolean",
+                                                                                                           "value":  "={{ $json.body?.pull_request?.user?.type === \u0027Bot\u0027 || $json.body?.sender?.type === \u0027Bot\u0027 }}"
+                                                                                                       }
+                                                                                                   ]
+                                                                               },
+                                                               "includeOtherFields":  false
+                                                           },
+                                            "typeVersion":  3.4
+                                        },
+                                        {
+                                            "id":  "is-human",
+                                            "name":  "Is Human PR?",
+                                            "type":  "n8n-nodes-base.if",
+                                            "position":  [
+                                                             448,
+                                                             0
+                                                         ],
+                                            "parameters":  {
+                                                               "options":  {
+
+                                                                           },
+                                                               "conditions":  {
+                                                                                  "options":  {
+                                                                                                  "version":  2,
+                                                                                                  "leftValue":  "",
+                                                                                                  "caseSensitive":  true,
+                                                                                                  "typeValidation":  "strict"
+                                                                                              },
+                                                                                  "combinator":  "and",
+                                                                                  "conditions":  [
+                                                                                                     {
+                                                                                                         "id":  "human-check",
+                                                                                                         "operator":  {
+                                                                                                                          "type":  "boolean",
+                                                                                                                          "operation":  "false",
+                                                                                                                          "singleValue":  true
+                                                                                                                      },
+                                                                                                         "leftValue":  "={{ $json.is_bot }}"
+                                                                                                     }
+                                                                                                 ]
+                                                                              }
+                                                           },
+                                            "typeVersion":  2.2
+                                        },
+                                        {
+                                            "id":  "skip-bot",
+                                            "name":  "Skip Bot PR",
+                                            "type":  "n8n-nodes-base.code",
+                                            "position":  [
+                                                             672,
+                                                             100
+                                                         ],
+                                            "parameters":  {
+                                                               "jsCode":  "return { status: \u0027skipped\u0027, reason: \u0027bot_pr\u0027, pr_author: $json.pr_author };"
+                                                           },
+                                            "typeVersion":  2
+                                        },
+                                        {
+                                            "id":  "get-files",
+                                            "name":  "Get PR Files",
+                                            "type":  "n8n-nodes-base.httpRequest",
+                                            "position":  [
+                                                             672,
+                                                             -100
+                                                         ],
+                                            "parameters":  {
+                                                               "url":  "=https://api.github.com/repos/{{ $json.repo_owner }}/{{ $json.repo_name }}/pulls/{{ $json.pr_number }}/files",
+                                                               "options":  {
+                                                                               "response":  {
+                                                                                                "response":  {
+                                                                                                                 "responseFormat":  "json"
+                                                                                                             }
+                                                                                            }
+                                                                           },
+                                                               "sendHeaders":  true,
+                                                               "authentication":  "genericCredentialType",
+                                                               "genericAuthType":  "httpHeaderAuth",
+                                                               "headerParameters":  {
+                                                                                        "parameters":  [
+                                                                                                           {
+                                                                                                               "name":  "Accept",
+                                                                                                               "value":  "application/vnd.github.v3+json"
+                                                                                                           }
+                                                                                                       ]
+                                                                                    }
+                                                           },
+                                            "credentials":  {
+                                                                "httpHeaderAuth":  {
+                                                                                       "id":  "Ho5S7HOxBPdmEAL0",
+                                                                                       "name":  "Header Auth account"
+                                                                                   }
+                                                            },
+                                            "typeVersion":  4.3
+                                        },
+                                        {
+                                            "id":  "analyze-files",
+                                            "name":  "Analyze Files",
+                                            "type":  "n8n-nodes-base.code",
+                                            "position":  [
+                                                             896,
+                                                             -100
+                                                         ],
+                                            "parameters":  {
+                                                               "jsCode":  "const config = $(\u0027Configuration\u0027).first().json;\nconst files = $input.first().json;\n\n// Handle array response\nconst fileList = Array.isArray(files) ? files : [];\n\n// Categorize files\nconst codeFiles = [];\nconst docFiles = [];\nconst configFiles = [];\n\nfor (const file of fileList) {\n  const path = file.filename || \u0027\u0027;\n  const ext = path.split(\u0027.\u0027).pop()?.toLowerCase() || \u0027\u0027;\n  \n  if (path.startsWith(\u0027docs/\u0027) || path.endsWith(\u0027.md\u0027) || path.endsWith(\u0027.rst\u0027)) {\n    docFiles.push({ path, status: file.status, changes: file.changes });\n  } else if ([\u0027py\u0027, \u0027js\u0027, \u0027ts\u0027, \u0027jsx\u0027, \u0027tsx\u0027, \u0027java\u0027, \u0027go\u0027, \u0027rs\u0027].includes(ext)) {\n    codeFiles.push({ path, status: file.status, changes: file.changes, patch: file.patch?.slice(0, 500) });\n  } else if ([\u0027json\u0027, \u0027yaml\u0027, \u0027yml\u0027, \u0027toml\u0027, \u0027ini\u0027, \u0027env\u0027].includes(ext) || path.includes(\u0027config\u0027)) {\n    configFiles.push({ path, status: file.status, changes: file.changes });\n  }\n}\n\nreturn {\n  ...config,\n  total_files: fileList.length,\n  code_files: codeFiles,\n  doc_files: docFiles,\n  config_files: configFiles,\n  code_changed: codeFiles.length \u003e 0,\n  docs_included: docFiles.length \u003e 0,\n  summary: `${codeFiles.length} code, ${docFiles.length} docs, ${configFiles.length} config files`\n};"
+                                                           },
+                                            "typeVersion":  2
+                                        },
+                                        {
+                                            "id":  "ai-analysis",
+                                            "name":  "AI Doc Impact Analysis",
+                                            "type":  "@n8n/n8n-nodes-langchain.agent",
+                                            "position":  [
+                                                             1120,
+                                                             -100
+                                                         ],
+                                            "parameters":  {
+                                                               "text":  "=Analyze this Pull Request for documentation impact.\n\nPR Title: {{ $json.pr_title }}\nPR Author: {{ $json.pr_author }}\n\nCode files changed ({{ $json.code_files.length }}):\n{{ $json.code_files.map(f =\u003e \u0027- \u0027 + f.path + \u0027 (\u0027 + f.status + \u0027, \u0027 + f.changes + \u0027 changes)\u0027).join(\u0027\\n\u0027) || \u0027None\u0027 }}\n\nDoc files changed ({{ $json.doc_files.length }}):\n{{ $json.doc_files.map(f =\u003e \u0027- \u0027 + f.path + \u0027 (\u0027 + f.status + \u0027)\u0027).join(\u0027\\n\u0027) || \u0027None\u0027 }}\n\nConfig files changed ({{ $json.config_files.length }}):\n{{ $json.config_files.map(f =\u003e \u0027- \u0027 + f.path).join(\u0027\\n\u0027) || \u0027None\u0027 }}\n\nCode patches (truncated):\n{{ $json.code_files.slice(0, 3).map(f =\u003e \u0027### \u0027 + f.path + \u0027\\n```\\n\u0027 + (f.patch || \u0027No patch available\u0027) + \u0027\\n```\u0027).join(\u0027\\n\\n\u0027) }}\n\nRespond with JSON only:\n{\n  \"needs_doc_update\": true/false,\n  \"confidence\": 0.0-1.0,\n  \"affected_docs\": [\"list of docs that may need updates\"],\n  \"suggestions\": [\"specific suggestions for documentation\"],\n  \"summary\": \"brief explanation\"\n}",
+                                                               "options":  {
+                                                                               "systemMessage":  "You are a documentation impact analyzer. Review pull request changes and determine if documentation updates are needed.\n\nConsider:\n1. New features or APIs that need documenting\n2. Changed behavior that affects existing docs\n3. Removed functionality that should be removed from docs\n4. Configuration changes that need doc updates\n5. Whether doc files are already included in the PR\n\nBe conservative - only flag needs_doc_update=true if there\u0027s a clear documentation gap.\nIf docs are already included and appear adequate, needs_doc_update should be false."
+                                                                           },
+                                                               "promptType":  "define"
+                                                           },
+                                            "typeVersion":  3
+                                        },
+                                        {
+                                            "id":  "gemini",
+                                            "name":  "Gemini Chat",
+                                            "type":  "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+                                            "position":  [
+                                                             1120,
+                                                             100
+                                                         ],
+                                            "parameters":  {
+                                                               "options":  {
+
+                                                                           }
+                                                           },
+                                            "credentials":  {
+                                                                "googlePalmApi":  {
+                                                                                      "id":  "kJmLsDFHzgrlPJhY",
+                                                                                      "name":  "Google Gemini(PaLM) Api account"
+                                                                                  }
+                                                            },
+                                            "typeVersion":  1
+                                        },
+                                        {
+                                            "id":  "parse-response",
+                                            "name":  "Parse AI Response",
+                                            "type":  "n8n-nodes-base.code",
+                                            "position":  [
+                                                             1344,
+                                                             -100
+                                                         ],
+                                            "parameters":  {
+                                                               "jsCode":  "const config = $(\u0027Analyze Files\u0027).first().json;\nconst response = $input.first().json;\nconst text = response.output || response.text || JSON.stringify(response);\n\nlet analysis;\ntry {\n  const jsonMatch = text.match(/```json\\n?([\\s\\S]*?)\\n?```/) || text.match(/\\{[\\s\\S]*\\}/);\n  analysis = JSON.parse(jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text);\n} catch (e) {\n  analysis = {\n    needs_doc_update: false,\n    confidence: 0.3,\n    affected_docs: [],\n    suggestions: [],\n    summary: \u0027Could not parse AI response\u0027\n  };\n}\n\nreturn {\n  ...config,\n  needs_doc_update: analysis.needs_doc_update === true,\n  confidence: analysis.confidence || 0.5,\n  affected_docs: analysis.affected_docs || [],\n  suggestions: analysis.suggestions || [],\n  ai_summary: analysis.summary || \u0027Analysis complete\u0027\n};"
+                                                           },
+                                            "typeVersion":  2
+                                        },
+                                        {
+                                            "id":  "has-impact",
+                                            "name":  "Has Doc Impact?",
+                                            "type":  "n8n-nodes-base.if",
+                                            "position":  [
+                                                             1568,
+                                                             -100
+                                                         ],
+                                            "parameters":  {
+                                                               "options":  {
+
+                                                                           },
+                                                               "conditions":  {
+                                                                                  "options":  {
+                                                                                                  "version":  2,
+                                                                                                  "leftValue":  "",
+                                                                                                  "caseSensitive":  true,
+                                                                                                  "typeValidation":  "strict"
+                                                                                              },
+                                                                                  "combinator":  "and",
+                                                                                  "conditions":  [
+                                                                                                     {
+                                                                                                         "id":  "impact-check",
+                                                                                                         "operator":  {
+                                                                                                                          "type":  "boolean",
+                                                                                                                          "operation":  "true",
+                                                                                                                          "singleValue":  true
+                                                                                                                      },
+                                                                                                         "leftValue":  "={{ $json.needs_doc_update === true \u0026\u0026 $json.confidence \u003e= 0.6 }}"
+                                                                                                     }
+                                                                                                 ]
+                                                                              }
+                                                           },
+                                            "typeVersion":  2.2
+                                        },
+                                        {
+                                            "id":  "post-comment",
+                                            "name":  "Post Review Comment",
+                                            "type":  "n8n-nodes-base.httpRequest",
+                                            "position":  [
+                                                             1792,
+                                                             -180
+                                                         ],
+                                            "parameters":  {
+                                                               "url":  "=https://api.github.com/repos/{{ $json.repo_owner }}/{{ $json.repo_name }}/pulls/{{ $json.pr_number }}/reviews",
+                                                               "method":  "POST",
+                                                               "options":  {
+
+                                                                           },
+                                                               "jsonBody":  "={\n  \"body\": \"## 📚 Documentation Review\\n\\n**AI Analysis** (confidence: {{ ($json.confidence * 100).toFixed(0) }}%)\\n\\n{{ $json.ai_summary }}\\n\\n### Affected Documentation\\n\\n{{ $json.affected_docs.length \u003e 0 ? $json.affected_docs.map(d =\u003e \u0027- `\u0027 + d + \u0027`\u0027).join(\u0027\\\\n\u0027) : \u0027No specific docs identified\u0027 }}\\n\\n### Suggestions\\n\\n{{ $json.suggestions.length \u003e 0 ? $json.suggestions.map((s, i) =\u003e (i+1) + \u0027. \u0027 + s).join(\u0027\\\\n\u0027) : \u0027No specific suggestions\u0027 }}\\n\\n---\\n*This review was generated automatically by Doc Chain - PR Review*\",\n  \"event\": \"COMMENT\"\n}",
+                                                               "sendBody":  true,
+                                                               "sendHeaders":  true,
+                                                               "specifyBody":  "json",
+                                                               "authentication":  "genericCredentialType",
+                                                               "genericAuthType":  "httpHeaderAuth",
+                                                               "headerParameters":  {
+                                                                                        "parameters":  [
+                                                                                                           {
+                                                                                                               "name":  "Accept",
+                                                                                                               "value":  "application/vnd.github.v3+json"
+                                                                                                           }
+                                                                                                       ]
+                                                                                    }
+                                                           },
+                                            "credentials":  {
+                                                                "httpHeaderAuth":  {
+                                                                                       "id":  "Ho5S7HOxBPdmEAL0",
+                                                                                       "name":  "Header Auth account"
+                                                                                   }
+                                                            },
+                                            "typeVersion":  4.3
+                                        },
+                                        {
+                                            "id":  "log-no-action",
+                                            "name":  "Log No Action",
+                                            "type":  "n8n-nodes-base.code",
+                                            "position":  [
+                                                             1792,
+                                                             -20
+                                                         ],
+                                            "parameters":  {
+                                                               "jsCode":  "return {\n  status: \u0027no_action\u0027,\n  pr_number: $json.pr_number,\n  pr_title: $json.pr_title,\n  reason: $json.needs_doc_update ? \u0027low_confidence\u0027 : \u0027no_doc_impact\u0027,\n  confidence: $json.confidence,\n  summary: $json.ai_summary\n};"
+                                                           },
+                                            "typeVersion":  2
+                                        }
+                                    ],
+                          "connections":  {
+                                              "Configuration":  {
+                                                                    "main":  [
+                                                                                 [
+                                                                                     {
+                                                                                         "node":  "Is Human PR?",
+                                                                                         "type":  "main",
+                                                                                         "index":  0
+                                                                                     }
+                                                                                 ]
+                                                                             ]
+                                                                },
+                                              "Is Human PR?":  {
+                                                                   "main":  [
+                                                                                [
+                                                                                    {
+                                                                                        "node":  "Get PR Files",
+                                                                                        "type":  "main",
+                                                                                        "index":  0
+                                                                                    }
+                                                                                ],
+                                                                                [
+                                                                                    {
+                                                                                        "node":  "Skip Bot PR",
+                                                                                        "type":  "main",
+                                                                                        "index":  0
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                               },
+                                              "PR Webhook":  {
+                                                                 "main":  [
+                                                                              [
+                                                                                  {
+                                                                                      "node":  "Configuration",
+                                                                                      "type":  "main",
+                                                                                      "index":  0
+                                                                                  }
+                                                                              ]
+                                                                          ]
+                                                             },
+                                              "Get PR Files":  {
+                                                                   "main":  [
+                                                                                [
+                                                                                    {
+                                                                                        "node":  "Analyze Files",
+                                                                                        "type":  "main",
+                                                                                        "index":  0
+                                                                                    }
+                                                                                ]
+                                                                            ]
+                                                               },
+                                              "Analyze Files":  {
+                                                                    "main":  [
+                                                                                 [
+                                                                                     {
+                                                                                         "node":  "Has Doc Impact?",
+                                                                                         "type":  "main",
+                                                                                         "index":  0
+                                                                                     }
+                                                                                 ]
+                                                                             ]
+                                                                },
+                                              "Has Doc Impact?":  {
+                                                                      "main":  [
+                                                                                   [
+                                                                                       {
+                                                                                           "node":  "Post Review Comment",
+                                                                                           "type":  "main",
+                                                                                           "index":  0
+                                                                                       }
+                                                                                   ],
+                                                                                   [
+                                                                                       {
+                                                                                           "node":  "Log No Action",
+                                                                                           "type":  "main",
+                                                                                           "index":  0
+                                                                                       }
+                                                                                   ]
+                                                                               ]
+                                                                  },
+                                              "Gemini Chat":  {
+                                                                  "ai_languageModel":  [
+                                                                                           [
+                                                                                               {
+                                                                                                   "node":  "AI Doc Impact Analysis",
+                                                                                                   "type":  "ai_languageModel",
+                                                                                                   "index":  0
+                                                                                               }
+                                                                                           ]
+                                                                                       ]
+                                                              },
+                                              "AI Doc Impact Analysis":  {
+                                                                             "main":  [
+                                                                                          [
+                                                                                              {
+                                                                                                  "node":  "Parse AI Response",
+                                                                                                  "type":  "main",
+                                                                                                  "index":  0
+                                                                                              }
+                                                                                          ]
+                                                                                      ]
+                                                                         },
+                                              "Parse AI Response":  {
+                                                                        "main":  [
+                                                                                     [
+                                                                                         {
+                                                                                             "node":  "Has Doc Impact?",
+                                                                                             "type":  "main",
+                                                                                             "index":  0
+                                                                                         }
+                                                                                     ]
+                                                                                 ]
+                                                                    }
+                                          },
+                          "authors":  "Joshua Coleman",
+                          "name":  "PRR-V001",
+                          "description":  "",
+                          "autosaved":  false,
+                          "workflowPublishHistory":  [
+                                                         {
+                                                             "createdAt":  "2025-12-25T00:58:12.451Z",
+                                                             "id":  11,
+                                                             "workflowId":  "03ONuhFTJGDhmtJ9",
+                                                             "versionId":  "4074216b-ab80-464e-ac1c-fc44ae40bc13",
+                                                             "event":  "activated",
+                                                             "userId":  "519211d5-3194-4461-a8e5-a0a0ada3b87d"
+                                                         }
+                                                     ]
+                      }
+}

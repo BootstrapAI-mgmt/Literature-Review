@@ -1,0 +1,166 @@
+{
+  "name": "Doc Chain - Release",
+  "id": "4Qn2t3z6HgJwEBEH",
+  "active": true,
+  "createdAt": "2025-12-29T02:00:54.739Z",
+  "updatedAt": "2025-12-29T02:01:37.037Z",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/release-automation",
+        "options": {}
+      },
+      "id": "release-webhook",
+      "name": "Release Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "webhookId": "release-automation-webhook",
+      "notes": "Trigger release automation. Body: {\"tag\": \"v1.0.0\"} or auto-detect latest"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {"id": "cfg-1", "name": "repo_owner", "value": "BootstrapAI-mgmt", "type": "string"},
+            {"id": "cfg-2", "name": "repo_name", "value": "Literature-Review", "type": "string"},
+            {"id": "cfg-3", "name": "tag", "value": "={{ $json.body?.tag || 'latest' }}", "type": "string"}
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [224, 0]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.repo_owner }}/{{ $json.repo_name }}/tags?per_page=5",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {"parameters": [{"name": "Accept", "value": "application/vnd.github.v3+json"}]},
+        "options": {"response": {"response": {"responseFormat": "json"}}}
+      },
+      "id": "get-tags",
+      "name": "Get Recent Tags",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [448, 0],
+      "credentials": {"httpHeaderAuth": {"id": "fyw3BXAWU6V3IPEx", "name": "Header Auth account"}}
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Configuration').first().json;\nconst tags = $input.first().json;\n\nconst tagList = Array.isArray(tags) ? tags : [];\n\nif (tagList.length === 0) {\n  return { error: 'No tags found in repository', current_tag: null, previous_tag: null };\n}\n\nlet currentTag, previousTag;\nif (config.tag === 'latest') {\n  currentTag = tagList[0];\n  previousTag = tagList[1] || null;\n} else {\n  const tagIndex = tagList.findIndex(t => t.name === config.tag);\n  if (tagIndex === -1) {\n    return { error: `Tag ${config.tag} not found`, current_tag: null, previous_tag: null };\n  }\n  currentTag = tagList[tagIndex];\n  previousTag = tagList[tagIndex + 1] || null;\n}\n\nreturn {\n  current_tag: currentTag.name,\n  current_sha: currentTag.commit?.sha,\n  previous_tag: previousTag?.name || null,\n  previous_sha: previousTag?.commit?.sha || null,\n  repo_owner: config.repo_owner,\n  repo_name: config.repo_name\n};"
+      },
+      "id": "parse-tags",
+      "name": "Parse Tags",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 0]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {"caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2},
+          "conditions": [{"id": "has-tags", "leftValue": "={{ $json.current_tag !== null }}", "operator": {"type": "boolean", "operation": "true", "singleValue": true}}],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "has-tags-check",
+      "name": "Has Tags?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [896, 0]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.repo_owner }}/{{ $json.repo_name }}/compare/{{ $json.previous_sha || $json.current_sha + '~10' }}...{{ $json.current_sha }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {"parameters": [{"name": "Accept", "value": "application/vnd.github.v3+json"}]},
+        "options": {"response": {"response": {"responseFormat": "json"}}}
+      },
+      "id": "get-commits",
+      "name": "Get Commits Since Previous",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1120, -80],
+      "credentials": {"httpHeaderAuth": {"id": "fyw3BXAWU6V3IPEx", "name": "Header Auth account"}}
+    },
+    {
+      "parameters": {
+        "jsCode": "const tagInfo = $('Parse Tags').first().json;\nconst comparison = $input.first().json;\nconst commits = comparison.commits || [];\n\nconst categories = {\n  feat: { title: '✨ Features', items: [] },\n  fix: { title: '🐛 Bug Fixes', items: [] },\n  docs: { title: '📚 Documentation', items: [] },\n  chore: { title: '🔧 Maintenance', items: [] },\n  refactor: { title: '♻️ Refactoring', items: [] },\n  test: { title: '🧪 Tests', items: [] },\n  other: { title: '📝 Other Changes', items: [] }\n};\n\nfor (const commit of commits) {\n  const message = commit.commit?.message?.split('\\n')[0] || '';\n  if (message.startsWith('Merge ') || message.startsWith('[n8n]')) continue;\n  const match = message.match(/^(\\w+)(\\([^)]+\\))?:\\s*(.+)/);\n  if (match) {\n    const type = match[1].toLowerCase();\n    const scope = match[2] || '';\n    const desc = match[3];\n    const category = categories[type] || categories.other;\n    category.items.push(`- ${scope}${desc} (${commit.sha?.slice(0, 7)})`);\n  } else {\n    categories.other.items.push(`- ${message} (${commit.sha?.slice(0, 7)})`);\n  }\n}\n\nlet changelog = `# Release ${tagInfo.current_tag}\\n\\n`;\nif (tagInfo.previous_tag) {\n  changelog += `**Full Changelog**: ${tagInfo.previous_tag}...${tagInfo.current_tag}\\n\\n`;\n}\n\nfor (const [key, cat] of Object.entries(categories)) {\n  if (cat.items.length > 0) {\n    changelog += `## ${cat.title}\\n\\n${cat.items.join('\\n')}\\n\\n`;\n  }\n}\n\nchangelog += `---\\n*Generated automatically by Doc Chain - Release workflow*`;\n\nreturn {\n  tag: tagInfo.current_tag,\n  previous_tag: tagInfo.previous_tag,\n  commit_count: commits.length,\n  changelog: changelog,\n  repo_owner: tagInfo.repo_owner,\n  repo_name: tagInfo.repo_name\n};"
+      },
+      "id": "generate-changelog",
+      "name": "Generate Changelog",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1344, -80]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $json.repo_owner }}/{{ $json.repo_name }}/releases",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {"parameters": [{"name": "Accept", "value": "application/vnd.github.v3+json"}]},
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"tag_name\": \"{{ $json.tag }}\",\n  \"name\": \"{{ $json.tag }}\",\n  \"body\": {{ JSON.stringify($json.changelog) }},\n  \"draft\": false,\n  \"prerelease\": {{ $json.tag.includes('-') }}\n}",
+        "options": {},
+        "method": "POST"
+      },
+      "id": "create-release",
+      "name": "Create GitHub Release",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [1568, -80],
+      "credentials": {"httpHeaderAuth": {"id": "fyw3BXAWU6V3IPEx", "name": "Header Auth account"}}
+    },
+    {
+      "parameters": {
+        "jsCode": "const release = $input.first().json;\nconst changelog = $('Generate Changelog').first().json;\n\nreturn {\n  status: 'success',\n  release_url: release.html_url,\n  tag: changelog.tag,\n  commit_count: changelog.commit_count,\n  message: `Release ${changelog.tag} created successfully`\n};"
+      },
+      "id": "success-log",
+      "name": "Log Success",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1792, -80]
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  status: 'error',\n  message: $('Parse Tags').first().json.error || 'No valid tags found',\n  tag: null\n};"
+      },
+      "id": "error-log",
+      "name": "Log Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 80]
+    }
+  ],
+  "connections": {
+    "Release Trigger": {"main": [[{"node": "Configuration", "type": "main", "index": 0}]]},
+    "Configuration": {"main": [[{"node": "Get Recent Tags", "type": "main", "index": 0}]]},
+    "Get Recent Tags": {"main": [[{"node": "Parse Tags", "type": "main", "index": 0}]]},
+    "Parse Tags": {"main": [[{"node": "Has Tags?", "type": "main", "index": 0}]]},
+    "Has Tags?": {"main": [[{"node": "Get Commits Since Previous", "type": "main", "index": 0}], [{"node": "Log Error", "type": "main", "index": 0}]]},
+    "Get Commits Since Previous": {"main": [[{"node": "Generate Changelog", "type": "main", "index": 0}]]},
+    "Generate Changelog": {"main": [[{"node": "Create GitHub Release", "type": "main", "index": 0}]]},
+    "Create GitHub Release": {"main": [[{"node": "Log Success", "type": "main", "index": 0}]]}
+  },
+  "settings": {
+    "saveExecutionProgress": true,
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "executionTimeout": 3600,
+    "timezone": "UTC"
+  }
+}
