@@ -6,309 +6,9 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 
-// ============================================================================
-// Configuration
-// ============================================================================
-const N8N_CLOUD_URL = "https://gitlitreview.app.n8n.cloud";
-const N8N_LOCAL_URL = "http://localhost:5678";
+// n8n Cloud Configuration
+const N8N_BASE_URL = "https://gitlitreview.app.n8n.cloud/webhook";
 
-// Default to cloud, can be overridden via environment
-const N8N_BASE_URL = process.env.N8N_WEBHOOK_URL || N8N_CLOUD_URL;
-
-// ============================================================================
-// Helper Functions
-// ============================================================================
-async function makeRequest(url, method = "GET", headers = {}, body = null) {
-  const response = await fetch(url, {
-    method,
-    headers: { "Content-Type": "application/json", ...headers },
-    body: body ? (typeof body === "string" ? body : JSON.stringify(body)) : undefined,
-  });
-
-  const responseText = await response.text();
-  let parsedBody;
-  try {
-    parsedBody = JSON.parse(responseText);
-  } catch {
-    parsedBody = responseText;
-  }
-
-  return {
-    status: response.status,
-    statusText: response.statusText,
-    body: parsedBody,
-  };
-}
-
-function formatResponse(result) {
-  return {
-    content: [
-      {
-        type: "text",
-        text: JSON.stringify(result, null, 2),
-      },
-    ],
-  };
-}
-
-function formatError(error) {
-  return {
-    content: [
-      {
-        type: "text",
-        text: `Error: ${error.message}`,
-      },
-    ],
-    isError: true,
-  };
-}
-
-// ============================================================================
-// Tool Definitions
-// ============================================================================
-const tools = [
-  // Generic curl tool
-  {
-    name: "curl",
-    description: "Make an HTTP request (like curl) from the local machine. Use this to bypass proxy restrictions or access local services.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        url: { type: "string", description: "The URL to request" },
-        method: { type: "string", description: "HTTP method (GET, POST, PUT, DELETE, etc.)", default: "GET" },
-        headers: { type: "object", description: "HTTP headers" },
-        body: { type: "string", description: "Request body (for POST/PUT/etc). If JSON, pass as stringified JSON." },
-      },
-      required: ["url"],
-    },
-  },
-
-  // n8n Distributor Status
-  {
-    name: "n8n_status",
-    description: "Get the current status of the n8n Doc Chain Distributor including pending tasks, in-progress task, and completion stats.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        use_local: { type: "boolean", description: "Use local n8n instead of cloud (default: false)", default: false },
-      },
-    },
-  },
-
-  // n8n Distributor Reset
-  {
-    name: "n8n_reset",
-    description: "Reset the n8n Distributor state, clearing all pending and in-progress tasks. Use with caution.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        use_local: { type: "boolean", description: "Use local n8n instead of cloud (default: false)", default: false },
-        confirm: { type: "boolean", description: "Must be true to execute reset", default: false },
-      },
-      required: ["confirm"],
-    },
-  },
-
-  // Trigger State Reconciliation
-  {
-    name: "n8n_reconcile",
-    description: "Trigger the State Reconciliation workflow to scan for documentation mismatches and generate correction tasks.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        use_local: { type: "boolean", description: "Use local n8n instead of cloud (default: false)", default: false },
-        scan_type: { type: "string", description: "Type of scan: 'quick' or 'deep' (default: deep)", default: "deep" },
-      },
-    },
-  },
-
-  // Submit Task to Distributor
-  {
-    name: "n8n_submit_task",
-    description: "Submit a documentation task to the n8n Distributor for processing by the Agent workflow.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        use_local: { type: "boolean", description: "Use local n8n instead of cloud (default: false)", default: false },
-        task_id: { type: "string", description: "Unique identifier for this task" },
-        document: { type: "string", description: "Path to the document (e.g., 'docs/README.md')" },
-        update_type: { type: "string", description: "Type of update: STATUS_UPDATE, CONTENT_REFRESH, REVIEW_NEEDED, etc." },
-        description: { type: "string", description: "Description of what needs to be done" },
-        priority: { type: "number", description: "Priority level (1=highest, 5=lowest)", default: 3 },
-      },
-      required: ["task_id", "document", "update_type", "description"],
-    },
-  },
-
-  // Trigger Staleness Review
-  {
-    name: "n8n_staleness_check",
-    description: "Trigger the Staleness Review workflow to identify outdated documentation.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        use_local: { type: "boolean", description: "Use local n8n instead of cloud (default: false)", default: false },
-      },
-    },
-  },
-
-  // Claude Feedback Loop - Send message to n8n for Antigravity processing
-  {
-    name: "n8n_claude_message",
-    description: "Send a message from Claude to n8n for processing by Antigravity or other agents. Part of the Claude ↔ n8n ↔ Antigravity feedback loop.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        use_local: { type: "boolean", description: "Use local n8n instead of cloud (default: false)", default: false },
-        message_type: { 
-          type: "string", 
-          description: "Type of message: 'task_request', 'status_query', 'feedback', 'instruction'",
-          enum: ["task_request", "status_query", "feedback", "instruction"]
-        },
-        payload: { type: "object", description: "Message payload with context and data" },
-        callback_requested: { type: "boolean", description: "Whether to request a callback response", default: true },
-        priority: { type: "string", description: "Message priority: 'high', 'normal', 'low'", default: "normal" },
-      },
-      required: ["message_type", "payload"],
-    },
-  },
-
-  // Get execution history summary
-  {
-    name: "n8n_history",
-    description: "Get a summary of recent n8n workflow executions for debugging and monitoring.",
-    inputSchema: {
-      type: "object",
-      properties: {
-        use_local: { type: "boolean", description: "Use local n8n instead of cloud (default: false)", default: false },
-        workflow: { type: "string", description: "Filter by workflow name (optional)", default: "" },
-        limit: { type: "number", description: "Number of executions to retrieve", default: 10 },
-      },
-    },
-  },
-];
-
-// ============================================================================
-// Tool Handlers
-// ============================================================================
-async function handleCurl(args) {
-  const { url, method = "GET", headers = {}, body } = args;
-  const result = await makeRequest(url, method, headers, body);
-  return formatResponse(result);
-}
-
-async function handleN8nStatus(args) {
-  const baseUrl = args.use_local ? N8N_LOCAL_URL : N8N_BASE_URL;
-  const result = await makeRequest(`${baseUrl}/webhook/distributor-status`);
-  return formatResponse({
-    source: args.use_local ? "local" : "cloud",
-    ...result,
-  });
-}
-
-async function handleN8nReset(args) {
-  if (!args.confirm) {
-    return formatResponse({
-      error: "Reset requires confirm: true",
-      message: "This will clear all pending and in-progress tasks. Set confirm: true to proceed.",
-    });
-  }
-  const baseUrl = args.use_local ? N8N_LOCAL_URL : N8N_BASE_URL;
-  const result = await makeRequest(`${baseUrl}/webhook/distributor-reset`, "POST");
-  return formatResponse({
-    source: args.use_local ? "local" : "cloud",
-    action: "reset",
-    ...result,
-  });
-}
-
-async function handleN8nReconcile(args) {
-  const baseUrl = args.use_local ? N8N_LOCAL_URL : N8N_BASE_URL;
-  const result = await makeRequest(
-    `${baseUrl}/webhook/state-reconciliation`,
-    "POST",
-    {},
-    { scan_type: args.scan_type || "deep" }
-  );
-  return formatResponse({
-    source: args.use_local ? "local" : "cloud",
-    action: "reconciliation",
-    ...result,
-  });
-}
-
-async function handleN8nSubmitTask(args) {
-  const baseUrl = args.use_local ? N8N_LOCAL_URL : N8N_BASE_URL;
-  const payload = {
-    update_list_id: `claude-${Date.now()}`,
-    source: "claude-mcp-bridge",
-    trigger: {
-      type: "claude_request",
-      message: "Task submitted via Claude MCP bridge",
-    },
-    tasks: [
-      {
-        task_id: args.task_id,
-        document: args.document,
-        update_type: args.update_type,
-        description: args.description,
-        priority: args.priority || 3,
-      },
-    ],
-  };
-  const result = await makeRequest(`${baseUrl}/webhook/task-distributor`, "POST", {}, payload);
-  return formatResponse({
-    source: args.use_local ? "local" : "cloud",
-    action: "submit_task",
-    task_id: args.task_id,
-    ...result,
-  });
-}
-
-async function handleN8nStalenessCheck(args) {
-  const baseUrl = args.use_local ? N8N_LOCAL_URL : N8N_BASE_URL;
-  const result = await makeRequest(`${baseUrl}/webhook/staleness-review`, "POST");
-  return formatResponse({
-    source: args.use_local ? "local" : "cloud",
-    action: "staleness_check",
-    ...result,
-  });
-}
-
-async function handleN8nClaudeMessage(args) {
-  const baseUrl = args.use_local ? N8N_LOCAL_URL : N8N_BASE_URL;
-  const payload = {
-    source: "claude",
-    message_type: args.message_type,
-    payload: args.payload,
-    callback_requested: args.callback_requested !== false,
-    priority: args.priority || "normal",
-    timestamp: new Date().toISOString(),
-    session_id: `claude-session-${Date.now()}`,
-  };
-  const result = await makeRequest(`${baseUrl}/webhook/claude-bridge`, "POST", {}, payload);
-  return formatResponse({
-    source: args.use_local ? "local" : "cloud",
-    action: "claude_message",
-    message_type: args.message_type,
-    ...result,
-  });
-}
-
-async function handleN8nHistory(args) {
-  // This requires n8n API access, so we provide guidance
-  return formatResponse({
-    source: args.use_local ? "local" : "cloud",
-    action: "history",
-    note: "Use the n8n MCP server (n8n:list_executions) for detailed execution history.",
-    hint: "This tool is a placeholder - full history requires n8n API authentication.",
-    suggestion: "Try: n8n:list_executions with limit parameter",
-  });
-}
-
-// ============================================================================
-// Server Setup
-// ============================================================================
 const server = new Server(
   {
     name: "curl-bridge-server",
@@ -322,36 +22,319 @@ const server = new Server(
 );
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-  return { tools };
+  return {
+    tools: [
+      {
+        name: "curl",
+        description: "Make an HTTP request (like curl) from the local machine. Use this to bypass proxy restrictions or access local services.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            url: {
+              type: "string",
+              description: "The URL to request",
+            },
+            method: {
+              type: "string",
+              description: "HTTP method (GET, POST, PUT, DELETE, etc.)",
+              default: "GET",
+            },
+            headers: {
+              type: "object",
+              description: "HTTP headers",
+            },
+            body: {
+              type: "string",
+              description: "Request body (for POST/PUT/etc). If JSON, pass as stringified JSON.",
+            },
+          },
+          required: ["url"],
+        },
+      },
+      // n8n Distributor Status
+      {
+        name: "n8n_status",
+        description: "Get the current status of the n8n Distributor workflow including pending tasks, in-progress task, and completion history.",
+        inputSchema: {
+          type: "object",
+          properties: {},
+          required: [],
+        },
+      },
+      // n8n Distributor Reset
+      {
+        name: "n8n_reset",
+        description: "Reset the n8n Distributor state, clearing all pending and in-progress tasks. Use with caution.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            confirm: {
+              type: "boolean",
+              description: "Must be true to confirm the reset operation",
+            },
+          },
+          required: ["confirm"],
+        },
+      },
+      // n8n State Reconciliation
+      {
+        name: "n8n_reconcile",
+        description: "Trigger the State Reconciliation workflow to scan for documentation mismatches and generate correction tasks.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            scan_type: {
+              type: "string",
+              description: "Type of scan: 'quick' or 'deep' (default: deep)",
+              default: "deep",
+            },
+          },
+          required: [],
+        },
+      },
+      // n8n Submit Task
+      {
+        name: "n8n_submit_task",
+        description: "Submit a task directly to the n8n Distributor for processing.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            document: {
+              type: "string",
+              description: "Path to the document (e.g., 'docs/README.md')",
+            },
+            update_type: {
+              type: "string",
+              description: "Type of update: STATUS_UPDATE, CONTENT_REVIEW, MISMATCH_CORRECTION",
+            },
+            description: {
+              type: "string",
+              description: "Description of the task",
+            },
+            priority: {
+              type: "number",
+              description: "Task priority (1=highest, 5=lowest)",
+              default: 3,
+            },
+          },
+          required: ["document", "update_type", "description"],
+        },
+      },
+      // n8n Health Check
+      {
+        name: "n8n_health",
+        description: "Check if all n8n workflows are responsive and healthy.",
+        inputSchema: {
+          type: "object",
+          properties: {},
+          required: [],
+        },
+      },
+      // Claude-Antigravity Bridge: Send message to workflow
+      {
+        name: "antigravity_send",
+        description: "Send a message or command from Claude to Antigravity via n8n webhook. This enables Claude to communicate with Antigravity agents.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            message_type: {
+              type: "string",
+              description: "Type of message: 'command', 'query', 'notification', 'task_request'",
+            },
+            payload: {
+              type: "object",
+              description: "Message payload - can contain any structured data for Antigravity",
+            },
+            callback_expected: {
+              type: "boolean",
+              description: "Whether Claude expects a callback response from Antigravity",
+              default: false,
+            },
+          },
+          required: ["message_type", "payload"],
+        },
+      },
+      // Claude-Antigravity Bridge: Query Antigravity status
+      {
+        name: "antigravity_query",
+        description: "Query the Antigravity system status and capabilities through the n8n bridge.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            query_type: {
+              type: "string",
+              description: "Type of query: 'status', 'capabilities', 'active_tasks', 'history'",
+            },
+          },
+          required: ["query_type"],
+        },
+      },
+    ],
+  };
 });
+
+// Helper function for HTTP requests
+async function makeRequest(url, method = "GET", headers = {}, body = null) {
+  try {
+    const options = {
+      method,
+      headers: { "Content-Type": "application/json", ...headers },
+    };
+    if (body) {
+      options.body = typeof body === "string" ? body : JSON.stringify(body);
+    }
+    
+    const response = await fetch(url, options);
+    const responseText = await response.text();
+    
+    let responseData;
+    try {
+      responseData = JSON.parse(responseText);
+    } catch {
+      responseData = responseText;
+    }
+    
+    return {
+      status: response.status,
+      statusText: response.statusText,
+      data: responseData,
+    };
+  } catch (error) {
+    return { error: error.message };
+  }
+}
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
 
-  try {
-    switch (name) {
-      case "curl":
-        return await handleCurl(args);
-      case "n8n_status":
-        return await handleN8nStatus(args);
-      case "n8n_reset":
-        return await handleN8nReset(args);
-      case "n8n_reconcile":
-        return await handleN8nReconcile(args);
-      case "n8n_submit_task":
-        return await handleN8nSubmitTask(args);
-      case "n8n_staleness_check":
-        return await handleN8nStalenessCheck(args);
-      case "n8n_claude_message":
-        return await handleN8nClaudeMessage(args);
-      case "n8n_history":
-        return await handleN8nHistory(args);
-      default:
-        throw new Error(`Tool not found: ${name}`);
-    }
-  } catch (error) {
-    return formatError(error);
+  // Generic curl handler
+  if (name === "curl") {
+    const { url, method = "GET", headers = {}, body } = args;
+    const result = await makeRequest(url, method, headers, body);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      isError: !!result.error,
+    };
   }
+
+  // n8n Status handler
+  if (name === "n8n_status") {
+    const result = await makeRequest(`${N8N_BASE_URL}/distributor-status`);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      isError: !!result.error,
+    };
+  }
+
+  // n8n Reset handler
+  if (name === "n8n_reset") {
+    if (!args.confirm) {
+      return {
+        content: [{ type: "text", text: "Reset not confirmed. Set confirm: true to proceed." }],
+        isError: true,
+      };
+    }
+    const result = await makeRequest(`${N8N_BASE_URL}/distributor-reset`, "POST");
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      isError: !!result.error,
+    };
+  }
+
+  // n8n Reconciliation handler
+  if (name === "n8n_reconcile") {
+    const payload = { scan_type: args.scan_type || "deep" };
+    const result = await makeRequest(`${N8N_BASE_URL}/state-reconciliation`, "POST", {}, payload);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      isError: !!result.error,
+    };
+  }
+
+  // n8n Submit Task handler
+  if (name === "n8n_submit_task") {
+    const taskId = `claude-task-${Date.now()}`;
+    const payload = {
+      update_list_id: `claude-${Date.now()}`,
+      source: "claude-bridge",
+      trigger: { type: "claude", message: "Task submitted via Claude MCP bridge" },
+      tasks: [{
+        task_id: taskId,
+        document: args.document,
+        update_type: args.update_type,
+        description: args.description,
+        priority: args.priority || 3,
+      }],
+    };
+    const result = await makeRequest(`${N8N_BASE_URL}/task-distributor`, "POST", {}, payload);
+    return {
+      content: [{ type: "text", text: JSON.stringify({ task_id: taskId, ...result }, null, 2) }],
+      isError: !!result.error,
+    };
+  }
+
+  // n8n Health Check handler
+  if (name === "n8n_health") {
+    const endpoints = [
+      { name: "Distributor", url: `${N8N_BASE_URL}/distributor-status` },
+      { name: "State Reconciliation", url: `${N8N_BASE_URL}/state-reconciliation` },
+    ];
+    
+    const results = await Promise.all(
+      endpoints.map(async (ep) => {
+        const start = Date.now();
+        const result = await makeRequest(ep.url, "GET");
+        return {
+          name: ep.name,
+          status: result.status === 200 ? "healthy" : "unhealthy",
+          response_time_ms: Date.now() - start,
+          details: result.error || result.statusText,
+        };
+      })
+    );
+    
+    const allHealthy = results.every((r) => r.status === "healthy");
+    return {
+      content: [{
+        type: "text",
+        text: JSON.stringify({ overall: allHealthy ? "healthy" : "degraded", services: results }, null, 2),
+      }],
+      isError: !allHealthy,
+    };
+  }
+
+  // Antigravity Send handler
+  if (name === "antigravity_send") {
+    const payload = {
+      source: "claude",
+      timestamp: new Date().toISOString(),
+      message_type: args.message_type,
+      payload: args.payload,
+      callback_expected: args.callback_expected || false,
+      correlation_id: `claude-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    };
+    const result = await makeRequest(`${N8N_BASE_URL}/claude-antigravity-bridge`, "POST", {}, payload);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      isError: !!result.error,
+    };
+  }
+
+  // Antigravity Query handler
+  if (name === "antigravity_query") {
+    const payload = {
+      source: "claude",
+      query_type: args.query_type,
+      timestamp: new Date().toISOString(),
+    };
+    const result = await makeRequest(`${N8N_BASE_URL}/antigravity-status`, "POST", {}, payload);
+    return {
+      content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+      isError: !!result.error,
+    };
+  }
+
+  throw new Error(`Tool not found: ${name}`);
 });
 
 const transport = new StdioServerTransport();
