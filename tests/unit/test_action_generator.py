@@ -646,3 +646,36 @@ class TestChainDependencies:
         # First action should block second
         assert len(actions[0]["blocks"]) == 1
         assert actions[1]["generation_id"] == actions[0]["blocks"][0]
+
+
+class TestErrorHandling:
+    """Tests for error handling."""
+    
+    def test_file_not_found_error(self):
+        """Test that FileNotFoundError is raised for missing file."""
+        with pytest.raises(FileNotFoundError, match="Pillar definitions file not found"):
+            ActionGenerator("/nonexistent/path/definitions.json")
+    
+    def test_invalid_json_error(self, tmp_path):
+        """Test that JSONDecodeError is raised for invalid JSON."""
+        invalid_file = tmp_path / "invalid.json"
+        with open(invalid_file, 'w') as f:
+            f.write("{ invalid json }")
+        
+        with pytest.raises(json.JSONDecodeError):
+            ActionGenerator(str(invalid_file))
+    
+    def test_invalid_version_history_handled(self, tmp_path):
+        """Test that invalid version history is handled gracefully."""
+        definitions = {"Pillar 1: Test": {"requirements": {}}}
+        pillar_path = tmp_path / "pillar.json"
+        with open(pillar_path, 'w') as f:
+            json.dump(definitions, f)
+        
+        invalid_history = tmp_path / "history.json"
+        with open(invalid_history, 'w') as f:
+            f.write("{ invalid }")
+        
+        # Should not raise, just log warning
+        generator = ActionGenerator(str(pillar_path), str(invalid_history))
+        assert generator.version_history == {}

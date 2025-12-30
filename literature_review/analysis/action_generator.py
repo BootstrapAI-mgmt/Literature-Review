@@ -8,6 +8,7 @@ and operationalization metadata extracted during deep review.
 import json
 import logging
 import hashlib
+import uuid
 from typing import Dict, List, Optional, Tuple, Set
 from dataclasses import dataclass, field, asdict
 from collections import defaultdict
@@ -27,6 +28,28 @@ from literature_review.models import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Configuration constants
+GPU_HOUR_COST_USD = 0.5  # Estimated cost per GPU hour in USD
+
+# Default GPU hours by compute scale
+DEFAULT_GPU_HOURS = {
+    ComputeScale.LOW: 10,
+    ComputeScale.MODERATE: 100,
+    ComputeScale.HIGH: 1000,
+    ComputeScale.EXTREME: 10000
+}
+
+# Default pillar priority mapping
+DEFAULT_PILLAR_PRIORITIES = {
+    "Pillar 1": "critical",
+    "Pillar 2": "high",
+    "Pillar 3": "critical",
+    "Pillar 4": "high",
+    "Pillar 5": "critical",
+    "Pillar 6": "medium",
+    "Pillar 7": "medium",
+}
 
 
 class ActionStatus(Enum):
@@ -334,14 +357,31 @@ class ActionGenerator:
         Args:
             pillar_definitions_path: Path to pillar definitions
             version_history_path: Optional path to version history
+            
+        Raises:
+            FileNotFoundError: If pillar definitions file doesn't exist
+            json.JSONDecodeError: If file contains invalid JSON
         """
-        with open(pillar_definitions_path, 'r', encoding='utf-8') as f:
-            self.pillar_definitions = json.load(f)
+        try:
+            with open(pillar_definitions_path, 'r', encoding='utf-8') as f:
+                self.pillar_definitions = json.load(f)
+        except FileNotFoundError:
+            raise FileNotFoundError(
+                f"Pillar definitions file not found: {pillar_definitions_path}"
+            )
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(
+                f"Invalid JSON in pillar definitions file: {pillar_definitions_path}",
+                e.doc, e.pos
+            )
         
         self.version_history = {}
         if version_history_path and Path(version_history_path).exists():
-            with open(version_history_path, 'r', encoding='utf-8') as f:
-                self.version_history = json.load(f)
+            try:
+                with open(version_history_path, 'r', encoding='utf-8') as f:
+                    self.version_history = json.load(f)
+            except json.JSONDecodeError:
+                logger.warning(f"Invalid JSON in version history file: {version_history_path}")
         
         # Generated output
         self.actions: List[GeneratedAction] = []
@@ -574,14 +614,8 @@ class ActionGenerator:
         # Extract from operationalization data
         gpu_hours = op_data.get("estimated_gpu_hours", 0)
         if gpu_hours == 0:
-            # Estimate based on scale
-            gpu_hours_map = {
-                ComputeScale.LOW: 10,
-                ComputeScale.MODERATE: 100,
-                ComputeScale.HIGH: 1000,
-                ComputeScale.EXTREME: 10000
-            }
-            gpu_hours = gpu_hours_map.get(scale, 100)
+            # Estimate based on scale using default mapping
+            gpu_hours = DEFAULT_GPU_HOURS.get(scale, 100)
         
         # Infer libraries from claim
         libraries = op_data.get("libraries", [])
@@ -599,7 +633,7 @@ class ActionGenerator:
             estimated_memory_gb=op_data.get("memory_gb", 16),
             required_libraries=libraries,
             external_services=op_data.get("external_services", []),
-            estimated_cost_usd=gpu_hours * 0.5  # Rough estimate
+            estimated_cost_usd=gpu_hours * GPU_HOUR_COST_USD
         )
     
     def _generate_action_description(self, claim_text: str) -> str:
@@ -703,16 +737,10 @@ class ActionGenerator:
     def _calculate_priorities(self):
         """Calculate action priorities."""
         
-        # Build pillar priority map
-        pillar_priority = {
-            "Pillar 1": ActionPriority.CRITICAL,
-            "Pillar 2": ActionPriority.HIGH,
-            "Pillar 3": ActionPriority.CRITICAL,
-            "Pillar 4": ActionPriority.HIGH,
-            "Pillar 5": ActionPriority.CRITICAL,
-            "Pillar 6": ActionPriority.MEDIUM,
-            "Pillar 7": ActionPriority.MEDIUM,
-        }
+        # Build pillar priority map from configuration
+        pillar_priority = {}
+        for pillar, priority_str in DEFAULT_PILLAR_PRIORITIES.items():
+            pillar_priority[pillar] = ActionPriority(priority_str)
         
         for action in self.actions:
             # Check pillar priority
@@ -798,8 +826,15 @@ class ActionGenerator:
         }
     
     def _generate_id(self, source: str) -> str:
-        """Generate a unique ID from source string."""
-        return hashlib.md5(source.encode()).hexdigest()[:12]
+        """
+        Generate a unique ID from source string.
+        
+        Uses SHA-256 with timestamp suffix to reduce collision risk
+        while keeping IDs reasonably short.
+        """
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S%f")
+        combined = f"{source}:{timestamp}"
+        return hashlib.sha256(combined.encode()).hexdigest()[:12]
     
     def save_actions(self, output_path: str) -> Dict:
         """Save actions to file."""
