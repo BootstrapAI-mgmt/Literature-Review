@@ -206,8 +206,6 @@ class DomainStakeholderExtractor:
             # Generate unique impact ID
             impact_id = generate_impact_id(
                 filename,
-                gap_id,
-                normalized,
                 self._impact_sequence
             )
             
@@ -255,8 +253,8 @@ class DomainStakeholderExtractor:
                 self.stakeholders[stakeholder_type].source_papers.append(filename)
     
     def _generate_gap_id(self, gap_description: str) -> str:
-        """Generate a gap ID from description hash."""
-        hash_val = hashlib.md5(gap_description.encode()).hexdigest()[:8]
+        """Generate a gap ID from description hash using SHA-256."""
+        hash_val = hashlib.sha256(gap_description.encode()).hexdigest()[:8]
         return f"GAP-{hash_val}"
     
     def link_to_gap_analysis(
