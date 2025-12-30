@@ -8,6 +8,7 @@ for extracting and analyzing research paper content.
 from literature_review.reviewers.prompts.operationalization_prompt import (
     OPERATIONALIZATION_EXTRACTION_PROMPT,
     BATCH_OPERATIONALIZATION_PROMPT,
+    BATCH_EVIDENCE_TRUNCATION_LIMIT,
     format_claim_for_prompt,
     format_claims_batch
 )
@@ -15,6 +16,7 @@ from literature_review.reviewers.prompts.operationalization_prompt import (
 __all__ = [
     "OPERATIONALIZATION_EXTRACTION_PROMPT",
     "BATCH_OPERATIONALIZATION_PROMPT",
+    "BATCH_EVIDENCE_TRUNCATION_LIMIT",
     "format_claim_for_prompt",
     "format_claims_batch"
 ]

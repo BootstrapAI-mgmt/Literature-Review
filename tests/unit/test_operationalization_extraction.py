@@ -68,7 +68,11 @@ class TestOperationalizationPrompts:
     
     def test_format_claims_batch_truncates_evidence(self):
         """Test that evidence is truncated in batch mode."""
-        long_evidence = "x" * 1000  # Longer than 500 char limit
+        from literature_review.reviewers.prompts.operationalization_prompt import (
+            BATCH_EVIDENCE_TRUNCATION_LIMIT
+        )
+        
+        long_evidence = "x" * 1000  # Longer than truncation limit
         claims = [
             {
                 "claim_id": "c1",
@@ -80,9 +84,9 @@ class TestOperationalizationPrompts:
         
         prompt = format_claims_batch(claims, "test_paper.pdf")
         
-        # Evidence should be truncated to 500 chars
-        assert "x" * 500 in prompt
-        assert "x" * 600 not in prompt
+        # Evidence should be truncated to configured limit
+        assert "x" * BATCH_EVIDENCE_TRUNCATION_LIMIT in prompt
+        assert "x" * (BATCH_EVIDENCE_TRUNCATION_LIMIT + 100) not in prompt
     
     def test_format_claims_batch_uses_sub_requirement_fallback(self):
         """Test that sub_requirement is used as fallback for requirement_id."""

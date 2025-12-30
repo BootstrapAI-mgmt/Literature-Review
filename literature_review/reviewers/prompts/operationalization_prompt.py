@@ -8,6 +8,10 @@ to support action vector generation.
 from typing import Dict, List
 
 
+# Configuration constants
+BATCH_EVIDENCE_TRUNCATION_LIMIT = 500  # Max characters for evidence in batch mode
+
+
 OPERATIONALIZATION_EXTRACTION_PROMPT = """
 You are analyzing a research paper to extract operationalization information.
 Your goal is to identify HOW the paper's findings can be implemented in practice.
@@ -161,7 +165,7 @@ def format_claims_batch(claims: List[Dict], filename: str) -> str:
     for i, claim in enumerate(claims, 1):
         claim_id = claim.get("claim_id", f"claim_{i}")
         claim_text = claim.get("extracted_claim_text", claim.get("claim_summary", ""))
-        evidence = claim.get("evidence_chunk", "")[:500]  # Truncate for batching
+        evidence = claim.get("evidence_chunk", "")[:BATCH_EVIDENCE_TRUNCATION_LIMIT]
         requirement = claim.get("requirement_id", claim.get("sub_requirement", "Unknown requirement"))
         
         claims_section += f"""

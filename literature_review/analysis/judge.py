@@ -1059,6 +1059,11 @@ def process_claim_with_adaptive_consensus(claim: Dict, sub_req_def: str, api_man
 
 # --- ACTIONABILITY ASSESSMENT FUNCTIONS ---
 
+# Actionability score weighting constants
+ACTIONABILITY_WEIGHT = 0.1  # 10% weight in composite score
+ORIGINAL_COMPOSITE_WEIGHT = 0.9  # 90% weight for original composite
+ACTIONABILITY_SCORE_MAX = 5.0  # Maximum actionability score
+
 ACTIONABILITY_PROMPT = """
 Evaluate the actionability of this evidence claim:
 
@@ -1187,16 +1192,17 @@ def enhanced_judge_claim(
         # Incorporate into composite score
         if "evidence_quality" in result and result["evidence_quality"]:
             eq = result["evidence_quality"]
-            action_normalized = actionability["actionability_score"] / 5.0
+            action_normalized = actionability["actionability_score"] / ACTIONABILITY_SCORE_MAX
             
             # Add actionability as additional dimension
             eq["actionability"] = actionability["actionability_score"]
-            eq["actionability_weight"] = 0.1  # 10% weight
+            eq["actionability_weight"] = ACTIONABILITY_WEIGHT
             
             # Recalculate composite with actionability
             original_composite = eq.get("composite_score", 3.0)
             eq["composite_score_with_actionability"] = round(
-                original_composite * 0.9 + action_normalized * 5.0 * 0.1, 2
+                original_composite * ORIGINAL_COMPOSITE_WEIGHT + 
+                action_normalized * ACTIONABILITY_SCORE_MAX * ACTIONABILITY_WEIGHT, 2
             )
     
     return result
