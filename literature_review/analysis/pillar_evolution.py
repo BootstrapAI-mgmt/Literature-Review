@@ -274,7 +274,11 @@ class PillarEvolutionManager:
             for req_name, req_data in analysis.items():
                 if isinstance(req_data, dict):
                     for sub_name, sub_data in req_data.items():
-                        if requirement_id in sub_name:
+                        # Match exactly or if requirement_id is a suffix of sub_name
+                        # This prevents 'Sub-1.1.1' from matching 'Sub-1.1.10'
+                        if (requirement_id == sub_name or 
+                            sub_name.endswith(f": {requirement_id}") or
+                            sub_name.startswith(f"{requirement_id}:")):
                             target_pillar = pillar_name
                             current_data = sub_data
                             

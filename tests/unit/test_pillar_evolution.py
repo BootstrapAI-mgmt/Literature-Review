@@ -276,12 +276,14 @@ class TestPillarEvolutionManager:
         manager.approve_proposal(proposal.proposal_id, "admin")
         
         output_path = str(tmp_path / "updated_pillar.json")
+        original_version = manager.current_version
         definitions, version = manager.apply_proposal(
             proposal.proposal_id, output_path
         )
         
         assert Path(output_path).exists()
-        assert version != manager.current_version or version == manager.current_version
+        # After applying, the returned version should be the new current version
+        assert version == manager.current_version
         
         proposal = manager.proposals[proposal.proposal_id]
         assert proposal.status == ProposalStatus.APPLIED
