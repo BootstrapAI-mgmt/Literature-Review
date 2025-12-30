@@ -1,847 +1,275 @@
-# Workflow Execution Guide
-
-**Last Updated:** November 10, 2025  
-**Status:** Production-Ready Architecture  
-**Version:** 2.0 (Post Task Cards #1-4)
-
-This guide explains how to execute the full Literature Review automation workflow end-to-end.
-
----
-
-## 📋 Table of Contents
-
-1. [Overview](#overview)
-2. [Prerequisites](#prerequisites)
-3. [Workflow Stages](#workflow-stages)
-4. [Execution Methods](#execution-methods)
-5. [Stage-by-Stage Guide](#stage-by-stage-guide)
-6. [Configuration](#configuration)
-7. [Monitoring and Logs](#monitoring-and-logs)
-8. [Troubleshooting](#troubleshooting)
-
----
-
-## Overview
-
-The Literature Review system consists of **5 primary stages**:
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                     FULL WORKFLOW PIPELINE                       │
-├─────────────────────────────────────────────────────────────────┤
-│                                                                 │
-│  1. Journal-Reviewer.py                                         │
-│     Initial paper screening → version_history.json              │
-│                                                                 │
-│  2. Judge.py                                                    │
-│     Evaluate claims → update version_history.json               │
-│                                                                 │
-│  3. DeepRequirementsAnalyzer.py (DRA)                           │
-│     Re-analyze rejected claims → new claims                     │
-│                                                                 │
-│  4. sync_history_to_db.py                                       │
-│     Version history → CSV database                              │
-│                                                                 │
-│  5. Orchestrator.py (Iterative Loop)                            │
-│     Gap analysis → Deep-Reviewer → convergence                  │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘
-```
-
-**Data Flow:**
-```
-PDFs → Journal-Reviewer → version_history.json
-                              ↓
-                           Judge.py
-                              ↓
-                           DRA.py (if rejections)
-                              ↓
-                      sync_history_to_db.py
-                              ↓
-                CSV Database ← Orchestrator.py → Iterative Improvement
-                                  ↓
-                              Deep-Reviewer.py
-                                  ↓
-                          Gap Closure (convergence)
-```
-
----
-
-## Prerequisites
-
-### 1. Environment Setup
-
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Create .env file with API key
-echo "GEMINI_API_KEY=your_api_key_here" > .env
-```
-
-### 2. Required Files
-
-Ensure these files exist in the project root:
-
-- ✅ `pillar_definitions_enhanced.json` - Neuromorphic computing requirements
-- ✅ `review_version_history.json` - Version history (or will be created)
-- ✅ `Research-Papers/` - Directory with PDF papers
-- ✅ `.env` - Gemini API key
-
-### 3. Directory Structure
-
-```bash
-Literature-Review/
-├── Research-Papers/          # Input PDFs
-├── gap_analysis_output/      # Orchestrator outputs (auto-created)
-├── generated_plots/          # Visualization outputs (auto-created)
-├── pillar_definitions_enhanced.json
-├── review_version_history.json
-├── neuromorphic-research_database.csv (generated)
-└── .env
-```
-
----
-
-## Workflow Stages
-
-### Stage 1: Journal Reviewer (Initial Screening)
-
-**Purpose:** Screen new papers against neuromorphic requirements  
-**Input:** PDF files in `Research-Papers/`  
-**Output:** `review_version_history.json` with pending claims  
-**Runtime:** ~2-5 minutes per paper
-
-**What it does:**
-- Extracts text from PDFs
-- Identifies claims matching neuromorphic requirements
-- Creates version history entries with status `pending_judge_review`
-
----
-
-### Stage 2: Judge (Claim Validation)
-
-**Purpose:** Evaluate pending claims with detailed judgment  
-**Input:** `review_version_history.json` (pending claims)  
-**Output:** Updated `review_version_history.json` (approved/rejected)  
-**Runtime:** ~10-30 seconds per claim (batched in groups of 10)
-
-**What it does:**
-- Reads pending claims from version history
-- Judges each claim against pillar definitions
-- Updates claim status: `approved` or `rejected`
-- Adds judge notes and timestamps
-- Processes in batches to respect API limits
-
----
-
-### Stage 3: DRA (Deep Requirements Analyzer)
-
-**Purpose:** Re-analyze rejected claims with deeper scrutiny  
-**Input:** Rejected claims from version history  
-**Output:** New claims with enhanced evidence  
-**Runtime:** ~3-7 minutes per paper with rejections
-
-**What it does:**
-- Identifies rejected claims
-- Re-analyzes source papers for stronger evidence
-- Creates new claims with improved evidence
-- Adds claims back to version history for re-judgment
-- Chunked processing for large documents (50k chars per chunk)
-
----
-
-### Stage 4: Sync (Version History → Database)
-
-**Purpose:** Synchronize approved claims to CSV database  
-**Input:** `review_version_history.json`  
-**Output:** `neuromorphic-research_database.csv`  
-**Runtime:** <10 seconds
-
-**What it does:**
-- Extracts only `approved` claims from version history
-- Formats claims as CSV entries
-- Preserves all claim metadata
-- Ensures database reflects latest judgments
-
-**Run:**
-```bash
-python sync_history_to_db.py
-```
-
----
-
-### Stage 5: Orchestrator (Iterative Improvement)
-
-**Purpose:** Identify gaps and drive convergence to 100% coverage  
-**Input:** CSV database + version history  
-**Output:** Gap analysis reports, visualizations, directed analysis  
-**Runtime:** ~10-30 minutes per iteration (depends on paper count)
-
-**What it does:**
-- Calculates completeness score (% of requirements met)
-- Identifies missing sub-requirements
-- Prioritizes papers for deep analysis
-- Triggers Deep-Reviewer for targeted analysis
-- **Iterates until <5% gap remains**
-
-**Iterative Loop:**
-```
-Calculate gaps → Deep-Reviewer → Judge new claims → Re-sync → 
-Check convergence → Repeat if gap >5%
-```
-
----
-
-## Execution Methods
-
-### Method 1: **Manual Stage-by-Stage** (Recommended for First Run)
-
-Run each stage individually to understand the workflow:
-
-#### Step 1: Journal Reviewer
-
-```bash
-python Journal-Reviewer.py
-```
-
-**Prompts:**
-- Path to PDF folder: `Research-Papers/`
-- Review type: `journal` (or press Enter for default)
-
-**Expected Output:**
-```
-Processing paper: research_paper_1.pdf
-Found 15 claims matching requirements
-Version history updated: review_version_history.json
-```
-
----
-
-#### Step 2: Judge Claims
-
-```bash
-python Judge.py
-```
-
-**No prompts** - Automatically:
-- Loads pending claims from version history
-- Judges claims in batches of 10
-- Updates version history with verdicts
-
-**Expected Output:**
-```
-Loaded 15 pending claims from version history
-Processing batch 1/2 (10 claims)...
-  Claim c1a2b3: approved
-  Claim d4e5f6: rejected
-  ...
-Processing batch 2/2 (5 claims)...
-Updated version history with judgments
-Total: 12 approved, 3 rejected
-```
-
----
-
-#### Step 3: DRA (If Rejections Exist)
-
-```bash
-python DeepRequirementsAnalyzer.py
-```
-
-**Prompts:**
-- Confirm papers with rejections
-
-**Expected Output:**
-```
-Found 3 rejected claims in version history
-Re-analyzing papers:
-  - research_paper_1.pdf (2 rejections)
-  - research_paper_2.pdf (1 rejection)
-
-Chunking large document (3 chunks)...
-Processing chunk 1/3 (Pages 1-50)...
-Processing chunk 2/3 (Pages 51-100)...
-Processing chunk 3/3 (Pages 101-150)...
-
-Found 2 new claims with enhanced evidence
-Added to version history for re-judgment
-```
-
-**After DRA:** Re-run Judge to evaluate new claims!
-
-```bash
-python Judge.py  # Re-judge DRA claims
-```
-
----
-
-#### Step 4: Sync to Database
-
-```bash
-python sync_history_to_db.py
-```
-
-**Expected Output:**
-```
-Syncing version history to CSV database...
-Extracted 14 approved claims from 2 papers
-Updated: neuromorphic-research_database.csv
-```
-
----
-
-#### Step 5: Orchestrator (Iterative Gap Closure)
-
-```bash
-python Orchestrator.py
-```
-
-**Prompts:**
-- Database path: `neuromorphic-research_database.csv` (or Enter for default)
-- Max iterations: `5` (or Enter for default)
-
-**Expected Output:**
-```
-=== ITERATION 1 ===
-Completeness Score: 42.5% (17/40 sub-requirements met)
-Gap: 23 missing sub-requirements
-
-Prioritizing papers for deep analysis...
-Top papers:
-  1. research_paper_5.pdf (8 potential matches)
-  2. research_paper_3.pdf (6 potential matches)
-
-Generating gap-closing search recommendations...
-✅ Gap-closing search recommendations generated (97 gaps identified).
-
-=== CONVERGENCE ACHIEVED ===
-Final Score: 96.5% (gap <5%)
-Iterations: 4
-Reports generated in gap_analysis_output/
-  - 7 pillar waterfall visualizations
-  - Research gap radar plot
-  - Paper network visualization
-  - Research trends plot
-  - Gap analysis report (JSON)
-  - Executive summary (Markdown)
-  - Suggested searches (JSON + Markdown) 🆕
-  - Sub-requirement contributions (Markdown)
-```
-
----
-
-### Method 2: **Automated End-to-End** (Using Pipeline Orchestrator)
-
-**✅ NEW:** The `pipeline_orchestrator.py` script now automates all 5 stages in a single command.
-
-**Basic Usage:**
-```bash
-python pipeline_orchestrator.py
-```
-
-**With Logging:**
-```bash
-python pipeline_orchestrator.py --log-file pipeline.log
-```
-
-**With Configuration:**
-```bash
-python pipeline_orchestrator.py --config pipeline_config.json
-```
-
-**What it does:**
-- Runs all 5 stages sequentially
-- Conditionally executes DRA only if rejections are detected
-- Logs progress with timestamps to console and optional file
-- Halts pipeline on any stage failure with clear error messages
-- Provides total execution time summary
-- **Creates checkpoint file for resume capability**
-
-**Configuration File (`pipeline_config.json`):**
-```json
-{
-  "version_history_path": "review_version_history.json",
-  "stage_timeout": 7200,
-  "log_level": "INFO"
-}
-```
-
-**Note:** The orchestrator requires that all Python scripts (Journal-Reviewer.py, Judge.py, etc.) are in the same directory and can run non-interactively.
-
----
-
-### Method 3: **Resume After Interruption** (Checkpoint/Resume)
-
-**✅ NEW in v1.1:** Resume pipeline execution after failures or interruptions.
-
-The pipeline orchestrator automatically creates a checkpoint file (`pipeline_checkpoint.json`) that tracks the progress of each stage. If the pipeline is interrupted, you can resume from where it left off.
-
-**Resume from Last Checkpoint:**
-```bash
-python pipeline_orchestrator.py --resume
-```
-
-This will:
-- Load the checkpoint file
-- Skip stages that have already completed successfully
-- Re-run any stage that was in progress when interrupted
-- Continue with remaining stages
-
-**Resume from a Specific Stage:**
-```bash
-# Resume from sync stage onwards (skip earlier stages)
-python pipeline_orchestrator.py --resume-from sync
-```
-
-Available stages for `--resume-from`:
-- `journal_reviewer` - Stage 1: Initial Paper Review
-- `judge` - Stage 2: Judge Claims
-- `dra` - Stage 3: DRA Appeal (if rejections detected)
-- `sync` - Stage 4: Sync to Database
-- `orchestrator` - Stage 5: Gap Analysis & Convergence
-
-**Custom Checkpoint File:**
-```bash
-# Use a different checkpoint file
-python pipeline_orchestrator.py --checkpoint-file batch_001_checkpoint.json
-
-# Resume from custom checkpoint
-python pipeline_orchestrator.py --resume --checkpoint-file batch_001_checkpoint.json
-```
-
-**Use Cases:**
-- **Network Failure:** Resume after connection timeout during sync
-- **Manual Interruption:** Resume after Ctrl+C
-- **System Crash:** Resume after unexpected shutdown
-- **Iterative Development:** Re-run only modified stages
-- **Batch Processing:** Separate checkpoints for different batches
-
-**Checkpoint File Structure:**
-
-The checkpoint file is human-readable JSON:
-
-```json
-{
-  "run_id": "2025-11-11T14:30:00_abc123",
-  "pipeline_version": "1.1.0",
-  "started_at": "2025-11-11T14:30:00",
-  "last_updated": "2025-11-11T14:45:30",
-  "status": "in_progress",
-  "stages": {
-    "journal_reviewer": {
-      "status": "completed",
-      "started_at": "2025-11-11T14:30:05",
-      "completed_at": "2025-11-11T14:35:12",
-      "duration_seconds": 307,
-      "exit_code": 0
-    },
-    "judge": {
-      "status": "completed",
-      "started_at": "2025-11-11T14:35:15",
-      "completed_at": "2025-11-11T14:40:22",
-      "duration_seconds": 307,
-      "exit_code": 0
-    },
-    "sync": {
-      "status": "failed",
-      "started_at": "2025-11-11T14:40:25",
-      "failed_at": "2025-11-11T14:42:10",
-      "error": "Connection timeout"
-    }
-  }
-}
-```
-
-**Safety Features:**
-- **Atomic writes** prevent checkpoint corruption
-- **Corrupted checkpoint detection** with clear error messages
-- **No sensitive data** stored in checkpoint (no API keys)
-- **Works across system restarts**
-
-**Example Workflow:**
-
-```bash
-# Start pipeline
-python pipeline_orchestrator.py --log-file run1.log
-
-# [Pipeline runs Stage 1 and 2, then network fails at Stage 3]
-# Checkpoint shows: journal_reviewer=completed, judge=completed, sync=failed
-
-# Resume after fixing network
-python pipeline_orchestrator.py --resume --log-file run1_resumed.log
-# Output: Skipping journal_reviewer (already completed)
-#         Skipping judge (already completed)
-#         Re-running sync (was interrupted)
-#         Running orchestrator
-```
-
----
-
-## Configuration
-
-### API Configuration
-
-Edit API settings in each module:
-
-**Judge.py:**
-```python
-API_CONFIG = {
-    'CLAIM_BATCH_SIZE': 10,        # Claims per batch
-    'BATCH_DELAY_SECONDS': 2       # Delay between batches
-}
-```
-
-**DeepRequirementsAnalyzer.py:**
-```python
-REVIEW_CONFIG = {
-    'DRA_CHUNK_SIZE': 50000,       # Chunk size (chars)
-    'DRA_CHUNK_OVERLAP': 0.1       # 10% overlap
-}
-```
-
-**Deep-Reviewer.py:**
-```python
-REVIEW_CONFIG = {
-    'DEEP_REVIEWER_CHUNK_SIZE': 75000,  # Chunk size (chars)
-    'DEDUPLICATION_ENABLED': True
-}
-```
-
-**Orchestrator.py:**
-```python
-ORCHESTRATOR_CONFIG = {
-    'MAX_ITERATIONS': 10,                # Max improvement iterations
-    'CONVERGENCE_THRESHOLD': 0.05,       # 5% gap threshold
-    'MIN_PAPERS_PER_ITERATION': 2        # Papers to analyze per iteration
-}
-```
-
----
-
-## Monitoring and Logs
-
-### Progress Tracking
-
-Each module provides real-time progress:
-
-**Judge Batching:**
-```
-Processing batch 3/7 (10 claims)...
-  Claim a1b2c3: approved (Evidence supports requirement)
-  Claim d4e5f6: rejected (Insufficient detail)
-  ...
-Progress: 30/70 claims (42.9%)
-```
-
-**DRA Chunking:**
-```
-Chunking document: research_paper.pdf (150 pages, 250k chars)
-Created 5 chunks with 10% overlap
-Processing chunk 1/5 (Pages 1-30)...
-Processing chunk 2/5 (Pages 28-58)...
-...
-```
-
-**Orchestrator Convergence:**
-```
-Iteration 3: Score 67.5% → 72.5% (+5.0%)
-Gap reduction: 13 → 11 missing requirements
-Estimated iterations to convergence: 2-3
-```
-
-### Log Files
-
-Currently, logs are printed to console. To save logs:
-
-```bash
-# Redirect to file
-python Judge.py > judge_run.log 2>&1
-
-# Or use tee for both console and file
-python Orchestrator.py | tee orchestrator_run.log
-```
-
----
-
-## Troubleshooting
-
-### Issue: "No pending claims found"
-
-**Cause:** Version history doesn't have claims with status `pending_judge_review`
-
-**Solution:**
-1. Run Journal-Reviewer first: `python Journal-Reviewer.py`
-2. Or check version history has pending claims:
-   ```bash
-   grep "pending_judge_review" review_version_history.json
-   ```
-
----
-
-### Issue: "DRA finds no new claims"
-
-**Possible Causes:**
-- Rejected claims are truly unsupportable
-- Paper doesn't contain relevant evidence
-- Prompting needs adjustment
-
-**Solution:**
-1. Check rejected claims in version history
-2. Manually review judge notes to understand why rejected
-3. Consider if paper is truly relevant to requirements
-
----
-
-### Issue: "Orchestrator doesn't converge"
-
-**Cause:** Gap remains >5% after max iterations
-
-**Solutions:**
-1. Increase max iterations in config
-2. Add more papers to `Research-Papers/`
-3. Check if missing requirements are too specific
-4. Review gap analysis reports in `gap_analysis_output/`
-
----
-
-### Issue: "API quota exceeded"
-
-**Cause:** Too many API calls
-
-**Solutions:**
-1. **Use batching:** Judge automatically batches (10 claims/batch)
-2. **Reduce batch size:** Lower `CLAIM_BATCH_SIZE` in Judge.py
-3. **Increase delays:** Raise `BATCH_DELAY_SECONDS`
-4. **Chunking:** Enabled by default for large documents
-5. **Wait:** API quotas reset periodically
-
----
-
-### Issue: "Circular reference error in JSON"
-
-**Cause:** Bug in claim metadata (should be fixed in latest version)
-
-**Solution:**
-1. Verify using Judge v2.0+ (has fix for ISSUE-004)
-2. Run validation:
-   ```bash
-   python demos/demo_validate_data.py
-   ```
-
----
-
-### Issue: "Pillar definitions not found"
-
-**Cause:** Missing `pillar_definitions_enhanced.json`
-
-**Solution:**
-1. Ensure file exists in project root
-2. Check file is valid JSON:
-   ```bash
-   python -m json.tool pillar_definitions_enhanced.json > /dev/null
-   ```
-
----
-
-## Advanced Workflows
-
-### Workflow A: New Paper Batch Processing
-
-**Scenario:** You have 50 new papers to process
-
-```bash
-# 1. Add PDFs to Research-Papers/
-cp /path/to/new/papers/*.pdf Research-Papers/
-
-# 2. Run Journal Reviewer
-python Journal-Reviewer.py  # 2-3 hours for 50 papers
-
-# 3. Judge all claims
-python Judge.py  # 30-60 minutes
-
-# 4. DRA for rejections (if any)
-python DeepRequirementsAnalyzer.py  # 1-2 hours
-
-# 5. Re-judge DRA claims
-python Judge.py  # 10-20 minutes
-
-# 6. Sync to database
-python sync_history_to_db.py  # <1 minute
-
-# 7. Run orchestrator for convergence
-python Orchestrator.py  # 2-5 hours (iterative)
-```
-
-**Total Time:** ~6-12 hours (mostly API wait time)
-
----
-
-### Workflow B: Targeted Gap Filling
-
-**Scenario:** You have 85% coverage, want to reach 95%
-
-```bash
-# 1. Run Orchestrator to identify gaps
-python Orchestrator.py
-
-# 2. Review gap analysis report
-cat gap_analysis_output/iteration_1_gap_analysis.json
-
-# 3. Add papers targeting specific gaps
-# (Use recommendations from gap analysis)
-
-# 4. Run Deep-Reviewer on targeted papers
-# (Orchestrator will trigger this automatically)
-
-# 5. Judge new claims
-python Judge.py
-
-# 6. Sync and re-check score
-python sync_history_to_db.py
-python Orchestrator.py  # Check if gap <5%
-```
-
----
-
-### Workflow C: Re-process Specific Paper
-
-**Scenario:** Paper was incorrectly reviewed, need to re-run
-
-```bash
-# 1. Remove paper's entries from version history
-python -c "
-import json
-with open('review_version_history.json', 'r+') as f:
-    history = json.load(f)
-    del history['target_paper.pdf']
-    f.seek(0)
-    f.truncate()
-    json.dump(history, f, indent=2)
-"
-
-# 2. Re-run Journal Reviewer on that paper
-python Journal-Reviewer.py
-# (Specify just that one PDF)
-
-# 3. Judge new claims
-python Judge.py
-
-# 4. Re-sync
-python sync_history_to_db.py
-```
-
----
-
-## Performance Optimization
-
-### Tip 1: Use Caching
-
-Judge and DRA use prompt caching automatically. To maximize cache hits:
-- Process similar papers together
-- Avoid changing pillar definitions mid-batch
-
-### Tip 2: Use Pipeline Orchestrator
-
-For batch processing, use the `pipeline_orchestrator.py` to automate all stages:
-```bash
-python pipeline_orchestrator.py --log-file pipeline.log
-```
-
-Benefits:
-- No manual intervention between stages
-- Automatic DRA triggering when needed
-- Complete execution log for auditing
-- Error handling and graceful failure
-
-### Tip 3: Parallel Processing (Future)
-
-Currently, stages run sequentially. Future enhancement:
-- Run Judge on multiple papers in parallel (separate processes)
-- Requires careful version history locking
-
-### Tip 4: Incremental Syncing
-
-Sync script is fast (<10s) but can be optimized:
-- Only sync changed papers (track timestamps)
-- Use `--incremental` flag (future feature)
-
-### Tip 4: Monitor Chunk Counts
-
-Check logs for chunk statistics:
-```
-DRA: 150-page document → 5 chunks (efficient)
-DRA: 50-page document → 1 chunk (no chunking needed)
-```
-
-Adjust chunk sizes if seeing inefficiencies.
-
----
-
-## Summary: Typical Full Run
-
-**For 20 papers (average 50 pages each):**
-
-| Stage                  | Time      | API Calls | Output                      |
-|------------------------|-----------|-----------|------------------------------|
-| Journal-Reviewer       | 40-60 min | ~40-60    | version_history.json         |
-| Judge (Initial)        | 20-30 min | ~100-150  | Updated version_history.json |
-| DRA (If rejections)    | 30-45 min | ~40-60    | New claims added             |
-| Judge (DRA Re-judge)   | 10-15 min | ~20-30    | Final verdicts               |
-| Sync                   | <1 min    | 0         | CSV database                 |
-| Orchestrator (2-3 iter)| 1-2 hours | ~80-120   | Gap reports, convergence     |
-| **TOTAL**              | **3-5 hr**| **~300**  | **Complete analysis**        |
-
-**Cost Estimate:** ~$15-25 for 20 papers (at Gemini API pricing)
-
----
-
-## Next Steps
-
-1. **Start Small:** Process 2-3 papers end-to-end first
-2. **Verify Outputs:** Check version history, database, reports
-3. **Scale Up:** Gradually add more papers
-4. **Monitor:** Track convergence scores and API usage
-5. **Iterate:** Use Orchestrator to drive continuous improvement
-
----
-
-## Future Enhancements
-
-**Planned Infrastructure Improvements:**
-
-1. **Automated Pipeline Script**
-   - Single command: `./run_full_pipeline.sh`
-   - Automatic stage transitions
-   - Progress checkpoints
-
-2. **Web Dashboard**
-   - Real-time progress monitoring
-   - Visualization of convergence
-   - Paper management interface
-
-3. **Parallel Processing**
-   - Multi-paper concurrent processing
-   - Version history locking
-   - Load balancing
-
-4. **Incremental Mode**
-   - Only process new/changed papers
-   - Delta syncing
-   - Faster iterations
-
-5. **CI/CD Integration**
-   - Automated testing of new papers
-   - Regression detection
-   - Quality gates
-
----
-
-**Document Status:** ✅ Production-Ready  
-**Last Validated:** November 10, 2025  
-**Validation:** Post-merge testing of PRs #1-4 complete
-
-For questions or issues, see:
-- `ARCHITECTURE_ANALYSIS.md` - System design
-- `TESTING_STATUS_SUMMARY.md` - Current test coverage
-- `INTEGRATION_TESTING_TASK_CARDS.md` - Planned improvements
+IyBXb3JrZmxvdyBFeGVjdXRpb24gR3VpZGUKCioqTGFzdCBVcGRhdGVkOioqIDIwMjQtMDUtMTYKKipTdGF0dXM6KiogUHJvZHVjdGlvbi1SZWFkeSBBcmNoaXRlY3R1cmUgCioqVmVyc2lvbjooKiogMi4wIChQb3N0IFRhc2sgQ2FyZHMgIzEtNCkKClRoaXMgZ3VpZGUgZXhwbGFpbnMgaG93IHRvIGV4ZWN1dGUgdGhlIGZ1bGwgTGl0ZXJhdHVyZSBSZXZpZXcgYXV0b21hdGlvbiB3b3JrZmxvdyBlbmQtdG8tZW5kLgoKLS0tCgojIyDwn5OLIFRhYmxlIG9mIENvbnRlbnRzCgoxLiBbT3ZlcnZpZXddKCNvdmVydmlldykKMi4gW1ByZXJlcXVpc2l0ZXNdKCNwcmVyZXF1aXNpdGVzKQozLiBbV29ya2Zsb3cgU3RhZ2VzXSgjd29ya2Zsb3ctc3RhZ2VzKQo0LiBbRXhlY3V0aW9uIE1ldGhvZHNdKCNleGVjdXRpb24tbWV0aG9kcykKNS4gW1N0YWdlLWJ5LVN0YWdlIEd1aWRlXSgjc3RhZ2UtYnktc3RhZ2UtZ3VpZGUpCjYuIFtDb25maWd1cmF0aW9uXSgjY29uZmlndXJhdGlvbikKNy4gW01vbml0b3JpbmcgYW5kIExvZ3NdKCNtb25pdG9yaW5nLWFuZC1sb2dzKQo4LiBbVHJvdWJsZXNob290aW5nXSgjdHJvdWJsZXNob290aW5nKQoKLS0tCgojIyBPdmVydmlldwoKVGhlIExpdGVyYXR1cmUgUmV2aWV3IHN5c3RlbSBjb25zaXN0cyBvZiAqKjUgcHJpbWFyeSBzdGFnZXMqKjoKCmBgYArilIzilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilJAK4pSCICAgICAgICAgICAgICAgICAgICAgICAgRlVMTCBXT1JLRkxPVyBQSVBFTElORSAgICAgICAgICAgICAgICAgICAgICAgIC4pSCCuKUnOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUgOKUpArilIIgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKUggrilIIgIDEuIEpvdXJuYWwtUmV2aWV3ZXIucHkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKUggrilIIgICAgIEluaXRpYWwgcGFwZXIgc2NyZWVuaW5nIOKGkiB2ZXJzaW9uX2hpc3RvcnkuanNvbiAgICAgICAgICAgICAg4pSCCuKUgiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKUggrilIIgIDIgSnVkZ2UucHkgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKUggrilIIgICAgICBFdmFsdWF0ZSBjbGFpbXMgIOKGkiB1cGRhdGUgdmVyc2lvbl9oaXN0b3J5Lmpzb24gICAgICAgICAgICAgICDilIIK4pSCICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDilIIK4pSCICAgMy4gRGVlcFJlcXVpcmVtZW50c0FuYWx5emVyLnB5IChEUkEpICAgICAgICAgICAgICAgICAgICAgICAgICAg4pSCCuKUgiAgICAgUmUtYW5hbHl6ZSByZWplY3RlZCBjbGFpbXMg4oaSIChuZXcgY2xhaW1zICAgICAgICAgICAgICAgICAgICAgIOKUggrilIIgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKUggrilIIgIDQuc3luY19oaXN0b3J5X3RvX2RiLnB5ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKUggrilIIgICAgIFZlcnNpb24gaGlzdG9yeSDihpIgQ1NWIGRhdGFiYXNlICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4pSCCuKUgiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKUggrilIIgIDUuIE9yY2hlc3RyYXRvci5weSAoSXRlcmF0aXZlIExvb3ApICAgICAgICAgICAgICAgICAgICAgICAgICAg4pSCCuKUgiAgICAgR2FwIGFuYWx5c2lzIOKGkiBEZWVwLVJldmlld2VyIOKGkiBjb252ZXJnZW5jZSAgICAgICAgICAgICAgICAgIOKUggrilIIgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKUggrilJTilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilIDilJgKCmBgYACgoqKkRhdGEgRmxvdzoqKgpgYGAKUERGcyDihpIgSm91cm5hbC1SZXZpZXdlciDihpIgdmVyc2lvbl9oaXN0b3J5Lmpzb24KICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4oaTCiAgICAgICAgICAgICAgICAgICAgICAgICAgIEp1ZGdlLnB5CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4oaTCiAgICAgICAgICAgICAgICAgICAgICAgICAgIEpSRC5weSAoaWYgcmVqZWN0aW9ucykKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4oaTCiAgICAgICAgICAgICAgICAgICAgICAgICAgc3luY19oaXN0b3J5X3RvX2RiLnB5CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICDigpTCiAgICAgICAgICAgICAgQ1NWIERhdGFiYXNlIOKGkCBPcmNoZXN0cmF0b3IucHkg4oaSIEl0ZXJhdGl2ZSBJbXByb3ZlbWVudAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg4oaTCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIERlZXAtUmV2aWV3ZXIucHkKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIOKGkwogICAgICAgICAgICAgICAgICAgICAgICAgIEdhcCBDbG9zdXJlIChjb252ZXJnZW5jZSkKYGBgCgotLS0KCiMjIFByZXJlcXVpc2l0ZXMKCiMjIyAxLiBFbnZpcm9ubWVudCBTZXR1cAoKYGBgYmFzZgojIEluc3RhbGwgZGVwZW5kZW5jaWVzCnBpcCBpbnN0YWxsIC1yIHJlcXVpcmVtZW50cy50eHQKCiMgQ3JlYXRlIC5lbnYgZmlsZSB3aXRoIEFQSSBrZXkKZWNobyAiR0VNSU5JX0FQSV9LRVk9eW91cl9hcGlfa2V5X2hlcmUiID4gLmVudgpgYGAKCiMjIyAyLiBSZXF1aXJlZCBGaWxlcwoKRW5zdXJlIHRoZXNlIGZpbGVzIGV4aXN0IGluIHRoZSBwcm9qZWN0IHJvb3Q6Ci0g4pyFIGBwaWxsYXJfZGVmaW5pdGlvbnNfZW5oYW5jZWQuanNvbmAgLSBOZXVyb21vcnBoaWMgY29tcHV0aW5nIHJlcXVpcmVtZW50cwotIOKchSBgcmV2aWV3X3ZlcnNpb25faGlzdG9yeS5qc29uYAgLSBWZXJzaW9uIGhpc3RvcnkgKG9yIHdpbGwgYmUgY3JlYXRlZCkKLSBgnIUgYFJlc2VhcmNoLVBhcGVycy9gIC0gRGlyZWN0b3J5IHdpdGggUERGIHBhcGVycwotIOKchSBgLmVudmAgLSBHZW1pbmkgQVBJIGtleQoKIyMjIDMuIERpcmVjdG9yeSBTdHJ1Y3R1cmUKCmBgYGJhc2gKTGl0ZXJhdHVyZS1SZXZpZXcvCuKUnOKUgOKUgCBSZXNlYXJjaC1QYXBlcnMvICAgICAgICAgICMgSW5wdXQgUERGcwrilJzilIDilIAgZ2FwX2FuYWx5c2lzX291dHB1dC8gICAgICAjIE9yY2hlc3RyYXRvciBvdXRwdXRzIChhdXRvLWNyZWF0ZWQpCuKUnOKUgOKUgCBnZW5lcmF0ZWRfcGxvdHMvICAgICAgICAgICMgVmlzdWFsaXphdGlvbiBvdXRwdXRzIChhdXRvLWNyZWF0ZWQpCuKUnOKUgOKUgCBwaWxsYXJfZGVmaW5pdGlvbnNfZW5oYW5jZWQuanNvbgpbgpTflIDilIAgcmV2aWV3X3ZlcnNpb25faGlzdG9yeS5qc29uCuKUnOKUgOKUgCBuZXVyb21vcnBoaWMtcmVzZWFyY2hfZGF0YWJhc2UuY3N2IChnZW5lcmF0ZWQpCuKUlOKUgOKUgCAuZW52CmBgYAoKLS0tCgojIyBXb3JrZmxvdyBTdGFnZXMKCiMjIyBTdGFnZSAxOiBKb3VybmFsIFJldmlld2VyIChJbml0aWFsIFNjcmVlbmluZykKCioqUHVycG9zZToqKiBTY3JlZW4gbmV3IHBhcGVycyBhZ2FpbnN0IG5ldXJvbW9ycGhpYyByZXF1aXJlbWVudHMgIAoqKklucHV0OioqIFBERiBmaWxlcyBpbiBgUmVzZWFyY2gtUGFwZXJzL2AgIAoqKk91dHB1dDoqKiBgcmV2aWV3X3ZlcnNpb25faGlzdG9yeS5qc29uYCB3aXRoIHBlbmRpbmcgY2xhaW1zICAKKipSdW50aW1lOioqIH4yLTUgbWludXRlcyBwZXIgcGFwZXIKCioqV2hhdCBpdCBkb2VzOioqCi0gRXh0cmFjdHMgdGV4dCBmcm9tIFBERnMKLSBJZGVudGlmaWVzIGNsYWltcyBtYXRjaGluZyBuZXVyb21vcnBoaWMgcmVxdWlyZW1lbnRzCi0gQ3JlYXRlcyB2ZXJzaW9uIGhpc3RvcnkgZW50cmllcyB3aXRoIHN0YXR1cyBgcGVuZGluZ19qdWRnZV9yZXZpZXdgCgotLS0KCiMjIyBTdGFnZSAyOiBKdWRnZSAoQ2xhaW0gVmFsaWRhdGlvbikKCioqUHVycG9zZToqKiBFdmFsdWF0ZSBwZW5kaW5nIGNsYWltcyB3aXRoIGRldGFpbGVkIGp1ZGdtZW50ICAKKipJbnB1dDoqKiBgcmV2aWV3X3ZlcnNpb25faGlzdG9yeS5qc29uYCAocGVuZGluZyBjbGFpbXMpICAKKipPdXRwdXQ6KiogVXBkYXRlZCBgcmV2aWV3X3ZlcnNpb25faGlzdG9yeS5qc29uYCAoYXBwcm92ZWQvcmVqZWN0ZWQpICAKKipSdW50aW1lOioqIH4xMC0zMCBzZWNvbmRzIHBlciBjbGFpbSAoYmF0Y2hlZCBpbiBncm91cHMgb2YgMTApCgoqKldoYXQgaXQgZG9lczoqKgotIFJlYWRzIHBlbmRpbmcgY2xhaW1zIGZyb20gdmVyc2lvbiBoaXN0b3J5Ci0gSnVkZ2VzIGVhY2ggY2xhaW0gYWdhaW5zdCBwaWxsYXIgZGVmaW5pdGlvbnMKLSBVcGRhdGVzIGNsYWltIHN0YXR1czogYGFwcHJvdmVkYCBvciBgcmVqZWN0ZWRgCi0gQWRkcyBqdWRnZSBub3RlcyBhbmQgdGltZXN0YW1wcwotIFByb2Nlc3NlcyBpbiBiYXRjaGVzIHRvIHJlc3BlY3QgQVBJIGxpbWl0cwoKLS0tCgojIyMgU3RhZ2UgMzogRFJBIChEZWVwIFJlcXVpcmVtZW50cyBBbmFseXplcikKCioqUHVycG9zZToqKiBSZS1hbmFseXplIHJlamVjdGVkIGNsYWltcyB3aXRoIGRlZXBlciBzY3J1dGlueSAgCioqSW5wdXQ6KiogUmVqZWN0ZWQgY2xhaW1zIGZyb20gdmVyc2lvbiBoaXN0b3J5ICAKKipPdXRwdXQ6KiogTmV3IGNsYWltcyB3aXRoIGVuaGFuY2VkIGV2aWRlbmNlICAKKipSdW50aW1lOioqIH4zLTcgbWludXRlcyBwZXIgcGFwZXIgd2l0aCByZWplY3Rpb25zCgoqKldoYXQgaXQgZG9lczoqKgotIElkZW50aWZpZXMgcmVqZWN0ZWQgY2xhaW1zCi0gUmUtYW5hbHl6ZXMgc291cmNlIHBhcGVycyBmb3Igc3Ryb25nZXIgZXZpZGVuY2UKLSBDcmVhdGVzIG5ldyBjbGFpbXMgd2l0aCBpbXByb3ZlZCBldmlkZW5jZQotIEFkZHMgY2xhaW1zIGJhY2sgdG8gdmVyc2lvbiBoaXN0b3J5IGZvciByZS1qdWRnbWVudAotIENodW5rZWQgcHJvY2Vzc2luZyBmb3IgbGFyZ2UgZG9jdW1lbnRzICg1MGsgY2hhcnMgcGVyIGNodW5rKQoKLS0tCgojIyMgU3RhZ2UgNDogU3luYyAoVmVyc2lvbiBIaXN0b3J5IOKGkiBEYXRhYmFzZSkKCioqUHVycG9zZToqKiBTeW5jaHJvbml6ZSBhcHByb3ZlZCBjbGFpbXMgdG8gQ1NWIGRhdGFiYXNlICAKKipJbnB1dDoqKiBgcmV2aWV3X3ZlcnNpb25faGlzdG9yeS5qc29uYCAgCioqT3V0cHV0OioqIGBuZXVyb21vcnBoaWMtcmVzZWFyY2hfZGF0YWJhc2UuY3N2YCAgCioqUnVudGltZToqKiA8MTAgc2Vjb25kcwoKKipXaGF0IGl0IGRvZXM6KioKLSBFeHRyYWN0cyBvbmx5IGBhcHByb3ZlZGAgY2xhaW1zIGZyb20gdmVyc2lvbiBoaXN0b3J5Ci0gRm9ybWF0cyBjbGFpbXMgYXMgQ1NWIGVudHJpZXMKLSBQcmVzZXJ2ZXMgYWxsIGNsYWltIG1ldGFkYXRhCi0gRW5zdXJlcyBkYXRhYmFzZSByZWZsZWN0cyBsYXRlc3QganVkZ21lbnRzCgoqKlJ1bjoqKgpgYGBiYXNoCnB5dGhvbiBzeW5jX2hpc3RvcnlfdG9fZGIucHkKYGBgCgotLS0KCiMjIyBTdGFnZSA1OiBPcmNoZXN0cmF0b3IgKEl0ZXJhdGl2ZSBJbXByb3ZlbWVudCkKCioqUHVycG9zZToqKiBJZGVudGlmeSBnYXBzIGFuZCBkcml2ZSBjb252ZXJnZW5jZSB0byAxMDAlIGNvdmVyYWdlICAKKipJbnB1dDoqKiBDU1YgZGF0YWJhc2UgKyB2ZXJzaW9uIGhpc3RvcnkgIAoqKk91dHB1dDoqKiBHYXAgYW5hbHlzaXMgcmVwb3J0cywgdmlzdWFsaXphdGlvbnMsIGRpcmVjdGVkIGFuYWx5c2lzICAKKipSdW50aW1lOioqIH4xMC0zMCBtaW51dGVzIHBlciBpdGVyYXRpb24gKGRlcGVuZHMgb24gcGFwZXIgY291bnQpCgoqKldoYXQgaXQgZG9lczoqKgotIENhbGN1bGF0ZXMgY29tcGxldGVuZXNzIHNjb3JlICglIG9mIHJlcXVpcmVtZW50cyBtZXQpCi0gSWRlbnRpZmllcyBtaXNzaW5nIHN1Yi1yZXF1aXJlbWVudHMKLSBQcmlvcml0aXplcyBwYXBlcnMgZm9yIGRlZXAgYW5hbHlzaXMKLSBUcmlnZ2VycyBEZWVwLVJldmlld2VyIGZvciB0YXJnZXRlZCBhbmFseXNpYwotICoqSXRlcmF0ZXMgdW50aWwgPDUlIGdhcCByZW1haW5zKioKCioqSXRlcmF0aXZlIExvb3A6KioKYGBgCkNhbGN1bGF0ZSBnYXBzIOKGkiBEZWVwLVJldmlld2VyIOKGkiBKdWRnZSBuZXcgY2xhaW1zIOKGkiBSZS1zeW5jIOKGkiAKQ2hlY2sgY29udmVyZ2VuY2Ug4oaSIFJlcGVhdCBpZiBnYXAgPjUlCmBgYAoKLS0tCgojIyBFeGVjdXRpb24gTWV0aG9kcwogCiMjIyBNZXRob2QgMTogKipNYW51YWwgU3RhZ2UtYnktU3RhZ2UqKiAoUmVjb21tZW5kZWQgZm9yIEZpcnN0IFJ1bikKClJ1biBlYWNoIHN0YWdlIGluZGl2aWR1YWxseSB0byB1bmRlcnN0YW5kIHRoZSB3b3JrZmxvdzoKCiMjIyMgU3RlNCAxOiBKb3VybmFsIFJldmlld2VyCgpgYGBiYXNoCnB5dGhvbiBKb3VybmFsLVJldmlld2VyLnB5CmBgYAoKKipQcm9tcHRzOioqCi0gUGF0aCB0byBQRGYgZm9sZGVyOiBgUmVzZWFyY2gtUGFwZXJzL2AKLSBSZXZpZXcgdHlwZTogYGpvcm5hbGAgKG9yIHByZXNzIEVuamVyIGZvciBkZWZhdWx0KQoKKipFeHBlY3RlZCBPdXRwdXQ6KioKYGBgClByb2Nlc3NpbmcgcGFwZXI6IHJlc2VhcmNoX3BhcGVyXzEucGRmCkZvdW5kIDE1IGNsYWltcyBtYXRjaGluZyByZXF1aXJlbWVudHMKVmVyc2lvbiBoaXN0b3J5IHVwZGF0ZWQ6IHJldmlld192ZXJzaW9uX2hpc3RvcnkuanNvbgpgYGAKCi0tLQoKIyMjIyBTdGVwIDI6IEp1ZGdlIENsYWltcwoKYGBgYmFzZApweXRob24gSnVkZ2UucHkKYGBgCgoqKk5vIHByb21wdHMqKiAtIEF1dG9tYXRpY2FsbHk6Ci0gTG9hZHMgcGVuZGluZyBjbGFpbXMgZnJvbSB2ZXJzaW9uIGhpc3RvcnkKLSBKdWRnZXMgY2xhaW1zIGluIGJhdGNoZXMgb2YgMTAKLSBVcGRhdGVzIHZlcnNpb24gaGlzdG9yeSB3aXRoIHZlcmRpY3RzCgoqKkV4cGVjdGVkIE91dHB1dDoqKgpgYGAKTG9hZGVkIDE1IHBlbmRpbmcgY2xhaW1zIGZyb20gdmVyc2lvbiBoaXN0b3J5ClByb2Nlc3NpbmcgYmF0Y2ggMS8yICgxMCBjbGFpbXMpLi4uCiAgQ2xhaW0gYzFhMmIzOiBhcHByb3ZlZAogIENsYWltIGQ0ZTVmNjogcmVqZWN0ZWQKICAuLi4KUHJvY2Vzc2luZyBiYXRjaCAyLzIgKDUgY2xhaW1zKS4uLgpVcGRhdGVkIHZlcnNpb24gaGlzdG9yeSB3aXRoIGp1ZGdtZW50cwpUb3RhbDogMTIgYXBwcm92ZWQsIDMgcmVqZWN0ZWQKYGBgCgotLS0KCiMjIyMgU3RlNCAzOiBEUkEgKElmIFJlamVjdGlvbnMgRXhpc3QpCgpgYGBiYXNoCnB5dGhvbiBEZWVwUmVxdWlyZW1lbnRzQW5hbHl6ZXIucHkKYGBgCgoqKlByb21wdHM6KioKLSBDb25maXJtIHBhcGVycyB3aXRoIHJlamVjdGlvbnMKCioqRXhwZWN0ZWQgT3V0cHV0OioqCmBgYApGb3VuZCAzIHJlamVjdGVkIGNsYWltcyBpbiB2ZXJzaW9uIGhpc3RvcnkKUmUtYW5hbHl6aW5nIHBhcGVyczoKICAtIHJlc2VhcmNoX3BhcGVyXzEucGRmICgyIHJlamVjdGlvbnMpCiAgLSByZXNlYXJjaF9wYXBlcl8yLnBkZiAoMSByZWplY3Rpb24pCgpDaHVua2luZyBsYXJnZSBkb2N1bWVudCAoMyBjaHVua3MpLi4uClByb2Nlc3NpbmcgY2h1bmsgMS8zIChQYWdlcyAxLTUwKS4uLgpQcm9jZXNzaW5nIGNodW5rIDIvMyAoUGFnZXMgNTEtMTAwKS4uLgpQcm9jZXNzaW5nIGNodW5rIDMvMyAoUGFnZXMgMTAxLTE1MCkuLi4KCkZvdW5kIDIgbmV3IGNsYWltcyB3aXRoIGVuaGFuY2VkIGV2aWRlbmNlCkFkZGVkIHRvIHZlcnNpb24gaGlzdG9yeSBmb3IgcmUtanVkZ21lbnQKYGBgCgoqKkFmdGVyIERSQToqKiBSZS1ydW4gSnVkZ2UgdG8gZXZhbHVhdGUgbmV3IGNsYWltcyEKCmBgYGJhc2gKcHl0aG9uIEp1ZGdlLnB5ICAjIFJlLWp1ZGdlIERSQSBjbGFpbXMKYGBgCgotLS0KCiMjIyAgU3RlNCA0OiBTeW5jIHRvIERhdGFiYXNlCgpgYGBiYXNoCnB5dGhvbiBzeW5jX2hpc3RvcnlfdG9fZGIucHkKYGBgCgoqKkV4cGVjdGVkIE91dHB1dDoqKgpgYGAKU3luY2luZyB2ZXJzaW9uIGhpc3RvcnkgdG8gQ1NWIGRhdGFiYXNlLi4uCkV4dHJhY3RlZCAxNCBhcHByb3ZlZCBjbGFpbXMgZnJvbSAyIHBhcGVycwpVcGRhdGVkOiBuZXVyb21vcnBoaWMtcmVzZWFyY2hfZGF0YWJhc2UuY3N2CmBgYAoKLS0tCgojIyMgU3RlNCA1OiBPcmNoZXN0cmF0b3IgKEl0ZXJhdGl2ZSBHYXAgQ2xvc3VyZSkKCmBgYGJhc2gKcHl0aG9uIE9yY2hlc3RyYXRvci5weQpgYGAKCioqUHJvbXB0czpXKgogLURhdGFiYXNlIHBhdGg6IGBuZXVyb21vcnBoaWMtcmVzZWFyY2hfZGF0YWJhc2UuY3N2YCAob3IgRW50ZXIgZm9yIGRlZmF1bHQpCi0gTWF4IGl0ZXJhdGlvbnM6IGA1YCAob3IgRW50ZXIgZm9yIGRlZmF1bHQpCgoqKkV4cGVjdGVkIE91dHB1dDoqKgpgYGAKPT09IElURVJBVElPTiAxID09PQpDb21wbGV0ZW5lc3MgU2NvcmU6IDQyLjUlICgxNy80MCBzdWItcmVxdWlyZW1lbnRzIG1ldCkKR2FwOiAyMyBtaXNzaW5nIHN1Yi1yZXF1aXJlbWVudHMKCgpQcmlvcml0aXppbmcgcGFwZXJzIGZvciBkZWVwIGFuYWx5c2lzLi4uClRvcCBwYXBlcnM6CiAgMS4gcmVzZWFyY2hfcGFwZXJfNS5wZGYgKDggcG90ZW50aWFsIG1hdGNoZXMpCiAgMi4gcmVzZWFyY2hfcGFwZXJfMy5wZGYgKDYgcG90ZW50aWFsIG1hdGNoZXMpCgpHZW5lcmF0aW5nIGdhcC1jbG9zaW5nIHNlYXJjaCByZWNvbW1lbmRhdGlvbnMuLi4K4pyFIEdhcC1jbG9zaW5nIHNlYXJjaCByZWNvbW1lbmRhdGlvbnMgZ2VuZXJhdGVkICg5NyBnYXBzIGlkZW50aWZpZWQpLgoKPT09IENPTlZFUkdFTkNFIEFDSElFVkVEID09PQpGaW5hbCBTY29yZTogOTYuNSUgKGdhcCA8NSUpCkl0ZXJhdGlvbnM6IDQKUmVwb3J0cyBnZW5lcmF0ZWQgaW4gZ2FwX2FuYWx5c2lzX291dHB1dC8KICAtIDcgcGlsbGFyIHdhdGVyZmFsbCB2aXN1YWxpemF0aW9ucwogIC0gUmVzZWFyY2ggZ2FwIHJhZGFyIHBsb3QKICAtIFBhcGVyIG5ldHdvcmsgdmlzdWFsaXphdGlvbgogIC0gUmVzZWFyY2ggdHJlbmRzIHBsb3QKICAtIEdhcCBhbmFseXNpcyByZXBvcnQgKEpTT04pCiAgLSBFeGVjdXRpdmUgc3VtbWFyeSAoTWFya2Rvd24pCiAgLSBTdWdnZXN0ZWQgc2VhcmNoZXMgKEpTT04gKyBNYXJrZG93bikg8J+GlQogIC0gU3ViLXJlcXVpcmVtZW50IGNvbnRyaWJ1dGlvbnMgKE1hcmtkb3duKQpgYGAKCi0tLQoKIyMjIE1ldGhvZCAyOiAqKkF1dG9tYXRlZCBFbmQtdG8tRW5kKiogKFVzaW5nIFBpcGVsaW5lIE9yY2hlc3RyYXRvckgpCgoqKuKchSBORVc6KiogVGhlIGBwaXBlbGluZV9vcmNoZXN0cmF0b3IucHlgIHNjcmlwdCBub3cgYXV0b21hdGVzIGFsbCA1IHN0YWdlcyBpbiBhIHNpbmdsZSBjb21tYW5kLgoKqKkJhc2ljIFVzYWdlOioqCmBgYGJhc2gKcHl0aG9uIHBpcGVsaW5lX29yY2hlc3RyYXRvci5weQpgYGAKCioqV2l0aCBMb2dnaW5nOioqCmBgYGJhc2gKcHl0aG9uIHBpcGVsaW5lX29yY2hlc3RyYXRvci5weSAtLWxvZy1maWxlIHBpcGVsaW5lLmxvZwpgYGAKCioqV2l0aCBDb25maWd1cmF0aW9uOioqCmBgYGJhc2gKcHl0aG9uIHBpcGVsaW5lX29yY2hlc3RyYXRvci5weSAtLWNvbmZpZyBwaXBlbGluZV9jb25maWcuanNvbgpgYGAKCioqV2hhdCBpdCBkb2VzOioqCi0gUnVucyBhbGwgNSBzdGFnZXMgc2VxdWVudGlhbGx5Ci0gQ29uZFpb25hbGx5IGV4ZWN1dGVzIERSQSBvbmx5IGlmIHJlamVjdGlvbnMgYXJlIGRldGVjdGVkCi0gTG9ncyBwcm9ncmVzcyB3aXRoIHRpbWVzdGFtcHMgdG8gY29uc29sZSBhbmQgb3B0aW9uYWwgZmlsZQotIEhhbHRzIHBpcGVsaW5lIG9uIGFueSBzdGFnZSBmYWlsdXJlIHdpdGggY2xlYXIgZXJyb3IgbWVzc2FnZXMKLSBQcm92aWRlcyB0b3RhbCBleGVjdXRpb24gdGltZSBzdW1tYXJ5Ci0gKipDcmVhdGVzIGNoZWNrcG9pbnQgZmlsZSBmb3IgcmVzdW1lIGNhcGFiaWxpdHkoKioKCioqQ29uZmlndXJhdGlvbiBGaWxlIChgcGlwZWxpbmVfY29uZmlnLmpzb25gKToqKgpgYGBqc29uCnsKICAidmVyc2lvbl9oaXN0b3J5X3Bh
+dGgiOiAicmV2aWV3X3ZlcnNpb25faGlzdG9yeS5qc29uIiwKICAic3RhZ2Vf
+dGltZW91dCI6IDcyMDAsCiAgImxvZ19sZXZlbCI6ICJJTkZPIgp9CmBgYAoK
+KipOb3RlOioqIFRoZSBvcmNoZXN0cmF0b3IgcmVxdWlyZXMgdGhhdCBhbGwg
+UHl0aG9uIHNjcmlwdHMgKEpvdXJuYWwtUmV2aWV3ZXIucHksIEp1ZGdlLnB5
+LCBldGMuKSBhcmUgaW4gdGhlIHNhbWUgZGlyZWN0b3J5IGFuZCBjYW4gcnVu
+IG5vbi1pbnRlcmFjdGl2Zmx5LgoKLS0tCgojIyMgTWV0aG9kIDM6ICoqUmVz
+dW1lIEFmdGVyIEludGVycnVwdGlvbioqIChDaGVja3BvaW50L1Jlc3VtZSkK
+Cioq4pyFIE5FVyBpbiB2MS4xOioqIFJlc3VtZSBwaXBlbGluZSBleGVjdXRp
+b24gYWZ0ZXIgZmFpbHVyZXMgb3IgaW50ZXJydXB0aW9ucy4KClRoZSBwaXBl
+bGluZSBvcmNoZXN0cmF0b3IgYXV0b21hdGljYWxseSBjcmVhdGVzIGEgY2hl
+Y2twb2ludCBmaWxlIChgcGlwZWxpbmVfY2hlY2twb2ludC5qc29uYCkgdGhh
+dCB0cmFja3MgdGhlIHByb2dyZXNzIG9mIGVhY2ggc3RhZ2UuIElmIHRoZSBw
+aXBlbGluZSBpcyBpbnRlcnJ1cHRlZCwgeW91IGNhbiByZXN1bWUgZnJvbSB3
+aGVyZSBpdCBsZWZ0IG9mZi4KCioqUmVzdW1lIGZyb20gTGFzdCBDaGVja3Bv
+aW50OioqCmBgYGJhc2gKcHl0aG9uIHBpcGVsaW5lX29yY2hlc3RyYXRvci5w
+eSAtLXJlc3VtZQpgYGAKClRoaXMgd2lsbDoKLSBMb2FkIHRoZSBjaGVja3Bv
+aW50IGZpbGUKLSBTa2lwIHN0YWdlcyB0aGF0IGhhdmUgYWxyZWFkeSBjb21w
+bGV0ZWQgc3VjY2Vzc2Z1bGx5Ci0gUmUtcnVuIGFueSBzdGFnZSB0aGF0IHdh
+cyBpbiBwcm9ncmVzcyB3aGVuIGludGVycnVwdGVkCi0gQ29udGludWUgd2l0
+aCByZW1haW5pbmcgc3RhZ2VzCgoqKlJlc3VtZSBmcm9tIGEgU3BlY2lmaWMg
+U3RhZ2U6KioKYGBgYmFzaAojIFJlc3VtZSBmcm9tIHN5bmMgc3RhZ2Ugb253
+YXJkcyAoc2tpcCBlYXJsaWVyIHN0YWdlcykKcHl0aG9uIHBpcGVsaW5lX29y
+Y2hlc3RyYXRvci5weSAtLXJlc3VtZS1mcm9tIHN5bmMKYGBgCgpBdmFpbGFi
+bGUgc3RhZ2VzIGZvciBgLS1yZXN1bWUtZnJvbWA6Ci0gYGpvdXJuYWxfcmV2
+aWV3ZXJgIC0gU3RhZ2UgMTogSW5pdGlhbCBQYXBlciBSZXZpZXcKLSBganVk
+Z2VgIC0gU3RhZ2UgMjogSnVkZ2UgQ2xhaW1zCi0gYGRyYSAgLSBTdGFnZSAz
+OiBEUkEgQXBwZWFsIChpZiByZWplY3Rpb25zIGRldGVjdGVkKQotIGBzeW5j
+YCAtIFN0YWdlIDQ6IFN5bmMgdG8gRGF0YWJhc2UKLSBgb3JjaGVzdHJhdG9y
+YCAtIFN0YWdlIDU6IEdhcCBBbmFseXNpcyAmIENvbnZlcmdlbmNlCgoqKkN1
+c3RvbSBDaGVja3BvaW50IEZpbGU6KioKYGBgYmFzaAojIFVzZSBhIGRpZmZl
+cmVudCBjaGVja3BvaW50IGZpbGUKcHl0aG9uIHBpcGVsaW5lX29yY2hlc3Ry
+YXRvci5weSAtLWNoZWNrcG9pbnQtZmlsZSBiYXRjaF8wMDFfY2hlY2twb2lu
+dC5qc29uCgojIFJlc3VtZSBmcm9tIGN1c3RvbSBjaGVja3BvaW50CnB5dGhv
+biBwaXBlbGluZV9vcmNoZXN0cmF0b3IucHkgLS1yZXN1bWUgLS1jaGVja3Bv
+aW50LWZpbGUgYmF0Y2hfMDAxX2NoZWNrcG9pbnQuanNvbgpgYGAKCioqVXNl
+IENhc2VzOioqCi0gKipOZXR3b3JrIEZhaWx1cmU6KiogUmVzdW1lIGFmdGVy
+IGNvbm5lY3Rpb24gdGltZW91dCBkdXJpbmcgc3luYwotICoqTWFudWFsIElu
+dGVycnVwdGlvbjoqKiBSZXN1bWUgYWZ0ZXIgQ3RybCtDCi0gKipTeXN0ZW0g
+Q3Jhc2g6KiogUmVzdW1lIGFmdGVyIHVuZXhwZWN0ZWQgc2h1dGRvd24KLSAq
+Kkl0ZXJhdGl2ZSBEZXZlbG9wbWVudDoqKiBSZS1ydW4gb25seSBtb2RpZmll
+ZCBzdGFnZXMKLSAqKkJhdGNoIFByb2Nlc3Npbmc6KiogU2VwYXJhdGUgY2hl
+Y2twb2ludHMgZm9yIGRpZmZlcmVudCBiYXRjaGVzCgoqKkNoZWNrcG9pbnQg
+RmlsZSBTdHJ1Y3R1cmU6KioKClRoZSBjaGVja3BvaW50IGZpbGUgaXMgaHVt
+YW4tcmVhZGFibGUgSlNPTjoKCmBgYGpzb24KewogICJydW5faWQiOiAiMjAy
+NS0xMS0xMVQxNDozMDowMF9hYmMxMjMiLAogICJwaXBlbGluZV92ZXJzaW9u
+IjogIjEuMS4wIiwKICAic3RhcnRlZF9hdCI6ICIyMDI1LTExLTExVDE0OjMw
+OjAwIiwKICAibGFzdF91cGRhdGVkIjogIjIwMjUtMTEtMTFUMTQ6NDU6MzAi
+LAogICJzdGF0dXMiOiAiaW5fcHJvZ3Jlc3MiLAogICJzdGFnZXMiOiB7CiAg
+ICAiam91cm5hbF9yZXZpZXdlciI6IHsKICAgICAgInN0YXR1cyI6ICJjb21w
+bGV0ZWQiLAogICAgICAic3RhcnRlZF9hdCI6ICIyMDI1LTExLTExVDE0OjMw
+OjA1IiwKICAgICAgImNvbXBsZXRlZF9hdCI6ICIyMDI1LTExLTExVDE0OjM1
+OjEyIiwKICAgICAgImR1cmF0aW9uX3NlY29uZHMiOiAzMDcsCiAgICAgICJl
+eGl0X2NvZGUiOiAwCiAgICB9LAogICAgImp1ZGdlIjogewogICAgICAic3Rh
+dHVzIjogImNvbXBsZXRlZCIsCiAgICAgICJzdGFydGVkX2F0IjogIjIwMjUt
+MTEtMTFUMTQ6MzU6MTUiLAogICAgICAiY29tcGxldGVkX2F0IjogIjIwMjUt
+MTEtMTFUMTQ6NDA6MjIiLAogICAgICAiZHVyYXRpb25fc2Vjb25kcyI6IDMw
+NywKICAgICAgImV4aXRfY29kZSI6IDAKICAgIH0sCiAgICAic3luYyI6IHsK
+ICAgICAgInN0YXR1cyI6ICJmYWlsZWQiLAogICAgICAic3RhcnRlZF9hdCI6
+ICIyMDI1LTExLTExVDE0OjQwOjI1IiwKICAgICAgImZhaWxlZF9hdCI6ICIy
+MDI1LTExLTExVDE0OjQyOjEwIiwKICAgICAgImVycm9yIjogIkNvbm5lY3Rp
+b24gdGltZW91dCIKICAgIH0KICB9Cn0KYGBgCgoqKlNhZmV0eSBGZWF0dXJl
+czoqKgotICoqQXRvbWljIHdyaXRlcyoqIHByZXZlbnQgcGhlY2twb2ludCBj
+b3JydXB0aW9uCi0gKipDb3JydXB0ZWQgY2hlY2twb2ludCBkZXRlY3Rpb24q
+KiB3aXRoIGNsZWFyIGVycm9yIG1lc3NhZ2VzCi0gKipObyBzZW5zaXRpdmUg
+ZGF0YSoqIHN0b3JlZCBpbiBjaGVja3BvaW50IChubyBBUEkga2V5cykKLSAq
+KldvcmtzIGFjcm9zcyBzeXN0ZW0gcmVzdGFydHMqKgoKKipFeGFtcGxlIFdv
+rGtmbG93OioqCgpgYGBiYXNoCiMgU3RhcnQgcGlwZWxpbmUKcHl0aG9uIHBp
+cGVsaW5lX29yY2hlc3RyYXRvci5weSAtLWxvZy1maWxlIHJ1bjEubG9nCgoj
+IFtQaXBlbGluZSBydW5zIFN0YWdlIDEgYW5kIDIsIHRoZW4gbmV0d29yayBm
+YWlscyBhdCBTdGFnZSAzXQojIENoZWNrcG9pbnQgc2hvd3M6IGpvdXJuYWxf
+cmV2aWV3ZXI9Y29tcGxldGVkLCBqdWRnZT1jb21wbGV0ZWQsIHN5bmM9ZmFp
+bGVkCgojIFJlc3VtZSBhZnRlciBmaXhpbmcgbmV0d29yawpweXRob24gcGlw
+ZWxpbmVfb3JjaGVsc3RyYXRvci5weSAtLXJlc3VtZSAtLWxvZy1maWxlIHJ1
+bjFfcmVzdW1lZC5sb2cKCiMgT3V0cHV0OiBTa2lwcGluZyBqb3VybmFsX3Jl
+dmlld2VyIChhbHJlYWR5IGNvbXBsZXRlZCkKIyAgICAgICAgIFNraXBwaW5n
+IGp1ZGdlIChhbHJlYWR5IGNvbXBsZXRlZCkKIyAgICAgICAgIFJlLXJ1bm5p
+bmUgc3luYyAod2FzIGludGVycnVwdGVkKQojICAgICAgICAgUnVubmluZyBv
+cmNoZXN0cmF0b3IKYGBgCgotLS0KCiMjIENvbmZpZ3VyYXRpb24KCjIyIyBB
+UEkgQ29uZmlndXJhdGlvbgpTZGl0IUFQSSBzZXR0aW5ncyBpbiBlYWNoIG1v
+dXVsZToKCiAqKkphZGdlLnB5OioqCmBgYHB5dGhvbgpBUElfQ09ORklHID0g
+e2AKICAgICdDTEFJTV9CQVRDSF9TSVpFJzogMTAsICAgICAgICAjIENsYWlt
+cyBwZXIgYmF0Y2gKICAgICdCQVRDSF9ERUxBWV9TRUNPTkRTOicgMiAgICAg
+ICAjIERlbGF5IGJldHdlZW4gYmF0Y2hlcwp9CmBgYAoKKipEZWVwUmVxdWly
+ZW1lbnRzQW5hbHl6ZXIucHk6KioKYGBgcHl0aG9uClJFVklFV19DT05GSUcg
+PSB7CiAgICAnRFJBX0NIVU5LX1NJWkUnOiA1MDAwMCwgICAgICAgIyBDaHVu
+ayBzaXplIChjaGFycykKICAgICdEUkFfQ0hVTktfT1ZFUkxBUCc6IDAuMSAg
+ICAgICAjIDEwJSBvdmVybGFwCn0KYGBgCgoqKkRlZXAtUmV2aWV3ZXIucHk6
+KioKYGBgcHl0aG9uClJFVklFV19DT05GSUcgPSB7CiAgICAnREVFUF9SRVZJ
+RVdFUl9DSFVOS19TSVpFJzogNzUwMDAsICAjIENodW5rIHNpemUgKGNoYXJz
+KQogICAgJ0RFRFVQTElDQVRJT05fRU5BQkxFRCc6IFRydWUKfQpgYGAKCioq
+T3JjaGVzdHJhdG9yLnB5OioqCmBgYHB5dGhvbgpPUkNIRVNUUkFUT1JfQ09O
+RklHID0gewogICAgJ01BWF9JVEVSQVRJT05TJzogMTAsICAgICAgICAgICAg
+ICAgICMgTWF4IGltcHJvdmVtZW50IGl0ZXJhdGlvbnMKICAgICdDT05WRVJHRU5D
+RV9USFJFU0hPTEQnOiAwLjA1LCAgICAgICAjIDUlIGdhcCB0aHJlc2hvbGQK
+ICAgICdNSU5fUEFQRVJTX1BFUl9JVEVSQVRJT04nOiAyICAgICAgICAjIFBh
+cGVycyB0byBhbmFseXplIHBlciBpdGVyYXRpb24KfQpgYGAKCi0tLQoKIyMg
+TW9uaXRvcmluZyBhbmQgTG9ncwoKIyMjIFByb2dyZXNzIFRyYWNraW5nCgpF
+YWNoIG1vZHVsZSBwcm92aWRlcyByZWFsLXRpbWUgcHJvZ3Jlc3M6CgoqKkp1
+ZGdlIEJhdGNoaW5nOioqCmBgYApQcm9jZXNzaW5nIGJhdGNoIDMvNyAoMTAg
+Y2xhaW1zKS4uLgogIENsYWltIGExYjJjMzogYXBwcm92ZWQgKEV2aWRlbmNl
+IHN1cHBvcnRzIHJlcXVpcmVtZW50KQogIENsYWltIGQ0ZTVmNjogcmVqZWN0
+ZWQgKEluc3VmZmljaWVudCBkZXRhaWwpCiAgLi4uClByb2dyZXNzOiAzMC83
+MCBjbGFpbXMgKDQyLjklKQpgYGAKKioqRFJBIENodW5raW5nOioqCmBgYApD
+aHVua2luZyBkb2N1bWVudDogcmVzZWFyY2hfcGFwZXIucGRmICgxNTAgcGFn
+ZXMsIDI1MGsgY2hhcnMpCkNyZWF0ZWQgNSBjaHVua3Mgd2l0aCAxMCUgb3Zl
+cmxhcApQcm9jZXNzaW5nIGNodW5rIDEvNSAoUGFnZXMgMS0zMCkuLi4KUHJv
+Y2Vzc2luZyBjaHVuayAyLzUgKFBhZ2VzIDI4LTU4KS4uLgouLi4KYGBgCgoq
+Kk9yY2hlc3RyYXRvciBDb252ZXJnZW5jZToqKgpgYGAKSXRlcmF0aW9uIDM6
+IFNjb3JlIDY3LjUlIOKGkiA3Mi41JSAoKzUuMCUpCkdhcCByZWR1Y3Rpb246
+IDEzIOKGkiAxMSBtaXNzaW5nIHJlcXVpcmVtZW50cwpFc3RpbWF0ZWQgaXRl
+cmF0aW9ucyB0byBjb252ZXJnZW5jZTogMi0zCmBgYAoKIyMjIExvZyBGaWxl
+cwoKQ3VycmVudGx5LCBsb2dzIGFyZSBwcmludGVkIHRvIGNvbnNvbGUuIFRv
+IHNhdmUgbG9nczoKCmBgYGJhc2gKIyBSZWRpcmVjdCB0byBmaWxlCnB5dGhv
+biBKdWRnZS5weSA+IGp1ZGdlX3J1bi5sb2cgMj4mMQoKIyBPciB1c2UgdGVl
+IGZvciBib3RoIGNvbnNvbGUgYW5kIGZpbGUKcHl0aG9uIE9yY2hlc3RyYXRv
+ci5weSB8IHRlZSBvcmNoZXN0cmF0b3JfcnVuLmxvZwpgYGAKCi0tLQoKIyMg
+VHJvdWJsZXNob290aW5nCgojIyMgSXNzdWU6ICJObyBwZW5kaW5nIGNsYWlt
+cyBmb3VuZCIKCioqQ2F1c2U6KiogVmVyc2lvbiBoaXN0b3J5IGRvZXNuJ3Qg
+aGF2ZSBjbGFpbXMgd2l0aCBzdGF0dXMgYHBlbmRpbmdfanVkZ2VfcmV2aWV3
+YAoKKipTb2x1dGlvbjoqKgoxLiBSdW4gSm91cm5hbC1SZXZpZXdlciBmaXJz
+dDogYHB5dGhvbiBKb3VybmFsLVJldmlld2VyLnB5YAoyLiBPciBjaGVjayB2
+ZXJzaW9uIGhpc3RvcnkgaGFzIHBlbmRpbmcgY2xhaW1zOgogICBgYGBiYXNo
+CiAgIGdyZXAgInBlbmRpbmdfanVkZ2VfcmV2aWV3IiByZXZpZXdfdmVyc2lv
+bl9oaXN0b3J5Lmpzb24KICAgYGBgCgotLS0KCiMjIyBJc3N1ZTogIkRSQSBm
+aW5kcyBubyBuZXcgY2xhaW1zIgoKKipQb3NzaWJsZSBDYXVzZXM6KioKLSBS
+ZWplY3RlZCBjbGFpbXMgYXJlIHRydWx5IHVuc3VwcG9ydGFibGUKLSBQYXBl
+ciBkb2Vzbid0IGNvbnRhaW4gcmVsZXZhbnQgZXZpZGVuY2UKLSBQcm9tcHRp
+bmUgbmVlZHMgYWRqdXN0bWVudAoKKipTb2x1dGlvbjoqKgoxLiBDaGVjayBy
+ZWplY3RlZCBjbGFpbXMgaW4gdmVyc2lvbiBoaXN0b3J5CjIuIE1hbnVhbGx5
+IHJldmlldyBqdWRnZSBub3RlcyB0byB1bmRlcnN0YW5kIHdoeSByZWplY3Rl
+ZAozLiBDb25zaWRlciBpZiBwYXBlciBpcyB0cnVseSByZWxldmFudCB0byBy
+ZXF1aXJlbWVudHMKCi0tLQoKIyMjIElzc3VlOiAiT3JjaGVzdHJhdG9yIGRv
+ZXNuJ3QgY29udmVyZ2UiCgoqKkNhdXNlOioqIEdhcCByZW1haW5zID41JSBh
+ZnRlciBtYXggaXRlcmF0aW9ucwoKKipTb2x1dGlvbnM6KioKMS4gSW5jcmVh
+c2UgbWF4IGl0ZXJhdGlvbnMgaW4gY29uZmlnCjIuIEFkZCBtb3JlIHBhcGVy
+cyB0byBgUmVzZWFyY2gtUGFwZXJzL2AKMy4gQ2hlY2sgaWYgbWlzc2luZyBy
+ZXF1aXJlbWVudHMgYXJlIHRvbyBzcGVjaWZpYwo0LiBSZXZpZXcgZ2FwIGFu
+YWx5c2lzIHJlcG9ydHMgaW4gYGdhcF9hbmFseXNpc19vdXRwdXQvYAoKLS0t
+CgojIyMgSXNzdWU6ICJBUEkgcXVvdGEgZXhjZWVkZWQiCgoqKkNhdXNlOioq
+IFRvbyBtYW55IEFQSSBjYWxscwoKKipTb2x1dGlvbnM6KioKMS4gKipVc2Ug
+YmF0Y2hpbmc6KiogSnVkZ2UgYXV0b21hdGljYWxseSBiYXRjaGVzICgxMCBj
+bGFpbXMvYmF0Y2gpCjIuICoqUmVkdWNlIGJhdGNoIHNpemU6KiogTG93ZXIg
+YENMQUlNX0JBVENIX1NJWkVgIGluIEp1ZGdlLnB5CjMuICoqSW5jcmVhc2Ug
+ZGVsYXlzOioqIFJhaXNlIGBCQVRDSF9ERUxBWV9TRUNPTkRTYAo0LiAqKkNo
+dW5raW5nOioqIEVuYWJsZWQgYnkgZGVmYXVsdCBmb3IgbGFyZ2UgZG9jdW1l
+bnRzCjUuICoqV2FpdDoqKiBBUEkgcXVvdGFzIHJlc2V0IHBlcmlvZGljYWxs
+eQoKLS0tCgojIyMgSXNzdWU6ICJDaXJjdWxhciByZWZlcmVuY2UgZXJyb3Ig
+aW4gSlNPTiIKCioqQ2F1c2U6KiogQnVnIGluIGNsYWltIG1ldGFkYXRhIChz
+aG91bGQgYmUgZml4ZWQgaW4gbGF0ZXN0IHZlcnNpb24pCgoqKlNvbHV0aW9u
+OioqCjEuIFZlcmlmeSB1c2luZyBKdWRnZSB2Mi4wKyAoaGFzIGZpeCBmb3Ig
+SVNTVUUtMDA0KQoyLiBSdW4gdmFsaWRhdGlvbjoKICAgYGBgYmFzaAogICBw
+eXRob24gZGVtb3MvZGVtb192YWxpZGF0ZV9kYXRhLnB5CiAgIGBgYAoKLS0t
+CgojIyMgSXNzdWU6ICJQaWxsYXIgZGVmaW5pdGlvbnMgbm90IGZvdW5kIgoK
+KipDYXVzZToqKiBNaXNzaW5nIGBwaWxsYXJfZGVmaW5pdGlvbnNfZW5oYW5j
+ZWQuanNvbmAKCioqU29sdXRpb246KioKMS4gRW5zdXJlIGZpbGUgZXhpc3Rz
+IGluIHByb2plY3Qgcm9vdAoyLiBDaGVjayBmaWxlIGlzIHZhbGlkIEpTT046
+CiAgIGBgYGJhc2gKICAgcHl0aG9uIC1tIGpzb24udG9vbCBwaWxsYXJfZGVm
+aW5pdGlvbnNfZW5oYW5jZWQuanNvbiA+IC9kZXYvbnVsbAogICBgYGAKCi0t
+LQoKIyMgQWR2YW5jZWQgV29ya2Zsb3dzCgojIyAgV29ya2Zsb3cgQTogTmV3
+IFBhcGVyIEJhdGNoIFByb2Nlc3NpbmcKCioqU2NlbmFyaW86KiogWW91IGhh
+dmUgNTAgbmV3IHBhcGVycyB0byBwcm9jZXNzCgpgYGBiYXNoCiMgMS4gQWRk
+IFBERnMgdG8gUmVzZWFyY2gtUGFwZXJzLwpjcCAvcGF0aC90by9uZXcvcGFw
+ZXJzLyoucGRmIFJlc2VhcmNoLVBhcGVycy8KCiMgMi4gUnVuIEpvdXJuYWwg
+UmV2aWV3ZXIKcHl0aG9uIEpvdXJuYWwtUmV2aWV3ZXIucHkgICMgMi0zIGhv
+dXJzIGZvciA1MCBwYXBlcnMKCiMgMy4gSnVkZ2UgYWxsIGNsYWltcwpweXRo
+b24gSnVkZ2UucHkgICMgMzAtNjAgbWludXRlcwoKIyA0LiBEUkEgZm9yIHJl
+amVjdGlvbnMgKGlmIGFueSkKcHl0aG9uIERlZXBSZXF1aXJlbWVudHNBbmFs
+eXplci5weSAgIyAxLTIgaG91cnMKCiMgNS4gUmUtanVkZ2UgRFJBIGNsYWlt
+cwpweXRob24gSnVkZ2UucHkgICMgMTAtMjAgbWludXRlcwoKIyA2LiBTeW5j
+IHRvIGRhdGFiYXNlCnB5dGhvbiBzeW5jX2hpc3RvcnlfdG9fZGIucHkgICMg
+PDEgbWludXRlCgojIDcuIFJ1biBvcmNoZXN0cmF0b3IgZm9yIGNvbnZlcmdl
+bmNlCnB5dGhvbiBPcmNoZXN0cmF0b3IucHkgICMgMi01IGhvdXJzIChpdGVy
+YXRpdmUpCmBgYAoKKipUb3RhbCBUaW1lOioqIH42LTEyIGhvdXJzIChtb3N0
+bHkgQVBJIHdhaXQgdGltZSkKCi0tLQoKIyMjIFdvcmtmbG93IEI6IFRhcmdl
+dGVkIEdhcCBGaWxsaW5nCgoqKlNjZW5hcmioOioqIFlvdSBoYXZlIDg1JSBj
+b3ZlcmFnZSwgd2FudCB0byByZWFjaCA5NSUKCmBgYGJhc2gKIyAxLiBSdW4g
+T3JjaGVzdHJhdG9yIHRvIGlkZW50aWZ5IGdhcHMKcHl0aG9uIE9yY2hlc3Ry
+YXRvci5weQoKIyAyLiBSZXZpZXcgZ2FwIGFuYWx5c2lzIHJlcG9ydApjYXQg
+Z2FwX2FuYWx5c2lzX291dHB1dC9pdGVyYXRpb25fMV9nYXBfYW5hbHlzaXMu
+anNvbgoKIyAzLiBBZGQgcGFwZXJzIHRhcmdldGluZyBzcGVjaWZpYyBnYXBz
+CiMgKFVzZSByZWNvbW1lbmRhdGlvbnMgZnJvbSBnYXAgYW5hbHlzaXMpCgoj
+IDQuIFJ1biBEZWVwLVJldmlld2VyIG9uIHRhcmdldGVkIHBhcGVycwojIChP
+cmNoZXN0cmF0b3Igd2lsbCB0cmlnZ2VyIHRoaXMgYXV0b21hdGljYWxseSkK
+CiMgNS4gSnVkZ2UgbmV3IGNsYWltcwpweXRob24gSnVkZ2UucHkKCiAgNi4g
+U3luYyBhbmQgcmUtY2hlY2sgc2NvcmUKcHl0aG9uIHN5bmNfaGlzdG9yeV90
+b19kYi5weQpweXRob24gT3JjaGVzdHJhdG9yLnB5ICAjIENoZWNrIGlmIGdh
+cCA8NSUKYGBgCgotLS0KCiMjIyBXb3JrZmxvdyBDOiBSZS1wcm9jZXNzIFNw
+ZWNpZmljIFBhcGVyCgoqKlNjZW5hcmioOiAqKiBQYXBlciB3YXMgaW5jb3Jy
+ZWN0bHkgcmV2aWV3ZWQsIG5lZWQgdG8gcmUtcnVuCgpgYGBiYXNoCiMgMS4g
+UmVtb3ZlIHBhcGVyJ3MgZW50cmllcyBmcm9tIHZlcnNpb24gaGlzdG9yeQpw
+eXRob24gLWMgIimJwb3J0IGpzb24Kd2l0aCBvcGVuKCdVcmV2aWV3X3ZlcnNp
+b25faGlzdG9yeS5qc29uJywgJ3IrJykgYXMgZjoKICAgIGhpc3RvcnkgPSBq
+c29uLmxvYWQoZikKICAgIGRlbCBoaXN0b3J5Wyd0YXJnZXRfcGFwZXIucGRm
+J10KICAgIGYuc2VlaygwKQogICAgZi50cnVuY2F0ZSgpCiAgICBqc29uLmR1
+bXAoaGlzdG9yeSwgZiwgaW5kZW50PTIpCiIKCiMgMi4gUmUtcnVuIEpvdXJu
+YWwgUmV2aWV3ZXIgb24gdGhhdCBwYXBlcgpweXRob24gSm91cm5hbC1SZXZp
+d2VyLnB5CiMgKFNwZWNpZnkganVzdCB0aGF0IG9uZSBQREYpCgojIDMuIEp1
+ZGdlIG5ldyBjbGFpbXMKcHl0aG9uIEp1ZGdlLnB5CgojIDQuIFJlLXN5bmMK
+cHl0aG9uIHN5bmNfaGlzdG9yeV90b19kYi5weQpgYGAKCi0tLQoKIyMgUGVy
+Zm9ybWFuY2UgT3B0aW1pemF0aW9uCgojIyMgVGlwIDE6IFVzZSBDYWNoaW5n
+CgpKdWxnZSBhbmQgRFJBXyB1c2UgcHJvbXB0IGNhY2hpbmcgYXV0b21hdGlj
+YWxseS4gVG8gbWF4aW1pemUgY2FjaGUgaGl0czoKLSBQcm9jZXNzIHNpbWls
+YXIgcGFwZXJzIHRvZ2V0aGVyCi0gQXZvaWQgY2hhbmdpbmcgcGlsbGFyIGRl
+ZmluaXRpb25zIG1pZC1iYXRjaAoKIyMjIFRpcCAyOiBVc2UgUGlwZWxpbmUg
+T3JjaGVzdHJhdG9yCgpGb3IgYmF0Y2ggcHJvY2Vzc2luZywgdXNlIHRoZSBg
+cGlwZWxpbmVfb3JjaGVzdHJhdG9yLnB5YCB0byBhdXRvbWF0ZSBhbGwgc3Rh
+Z2VzOgpgYGBiYXNoCnB5dGhvbiBwaXBlbGluZV9vcmNoZXN0cmF0b3IucHkg
+LS1sb2ctZmlsZSBwaXBlbGluZS5sb2cKYGBgCgpCZW5lZml0czoKLSBObyBt
+YW51YWwgaW50ZXJ2ZW50aW9uIGJldHdlZW4gc3RhZ2VzCi0gQXV0b21hdGlj
+IERSQSB0cmlnZ2VyaW5nIHdoZW4gbmVlZGVkCi0gQ29tcGxldGUgZXhlY3V0
+aW9uIGxvZyBmb3IgYXVkaXRpbmcKLSBFcnJvciBoYW5kbGluZyBhbmQgZ3Jh
+Y2VmdWwgZmFpbHVyZQoKIyMjIFRpcCAzOiBQYXJhbGxlbCBQcm9jZXNzaW5n
+IChGdXR1cmUpCgpDdXJyZW50bHksIHN0YWdlcyBydW4gc2VxdWVudGlhbGx5
+LiBGdXR1cmUgZW5oYW5jZW1lbnQ6Ci0gUnVuIEp1ZGdlIG9uIG11bHRpcGxl
+IHBhcGVycyBpbiBwYXJhbGxlbCAoc2VwYXJhdGUgcHJvY2Vzc2VzKQotIFJl
+cXVpcmVzIGNhcmVmdWwgdmVyc2lvbiBoaXN0b3J5IGxvY2tpbmcKCiMjIyBU
+aXAgNDogSW5jcmVtZW50YWwgU3luY2luZwoKU3luYyBzY3JpcHQgaXMgZmFz
+dCAoPDEwcykgYnV0IGNhbiBiZSBvcHRpbWl6ZWQ6Ci0gT25seSBzeW5jIGNo
+YW5nZWQgcGFwZXJzICh0cmFjayB0aW1lc3RhbXBzKQotIFVzZSBgLS1pbmNy
+ZW1lbnRhbGAgZmxhZyAoZnV0dXJlIGZlYXR1cmUpCgojIyMgVGlwIDU6IE1v
+bml0b3IgQ2h1bmsgQ291bnRzCgpDaGVjayBsb2dzIGZvciBjaHVuayBzdGF0
+aXN0aWNzOgpgYGAKRFJBOiAxNTAtcGFnZSBkb2N1bWVudCDihpIgNSBjaHVu
+a3MgKGVmZmljaWVudCkKRFJBOiA1MC1wYWdlIGRvY3VtZW50IOKGkiAxIGNo
+dW5rIChubyBjaHVua2luZyBuZWVkZWQpCmBgYAoKQWRqdXN0IGNodW5rIHNp
+emVzIGlmIHNlZWluZyBpbmVmZmljaWVuY2llcy4KCi0tLQoKIyMgU3VtbWFy
+eTogVHlwaWNhbCBGdWxsIFJ1bgoKKipGb3IgMjAgcGFwZXJzIChhdmVyYWdl
+IDUwIHBhZ2VzIGVhY2gpOioqCgp8IFN0YWdlICAgICAgICAgICAgICAgICAg
+fCBUaW1lICAgICAgfCBBUEkgQ2FsbHMgfCBPdXRwdXQgICAgICAgICAgICAg
+ICAgICAgICAgfAp8LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tfC0tLS0tLS0t
+LS0tfC0tLS0tLS0tLS0tfC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LXwKfCBKb3VybmFsLVJldmlld2VyICAgICAgIHwgNDAtNjAgbWluIHwgfjQw
+LTYwICAgIHwgdmVyc2lvbl9oaXN0b3J5Lmpzb24gICAgICAgICB8CnwgSnVk
+Z2UgKEluaXRpYWwpICAgICAgICB8IDIwLTMwIG1pbiB8IH4xMDAtMTUwICB8
+IFVwZGF0ZWQgdmVyc2lvbl9oaXN0b3J5Lmpzb24gfAp8IERSQSAoSWYgcmVq
+ZWN0aW9ucykgICAgfCAzMC00NSBtaW4gfCB+NDAtNjAgICAgfCBOZXcgY2xh
+aW1zIGFkZGVkICAgICAgICAgICAgIHwKfCBKdWRnZSAoRFJBIFJlLWp1ZGdl
+KSAgIHwgMTAtMTUgbWluIHwgfjIwLTMwICAgIHwgRmluYWwgdmVyZGljdHMg
+ICAgICAgICAgICAgICB8CnwgU3luYyAgICAgICAgICAgICAgICAgICB8IDwx
+IG1pbiAgICB8IDAgICAgICAgICB8IENTViBkYXRhYmFzZSAgICAgICAgICAg
+ICAgICAgfAp8IE9yY2hlc3RyYXRvciAoMi0zIGl0ZXIpfCAxLTIgaG91cnMg
+IHwgfjgwLTEyMCAgfCBHYXAgcmVwb3J0cywgY29udmVyZ2VuY2UgICAgIHwK
+fCAqKlRPVEFMKiogICAgICAgICAgICAgIHwgKiozLTUgaHIqKnwgKip+MzAw
+KiogIHwgKipDb21wbGV0ZSBhbmFseXNpcyoqICAgICAgICB8CgoqKkNvc3Qg
+RXN0aW1hdGU6KiogfiQxNS0yNSBmb3IgMjAgcGFwZXJzIChhdCBHZW1pbmkg
+QVBJIHByaWNpbmcpCgotLS0KCiMjIE5leHQgU3RlcHMKCjEuICoqU3RhcnQg
+U21hbGw6KiogUHJvY2VzcyAyLTMgcGFwZXJzIGVuZC10by1lbmQgZmlyc3QK
+Mi4gKipWZXJpZnkgT3V0cHV0czoqKiBDaGVjayB2ZXJzaW9uIGhpc3Rvcnks
+IGRhdGFiYXNlLCByZXBvcnRzCjMuICoqU2NhbGUgVXA6KiogR3JhZHVhbGx5
+IGFkZCBtb3JlIHBhcGVycwo0LiAqKk1vbml0b3I6KiogVHJhY2sgY29udmVy
+Z2VuY2Ugc2NvcmVzIGFuZCBBUEkgdXNhZ2UKNS4gKipJdGVyYXRlOioqIFVz
+ZSBPcmNoZXN0cmF0b3IgdG8gZHJpdmUgY29udGludW91cyBpbXByb3ZlbWVu
+dAoKLS0tCgojIyBGdXR1cmUgRW5oYW5jZW1lbnRzCgoqKlBsYW5uZWQgSW5m
+cmFzdHJ1Y3R1cmUgSW1wcm92ZW1lbnRzOioqCgoxLiAqKkF1dG9tYXRlZCBQ
+aXBlbGluZSBTY3JpcHQqKgogICAtIFNpbmdsZSBjb21tYW5kOiBgLi9ydW5f
+ZnVsbF9waXBlbGluZS5zaGAKICAgLSBBdXRvbWF0aWMgc3RhZ2UgdHJhbnNp
+dGlvbnMKICAgLSBQcm9ncmVzcyBjaGVja3BvaW50cwoKMi4gKipXZWIgRGFz
+aGJvYXJkKioKICAgLSBSZWFsLXRpbWUgcHJvZ3Jlc3MgbW9uaXRvcmluZwog
+ICAtIFZpc3VhbGl6YXRpb24gb2YgY29udmVyZ2VuY2UKICAgLSBQYXBlciBt
+YW5hZ2VtZW50IGludGVyZmFjZQoKMy4gKipQYXJhbGxlbCBQcm9jZXNzaW5n
+KioKICAgLSBNdWx0aS1wYXBlciBjb25jdXJyZW50IHByb2Nlc3NpbmcKICAg
+LSBWZXJzaW9uIGhpc3RvcnkgbG9ja2luZwogICAtIExvYWQgYmFsYW5jaW5n
+Cgo0LiAqKkluY3JlbWVudGFsIE1vZGUqKgogICAtIE9ubHkgcHJvY2VzcyBu
+ZXcvY2hhbmdlZCBwYXBlcnMKICAgLSBEZWx0YSBzeW5jaW5nCiAgIC0gRmFz
+dGVyIGl0ZXJhdGlvbnMKCjUuICoqQ0kvQ0QgSW50ZWdyYXRpb24qKgogICAt
+IEF1dG9tYXRlZCB0ZXN0aW5nIG9mIG5ldyBwYXBlcnMKICAgLSBSZWdyZXNz
+aW9uIGRldGVjdGlvbgogICAtIFF1YWxpdHkgZ2F0ZXMKCi0tLQoKKipEb2N1
+bWVudCBTdGF0dXM6Kiog4pyFIFByb2R1Y3Rpb24tUmVhZHkgIAoqKkxhc3Qg
+VmFsaWRhdGVkOioqIDIwMjQtMDUtMTYKKipWYWxpZGF0aW9uOioqIENvbnRl
+bnQgcmV2aWV3ZWQgYW5kIGFwcHJvdmVkIGFzIG9mIDIwMjQtMDUtMTYuCgpG
+b3IgcXVlc3Rpb25zIG9yIGlzc3Vlcywgc2VlOgotIGBBUkNISVRFQ1RVUkVf
+QU5BTFlTSVMubWRAIC0gU3lzdGVtIGRlc2lnbgotIGBURVNUSU5HX1NUQVRV
+U19TVU1NQVJ ZC5tZGDAIC0gQ3VycmVudCB0ZXN0IGNvdmVyYWdlCi0gYElO
+VEVHUkFUSU9OX1RFU1RJTkdfVEFTS19DQURDSy5tZGDAIC0gUGxhbm5lZCBp
+bXByb3ZlbWVudHMK
