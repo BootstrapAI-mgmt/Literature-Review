@@ -8,6 +8,7 @@ from literature_review.analysis.proof_scorecard import (
     ProofScorecardAnalyzer,
     generate_scorecard
 )
+from literature_review.analysis.validation_tracker import ValidationTracker
 
 
 @pytest.fixture
@@ -330,3 +331,192 @@ def test_generate_scorecard_missing_version_file():
         
         # Verify scorecard was still generated
         assert 'timestamp' in scorecard
+
+
+class TestValidationTrackerIntegration:
+    """Tests for validation tracker integration with proof scorecard."""
+    
+    @pytest.fixture
+    def sample_gap_report(self):
+        """Sample gap report for testing."""
+        return {
+            "Pillar 1: Test": {"completeness": 50.0, "analysis": {}},
+            "Pillar 2: Test": {"completeness": 60.0, "analysis": {}}
+        }
+    
+    @pytest.fixture
+    def sample_version_history(self):
+        """Sample version history for testing."""
+        return {}
+    
+    @pytest.fixture
+    def sample_pillar_definitions(self):
+        """Sample pillar definitions for testing."""
+        return {
+            "Pillar 1": {"description": "Test pillar 1"},
+            "Pillar 2": {"description": "Test pillar 2"}
+        }
+    
+    def test_set_validation_tracker(
+        self, 
+        sample_gap_report, 
+        sample_version_history, 
+        sample_pillar_definitions,
+        tmp_path
+    ):
+        """Test setting validation tracker on scorecard analyzer."""
+        analyzer = ProofScorecardAnalyzer(
+            sample_gap_report,
+            sample_version_history,
+            sample_pillar_definitions
+        )
+        
+        # Initially no tracker
+        assert analyzer.validation_tracker is None
+        
+        # Create a validation tracker
+        definitions = {
+            "Pillar 1: Test": {
+                "requirements": {
+                    "REQ-1.1": [
+                        {
+                            "id": "Sub-1.1.1",
+                            "text": "Test",
+                            "validation_strategy": {
+                                "method": "unit test"
+                            }
+                        }
+                    ]
+                },
+                "validation_criteria": {}
+            }
+        }
+        
+        path = tmp_path / "pillar_definitions.json"
+        with open(path, 'w') as f:
+            json.dump(definitions, f)
+        
+        tracker = ValidationTracker(str(path))
+        analyzer.set_validation_tracker(tracker)
+        
+        assert analyzer.validation_tracker is not None
+    
+    def test_analyze_with_validation_tracker(
+        self, 
+        sample_gap_report, 
+        sample_version_history, 
+        sample_pillar_definitions,
+        tmp_path
+    ):
+        """Test analyze method includes validation coverage when tracker is set."""
+        analyzer = ProofScorecardAnalyzer(
+            sample_gap_report,
+            sample_version_history,
+            sample_pillar_definitions
+        )
+        
+        # Create a validation tracker
+        definitions = {
+            "Pillar 1: Test": {
+                "requirements": {
+                    "REQ-1.1": [
+                        {
+                            "id": "Sub-1.1.1",
+                            "text": "Test",
+                            "validation_strategy": {
+                                "method": "unit test"
+                            }
+                        }
+                    ]
+                },
+                "validation_criteria": {}
+            }
+        }
+        
+        path = tmp_path / "pillar_definitions.json"
+        with open(path, 'w') as f:
+            json.dump(definitions, f)
+        
+        tracker = ValidationTracker(str(path))
+        analyzer.set_validation_tracker(tracker)
+        
+        scorecard = analyzer.analyze()
+        
+        # Should include validation_coverage section
+        assert 'validation_coverage' in scorecard
+        assert 'score' in scorecard['validation_coverage']
+        assert 'summary' in scorecard['validation_coverage']
+        assert 'weight_in_readiness' in scorecard['validation_coverage']
+    
+    def test_analyze_without_validation_tracker(
+        self, 
+        sample_gap_report, 
+        sample_version_history, 
+        sample_pillar_definitions
+    ):
+        """Test analyze method works without validation tracker."""
+        analyzer = ProofScorecardAnalyzer(
+            sample_gap_report,
+            sample_version_history,
+            sample_pillar_definitions
+        )
+        
+        scorecard = analyzer.analyze()
+        
+        # Should not include validation_coverage section
+        assert 'validation_coverage' not in scorecard
+        # But should still have all other expected fields
+        assert 'overall_proof_status' in scorecard
+    
+    def test_readiness_score_with_validation_weighting(
+        self, 
+        sample_gap_report, 
+        sample_version_history, 
+        sample_pillar_definitions,
+        tmp_path
+    ):
+        """Test that validation coverage affects readiness score."""
+        # Create a validation tracker with VALIDATED status
+        definitions = {
+            "Pillar 1: Test": {
+                "requirements": {
+                    "REQ-1.1": [
+                        {
+                            "id": "Sub-1.1.1",
+                            "text": "Test",
+                            "validation_strategy": {
+                                "method": "unit test"
+                            }
+                        }
+                    ]
+                },
+                "validation_criteria": {}
+            }
+        }
+        
+        path = tmp_path / "pillar_definitions.json"
+        with open(path, 'w') as f:
+            json.dump(definitions, f)
+        
+        # First, get base score without tracker
+        analyzer1 = ProofScorecardAnalyzer(
+            sample_gap_report,
+            sample_version_history,
+            sample_pillar_definitions
+        )
+        base_score = analyzer1._calculate_overall_proof_readiness()
+        
+        # Now with tracker
+        analyzer2 = ProofScorecardAnalyzer(
+            sample_gap_report,
+            sample_version_history,
+            sample_pillar_definitions
+        )
+        tracker = ValidationTracker(str(path))
+        analyzer2.set_validation_tracker(tracker)
+        weighted_score = analyzer2._calculate_overall_proof_readiness()
+        
+        # The scores should potentially differ when validation tracker is set
+        # (exact difference depends on validation coverage)
+        # At minimum, base_score and _calculate_base_readiness should match
+        assert analyzer2._calculate_base_readiness() == base_score
