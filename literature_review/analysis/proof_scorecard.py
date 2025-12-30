@@ -5,7 +5,7 @@ Assesses publication readiness and provides strategic guidance.
 
 import json
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional, TYPE_CHECKING
 from datetime import datetime
 import logging
 
@@ -14,6 +14,10 @@ from literature_review.config.research_config import (
     get_config,
     is_config_loaded
 )
+
+# Use TYPE_CHECKING to avoid circular imports
+if TYPE_CHECKING:
+    from literature_review.analysis.validation_tracker import ValidationTracker
 
 logger = logging.getLogger(__name__)
 
@@ -42,6 +46,16 @@ class ProofScorecardAnalyzer:
         self.gap_report = gap_report
         self.version_history = version_history
         self.pillar_definitions = pillar_definitions
+        self.validation_tracker: Optional["ValidationTracker"] = None
+    
+    def set_validation_tracker(self, tracker: "ValidationTracker") -> None:
+        """
+        Set validation tracker for enhanced scoring.
+        
+        Args:
+            tracker: ValidationTracker instance for validation coverage weighting
+        """
+        self.validation_tracker = tracker
     
     def _find_pillar_data(self, pillar_short_name: str) -> Dict:
         """Find pillar data by short name (e.g., 'Pillar 1' matches 'Pillar 1: ...')."""
@@ -57,7 +71,7 @@ class ProofScorecardAnalyzer:
         return {}
     
     def analyze(self) -> Dict:
-        """Generate complete proof scorecard."""
+        """Generate complete proof scorecard with optional validation coverage."""
         
         # Overall proof readiness
         overall_score = self._calculate_overall_proof_readiness()
@@ -74,7 +88,7 @@ class ProofScorecardAnalyzer:
         # Critical next steps
         next_steps = self._generate_critical_next_steps(research_goals)
         
-        return {
+        result = {
             'timestamp': datetime.now().isoformat(),
             'overall_proof_status': {
                 'proof_readiness_score': overall_score,
@@ -87,6 +101,16 @@ class ProofScorecardAnalyzer:
             'critical_next_steps': next_steps,
             'pillar_7_readiness': self._assess_pillar_7_readiness()
         }
+        
+        # Add validation coverage section if tracker is set
+        if self.validation_tracker:
+            result["validation_coverage"] = {
+                "score": self.validation_tracker.get_validation_score(),
+                "summary": self.validation_tracker._calculate_summary(),
+                "weight_in_readiness": "20%"
+            }
+        
+        return result
     
     def _calculate_overall_proof_readiness(self) -> float:
         """
@@ -95,6 +119,28 @@ class ProofScorecardAnalyzer:
         Weighted average of pillar completeness, with bonus for:
         - Evidence quality (triangulation, methodological rigor)
         - Cross-pillar integration (bio-AI bridges)
+        - Validation coverage (when validation tracker is set)
+        """
+        base_score = self._calculate_base_readiness()
+        
+        # Apply validation coverage adjustment if tracker is set
+        if self.validation_tracker:
+            validation_score = self.validation_tracker.get_validation_score()
+            
+            # Validation contributes 20% to final score
+            # Formula: 80% base + 20% validation
+            final_score = base_score * 0.8 + validation_score * 0.2
+            
+            return round(final_score, 1)
+        
+        return base_score
+    
+    def _calculate_base_readiness(self) -> float:
+        """
+        Calculate base proof readiness score without validation weighting.
+        
+        Returns:
+            Base readiness score (0-100)
         """
         total_weighted_score = 0
         total_weight = 0
