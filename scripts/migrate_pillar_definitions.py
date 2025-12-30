@@ -55,8 +55,19 @@ def migrate_quantitative_metrics(metrics: Dict) -> Dict:
             }
         elif isinstance(value, dict):
             # Already new format or partially migrated
+            # Extract target_value - prefer existing, then try common field names
+            target_val = value.get("target_value") or value.get("value") or value.get("target")
+            if target_val is None:
+                # Last resort: use first string value found or empty string
+                for v in value.values():
+                    if isinstance(v, str):
+                        target_val = v
+                        break
+                if target_val is None:
+                    target_val = ""
+            
             migrated[metric_name] = {
-                "target_value": value.get("target_value", str(value)),
+                "target_value": target_val,
                 "measurement_method": value.get("measurement_method", ""),
                 "benchmarks": value.get("benchmarks", []),
                 "benchmark_status": value.get("benchmark_status", "no_benchmark"),
