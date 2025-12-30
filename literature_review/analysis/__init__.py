@@ -20,6 +20,16 @@ from literature_review.analysis.action_generator import (
     generate_action_vectors
 )
 
+from literature_review.analysis.stakeholder_analyzer import (
+    StakeholderAnalyzer,
+    Stakeholder,
+    GapImpact,
+    StakeholderGapSummary,
+    ImpactLevel,
+    NotificationPriority,
+    generate_stakeholder_matrix
+)
+
 # Lazy imports for judge functions to avoid loading all dependencies at import time
 _lazy_exports = [
     "assess_actionability",
@@ -37,6 +47,13 @@ __all__ = [
     "ActionStatus",
     "ActionPriority",
     "generate_action_vectors",
+    "StakeholderAnalyzer",
+    "Stakeholder",
+    "GapImpact",
+    "StakeholderGapSummary",
+    "ImpactLevel",
+    "NotificationPriority",
+    "generate_stakeholder_matrix",
     "assess_actionability",
     "enhanced_judge_claim",
     "ACTIONABILITY_PROMPT"
