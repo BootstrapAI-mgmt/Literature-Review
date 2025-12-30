@@ -29,6 +29,14 @@ class EffortLevel(Enum):
     MONTHS = "months"
 
 
+class ComputeScale(Enum):
+    """Scale of compute requirements."""
+    LOW = "low"           # Minimal resources, can run on laptop
+    MODERATE = "moderate" # Standard GPU workstation
+    HIGH = "high"         # Multi-GPU or cluster
+    EXTREME = "extreme"   # Large-scale distributed training
+
+
 @dataclass
 class ResourceRequirements:
     """Resources needed to execute an action."""
