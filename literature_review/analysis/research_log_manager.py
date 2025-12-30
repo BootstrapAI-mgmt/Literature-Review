@@ -9,9 +9,8 @@ import json
 import logging
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field, asdict
-from collections import defaultdict
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime
 from enum import Enum
 import statistics
 
