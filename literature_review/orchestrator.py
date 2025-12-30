@@ -31,6 +31,10 @@ from pathlib import Path  # For file state checking
 from literature_review.reviewers import deep_reviewer
 from literature_review.analysis import judge
 from literature_review.optimization.search_optimizer import generate_search_plan
+from literature_review.analysis.stakeholder_analyzer import (
+    StakeholderAnalyzer,
+    generate_stakeholder_matrix
+)
 
 # Import global rate limiter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -1178,6 +1182,52 @@ def generate_recommendations(results: Dict, database: ResearchDatabase) -> List[
     except Exception as e:
         logger.error(f"Error generating recommendations: {e}")
         return []
+
+
+def generate_stakeholder_impact_matrix(
+    results: Dict,
+    output_folder: str,
+    stakeholder_definitions_path: Optional[str] = None,
+    pillar_definitions_path: Optional[str] = None
+) -> Dict:
+    """
+    Generate stakeholder impact matrix from gap analysis results.
+    
+    Args:
+        results: Gap analysis results dictionary
+        output_folder: Output directory for the matrix file
+        stakeholder_definitions_path: Optional custom path to stakeholder definitions
+        pillar_definitions_path: Optional custom path to pillar definitions
+    
+    Returns:
+        Stakeholder impact matrix dictionary
+    """
+    try:
+        # Use default paths if not specified
+        stakeholder_definitions_path = stakeholder_definitions_path or "stakeholder_definitions.json"
+        pillar_definitions_path = pillar_definitions_path or DEFINITIONS_FILE
+        
+        output_path = os.path.join(output_folder, "stakeholder_impact_matrix.json")
+        
+        # Initialize analyzer
+        analyzer = StakeholderAnalyzer(
+            stakeholder_definitions_path=stakeholder_definitions_path,
+            pillar_definitions_path=pillar_definitions_path
+        )
+        
+        # Analyze gap impacts on stakeholders
+        matrix = analyzer.analyze_gap_impacts(results)
+        
+        # Save to file
+        analyzer.save_matrix(output_path)
+        
+        logger.info(f"Generated stakeholder impact matrix: {matrix['summary']}")
+        return matrix
+        
+    except Exception as e:
+        logger.error(f"Error generating stakeholder impact matrix: {e}")
+        return {"error": str(e)}
+
 
 def generate_executive_summary(results: Dict, database: ResearchDatabase, output_folder: str):
     """Generate an executive summary of the gap analysis results"""

@@ -1,57 +1,112 @@
 {
-  "schema_version": "1.0.0",
-  "last_updated": "2025-12-19T00:00:00Z",
-  
-  "stakeholder_categories": {
-    "hardware_engineers": {
-      "name": "Hardware Engineers",
-      "description": "Engineers implementing neuromorphic chips and hardware",
-      "primary_pillars": ["Pillar 2", "Pillar 4", "Pillar 6"],
-      "key_requirements": [],
-      "impact_areas": [
-        "Validated efficiency metrics",
-        "Hardware-specific benchmarks",
-        "Deployment architectures"
+  "$schema": "stakeholder_definitions_v1",
+  "version": "1.0.0",
+  "description": "Stakeholder definitions for research prioritization",
+  "stakeholders": {
+    "core_research": {
+      "name": "Core Research Team",
+      "description": "Primary researchers developing the neuromorphic system",
+      "priority_weight": 1.0,
+      "interests": [
+        "Biological accuracy",
+        "Novel architectures",
+        "Reproducible results"
       ],
-      "contact_groups": []
-    },
-    "neuroscientists": {
-      "name": "Neuroscientists",
-      "description": "Researchers studying biological neural systems",
       "primary_pillars": ["Pillar 1", "Pillar 3", "Pillar 5"],
-      "key_requirements": [],
-      "impact_areas": [
-        "Biological validation of models",
-        "Experimental protocols",
-        "Neural mechanism understanding"
-      ],
-      "contact_groups": []
+      "decision_authority": "high",
+      "notification_threshold": "medium"
     },
-    "ml_practitioners": {
-      "name": "ML Practitioners",
-      "description": "ML engineers building practical SNN systems",
-      "primary_pillars": ["Pillar 2", "Pillar 4", "Pillar 7"],
-      "key_requirements": [],
-      "impact_areas": [
-        "Reproducible training pipelines",
-        "Benchmark performance",
-        "Framework integration"
+    "engineering": {
+      "name": "Engineering Team",
+      "description": "Implementation and infrastructure",
+      "priority_weight": 0.9,
+      "interests": [
+        "Clear specifications",
+        "Performance benchmarks",
+        "Scalability requirements"
       ],
-      "contact_groups": []
+      "primary_pillars": ["Pillar 2", "Pillar 4"],
+      "decision_authority": "medium",
+      "notification_threshold": "high"
     },
-    "system_integrators": {
-      "name": "System Integrators",
-      "description": "Engineers building complete neuromorphic systems",
-      "primary_pillars": ["Pillar 7"],
-      "key_requirements": [],
-      "impact_areas": [
-        "Cross-pillar protocols",
-        "Integration standards",
-        "System-level validation"
+    "domain_experts": {
+      "name": "Neuroscience Domain Experts",
+      "description": "External advisors on biological plausibility",
+      "priority_weight": 0.8,
+      "interests": [
+        "Biological validation",
+        "Neuroscience alignment",
+        "Experimental protocols"
       ],
-      "contact_groups": []
+      "primary_pillars": ["Pillar 1", "Pillar 3"],
+      "decision_authority": "advisory",
+      "notification_threshold": "high"
+    },
+    "product": {
+      "name": "Product Team",
+      "description": "Product direction and market fit",
+      "priority_weight": 0.7,
+      "interests": [
+        "Market differentiation",
+        "Competitive benchmarks",
+        "Use case validation"
+      ],
+      "primary_pillars": ["Pillar 6", "Pillar 7"],
+      "decision_authority": "medium",
+      "notification_threshold": "medium"
+    },
+    "operations": {
+      "name": "Operations Team",
+      "description": "Deployment and infrastructure",
+      "priority_weight": 0.6,
+      "interests": [
+        "Resource efficiency",
+        "Deployment complexity",
+        "Maintenance requirements"
+      ],
+      "primary_pillars": ["Pillar 4", "Pillar 6"],
+      "decision_authority": "low",
+      "notification_threshold": "low"
+    },
+    "executive": {
+      "name": "Executive Leadership",
+      "description": "Strategic direction and funding",
+      "priority_weight": 0.95,
+      "interests": [
+        "Overall progress",
+        "Milestone achievement",
+        "Strategic alignment"
+      ],
+      "primary_pillars": ["All"],
+      "decision_authority": "high",
+      "notification_threshold": "critical_only"
     }
   },
-  
-  "gap_stakeholder_mappings": []
+  "interest_categories": {
+    "biological_accuracy": {
+      "description": "Alignment with biological neural systems",
+      "relevant_pillars": ["Pillar 1", "Pillar 3"],
+      "stakeholders": ["core_research", "domain_experts"]
+    },
+    "performance": {
+      "description": "Computational efficiency and speed",
+      "relevant_pillars": ["Pillar 2", "Pillar 4"],
+      "stakeholders": ["engineering", "operations"]
+    },
+    "scalability": {
+      "description": "Ability to scale to larger systems",
+      "relevant_pillars": ["Pillar 4", "Pillar 6"],
+      "stakeholders": ["engineering", "operations", "executive"]
+    },
+    "novelty": {
+      "description": "Novel contributions to the field",
+      "relevant_pillars": ["Pillar 5", "Pillar 7"],
+      "stakeholders": ["core_research", "product"]
+    },
+    "validation": {
+      "description": "Rigorous experimental validation",
+      "relevant_pillars": ["All"],
+      "stakeholders": ["core_research", "domain_experts", "executive"]
+    }
+  }
 }
