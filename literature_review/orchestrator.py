@@ -2003,6 +2003,77 @@ def compute_database_hash() -> str:
 # --- END PRE-FILTER FUNCTIONS ---
 
 
+# --- OPERATIONALIZATION INTEGRATION FUNCTIONS ---
+
+def run_deep_review_with_operationalization(
+    papers: List[str],
+    extract_operationalization: bool = True,
+    api_manager: Optional['APIManager'] = None,
+    version_history_file: str = VERSION_HISTORY_FILE
+) -> Dict:
+    """
+    Run deep review with optional operationalization extraction.
+    
+    Args:
+        papers: List of paper filenames to process
+        extract_operationalization: Whether to extract operationalization data
+        api_manager: Optional APIManager instance (creates one if not provided)
+        version_history_file: Path to version history file
+    
+    Returns:
+        Deep review results with operationalization data attached to approved claims
+    """
+    from literature_review.reviewers import deep_reviewer
+    from literature_review.reviewers.deep_reviewer import (
+        run_operationalization_extraction,
+        load_version_history,
+        save_version_history
+    )
+    
+    logger.info("Running deep review with operationalization...")
+    
+    # Run standard deep review
+    success = deep_reviewer.main()
+    
+    if not success:
+        logger.error("Deep review failed. Skipping operationalization extraction.")
+        return {}
+    
+    if not extract_operationalization:
+        logger.info("Operationalization extraction disabled. Returning standard results.")
+        return {}
+    
+    # Load version history
+    version_history = load_version_history(version_history_file)
+    
+    if not version_history:
+        logger.warning("No version history found after deep review.")
+        return {}
+    
+    # Initialize API manager if not provided
+    if api_manager is None:
+        api_manager = APIManager()
+    
+    logger.info("Extracting operationalization metadata...")
+    
+    # Run operationalization extraction
+    updated_history = run_operationalization_extraction(
+        version_history=version_history,
+        api_manager=api_manager,
+        batch_mode=True
+    )
+    
+    # Save updated version history
+    save_version_history(version_history_file, updated_history)
+    
+    logger.info("✅ Operationalization extraction complete")
+    
+    return updated_history
+
+
+# --- END OPERATIONALIZATION INTEGRATION FUNCTIONS ---
+
+
 # --- MAIN EXECUTION (MODIFIED) ---
 def main(config: Optional[OrchestratorConfig] = None, output_folder: Optional[str] = None):
     """

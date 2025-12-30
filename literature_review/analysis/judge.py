@@ -1055,10 +1055,154 @@ def process_claim_with_adaptive_consensus(claim: Dict, sub_req_def: str, api_man
         return single_judgment
 
 # --- END MULTI-JUDGE CONSENSUS FUNCTIONS ---
-    
-    return claim
 
-# --- END CONSENSUS REVIEW FUNCTIONS ---
+
+# --- ACTIONABILITY ASSESSMENT FUNCTIONS ---
+
+ACTIONABILITY_PROMPT = """
+Evaluate the actionability of this evidence claim:
+
+**Claim:** {claim_text}
+**Evidence:** {evidence_chunk}
+
+Actionability measures how directly this evidence can be translated into implementation steps.
+
+Score from 1-5:
+- 5: Highly actionable - Clear algorithm/method, parameters specified, directly implementable
+- 4: Actionable - Method clear, some parameters need inference
+- 3: Moderately actionable - Approach clear, significant details missing
+- 2: Weakly actionable - High-level approach only, major gaps
+- 1: Not actionable - Theoretical/conceptual, no implementation guidance
+
+Also assess:
+- implementation_clarity: How clear is the implementation path? (1-5)
+- parameter_completeness: Are parameters/hyperparameters specified? (1-5)
+- replication_feasibility: How feasible is replication? (1-5)
+
+Return JSON:
+{{
+  "actionability_score": 1-5,
+  "implementation_clarity": 1-5,
+  "parameter_completeness": 1-5,
+  "replication_feasibility": 1-5,
+  "rationale": "string"
+}}
+"""
+
+
+def assess_actionability(claim: Dict, api_manager: 'APIManager') -> Dict:
+    """
+    Assess how actionable a claim is for implementation.
+    
+    Args:
+        claim: Claim dictionary with evidence
+        api_manager: APIManager instance for API calls
+    
+    Returns:
+        Actionability assessment dictionary
+    """
+    claim_text = claim.get("extracted_claim_text", claim.get("claim_summary", ""))
+    evidence_chunk = claim.get("evidence_chunk", "")
+    
+    prompt = ACTIONABILITY_PROMPT.format(
+        claim_text=claim_text,
+        evidence_chunk=evidence_chunk
+    )
+    
+    try:
+        response = api_manager.cached_api_call(prompt, use_cache=True, is_json=True)
+        
+        if response:
+            return {
+                "actionability_score": response.get("actionability_score", 3),
+                "implementation_clarity": response.get("implementation_clarity", 3),
+                "parameter_completeness": response.get("parameter_completeness", 3),
+                "replication_feasibility": response.get("replication_feasibility", 3),
+                "rationale": response.get("rationale", "")
+            }
+    except Exception as e:
+        logger.warning(f"Actionability assessment failed: {e}")
+    
+    # Default to neutral scores
+    return {
+        "actionability_score": 3,
+        "implementation_clarity": 3,
+        "parameter_completeness": 3,
+        "replication_feasibility": 3,
+        "rationale": "Assessment failed"
+    }
+
+
+def enhanced_judge_claim(
+    claim: Dict,
+    api_manager: 'APIManager',
+    include_actionability: bool = True
+) -> Dict:
+    """
+    Enhanced claim judging that includes actionability assessment.
+    
+    Args:
+        claim: Claim dictionary to judge
+        api_manager: APIManager instance
+        include_actionability: Whether to include actionability scoring
+    
+    Returns:
+        Enhanced judgment with evidence quality and actionability
+    """
+    sub_req_key = claim.get('sub_requirement') or claim.get('sub_requirement_key', 'N/A')
+    definition_text = find_robust_sub_requirement_text(sub_req_key)
+    
+    if not definition_text:
+        # Cannot judge without definition
+        return {
+            "verdict": "rejected",
+            "judge_notes": f"Rejected. Could not find definition for '{sub_req_key}'.",
+            "evidence_quality": None,
+            "actionability": None
+        }
+    
+    # Get base judgment
+    prompt = build_judge_prompt_enhanced(claim, definition_text)
+    response = api_manager.cached_api_call(prompt, use_cache=False, is_json=True)
+    base_judgment = validate_judge_response_enhanced(response)
+    
+    if not base_judgment:
+        return {
+            "verdict": "rejected",
+            "judge_notes": "Rejected. Invalid response from judge.",
+            "evidence_quality": None,
+            "actionability": None
+        }
+    
+    result = {
+        "verdict": base_judgment.get("verdict"),
+        "judge_notes": base_judgment.get("judge_notes"),
+        "evidence_quality": base_judgment.get("evidence_quality")
+    }
+    
+    if include_actionability and base_judgment.get("verdict") == "approved":
+        actionability = assess_actionability(claim, api_manager)
+        result["actionability"] = actionability
+        
+        # Incorporate into composite score
+        if "evidence_quality" in result and result["evidence_quality"]:
+            eq = result["evidence_quality"]
+            action_normalized = actionability["actionability_score"] / 5.0
+            
+            # Add actionability as additional dimension
+            eq["actionability"] = actionability["actionability_score"]
+            eq["actionability_weight"] = 0.1  # 10% weight
+            
+            # Recalculate composite with actionability
+            original_composite = eq.get("composite_score", 3.0)
+            eq["composite_score_with_actionability"] = round(
+                original_composite * 0.9 + action_normalized * 5.0 * 0.1, 2
+            )
+    
+    return result
+
+
+# --- END ACTIONABILITY ASSESSMENT FUNCTIONS ---
 
 
 # --- MAIN EXECUTION ---

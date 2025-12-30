@@ -842,6 +842,212 @@ def add_claim_to_version_history(
     logger.debug(f"Added claim {claim['claim_id']} to {filename}")
 
 
+# --- OPERATIONALIZATION EXTRACTION FUNCTIONS ---
+
+def extract_operationalization(
+    claims: List[Dict],
+    filename: str,
+    api_manager: 'APIManager',
+    batch_mode: bool = True
+) -> Dict[str, Dict]:
+    """
+    Extract operationalization metadata for approved claims.
+    
+    Args:
+        claims: List of claim dictionaries with evidence
+        filename: Source paper filename
+        api_manager: APIManager instance for API calls
+        batch_mode: If True, process all claims in one API call
+    
+    Returns:
+        Dictionary mapping claim_id to operationalization data
+    """
+    from literature_review.reviewers.prompts.operationalization_prompt import (
+        format_claim_for_prompt,
+        format_claims_batch
+    )
+    from literature_review.models import (
+        ReproducibilityInfo,
+        ResourceRequirements,
+        ActionChainPosition
+    )
+    
+    if not claims:
+        return {}
+    
+    logger.info(f"Extracting operationalization for {len(claims)} claims from {filename}")
+    
+    if batch_mode and len(claims) > 1:
+        return _extract_operationalization_batch(claims, filename, api_manager)
+    else:
+        return _extract_operationalization_individual(claims, api_manager)
+
+
+def _extract_operationalization_batch(
+    claims: List[Dict],
+    filename: str,
+    api_manager: 'APIManager'
+) -> Dict[str, Dict]:
+    """Extract operationalization in batch mode."""
+    from literature_review.reviewers.prompts.operationalization_prompt import format_claims_batch
+    
+    prompt = format_claims_batch(claims, filename)
+    
+    try:
+        response = api_manager.cached_api_call(prompt, use_cache=True)
+        
+        if not response or not isinstance(response, list):
+            logger.warning(f"Invalid batch response for {filename}")
+            return {}
+        
+        result = {}
+        for item in response:
+            claim_id = item.get("claim_id")
+            if claim_id:
+                result[claim_id] = _parse_operationalization(
+                    item.get("operationalization", {})
+                )
+        
+        return result
+        
+    except Exception as e:
+        logger.error(f"Batch operationalization extraction failed: {e}")
+        # Fallback to individual
+        return _extract_operationalization_individual(claims, api_manager)
+
+
+def _extract_operationalization_individual(
+    claims: List[Dict],
+    api_manager: 'APIManager'
+) -> Dict[str, Dict]:
+    """Extract operationalization for each claim individually."""
+    from literature_review.reviewers.prompts.operationalization_prompt import format_claim_for_prompt
+    
+    result = {}
+    
+    for claim in claims:
+        claim_id = claim.get("claim_id", "unknown")
+        requirement_text = claim.get("requirement_text", claim.get("sub_requirement", ""))
+        
+        prompt = format_claim_for_prompt(claim, requirement_text)
+        
+        try:
+            response = api_manager.cached_api_call(prompt, use_cache=True)
+            
+            if response:
+                result[claim_id] = _parse_operationalization(response)
+                
+        except Exception as e:
+            logger.warning(f"Failed to extract operationalization for {claim_id}: {e}")
+            continue
+    
+    return result
+
+
+def _parse_operationalization(data: Dict) -> Dict:
+    """Parse and validate operationalization data."""
+    from literature_review.models import (
+        ReproducibilityInfo,
+        ResourceRequirements,
+        ActionChainPosition
+    )
+    
+    # Create structured objects from response
+    reproducibility = ReproducibilityInfo(
+        code_available=data.get("reproducibility", {}).get("code_available", False),
+        code_url=data.get("reproducibility", {}).get("code_url"),
+        data_available=data.get("reproducibility", {}).get("data_available", False),
+        data_url=data.get("reproducibility", {}).get("data_url"),
+        hyperparameters_specified=data.get("reproducibility", {}).get("hyperparameters_specified", False),
+        methodology_detail_level=data.get("reproducibility", {}).get("methodology_detail_level", "low")
+    )
+    
+    resources = ResourceRequirements(
+        hardware=data.get("resources", {}).get("hardware", []),
+        software=data.get("resources", {}).get("software", []),
+        data=data.get("resources", {}).get("data", []),
+        compute_time=data.get("resources", {}).get("compute_time"),
+        personnel_skills=data.get("resources", {}).get("personnel_skills", [])
+    )
+    
+    action_chain = ActionChainPosition(
+        prerequisites=data.get("action_chain", {}).get("prerequisites", []),
+        enables=data.get("action_chain", {}).get("enables", []),
+        gaps=data.get("action_chain", {}).get("gaps", []),
+        blocking_unknowns=data.get("action_chain", {}).get("blocking_unknowns", [])
+    )
+    
+    return {
+        "implementation_approach": data.get("implementation_approach", {}),
+        "reproducibility": reproducibility.to_dict(),
+        "resources": resources.to_dict(),
+        "action_chain": action_chain.to_dict(),
+        "actionability_score": data.get("actionability_score", 0.0),
+        "actionability_rationale": data.get("actionability_rationale", "")
+    }
+
+
+def run_operationalization_extraction(
+    version_history: Dict,
+    api_manager: 'APIManager',
+    batch_mode: bool = True
+) -> Dict:
+    """
+    Run operationalization extraction on approved claims in version history.
+    
+    Args:
+        version_history: Full version history dict
+        api_manager: APIManager instance for API calls
+        batch_mode: If True, process claims in batches
+    
+    Returns:
+        Updated version history with operationalization data attached to claims
+    """
+    logger.info("Starting operationalization extraction on version history...")
+    
+    claims_processed = 0
+    
+    for filename, versions in version_history.items():
+        if not versions:
+            continue
+        
+        # Get latest version
+        latest_version = versions[-1]
+        requirements = latest_version.get('review', {}).get('Requirement(s)', [])
+        
+        # Filter to approved claims without operationalization
+        approved_claims = [
+            claim for claim in requirements
+            if claim.get('status') == 'approved' and 'operationalization' not in claim
+        ]
+        
+        if not approved_claims:
+            continue
+        
+        logger.info(f"Processing {len(approved_claims)} approved claims from {filename}")
+        
+        # Extract operationalization for these claims
+        operationalization = extract_operationalization(
+            claims=approved_claims,
+            filename=filename,
+            api_manager=api_manager,
+            batch_mode=batch_mode
+        )
+        
+        # Attach operationalization to claims
+        for claim in requirements:
+            claim_id = claim.get('claim_id')
+            if claim_id and claim_id in operationalization:
+                claim['operationalization'] = operationalization[claim_id]
+                claims_processed += 1
+    
+    logger.info(f"Operationalization extraction complete. Processed {claims_processed} claims.")
+    return version_history
+
+
+# --- END OPERATIONALIZATION EXTRACTION FUNCTIONS ---
+
+
 # --- MAIN EXECUTION ---
 def main():
     start_time = time.time()
