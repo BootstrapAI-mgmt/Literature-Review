@@ -15,6 +15,15 @@ from enum import Enum
 
 logger = logging.getLogger(__name__)
 
+# Completeness threshold constants
+COMPLETE_THRESHOLD = 100  # Anything below this is considered a gap
+
+# Severity threshold constants (based on completeness percentage)
+SEVERITY_CRITICAL_THRESHOLD = 30  # < 30% completeness
+SEVERITY_HIGH_THRESHOLD = 50      # 30-50% completeness  
+SEVERITY_MEDIUM_THRESHOLD = 70    # 50-70% completeness
+# > 70% completeness is considered LOW severity
+
 
 class ImpactLevel(Enum):
     """Impact level on stakeholder."""
@@ -202,10 +211,10 @@ class StakeholderAnalyzer:
                 if isinstance(req_data, dict):
                     for sub_name, sub_data in req_data.items():
                         if isinstance(sub_data, dict):
-                            completeness = sub_data.get("completeness_percent", 100)
+                            completeness = sub_data.get("completeness_percent", COMPLETE_THRESHOLD)
                             
-                            # Consider anything below 100% as a gap
-                            if completeness < 100:
+                            # Consider anything below complete threshold as a gap
+                            if completeness < COMPLETE_THRESHOLD:
                                 gaps.append({
                                     "gap_id": f"{pillar_name}::{req_name}::{sub_name}",
                                     "pillar": pillar_name,
@@ -214,18 +223,18 @@ class StakeholderAnalyzer:
                                     "completeness": completeness,
                                     "severity": self._calculate_severity(completeness),
                                     "description": sub_data.get("gap_reason", 
-                                                                f"{100-completeness}% coverage gap")
+                                                                f"{COMPLETE_THRESHOLD-completeness}% coverage gap")
                                 })
         
         return gaps
     
     def _calculate_severity(self, completeness: float) -> str:
         """Calculate gap severity from completeness."""
-        if completeness < 30:
+        if completeness < SEVERITY_CRITICAL_THRESHOLD:
             return "critical"
-        elif completeness < 50:
+        elif completeness < SEVERITY_HIGH_THRESHOLD:
             return "high"
-        elif completeness < 70:
+        elif completeness < SEVERITY_MEDIUM_THRESHOLD:
             return "medium"
         else:
             return "low"
