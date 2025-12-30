@@ -1,6 +1,6 @@
 {
   "version": "1.3",
-  "last_updated": "2025-12-27",
+  "last_updated": "2025-12-30",
   "description": "Machine-readable documentation dependency matrix with staleness detection support",
   "staleness_config": {
     "enabled": true,
@@ -309,57 +309,7 @@
   },
   "script_to_docs": {
     "pipeline_orchestrator.py": [
-      "README.md",
-      "docs/USER_MANUAL.md",
-      "docs/ORCHESTRATOR_V2_GUIDE.md",
-      "docs/guides/WORKFLOW_EXECUTION_GUIDE.md",
-      "docs/DASHBOARD_CLI_PARITY.md",
-      "docs/INCREMENTAL_REVIEW_USER_GUIDE.md",
-      "docs/INCREMENTAL_REVIEW_MIGRATION_GUIDE.md",
-      "docs/CONSOLIDATED_ROADMAP.md",
-      "docs/API_COST_TRACKER.md"
-    ],
-    "webdashboard/app.py": [
-      "docs/DASHBOARD_GUIDE.md",
-      "docs/DASHBOARD_CLI_PARITY.md",
-      "docs/API_DOCUMENTATION_README.md",
-      "docs/API_DOCUMENTATION_SUMMARY.md",
-      "docs/guides/FRESH_ANALYSIS_TRIGGER_README.md"
-    ],
-    "webdashboard/job_runner.py": [
-      "docs/DASHBOARD_GUIDE.md",
-      "docs/guides/RESUME_CONTROLS_USER_GUIDE.md",
-      "docs/guides/GENEALOGY_USER_GUIDE.md"
-    ],
-    "webdashboard/database_builder.py": [
-      "docs/DASHBOARD_GUIDE.md"
-    ],
-    "literature_review/evidence_scorer.py": [
-      "docs/EVIDENCE_SCORING_DOCUMENTATION.md",
-      "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"
-    ],
-    "literature_review/deep_reviewer.py": [
-      "docs/EVIDENCE_ENHANCEMENT_OVERVIEW.md"
-    ],
-    "literature_review/journal_reviewer.py": [
       "docs/USER_MANUAL.md"
-    ],
-    ".github/workflows/e2e-tests.yml": [
-      "docs/CICD_WORKFLOWS_GUIDE.md",
-      "docs/TESTING_GUIDE.md"
-    ],
-    ".github/workflows/integration-tests.yml": [
-      "docs/CICD_WORKFLOWS_GUIDE.md",
-      "docs/TESTING_GUIDE.md"
-    ],
-    ".github/workflows/dashboard-e2e-tests.yml": [
-      "docs/CICD_WORKFLOWS_GUIDE.md",
-      "docs/TESTING_GUIDE.md",
-      "docs/DASHBOARD_GUIDE.md"
-    ],
-    "pytest.ini": [
-      "docs/CICD_WORKFLOWS_GUIDE.md",
-      "docs/TESTING_GUIDE.md"
     ]
   },
   "documents": [
@@ -914,8 +864,8 @@
     {
       "path": "docs/guides/WORKFLOW_EXECUTION_GUIDE.md",
       "level": "L2",
-      "status": "review",
-      "last_updated": "2025-11-16",
+      "status": "current",
+      "last_updated": "2025-12-30",
       "owner": "@guides",
       "depends_on": [
         "docs/USER_MANUAL.md"
@@ -924,9 +874,9 @@
         "pipeline_orchestrator.py"
       ],
       "created_date": "2025-11-10",
-      "last_reviewed": "2025-11-16",
+      "last_reviewed": "2025-12-30",
       "review_interval_days": 14,
-      "next_review": "2025-11-30"
+      "next_review": "2026-01-13"
     },
     {
       "path": "docs/guides/GENEALOGY_USER_GUIDE.md",
@@ -1312,11 +1262,6 @@
       "Status: Complete",
       "Status: ✅ COMPLETE",
       "**Status:** Complete"
-    ]
-  },
-  "script_to_docs": {
-    "pipeline_orchestrator.py": [
-      "docs/USER_MANUAL.md"
     ]
   },
   "field_descriptions": {
