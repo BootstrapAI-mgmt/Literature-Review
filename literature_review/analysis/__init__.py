@@ -11,6 +11,15 @@ from literature_review.analysis.benchmark_analyzer import (
     generate_benchmark_matrix
 )
 
+from literature_review.analysis.action_generator import (
+    ActionGenerator,
+    ActionChain,
+    GeneratedAction,
+    ActionStatus,
+    ActionPriority,
+    generate_action_vectors
+)
+
 # Lazy imports for judge functions to avoid loading all dependencies at import time
 _lazy_exports = [
     "assess_actionability",
@@ -22,6 +31,12 @@ __all__ = [
     "BenchmarkAnalyzer",
     "BenchmarkCoverage",
     "generate_benchmark_matrix",
+    "ActionGenerator",
+    "ActionChain",
+    "GeneratedAction",
+    "ActionStatus",
+    "ActionPriority",
+    "generate_action_vectors",
     "assess_actionability",
     "enhanced_judge_claim",
     "ACTIONABILITY_PROMPT"
