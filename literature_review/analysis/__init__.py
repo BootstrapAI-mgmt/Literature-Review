@@ -30,6 +30,10 @@ from literature_review.analysis.pillar_evolution import (
     ReviewComment
 )
 
+from literature_review.analysis.domain_stakeholder_extractor import (
+    DomainStakeholderExtractor
+)
+
 # Lazy imports for judge functions to avoid loading all dependencies at import time
 _lazy_exports = [
     "assess_actionability",
@@ -54,6 +58,7 @@ __all__ = [
     "EvidenceReference",
     "ImpactAssessment",
     "ReviewComment",
+    "DomainStakeholderExtractor",
     "assess_actionability",
     "enhanced_judge_claim",
     "ACTIONABILITY_PROMPT"
