@@ -31,9 +31,9 @@ from pathlib import Path  # For file state checking
 from literature_review.reviewers import deep_reviewer
 from literature_review.analysis import judge
 from literature_review.optimization.search_optimizer import generate_search_plan
-from literature_review.analysis.stakeholder_analyzer import (
-    StakeholderAnalyzer,
-    generate_stakeholder_matrix
+from literature_review.analysis.organizational_stakeholder_prioritizer import (
+    OrganizationalStakeholderPrioritizer,
+    generate_org_stakeholder_prioritization_matrix
 )
 
 # Import global rate limiter
@@ -1184,49 +1184,61 @@ def generate_recommendations(results: Dict, database: ResearchDatabase) -> List[
         return []
 
 
-def generate_stakeholder_impact_matrix(
+def generate_org_stakeholder_prioritization_matrix(
     results: Dict,
     output_folder: str,
-    stakeholder_definitions_path: Optional[str] = None,
+    org_stakeholder_definitions_path: Optional[str] = None,
     pillar_definitions_path: Optional[str] = None
 ) -> Dict:
     """
-    Generate stakeholder impact matrix from gap analysis results.
+    Generate organizational stakeholder prioritization matrix from gap analysis results.
+    
+    This algorithmically maps gaps to internal organizational roles based on pillar
+    relevance, priority weights, and interest alignment. Use this for internal
+    resource allocation and notification guidance.
+    
+    NOTE: This is distinct from domain stakeholder impacts extracted from research
+    literature. For literature-based stakeholder impacts, see the domain stakeholder
+    extraction module.
     
     Args:
         results: Gap analysis results dictionary
         output_folder: Output directory for the matrix file
-        stakeholder_definitions_path: Optional custom path to stakeholder definitions
+        org_stakeholder_definitions_path: Optional custom path to organizational stakeholder definitions
         pillar_definitions_path: Optional custom path to pillar definitions
     
     Returns:
-        Stakeholder impact matrix dictionary
+        Organizational stakeholder prioritization matrix dictionary
     """
     try:
         # Use default paths if not specified
-        stakeholder_definitions_path = stakeholder_definitions_path or "stakeholder_definitions.json"
+        org_stakeholder_definitions_path = org_stakeholder_definitions_path or "organizational_stakeholder_definitions.json"
         pillar_definitions_path = pillar_definitions_path or DEFINITIONS_FILE
         
-        output_path = os.path.join(output_folder, "stakeholder_impact_matrix.json")
+        output_path = os.path.join(output_folder, "organizational_stakeholder_prioritization_matrix.json")
         
-        # Initialize analyzer
-        analyzer = StakeholderAnalyzer(
-            stakeholder_definitions_path=stakeholder_definitions_path,
+        # Initialize prioritizer
+        prioritizer = OrganizationalStakeholderPrioritizer(
+            org_stakeholder_definitions_path=org_stakeholder_definitions_path,
             pillar_definitions_path=pillar_definitions_path
         )
         
-        # Analyze gap impacts on stakeholders
-        matrix = analyzer.analyze_gap_impacts(results)
+        # Analyze gap priorities for organizational stakeholders
+        matrix = prioritizer.analyze_gap_priorities(results)
         
         # Save to file
-        analyzer.save_matrix(output_path)
+        prioritizer.save_matrix(output_path)
         
-        logger.info(f"Generated stakeholder impact matrix: {matrix['summary']}")
+        logger.info(f"Generated organizational stakeholder prioritization matrix: {matrix['summary']}")
         return matrix
         
     except Exception as e:
-        logger.error(f"Error generating stakeholder impact matrix: {e}")
+        logger.error(f"Error generating organizational stakeholder prioritization matrix: {e}")
         return {"error": str(e)}
+
+
+# Backward compatibility alias
+generate_stakeholder_impact_matrix = generate_org_stakeholder_prioritization_matrix
 
 
 def generate_executive_summary(results: Dict, database: ResearchDatabase, output_folder: str):

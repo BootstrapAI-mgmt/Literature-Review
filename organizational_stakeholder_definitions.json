@@ -1,8 +1,8 @@
 {
-  "$schema": "stakeholder_definitions_v1",
+  "$schema": "organizational_stakeholder_definitions_v1",
   "version": "1.0.0",
-  "description": "Stakeholder definitions for research prioritization",
-  "stakeholders": {
+  "description": "Organizational stakeholder definitions for internal resource allocation and notification prioritization. These are internal team roles, distinct from domain stakeholders mentioned in research literature.",
+  "organizational_stakeholders": {
     "core_research": {
       "name": "Core Research Team",
       "description": "Primary researchers developing the neuromorphic system",
@@ -86,27 +86,27 @@
     "biological_accuracy": {
       "description": "Alignment with biological neural systems",
       "relevant_pillars": ["Pillar 1", "Pillar 3"],
-      "stakeholders": ["core_research", "domain_experts"]
+      "organizational_stakeholders": ["core_research", "domain_experts"]
     },
     "performance": {
       "description": "Computational efficiency and speed",
       "relevant_pillars": ["Pillar 2", "Pillar 4"],
-      "stakeholders": ["engineering", "operations"]
+      "organizational_stakeholders": ["engineering", "operations"]
     },
     "scalability": {
       "description": "Ability to scale to larger systems",
       "relevant_pillars": ["Pillar 4", "Pillar 6"],
-      "stakeholders": ["engineering", "operations", "executive"]
+      "organizational_stakeholders": ["engineering", "operations", "executive"]
     },
     "novelty": {
       "description": "Novel contributions to the field",
       "relevant_pillars": ["Pillar 5", "Pillar 7"],
-      "stakeholders": ["core_research", "product"]
+      "organizational_stakeholders": ["core_research", "product"]
     },
     "validation": {
       "description": "Rigorous experimental validation",
       "relevant_pillars": ["All"],
-      "stakeholders": ["core_research", "domain_experts", "executive"]
+      "organizational_stakeholders": ["core_research", "domain_experts", "executive"]
     }
   }
 }

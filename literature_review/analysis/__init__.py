@@ -20,13 +20,20 @@ from literature_review.analysis.action_generator import (
     generate_action_vectors
 )
 
-from literature_review.analysis.stakeholder_analyzer import (
+from literature_review.analysis.organizational_stakeholder_prioritizer import (
+    OrganizationalStakeholderPrioritizer,
+    OrganizationalStakeholder,
+    OrganizationalGapPriority,
+    OrganizationalStakeholderSummary,
+    PriorityLevel,
+    NotificationPriority,
+    generate_org_stakeholder_prioritization_matrix,
+    # Backward compatibility aliases
     StakeholderAnalyzer,
     Stakeholder,
     GapImpact,
     StakeholderGapSummary,
     ImpactLevel,
-    NotificationPriority,
     generate_stakeholder_matrix
 )
 
@@ -47,12 +54,20 @@ __all__ = [
     "ActionStatus",
     "ActionPriority",
     "generate_action_vectors",
+    # New organizational stakeholder prioritization
+    "OrganizationalStakeholderPrioritizer",
+    "OrganizationalStakeholder",
+    "OrganizationalGapPriority",
+    "OrganizationalStakeholderSummary",
+    "PriorityLevel",
+    "NotificationPriority",
+    "generate_org_stakeholder_prioritization_matrix",
+    # Backward compatibility aliases
     "StakeholderAnalyzer",
     "Stakeholder",
     "GapImpact",
     "StakeholderGapSummary",
     "ImpactLevel",
-    "NotificationPriority",
     "generate_stakeholder_matrix",
     "assess_actionability",
     "enhanced_judge_claim",
