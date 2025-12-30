@@ -1,0 +1,1063 @@
+{
+  "updatedAt": "2025-12-24T15:00:26.856Z",
+  "createdAt": "2025-12-23T17:11:13.097Z",
+  "id": "5vQ8lMCyatxB8Fdd",
+  "name": "Doc Chain - Agent",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "domain-agent",
+        "options": {}
+      },
+      "id": "d5bb5a1f-8a79-4e13-8ab5-13722c1399b1",
+      "name": "Receive Task",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1376,
+        80
+      ],
+      "webhookId": "2e623741-47e3-4862-9169-67f98d1e3183"
+    },
+    {
+      "parameters": {
+        "url": "={{ \"https://raw.githubusercontent.com/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/main/\" + $json.task.document }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "id": "3d769c13-f25f-44d4-8a18-2dec9b46c97b",
+      "name": "Fetch Document",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -992,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "36b1e4e2-fb31-438f-ab62-180cbc8864b2",
+      "name": "Gemini Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -720,
+        304
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kJmLsDFHzgrlPJhY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Task: {{$('Parse Webhook Data').first().json.task.description}}. Document: {{$('Parse Webhook Data').first().json.task.document}}. Trigger: {{$('Parse Webhook Data').first().json.trigger.message}}. Current content: {{$json.data}}",
+        "options": {
+          "systemMessage": "   !! You update documentation and task tracking files. Make minimal targeted changes. Preserve formatting. !!\n     \n     DOCUMENT TYPES YOU HANDLE:\n     1. **Regular Documentation** - Update prose, references, dates\n     2. **Task Cards** - Update status fields, checkboxes, completion dates\n     3. **Roadmaps/Indexes** - Update completion percentages, status tables\n     \n     TASK CARD UPDATES:\n     - Status field: Change \"Status: Not Started\" to \"Status: Complete\" (or In Progress/Blocked)\n     - Checkboxes: Change \"- [ ] Task item\" to \"- [x] Task item\" when completed\n     - Completion dates: Add \"Completion Date: YYYY-MM-DD\" when status changes to Complete\n     - Completion percentage: Calculate from checkbox counts (e.g., \"3/5 Complete (60%)\")\n     \n     ROADMAP/INDEX UPDATES:\n     - Update status emoji: \ud83d\udfe2 Ready \u2192 \ud83d\udd04 Active \u2192 \u2705 COMPLETE\n     - Update \"Status: X/Y Complete\" counts in summary tables\n     - Update wave completion percentages\n     \n   !!  Output JSON: {\"changes_needed\":true/false,\"updated_content\":\"full updated doc\",\"summary\":\"brief description\",\"update_type\":\"PROSE|STATUS|CHECKBOX|PERCENTAGE\"}\n   - User message: Task: {{$('Parse Webhook Data').first().json.task.description}}. Document: {{$('Parse Webhook Data').first().json.task.document}}. Trigger: {{$('Parse Webhook Data').first().json.trigger.message}}. Current content: {{$json.data}}\n   - NOTE: Reference parsed webhook data via $('Parse Webhook Data').first().json"
+        }
+      },
+      "id": "4ec71404-fa1a-4f5c-bcb1-7731cc645672",
+      "name": "Update Document",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -800,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "   const taskData = $('Parse Webhook Data').first().json;\n   const text = $input.first().json.text || $input.first().json.output || '';\n   // Use greedy match to capture the FULL JSON object including updated_content\n   const match = text.match(/\\{[\\s\\S]*\\}/);\n   let result = { changes_needed: false, summary: 'No changes', updated_content: '' };\n   if (match) {\n     try { result = JSON.parse(match[0]); } catch(e) {\n       console.error('Failed to parse AI output:', e.message);\n     }\n   }\n   return { ...result, task_id: taskData.task.task_id, document: taskData.task.document };"
+      },
+      "id": "bdfe8767-2578-432b-90de-5815456f94d7",
+      "name": "Parse AI Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.changes_needed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "f4e2007d-6532-4272-92ac-7f66a8dc1a32",
+      "name": "Changes Needed",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        80
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/{{$json.document}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b7283f50-cc25-4994-b388-c163942ced12",
+      "name": "Get File SHA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "   const prev = $('Parse AI Output').first().json;\n   const sha = $input.first().json.sha;\n   const content = Buffer.from(prev.updated_content || '').toString('base64');\n   // Sanitize summary for commit message (remove special chars that break JSON)\n   const safeSummary = (prev.summary || 'Update documentation')\n     .replace(/[`\"\\\\]/g, '')  // Remove backticks, quotes, backslashes\n     .substring(0, 68);        // Limit length for commit message (shorter to accommodate prefix)\n   return { \n     ...prev, \n     sha, \n     content_base64: content,\n     // Individual fields for commit (for Using Fields mode)\n     // IMPORTANT: [n8n] prefix is used to filter out these commits from triggering the chain again\n     commit_message: `[n8n] docs: ${safeSummary}`,\n     commit_content: content,\n     commit_sha: sha\n   };"
+      },
+      "id": "f3bfd720-69ff-4ec4-8e65-8dbf91b05d7c",
+      "name": "Prepare Commit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/{{$json.document}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.commit_message }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.commit_content }}"
+            },
+            {
+              "name": "sha",
+              "value": "={{ $json.commit_sha }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7ff86ca9-f027-4600-9950-c13692479da4",
+      "name": "Commit to GitHub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ env.N8N_BASE_URL }}/task-callback",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task_id",
+              "value": "{{ $('Update Review Tracking').first().json.task_id }}"
+            },
+            {
+              "name": "status",
+              "value": "={{ $('Update Review Tracking').first().json.callback_status }}"
+            },
+            {
+              "name": "result",
+              "value": "={{ JSON.stringify({ summary: $('Update Review Tracking').first().json.callback_summary }) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b6e946a6-2686-481e-a86b-6e681b6f76d0",
+      "name": "Send Callback",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1312,
+        272
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// The Distributor sends task/trigger as JSON strings - parse them back to objects\nconst body = $input.first().json.body;\n\n// Safely parse task with fallback to empty object\nlet task = {};\nif (body.task) {\n  task = typeof body.task === 'string' ? JSON.parse(body.task) : body.task;\n}\n\n// Safely parse trigger with fallback to empty object\nlet trigger = {};\nif (body.trigger) {\n  trigger = typeof body.trigger === 'string' ? JSON.parse(body.trigger) : body.trigger;\n}\n\n// Clean up list_id\nconst listId = typeof body.list_id === 'string' ? body.list_id.replace(/\"/g, '') : (body.list_id || '');\n\n// Normalize field names: State Reconciliation uses \"target\", Trigger uses \"document\"\nif (task && task.target && !task.document) {\n  task.document = task.target;\n}\n\nreturn { task, trigger, list_id: listId };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        80
+      ],
+      "id": "d9267d29-7aae-45cb-9676-a5215d723672",
+      "name": "Parse Webhook Data"
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/docs/documentation_matrix.json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        624,
+        256
+      ],
+      "id": "80360815-6e06-47bd-8580-2d1112598481",
+      "name": "Fetch Matrix"
+    },
+    {
+      "parameters": {
+        "jsCode": "    const prev = $('Parse AI Output').first().json;\n    const matrixResponse = $input.first().json;\n    \n    // Decode the matrix content from base64\n    const matrixContent = Buffer.from(matrixResponse.content, 'base64').toString('utf8');\n    const matrix = JSON.parse(matrixContent);\n    \n    // Find the document and update review tracking\n    const today = new Date().toISOString().split('T')[0];\n    const doc = matrix.documents.find(d => d.path === prev.document);\n    \n    if (doc) {\n      doc.last_reviewed = today;\n      // Calculate next_review based on review_interval_days\n      const interval = doc.review_interval_days || 7;\n      const nextDate = new Date();\n      nextDate.setDate(nextDate.getDate() + interval);\n      doc.next_review = nextDate.toISOString().split('T')[0];\n      // If changes were made, also update last_updated\n      if (prev.changes_needed) {\n        doc.last_updated = today;\n        doc.status = 'current';\n      }\n    }\n    \n    // Update matrix version timestamp\n    matrix.last_updated = today;\n    \n    // Encode back to base64 for commit\n    const updatedContent = Buffer.from(JSON.stringify(matrix, null, 2)).toString('base64');\n    \n    // Sanitize summary for callback (remove chars that might break JSON)\n    const safeSummary = (prev.summary || 'No changes')\n      .replace(/[`\"\\\\]/g, '')\n      .substring(0, 100);\n    \n    return {\n      ...prev,\n      matrix_sha: matrixResponse.sha,\n      matrix_content_base64: updatedContent,\n      review_updated: !!doc,\n      // Individual fields for matrix commit (for Using Fields mode)\n      matrix_commit_message: `[n8n] chore: update review tracking for ${prev.document}`,\n      // Individual fields for callback (for Using Fields mode)  \n      callback_status: 'completed',\n      callback_summary: safeSummary\n    };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        272
+      ],
+      "id": "4e6aa9ed-ce5e-4f9e-9f7b-ea0d0227bdad",
+      "name": "Update Review Tracking"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/docs/documentation_matrix.json",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $json.matrix_commit_message }}"
+            },
+            {
+              "name": "content",
+              "value": "={{ $json.matrix_content_base64 }}"
+            },
+            {
+              "name": "sha",
+              "value": "={{ $json.matrix_sha }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        1104,
+        272
+      ],
+      "id": "cf614e9e-a531-4a86-8d6b-4a96fb365d50",
+      "name": "Commit Matrix Update",
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Receive Task": {
+      "main": [
+        [
+          {
+            "node": "Parse Webhook Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Document": {
+      "main": [
+        [
+          {
+            "node": "Update Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Update Document",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Document": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Output": {
+      "main": [
+        [
+          {
+            "node": "Changes Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Changes Needed": {
+      "main": [
+        [
+          {
+            "node": "Get File SHA",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Matrix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get File SHA": {
+      "main": [
+        [
+          {
+            "node": "Prepare Commit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Commit": {
+      "main": [
+        [
+          {
+            "node": "Commit to GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit to GitHub": {
+      "main": [
+        [
+          {
+            "node": "Fetch Matrix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Webhook Data": {
+      "main": [
+        [
+          {
+            "node": "Fetch Document",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Matrix": {
+      "main": [
+        [
+          {
+            "node": "Update Review Tracking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Review Tracking": {
+      "main": [
+        [
+          {
+            "node": "Commit Matrix Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Commit Matrix Update": {
+      "main": [
+        [
+          {
+            "node": "Send Callback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "f0e78679-b48a-40d3-82d4-4226e79d70db",
+  "activeVersionId": "8319bf7d-2767-4877-b41b-b53f11daba7a",
+  "versionCounter": 6,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-23T17:11:13.102Z",
+      "createdAt": "2025-12-23T17:11:13.102Z",
+      "role": "workflow:owner",
+      "workflowId": "5vQ8lMCyatxB8Fdd",
+      "projectId": "PRnR04izdxw9gkqL",
+      "project": {
+        "updatedAt": "2025-12-23T16:37:31.675Z",
+        "createdAt": "2025-12-23T16:08:01.602Z",
+        "id": "PRnR04izdxw9gkqL",
+        "name": "Joshua Coleman <jcoleman@captech.edu>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-23T16:08:01.602Z",
+            "createdAt": "2025-12-23T16:08:01.602Z",
+            "userId": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+            "projectId": "PRnR04izdxw9gkqL",
+            "user": {
+              "updatedAt": "2025-12-29T05:01:57.000Z",
+              "createdAt": "2025-12-23T16:08:01.276Z",
+              "id": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+              "email": "jcoleman@captech.edu",
+              "firstName": "Joshua",
+              "lastName": "Coleman",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-23T16:37:34.976Z",
+                "personalization_survey_n8n_version": "2.1.3"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "5vQ8lMCyatxB8Fdd",
+                "userActivatedAt": 1766948206272
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-28",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2025-12-24T01:24:39.000Z",
+    "createdAt": "2025-12-23T17:17:55.102Z",
+    "versionId": "8319bf7d-2767-4877-b41b-b53f11daba7a",
+    "workflowId": "5vQ8lMCyatxB8Fdd",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "domain-agent",
+          "options": {}
+        },
+        "id": "d5bb5a1f-8a79-4e13-8ab5-13722c1399b1",
+        "name": "Receive Task",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -1376,
+          80
+        ],
+        "webhookId": "2e623741-47e3-4862-9169-67f98d1e3183"
+      },
+      {
+        "parameters": {
+          "url": "={{ \"https://raw.githubusercontent.com/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/main/\" + $json.task.document }}",
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "text"
+              }
+            }
+          }
+        },
+        "id": "3d769c13-f25f-44d4-8a18-2dec9b46c97b",
+        "name": "Fetch Document",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -992,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "36b1e4e2-fb31-438f-ab62-180cbc8864b2",
+        "name": "Gemini Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          -720,
+          304
+        ],
+        "credentials": {
+          "googlePalmApi": {
+            "id": "kJmLsDFHzgrlPJhY",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Task: {{$('Parse Webhook Data').first().json.task.description}}. Document: {{$('Parse Webhook Data').first().json.task.document}}. Trigger: {{$('Parse Webhook Data').first().json.trigger.message}}. Current content: {{$json.data}}",
+          "options": {
+            "systemMessage": "   !! You update documentation and task tracking files. Make minimal targeted changes. Preserve formatting. !!\n     \n     DOCUMENT TYPES YOU HANDLE:\n     1. **Regular Documentation** - Update prose, references, dates\n     2. **Task Cards** - Update status fields, checkboxes, completion dates\n     3. **Roadmaps/Indexes** - Update completion percentages, status tables\n     \n     TASK CARD UPDATES:\n     - Status field: Change \"Status: Not Started\" to \"Status: Complete\" (or In Progress/Blocked)\n     - Checkboxes: Change \"- [ ] Task item\" to \"- [x] Task item\" when completed\n     - Completion dates: Add \"Completion Date: YYYY-MM-DD\" when status changes to Complete\n     - Completion percentage: Calculate from checkbox counts (e.g., \"3/5 Complete (60%)\")\n     \n     ROADMAP/INDEX UPDATES:\n     - Update status emoji: \ud83d\udfe2 Ready \u2192 \ud83d\udd04 Active \u2192 \u2705 COMPLETE\n     - Update \"Status: X/Y Complete\" counts in summary tables\n     - Update wave completion percentages\n     \n   !!  Output JSON: {\"changes_needed\":true/false,\"updated_content\":\"full updated doc\",\"summary\":\"brief description\",\"update_type\":\"PROSE|STATUS|CHECKBOX|PERCENTAGE\"}\n   - User message: Task: {{$('Parse Webhook Data').first().json.task.description}}. Document: {{$('Parse Webhook Data').first().json.task.document}}. Trigger: {{$('Parse Webhook Data').first().json.trigger.message}}. Current content: {{$json.data}}\n   - NOTE: Reference parsed webhook data via $('Parse Webhook Data').first().json"
+          }
+        },
+        "id": "4ec71404-fa1a-4f5c-bcb1-7731cc645672",
+        "name": "Update Document",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          -800,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "   const taskData = $('Parse Webhook Data').first().json;\n   const text = $input.first().json.text || $input.first().json.output || '';\n   // Use greedy match to capture the FULL JSON object including updated_content\n   const match = text.match(/\\{[\\s\\S]*\\}/);\n   let result = { changes_needed: false, summary: 'No changes', updated_content: '' };\n   if (match) {\n     try { result = JSON.parse(match[0]); } catch(e) {\n       console.error('Failed to parse AI output:', e.message);\n     }\n   }\n   return { ...result, task_id: taskData.task.task_id, document: taskData.task.document };"
+        },
+        "id": "bdfe8767-2578-432b-90de-5815456f94d7",
+        "name": "Parse AI Output",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -448,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "id-1",
+                "leftValue": "={{ $json.changes_needed }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "f4e2007d-6532-4272-92ac-7f66a8dc1a32",
+        "name": "Changes Needed",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -224,
+          80
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/{{$json.document}}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{ env.GITHUB_TOKEN }}"
+              },
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3+json"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "b7283f50-cc25-4994-b388-c163942ced12",
+        "name": "Get File SHA",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "   const prev = $('Parse AI Output').first().json;\n   const sha = $input.first().json.sha;\n   const content = Buffer.from(prev.updated_content || '').toString('base64');\n   // Sanitize summary for commit message (remove special chars that break JSON)\n   const safeSummary = (prev.summary || 'Update documentation')\n     .replace(/[`\"\\\\]/g, '')  // Remove backticks, quotes, backslashes\n     .substring(0, 68);        // Limit length for commit message (shorter to accommodate prefix)\n   return { \n     ...prev, \n     sha, \n     content_base64: content,\n     // Individual fields for commit (for Using Fields mode)\n     // IMPORTANT: [n8n] prefix is used to filter out these commits from triggering the chain again\n     commit_message: `[n8n] docs: ${safeSummary}`,\n     commit_content: content,\n     commit_sha: sha\n   };"
+        },
+        "id": "f3bfd720-69ff-4ec4-8e65-8dbf91b05d7c",
+        "name": "Prepare Commit",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          224,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "PUT",
+          "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/{{$json.document}}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3+json"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer {{ env.GITHUB_TOKEN }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "={{ $json.commit_message }}"
+              },
+              {
+                "name": "content",
+                "value": "={{ $json.commit_content }}"
+              },
+              {
+                "name": "sha",
+                "value": "={{ $json.commit_sha }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "7ff86ca9-f027-4600-9950-c13692479da4",
+        "name": "Commit to GitHub",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          448,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ env.N8N_BASE_URL }}/task-callback",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "task_id",
+                "value": "{{ $('Update Review Tracking').first().json.task_id }}"
+              },
+              {
+                "name": "status",
+                "value": "={{ $('Update Review Tracking').first().json.callback_status }}"
+              },
+              {
+                "name": "result",
+                "value": "={{ JSON.stringify({ summary: $('Update Review Tracking').first().json.callback_summary }) }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "b6e946a6-2686-481e-a86b-6e681b6f76d0",
+        "name": "Send Callback",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1312,
+          272
+        ],
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// The Distributor sends task/trigger as JSON strings - parse them back to objects\nconst body = $input.first().json.body;\n\n// Safely parse task with fallback to empty object\nlet task = {};\nif (body.task) {\n  task = typeof body.task === 'string' ? JSON.parse(body.task) : body.task;\n}\n\n// Safely parse trigger with fallback to empty object\nlet trigger = {};\nif (body.trigger) {\n  trigger = typeof body.trigger === 'string' ? JSON.parse(body.trigger) : body.trigger;\n}\n\n// Clean up list_id\nconst listId = typeof body.list_id === 'string' ? body.list_id.replace(/\"/g, '') : (body.list_id || '');\n\n// Normalize field names: State Reconciliation uses \"target\", Trigger uses \"document\"\nif (task && task.target && !task.document) {\n  task.document = task.target;\n}\n\nreturn { task, trigger, list_id: listId };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1184,
+          80
+        ],
+        "id": "d9267d29-7aae-45cb-9676-a5215d723672",
+        "name": "Parse Webhook Data"
+      },
+      {
+        "parameters": {
+          "url": "https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/docs/documentation_matrix.json",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3+json"
+              },
+              {
+                "name": "Authorization",
+                "value": "Bearer {{ env.GITHUB_TOKEN }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          624,
+          256
+        ],
+        "id": "80360815-6e06-47bd-8580-2d1112598481",
+        "name": "Fetch Matrix"
+      },
+      {
+        "parameters": {
+          "jsCode": "    const prev = $('Parse AI Output').first().json;\n    const matrixResponse = $input.first().json;\n    \n    // Decode the matrix content from base64\n    const matrixContent = Buffer.from(matrixResponse.content, 'base64').toString('utf8');\n    const matrix = JSON.parse(matrixContent);\n    \n    // Find the document and update review tracking\n    const today = new Date().toISOString().split('T')[0];\n    const doc = matrix.documents.find(d => d.path === prev.document);\n    \n    if (doc) {\n      doc.last_reviewed = today;\n      // Calculate next_review based on review_interval_days\n      const interval = doc.review_interval_days || 7;\n      const nextDate = new Date();\n      nextDate.setDate(nextDate.getDate() + interval);\n      doc.next_review = nextDate.toISOString().split('T')[0];\n      // If changes were made, also update last_updated\n      if (prev.changes_needed) {\n        doc.last_updated = today;\n        doc.status = 'current';\n      }\n    }\n    \n    // Update matrix version timestamp\n    matrix.last_updated = today;\n    \n    // Encode back to base64 for commit\n    const updatedContent = Buffer.from(JSON.stringify(matrix, null, 2)).toString('base64');\n    \n    // Sanitize summary for callback (remove chars that might break JSON)\n    const safeSummary = (prev.summary || 'No changes')\n      .replace(/[`\"\\\\]/g, '')\n      .substring(0, 100);\n    \n    return {\n      ...prev,\n      matrix_sha: matrixResponse.sha,\n      matrix_content_base64: updatedContent,\n      review_updated: !!doc,\n      // Individual fields for matrix commit (for Using Fields mode)\n      matrix_commit_message: `[n8n] chore: update review tracking for ${prev.document}`,\n      // Individual fields for callback (for Using Fields mode)  \n      callback_status: 'completed',\n      callback_summary: safeSummary\n    };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          880,
+          272
+        ],
+        "id": "4e6aa9ed-ce5e-4f9e-9f7b-ea0d0227bdad",
+        "name": "Update Review Tracking"
+      },
+      {
+        "parameters": {
+          "method": "PUT",
+          "url": "https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/docs/documentation_matrix.json",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": "Bearer {{ env.GITHUB_TOKEN }}"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "message",
+                "value": "={{ $json.matrix_commit_message }}"
+              },
+              {
+                "name": "content",
+                "value": "={{ $json.matrix_content_base64 }}"
+              },
+              {
+                "name": "sha",
+                "value": "={{ $json.matrix_sha }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          1104,
+          272
+        ],
+        "id": "cf614e9e-a531-4a86-8d6b-4a96fb365d50",
+        "name": "Commit Matrix Update",
+        "onError": "continueRegularOutput"
+      }
+    ],
+    "connections": {
+      "Receive Task": {
+        "main": [
+          [
+            {
+              "node": "Parse Webhook Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Document": {
+        "main": [
+          [
+            {
+              "node": "Update Document",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Update Document",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Document": {
+        "main": [
+          [
+            {
+              "node": "Parse AI Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse AI Output": {
+        "main": [
+          [
+            {
+              "node": "Changes Needed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Changes Needed": {
+        "main": [
+          [
+            {
+              "node": "Get File SHA",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Fetch Matrix",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get File SHA": {
+        "main": [
+          [
+            {
+              "node": "Prepare Commit",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Commit": {
+        "main": [
+          [
+            {
+              "node": "Commit to GitHub",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Commit to GitHub": {
+        "main": [
+          [
+            {
+              "node": "Fetch Matrix",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Webhook Data": {
+        "main": [
+          [
+            {
+              "node": "Fetch Document",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Matrix": {
+        "main": [
+          [
+            {
+              "node": "Update Review Tracking",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Review Tracking": {
+        "main": [
+          [
+            {
+              "node": "Commit Matrix Update",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Commit Matrix Update": {
+        "main": [
+          [
+            {
+              "node": "Send Callback",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Joshua Coleman",
+    "name": "AGENT-V001",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2025-12-24T01:24:39.200Z",
+        "id": 6,
+        "workflowId": "5vQ8lMCyatxB8Fdd",
+        "versionId": "8319bf7d-2767-4877-b41b-b53f11daba7a",
+        "event": "activated",
+        "userId": "519211d5-3194-4461-a8e5-a0a0ada3b87d"
+      }
+    ]
+  }
+}

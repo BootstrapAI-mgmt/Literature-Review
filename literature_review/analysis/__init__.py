@@ -1,11 +1,27 @@
 """
-Analysis package for literature review.
+Analysis Package for Literature Review.
 
-This package contains modules for analyzing and judging research claims.
+This package contains analysis modules for processing and
+analyzing research literature.
 """
 
-# Lazy imports to avoid loading all dependencies at import time
+from literature_review.analysis.benchmark_analyzer import (
+    BenchmarkAnalyzer,
+    BenchmarkCoverage,
+    generate_benchmark_matrix
+)
+
+# Lazy imports for judge functions to avoid loading all dependencies at import time
+_lazy_exports = [
+    "assess_actionability",
+    "enhanced_judge_claim",
+    "ACTIONABILITY_PROMPT"
+]
+
 __all__ = [
+    "BenchmarkAnalyzer",
+    "BenchmarkCoverage",
+    "generate_benchmark_matrix",
     "assess_actionability",
     "enhanced_judge_claim",
     "ACTIONABILITY_PROMPT"
@@ -13,7 +29,7 @@ __all__ = [
 
 def __getattr__(name):
     """Lazy import to avoid loading all dependencies at import time."""
-    if name in __all__:
+    if name in _lazy_exports:
         from literature_review.analysis.judge import (
             assess_actionability,
             enhanced_judge_claim,

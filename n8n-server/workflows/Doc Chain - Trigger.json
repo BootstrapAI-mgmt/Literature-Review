@@ -1,0 +1,673 @@
+{
+  "updatedAt": "2025-12-23T17:16:04.951Z",
+  "createdAt": "2025-12-23T17:12:44.438Z",
+  "id": "qQKXewWTby495ix7",
+  "name": "Doc Chain - Trigger",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "github-doc-trigger",
+        "options": {}
+      },
+      "id": "e2d89007-3cb2-45f6-9938-08c8bc618011",
+      "name": "GitHub Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1344,
+        352
+      ],
+      "webhookId": "c4c0f6f8-fc59-4fb4-bc61-ac1af114b726"
+    },
+    {
+      "parameters": {
+        "jsCode": "   const event = $input.first().json.body;  // NOTE: .body is required - GitHub data is nested\n   const files = [];\n   \n   // Helper: Check if commit is an n8n AUTOMATED commit (not manual)\n   const isAutomatedN8nCommit = (msg) => {\n     return msg.startsWith('[n8n] docs:') || msg.startsWith('[n8n] chore:');\n   };\n   \n   if (event.commits) {\n     event.commits\n       // Filter out only AUTOMATED n8n commits to prevent feedback loops\n       // Manual [n8n] commits (like [n8n] fix:) are processed normally\n       .filter(c => !isAutomatedN8nCommit(c.message || ''))\n       .forEach(c => {\n         files.push(...(c.added || []), ...(c.modified || []));\n       });\n   }\n   // Filter out the matrix file itself - it's internal tracking, not a trigger\n   const filteredFiles = [...new Set(files)].filter(f => \n     f !== 'docs/documentation_matrix.json'\n   );\n   return {\n     commit_sha: event.after || event.pull_request?.merge_commit_sha,\n     author: event.pusher?.name || event.pull_request?.user?.login,\n     message: event.head_commit?.message || event.pull_request?.title,\n     changed_files: filteredFiles\n   };"
+      },
+      "id": "b3e4c7b1-f1ba-49af-aad3-61f6213293a5",
+      "name": "Parse Changes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/antigravity-validation/docs/documentation_matrix.json",
+        "options": {}
+      },
+      "id": "d61e4d5d-d7f1-4122-acd2-ebe54de8b481",
+      "name": "Fetch Matrix",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -672,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// NOTE: Fetch Matrix returns JSON as a string in .data property - must parse it!\nconst matrixRaw = $('Fetch Matrix').first().json;\nconst matrix = typeof matrixRaw.data === 'string' ? JSON.parse(matrixRaw.data) : matrixRaw;\nconst changes = $('Parse Changes').first().json;\nconst affected = new Set();\nconst newDocs = [];  // Track new docs not yet in matrix\n\n// Helper to get documents array from owner_domains (handles both old array and new object format)\nconst getDomainDocs = (domainInfo) => {\n  return Array.isArray(domainInfo) ? domainInfo : (domainInfo?.documents || []);\n};\n\nfor (const file of changes.changed_files) {\n  // Check 1: If a script changed, find docs that depend on it\n  for (const [script, docs] of Object.entries(matrix.script_to_docs || {})) {\n    if (file.includes(script.replace('.py',''))) {\n      docs.forEach(d => affected.add(d));\n    }\n  }\n  \n  // Check 2: If the changed file IS a document in the matrix, include it\n  const docEntry = matrix.documents?.find(d => file.endsWith(d.path) || file === d.path);\n  if (docEntry) {\n    affected.add(docEntry.path);\n    // Also add any docs that depend on this doc (reverse dependency lookup)\n    matrix.documents?.forEach(otherDoc => {\n      if (otherDoc.depends_on?.includes(docEntry.path)) {\n        affected.add(otherDoc.path);\n      }\n    });\n    // Check 3: Add other docs owned by same domain (for index/summary updates)\n    if (docEntry.owner) {\n      const domainDocs = getDomainDocs(matrix.owner_domains?.[docEntry.owner]);\n      domainDocs.forEach(d => affected.add(d));\n    }\n  }\n  \n  // Check 4: NEW doc not in matrix - infer domain from path and route to domain owner\n  if (!docEntry && (file.startsWith('docs/') || file.endsWith('.md'))) {\n    newDocs.push(file);\n    // Try to match domain from path patterns\n    for (const [owner, domainInfo] of Object.entries(matrix.owner_domains || {})) {\n      const paths = getDomainDocs(domainInfo);\n      const matchesPattern = paths.some(p => {\n        const dir = p.substring(0, p.lastIndexOf('/'));\n        return file.startsWith(dir) || file.includes(owner.replace('@',''));\n      });\n      if (matchesPattern) {\n        paths.forEach(d => affected.add(d));\n        break;\n      }\n    }\n    // Fallback: always notify @docs domain for any new documentation\n    getDomainDocs(matrix.owner_domains?.['@docs']).forEach(d => affected.add(d));\n  }\n}\n\nconst docs = [...affected].map(path => {\n  const info = matrix.documents?.find(d => d.path === path) || {level:'L2',owner:'@core'};\n  return {path, ...info};\n}).sort((a,b) => a.level.localeCompare(b.level));\nreturn { affected_docs: docs, trigger: changes, new_docs: newDocs, has_updates: docs.length > 0 };"
+      },
+      "id": "62ea2e36-3e63-46a7-a4af-c15065510c2e",
+      "name": "Find Affected Docs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -448,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.has_updates }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "2a93a2bc-17f6-4da7-aced-44497a6e4fc5",
+      "name": "Has Updates",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -224,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Create task list for commit: {{ $json.trigger.message }}.\n\nAffected docs: {{ $json.affected_docs.map(d => d.path + ' (owner: ' + d.owner + ')').join(\", \") }}\n\n{{ $json.new_docs && $json.new_docs.length > 0 ? 'New docs added: ' + $json.new_docs.join(\", \") : '' }}",
+        "options": {
+          "systemMessage": "   !! You generate JSON task lists for documentation updates. Consider these update types: !!\n     - UPDATE_REFERENCE: Update cross-references when linked docs change\n     - UPDATE_INDEX: Add/update entries in index or summary docs when new docs are added to a domain\n     - CASCADE_UPDATE: Propagate changes to dependent documentation\n     - REVIEW_NEEDED: Flag docs that may need human review due to significant changes\n     - STATUS_UPDATE: Update task card status fields (Not Started \u2192 In Progress \u2192 Complete)\n     - CHECKBOX_TOGGLE: Check/uncheck task checkboxes in task cards\n     - COMPLETION_PERCENTAGE: Update completion counts in roadmaps/indexes\n     \n    !! TASK CARD AWARENESS:\n     - When task-cards/*.md files change, also update parent indexes (task-cards/README.md, task-cards/INDEX.md)\n     - When individual task cards are marked complete, cascade to docs/CONSOLIDATED_ROADMAP.md\n     - For @task-tracking domain docs, always include STATUS_UPDATE or CHECKBOX_TOGGLE types\n     \n     !! Output exactly: {\"update_list_id\":\"ul-DATE-TIME\",\"tasks\":[{\"task_id\":\"task-001\",\"document\":\"path\",\"owner\":\"@domain\",\"update_type\":\"TYPE\",\"description\":\"what to update\",\"depends_on\":[],\"priority\":1}]}\n   - User message: Create task list for commit: {{$json.trigger.message}}. \n     Affected docs: {{$json.affected_docs.map(d=>d.path + ' (owner: ' + d.owner + ')').join(', ')}}\n     {{$json.new_docs?.length > 0 ? 'NEW docs added (not yet in matrix): ' + $json.new_docs.join(', ') : ''}}"
+        }
+      },
+      "id": "7e888bd8-5869-4cc6-801c-aa363aabff9b",
+      "name": "Task Master",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "1e4b422f-f8b9-49b9-a39f-2ece2ffd2e40",
+      "name": "Gemini Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        64,
+        224
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kJmLsDFHzgrlPJhY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.first().json.text || $input.first().json.output || JSON.stringify($input.first().json);\nconst match = text.match(/\\{[\\s\\S]*\\}/);\nif (match) return JSON.parse(match[0]);\nreturn { update_list_id: 'ul-fallback', tasks: [] };"
+      },
+      "id": "45a69aba-398f-40e3-9338-f102b4401245",
+      "name": "Parse AI Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        112
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://gitlitreview.app.n8n.cloud/webhook/task-distributor",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "id": "a2f885ff-84c7-4932-a757-b73745a0b9a0",
+      "name": "Send to Distributor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        576,
+        112
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "c6ccf5fd-0893-418f-86e4-dca2b5664686",
+      "name": "No Updates Needed",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        64,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "   // CRITICAL: This filter prevents feedback loops from n8n AUTOMATED commits only\n   // Manual commits with [n8n] prefix (like [n8n] fix:) should still be processed\n   const body = $input.first().json.body || $input.first().json;\n   \n   // Check if this is a valid event (has commits or merged PR)\n   const hasCommits = Array.isArray(body.commits) && body.commits.length > 0;\n   const isMergedPR = body.pull_request?.merged === true;\n   \n   if (!hasCommits && !isMergedPR) {\n     return []; // No valid event - return empty to stop workflow\n   }\n   \n   // Helper: Check if commit is an n8n AUTOMATED commit (not manual)\n   // Automated commits use: [n8n] docs: or [n8n] chore:\n   const isAutomatedN8nCommit = (msg) => {\n     return msg.startsWith('[n8n] docs:') || msg.startsWith('[n8n] chore:');\n   };\n   \n   // Check if head commit is automated\n   const headCommitMsg = body.head_commit?.message || '';\n   if (isAutomatedN8nCommit(headCommitMsg)) {\n     return []; // Automated n8n commit - return empty to stop workflow\n   }\n   \n   // Also check all individual commits - only filter if ALL are automated\n   const allCommitsAreAutomated = hasCommits && body.commits.every(c => \n     isAutomatedN8nCommit(c.message || '')\n   );\n   if (allCommitsAreAutomated) {\n     return []; // All commits are automated n8n - return empty to stop workflow\n   }\n   \n   // Valid event - pass through\n   return [{ json: { body, is_valid: true } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1136,
+        352
+      ],
+      "id": "557a8e03-2257-45e7-8ff0-bfd1bf82cbfe",
+      "name": "Filter Valid Events"
+    }
+  ],
+  "connections": {
+    "GitHub Webhook": {
+      "main": [
+        [
+          {
+            "node": "Filter Valid Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Changes": {
+      "main": [
+        [
+          {
+            "node": "Fetch Matrix",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Matrix": {
+      "main": [
+        [
+          {
+            "node": "Find Affected Docs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Affected Docs": {
+      "main": [
+        [
+          {
+            "node": "Has Updates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Updates": {
+      "main": [
+        [
+          {
+            "node": "Task Master",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Updates Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Task Master",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Task Master": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Response": {
+      "main": [
+        [
+          {
+            "node": "Send to Distributor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Valid Events": {
+      "main": [
+        [
+          {
+            "node": "Parse Changes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "340f2066-8888-4880-8038-38996e9b13ab",
+  "activeVersionId": "340f2066-8888-4880-8038-38996e9b13ab",
+  "versionCounter": 5,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2025-12-23T17:12:44.440Z",
+      "createdAt": "2025-12-23T17:12:44.440Z",
+      "role": "workflow:owner",
+      "workflowId": "qQKXewWTby495ix7",
+      "projectId": "PRnR04izdxw9gkqL",
+      "project": {
+        "updatedAt": "2025-12-23T16:37:31.675Z",
+        "createdAt": "2025-12-23T16:08:01.602Z",
+        "id": "PRnR04izdxw9gkqL",
+        "name": "Joshua Coleman <jcoleman@captech.edu>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-23T16:08:01.602Z",
+            "createdAt": "2025-12-23T16:08:01.602Z",
+            "userId": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+            "projectId": "PRnR04izdxw9gkqL",
+            "user": {
+              "updatedAt": "2025-12-29T05:01:57.000Z",
+              "createdAt": "2025-12-23T16:08:01.276Z",
+              "id": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+              "email": "jcoleman@captech.edu",
+              "firstName": "Joshua",
+              "lastName": "Coleman",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-23T16:37:34.976Z",
+                "personalization_survey_n8n_version": "2.1.3"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "5vQ8lMCyatxB8Fdd",
+                "userActivatedAt": 1766948206272
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-28",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2025-12-24T01:23:58.000Z",
+    "createdAt": "2025-12-23T17:16:04.953Z",
+    "versionId": "340f2066-8888-4880-8038-38996e9b13ab",
+    "workflowId": "qQKXewWTby495ix7",
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "github-doc-trigger",
+          "options": {}
+        },
+        "id": "e2d89007-3cb2-45f6-9938-08c8bc618011",
+        "name": "GitHub Webhook",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -1344,
+          352
+        ],
+        "webhookId": "c4c0f6f8-fc59-4fb4-bc61-ac1af114b726"
+      },
+      {
+        "parameters": {
+          "jsCode": "   const event = $input.first().json.body;  // NOTE: .body is required - GitHub data is nested\n   const files = [];\n   \n   // Helper: Check if commit is an n8n AUTOMATED commit (not manual)\n   const isAutomatedN8nCommit = (msg) => {\n     return msg.startsWith('[n8n] docs:') || msg.startsWith('[n8n] chore:');\n   };\n   \n   if (event.commits) {\n     event.commits\n       // Filter out only AUTOMATED n8n commits to prevent feedback loops\n       // Manual [n8n] commits (like [n8n] fix:) are processed normally\n       .filter(c => !isAutomatedN8nCommit(c.message || ''))\n       .forEach(c => {\n         files.push(...(c.added || []), ...(c.modified || []));\n       });\n   }\n   // Filter out the matrix file itself - it's internal tracking, not a trigger\n   const filteredFiles = [...new Set(files)].filter(f => \n     f !== 'docs/documentation_matrix.json'\n   );\n   return {\n     commit_sha: event.after || event.pull_request?.merge_commit_sha,\n     author: event.pusher?.name || event.pull_request?.user?.login,\n     message: event.head_commit?.message || event.pull_request?.title,\n     changed_files: filteredFiles\n   };"
+        },
+        "id": "b3e4c7b1-f1ba-49af-aad3-61f6213293a5",
+        "name": "Parse Changes",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -896,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://raw.githubusercontent.com/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/main/docs/documentation_matrix.json",
+          "options": {}
+        },
+        "id": "d61e4d5d-d7f1-4122-acd2-ebe54de8b481",
+        "name": "Fetch Matrix",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -672,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// NOTE: Fetch Matrix returns JSON as a string in .data property - must parse it!\nconst matrixRaw = $('Fetch Matrix').first().json;\nconst matrix = typeof matrixRaw.data === 'string' ? JSON.parse(matrixRaw.data) : matrixRaw;\nconst changes = $('Parse Changes').first().json;\nconst affected = new Set();\nconst newDocs = [];  // Track new docs not yet in matrix\n\n// Helper to get documents array from owner_domains (handles both old array and new object format)\nconst getDomainDocs = (domainInfo) => {\n  return Array.isArray(domainInfo) ? domainInfo : (domainInfo?.documents || []);\n};\n\nfor (const file of changes.changed_files) {\n  // Check 1: If a script changed, find docs that depend on it\n  for (const [script, docs] of Object.entries(matrix.script_to_docs || {})) {\n    if (file.includes(script.replace('.py',''))) {\n      docs.forEach(d => affected.add(d));\n    }\n  }\n  \n  // Check 2: If the changed file IS a document in the matrix, include it\n  const docEntry = matrix.documents?.find(d => file.endsWith(d.path) || file === d.path);\n  if (docEntry) {\n    affected.add(docEntry.path);\n    // Also add any docs that depend on this doc (reverse dependency lookup)\n    matrix.documents?.forEach(otherDoc => {\n      if (otherDoc.depends_on?.includes(docEntry.path)) {\n        affected.add(otherDoc.path);\n      }\n    });\n    // Check 3: Add other docs owned by same domain (for index/summary updates)\n    if (docEntry.owner) {\n      const domainDocs = getDomainDocs(matrix.owner_domains?.[docEntry.owner]);\n      domainDocs.forEach(d => affected.add(d));\n    }\n  }\n  \n  // Check 4: NEW doc not in matrix - infer domain from path and route to domain owner\n  if (!docEntry && (file.startsWith('docs/') || file.endsWith('.md'))) {\n    newDocs.push(file);\n    // Try to match domain from path patterns\n    for (const [owner, domainInfo] of Object.entries(matrix.owner_domains || {})) {\n      const paths = getDomainDocs(domainInfo);\n      const matchesPattern = paths.some(p => {\n        const dir = p.substring(0, p.lastIndexOf('/'));\n        return file.startsWith(dir) || file.includes(owner.replace('@',''));\n      });\n      if (matchesPattern) {\n        paths.forEach(d => affected.add(d));\n        break;\n      }\n    }\n    // Fallback: always notify @docs domain for any new documentation\n    getDomainDocs(matrix.owner_domains?.['@docs']).forEach(d => affected.add(d));\n  }\n}\n\nconst docs = [...affected].map(path => {\n  const info = matrix.documents?.find(d => d.path === path) || {level:'L2',owner:'@core'};\n  return {path, ...info};\n}).sort((a,b) => a.level.localeCompare(b.level));\nreturn { affected_docs: docs, trigger: changes, new_docs: newDocs, has_updates: docs.length > 0 };"
+        },
+        "id": "62ea2e36-3e63-46a7-a4af-c15065510c2e",
+        "name": "Find Affected Docs",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -448,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "id-1",
+                "leftValue": "={{ $json.has_updates }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "2a93a2bc-17f6-4da7-aced-44497a6e4fc5",
+        "name": "Has Updates",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -224,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Create task list for commit: {{ $json.trigger.message }}.\n\nAffected docs: {{ $json.affected_docs.map(d => d.path + ' (owner: ' + d.owner + ')').join(\", \") }}\n\n{{ $json.new_docs && $json.new_docs.length > 0 ? 'New docs added: ' + $json.new_docs.join(\", \") : '' }}",
+          "options": {
+            "systemMessage": "   !! You generate JSON task lists for documentation updates. Consider these update types: !!\n     - UPDATE_REFERENCE: Update cross-references when linked docs change\n     - UPDATE_INDEX: Add/update entries in index or summary docs when new docs are added to a domain\n     - CASCADE_UPDATE: Propagate changes to dependent documentation\n     - REVIEW_NEEDED: Flag docs that may need human review due to significant changes\n     - STATUS_UPDATE: Update task card status fields (Not Started \u2192 In Progress \u2192 Complete)\n     - CHECKBOX_TOGGLE: Check/uncheck task checkboxes in task cards\n     - COMPLETION_PERCENTAGE: Update completion counts in roadmaps/indexes\n     \n    !! TASK CARD AWARENESS:\n     - When task-cards/*.md files change, also update parent indexes (task-cards/README.md, task-cards/INDEX.md)\n     - When individual task cards are marked complete, cascade to docs/CONSOLIDATED_ROADMAP.md\n     - For @task-tracking domain docs, always include STATUS_UPDATE or CHECKBOX_TOGGLE types\n     \n     !! Output exactly: {\"update_list_id\":\"ul-DATE-TIME\",\"tasks\":[{\"task_id\":\"task-001\",\"document\":\"path\",\"owner\":\"@domain\",\"update_type\":\"TYPE\",\"description\":\"what to update\",\"depends_on\":[],\"priority\":1}]}\n   - User message: Create task list for commit: {{$json.trigger.message}}. \n     Affected docs: {{$json.affected_docs.map(d=>d.path + ' (owner: ' + d.owner + ')').join(', ')}}\n     {{$json.new_docs?.length > 0 ? 'NEW docs added (not yet in matrix): ' + $json.new_docs.join(', ') : ''}}"
+          }
+        },
+        "id": "7e888bd8-5869-4cc6-801c-aa363aabff9b",
+        "name": "Task Master",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "1e4b422f-f8b9-49b9-a39f-2ece2ffd2e40",
+        "name": "Gemini Model",
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          64,
+          224
+        ],
+        "credentials": {
+          "googlePalmApi": {
+            "id": "kJmLsDFHzgrlPJhY",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const text = $input.first().json.text || $input.first().json.output || JSON.stringify($input.first().json);\nconst match = text.match(/\\{[\\s\\S]*\\}/);\nif (match) return JSON.parse(match[0]);\nreturn { update_list_id: 'ul-fallback', tasks: [] };"
+        },
+        "id": "45a69aba-398f-40e3-9338-f102b4401245",
+        "name": "Parse AI Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          352,
+          112
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "=https://gitlitreview.app.n8n.cloud/webhook/task-distributor",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json }}",
+          "options": {}
+        },
+        "id": "a2f885ff-84c7-4932-a757-b73745a0b9a0",
+        "name": "Send to Distributor",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          576,
+          112
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "c6ccf5fd-0893-418f-86e4-dca2b5664686",
+        "name": "No Updates Needed",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          64,
+          400
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "   // CRITICAL: This filter prevents feedback loops from n8n AUTOMATED commits only\n   // Manual commits with [n8n] prefix (like [n8n] fix:) should still be processed\n   const body = $input.first().json.body || $input.first().json;\n   \n   // Check if this is a valid event (has commits or merged PR)\n   const hasCommits = Array.isArray(body.commits) && body.commits.length > 0;\n   const isMergedPR = body.pull_request?.merged === true;\n   \n   if (!hasCommits && !isMergedPR) {\n     return []; // No valid event - return empty to stop workflow\n   }\n   \n   // Helper: Check if commit is an n8n AUTOMATED commit (not manual)\n   // Automated commits use: [n8n] docs: or [n8n] chore:\n   const isAutomatedN8nCommit = (msg) => {\n     return msg.startsWith('[n8n] docs:') || msg.startsWith('[n8n] chore:');\n   };\n   \n   // Check if head commit is automated\n   const headCommitMsg = body.head_commit?.message || '';\n   if (isAutomatedN8nCommit(headCommitMsg)) {\n     return []; // Automated n8n commit - return empty to stop workflow\n   }\n   \n   // Also check all individual commits - only filter if ALL are automated\n   const allCommitsAreAutomated = hasCommits && body.commits.every(c => \n     isAutomatedN8nCommit(c.message || '')\n   );\n   if (allCommitsAreAutomated) {\n     return []; // All commits are automated n8n - return empty to stop workflow\n   }\n   \n   // Valid event - pass through\n   return [{ json: { body, is_valid: true } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1136,
+          352
+        ],
+        "id": "557a8e03-2257-45e7-8ff0-bfd1bf82cbfe",
+        "name": "Filter Valid Events"
+      }
+    ],
+    "connections": {
+      "GitHub Webhook": {
+        "main": [
+          [
+            {
+              "node": "Filter Valid Events",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Changes": {
+        "main": [
+          [
+            {
+              "node": "Fetch Matrix",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Matrix": {
+        "main": [
+          [
+            {
+              "node": "Find Affected Docs",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Affected Docs": {
+        "main": [
+          [
+            {
+              "node": "Has Updates",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Updates": {
+        "main": [
+          [
+            {
+              "node": "Task Master",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "No Updates Needed",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Task Master",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Task Master": {
+        "main": [
+          [
+            {
+              "node": "Parse AI Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse AI Response": {
+        "main": [
+          [
+            {
+              "node": "Send to Distributor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Valid Events": {
+        "main": [
+          [
+            {
+              "node": "Parse Changes",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Joshua Coleman",
+    "name": "TRIG-V001",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2025-12-24T01:23:58.699Z",
+        "id": 3,
+        "workflowId": "qQKXewWTby495ix7",
+        "versionId": "340f2066-8888-4880-8038-38996e9b13ab",
+        "event": "activated",
+        "userId": "519211d5-3194-4461-a8e5-a0a0ada3b87d"
+      }
+    ]
+  }
+}
