@@ -1,0 +1,2034 @@
+{
+  "updatedAt": "2025-12-25T13:57:33.968Z",
+  "createdAt": "2025-12-23T17:12:28.511Z",
+  "id": "JVAjIrsS4yKbYIxW",
+  "name": "Doc Chain - State Reconciliation",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 3
+            }
+          ]
+        }
+      },
+      "id": "036eb768-aeb0-4245-9b65-743f08929082",
+      "name": "Daily Check",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2752,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "state-reconciliation",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "1e053bfa-77b7-4d63-94c5-a17d6002358a",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2752,
+        208
+      ],
+      "webhookId": "b712dce8-a876-4b58-b62e-3133d336f1b1"
+    },
+    {
+      "parameters": {},
+      "id": "9b3a4f0d-cfac-4ba1-bc89-eec082a00e39",
+      "name": "Start",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2528,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "fe8ec068-7651-4bec-982f-8d77f3229a24",
+      "name": "Gemini 2.5 Flash",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1168,
+        624
+      ],
+      "credentials": {
+        "googlePalmApi": {
+          "id": "kJmLsDFHzgrlPJhY",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "{{ $json.formatted_user_message }}",
+        "options": {
+          "systemMessage": "You are a documentation reconciliation expert. Generate COMPREHENSIVE correction tasks to fix all detected mismatches between actual repository state and documentation claims.\n\nYour job is to ensure ALL documentation accurately reflects the true state of the repository after your corrections are applied.\n\nTASK CONSOLIDATION RULES:\n1. Group all updates targeting the SAME FILE into ONE task\n2. For task-cards/README.md: Create ONE task with ALL directory count updates\n3. For docs/CONSOLIDATED_ROADMAP.md: Create ONE task with ALL percentage/status updates\n4. Never create multiple tasks for the same document\n5. Include SPECIFIC changes needed using the ACTUAL VALUES provided in the input\n\nSEVERITY-BASED PRIORITIES:\n- HIGH severity (file count, completion count mismatches): priority 1\n- MEDIUM severity (percentage mismatches, roadmap drift): priority 2  \n- LOW severity (status format issues): priority 3\n\nTASK STRUCTURE:\nEach task must have:\n- task_id: unique identifier (e.g., \"recon-readme-001\", \"recon-roadmap-001\")\n- update_type: \"RECONCILIATION_UPDATE\"\n- target: the file path to update\n- description: COMPREHENSIVE list of ALL corrections needed for this file\n- priority: 1 (high), 2 (medium), or 3 (low)\n- changes: array of specific changes with section, field, from, to\n\nOUTPUT RULES:\n1. Output ONLY raw JSON with no markdown formatting\n2. Use ACTUAL VALUES from the input data\n3. All values must be concrete numbers or strings\n4. Output must be valid parseable JSON\n\nExample:\n{\"update_list_id\":\"ul-recon-1703200000\",\"source\":\"state-reconciliation-full\",\"tasks\":[{\"task_id\":\"recon-readme-001\",\"update_type\":\"RECONCILIATION_UPDATE\",\"target\":\"task-cards/README.md\",\"description\":\"Update completion counts\",\"priority\":1,\"changes\":[{\"section\":\"automation\",\"field\":\"completion\",\"from\":\"0/4\",\"to\":\"1/4\"}]}]}"
+        }
+      },
+      "id": "b0815cb0-e6ca-4ae5-81d4-8d5c1fc7eb6b",
+      "name": "Generate Corrections",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1216,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Full State Reconciliation Configuration\nreturn {\n  reconciliation_targets: [\n    { path: 'task-cards/README.md', type: 'index', aggregation: 'count_by_status' },\n    { path: 'task-cards/INDEX.md', type: 'index', aggregation: 'count_by_status' },\n    { path: 'docs/CONSOLIDATED_ROADMAP.md', type: 'roadmap', aggregation: 'summarize_progress' }\n  ],\n  status_patterns: {\n    task_status: /^\\*?\\*?Status:?\\*?\\*?\\s*(.+)$/im,\n    completion_pct: /(\\d+)%\\s*(?:complete|done|finished)/i,\n    checkbox_checked: /- \\[x\\]/gi,\n    checkbox_unchecked: /- \\[ \\]/gi,\n    fraction: /(\\d+)\\/(\\d+)\\s*Complete/i,\n    wave_status: /^##\\s*Wave\\s*\\d+.*?Status:\\s*(.+)$/im\n  },\n  status_mappings: {\n    'complete': 'Complete', 'completed': 'Complete', '\u2705 complete': 'Complete', '\u2705 done': 'Complete', 'done': 'Complete',\n    'in progress': 'In Progress', 'in-progress': 'In Progress', '\ud83d\udd04 in progress': 'In Progress', '\ud83d\udd04 active': 'In Progress',\n    'not started': 'Not Started', 'ready': 'Not Started', '\ud83d\udfe2 ready': 'Not Started',\n    'blocked': 'Blocked', '\ud83d\udd34 blocked': 'Blocked', 'deferred': 'Deferred', '\ud83d\udfe1 deferred': 'Deferred'\n  },\n  mismatch_tolerance_pct: 5,\n  run_timestamp: new Date().toISOString()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2368,
+        16
+      ],
+      "id": "29a5393b-2a11-46f6-bd87-867172e7d21c",
+      "name": "Workflow Configuration"
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/git/trees/main?recursive=1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2192,
+        16
+      ],
+      "id": "71979f1d-1b4f-4c9d-bc70-c78c290a9ea7",
+      "name": "List All Files"
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Workflow Configuration').first().json;\nconst tree = $input.first().json.tree || [];\nconst taskCards = tree\n  .filter(item => item.type === 'blob' && item.path.startsWith('task-cards/') && item.path.endsWith('.md') && !item.path.includes('README.md') && !item.path.includes('INDEX.md'))\n  .map(item => ({ path: item.path, sha: item.sha, directory: item.path.substring(0, item.path.lastIndexOf('/') + 1) || 'task-cards/' }));\nreturn taskCards.map(card => ({ json: { config, card_path: card.path, card_sha: card.sha, directory: card.directory, total_cards: taskCards.length } }));"
+      },
+      "id": "c26587cd-2f18-4a42-9fa9-13499c735b2e",
+      "name": "Filter Task Cards",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1968,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "id": "69aabe99-4b70-4832-abf4-4114deb1353f",
+      "name": "Process Each Task Card",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1728,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/{{ $json.card_path }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1552,
+        176
+      ],
+      "id": "0dd55a5f-4dee-4b2f-8ec6-7bb16194982a",
+      "name": "Fetch Card Content",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const batchItem = $('Process Each Task Card').first().json;\nconst config = batchItem.config;\nconst cardPath = batchItem.card_path;\nconst directory = batchItem.directory;\nconst fileData = $input.first().json;\nlet content = '';\nif (fileData.content) { try { content = Buffer.from(fileData.content, 'base64').toString('utf8'); } catch (e) { content = ''; } }\nlet extractedStatus = 'Unknown';\nlet checkboxComplete = 0;\nlet checkboxTotal = 0;\nif (content) {\n  const statusMatch = content.match(/^\\*?\\*?Status:?\\*?\\*?\\s*(.+)$/im);\n  if (statusMatch) {\n    let rawStatus = statusMatch[1].trim();\n    const normalized = rawStatus.toLowerCase().replace(/[^\\w\\s]/g, '').trim();\n    for (const [key, value] of Object.entries(config.status_mappings)) {\n      if (normalized.includes(key.toLowerCase().replace(/[^\\w\\s]/g, ''))) { extractedStatus = value; break; }\n    }\n    if (extractedStatus === 'Unknown' && rawStatus.length < 30) { extractedStatus = rawStatus; }\n  }\n  const checkedMatches = content.match(/- \\[x\\]/gi);\n  const uncheckedMatches = content.match(/- \\[ \\]/gi);\n  checkboxComplete = checkedMatches ? checkedMatches.length : 0;\n  checkboxTotal = checkboxComplete + (uncheckedMatches ? uncheckedMatches.length : 0);\n}\nreturn { card_path: cardPath, directory: directory, status: extractedStatus, is_complete: extractedStatus === 'Complete', checkbox_complete: checkboxComplete, checkbox_total: checkboxTotal, config: config };"
+      },
+      "id": "007e5cde-955a-4f3a-b672-a014ba0ae7b5",
+      "name": "Parse Card Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1360,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const allResults = $input.all().map(item => item.json);\nconst config = allResults[0]?.config || $('Workflow Configuration').first().json;\nconst byDirectory = {};\nfor (const result of allResults) {\n  const dir = result.directory || 'task-cards/';\n  if (!byDirectory[dir]) { byDirectory[dir] = { cards: [], complete: 0, in_progress: 0, not_started: 0, blocked: 0, unknown: 0, total: 0 }; }\n  byDirectory[dir].cards.push({ path: result.card_path, status: result.status });\n  byDirectory[dir].total++;\n  switch (result.status) {\n    case 'Complete': byDirectory[dir].complete++; break;\n    case 'In Progress': byDirectory[dir].in_progress++; break;\n    case 'Not Started': byDirectory[dir].not_started++; break;\n    case 'Blocked': byDirectory[dir].blocked++; break;\n    default: byDirectory[dir].unknown++;\n  }\n}\nlet overall = { complete: 0, in_progress: 0, not_started: 0, blocked: 0, unknown: 0, total: 0 };\nfor (const dir of Object.values(byDirectory)) { overall.complete += dir.complete; overall.in_progress += dir.in_progress; overall.not_started += dir.not_started; overall.blocked += dir.blocked; overall.unknown += dir.unknown; overall.total += dir.total; }\nreturn { source: 'task_cards', by_directory: byDirectory, overall: overall, overall_completion_pct: overall.total > 0 ? Math.round((overall.complete / overall.total) * 100) : 0, config: config, timestamp: new Date().toISOString() };"
+      },
+      "id": "025c8f00-e1da-4243-aab7-40bcdac36502",
+      "name": "Aggregate Card Status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1424,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const config = $('Workflow Configuration').first().json;\nconst tree = $('List All Files').first().json.tree || [];\nconst statusReports = tree.filter(item => item.type === 'blob' && item.path.startsWith('docs/status-reports/') && item.path.endsWith('.md')).map(item => ({ path: item.path, sha: item.sha }));\nif (statusReports.length === 0) { return { json: { config, reports: [], has_reports: false } }; }\nreturn statusReports.map(report => ({ json: { config, report_path: report.path, report_sha: report.sha, total_reports: statusReports.length } }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        560
+      ],
+      "id": "3f876fc1-a86b-4ead-b608-d95e252d4eae",
+      "name": "Filter Status Reports"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b778f2fc-373a-413b-94fc-c520c8aa1e90",
+              "leftValue": "={{ $json.has_reports }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1712,
+        576
+      ],
+      "id": "5ce6639d-b5aa-4dc5-8938-7f0b87749923",
+      "name": "Has Status Reports?"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -1408,
+        560
+      ],
+      "id": "1eaadaf8-f4fc-412f-b86f-e7defa8ebce0",
+      "name": "Process Each Report"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/{{ $json.report_path }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1200,
+        752
+      ],
+      "id": "d903deaa-29f0-4af5-86f9-cfa29d101e57",
+      "name": "Fetch Report Content",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const batchItem = $('Process Each Report').first().json;\nconst config = batchItem.config;\nconst reportPath = batchItem.report_path;\nconst fileData = $input.first().json;\nlet content = '';\nif (fileData.content) { try { content = Buffer.from(fileData.content, 'base64').toString('utf8'); } catch (e) { content = ''; } }\nlet summary = { path: reportPath, filename: reportPath.split('/').pop(), date: null, overall_status: 'Unknown', completion_pct: null, key_updates: [] };\nif (content) {\n  const dateMatch = reportPath.match(/(\\d{4}-\\d{2}-\\d{2})/);\n  if (dateMatch) summary.date = dateMatch[1];\n  const statusMatch = content.match(/(?:Overall\\s+)?Status:\\s*(.+)/i);\n  if (statusMatch) summary.overall_status = statusMatch[1].trim();\n  const pctMatch = content.match(/(\\d+)%\\s*(?:complete|done|finished)/i);\n  if (pctMatch) summary.completion_pct = parseInt(pctMatch[1]);\n  const waveMatches = content.matchAll(/Wave\\s*(\\d+).*?(?:Status|:)\\s*(.+)/gi);\n  for (const match of waveMatches) { summary.key_updates.push({ wave: parseInt(match[1]), status: match[2].trim().substring(0, 50) }); }\n}\nreturn { report: summary, config: config };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -976,
+        880
+      ],
+      "id": "d541f25a-a784-423b-a669-59292e77b0f9",
+      "name": "Parse Report Statuses"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allResults = $input.all().map(item => item.json);\nconst config = allResults[0]?.config || $('Workflow Configuration').first().json;\nconst reports = allResults.filter(r => r.report).map(r => r.report).sort((a, b) => { if (a.date && b.date) return b.date.localeCompare(a.date); return 0; });\nconst latestReport = reports[0];\nreturn { source: 'status_reports', reports: reports, latest: latestReport || null, report_count: reports.length, config: config, timestamp: new Date().toISOString() };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        880
+      ],
+      "id": "b132d5e9-7d1d-455f-bad8-d3154b6ded98",
+      "name": "Aggregate Report Status"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -512,
+        192
+      ],
+      "id": "943959ec-c35b-41f9-9b76-9d81e9b0e27a",
+      "name": "Merge Aggregated Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "const allData = $input.all().map(item => item.json);\nlet taskCardsData = null;\nlet statusReportsData = null;\nlet config = null;\nfor (const data of allData) {\n  if (data.source === 'task_cards') { taskCardsData = data; config = data.config; }\n  else if (data.source === 'status_reports') { statusReportsData = data; if (!config) config = data.config; }\n}\nif (!config) { config = $('Workflow Configuration').first().json; }\nreturn { task_cards: taskCardsData, status_reports: statusReportsData, config: config, targets_to_fetch: config.reconciliation_targets.map(t => t.path), timestamp: new Date().toISOString() };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -304,
+        192
+      ],
+      "id": "7eb9a617-13c9-40f4-bee6-38c806cc3e85",
+      "name": "Prepare Target Fetch"
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/task-cards/README.md",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "831e0d73-6b01-41dc-988b-790c57912ec5",
+      "name": "Fetch Target Readme",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/task-cards/INDEX.md",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        208
+      ],
+      "id": "db8f4304-fc43-406a-89ad-ff3964b6e50c",
+      "name": "Fetch Target Index",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/docs/CONSOLIDATED_ROADMAP.md",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        16,
+        496
+      ],
+      "id": "3b59c17e-8002-46b7-95d6-8c386dde5fee",
+      "name": "Fetch Target Roadmap",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "function safeGetNodeData(nodeName) { try { const node = $(nodeName); if (node && node.first() && node.first().json) { return node.first().json; } return null; } catch (e) { return null; } }\nconst preparedData = safeGetNodeData('Prepare Target Fetch') || {};\nconst taskCards = preparedData.task_cards || null;\nconst statusReports = preparedData.status_reports || null;\nconst config = preparedData.config || {};\nconst readmeData = safeGetNodeData('Fetch Target Readme');\nconst indexData = safeGetNodeData('Fetch Target Index');\nconst roadmapData = safeGetNodeData('Fetch Target Roadmap');\nfunction decodeContent(data) { if (!data || !data.content) return ''; try { return Buffer.from(data.content, 'base64').toString('utf8'); } catch (e) { return ''; } }\nconst readmeContent = decodeContent(readmeData);\nconst indexContent = decodeContent(indexData);\nconst roadmapContent = decodeContent(roadmapData);\nconst mismatches = [];\nconst tolerance = config.mismatch_tolerance_pct || 5;\nif (taskCards && taskCards.by_directory) {\n  for (const [dir, stats] of Object.entries(taskCards.by_directory)) {\n    const dirName = dir.replace('task-cards/', '').replace(/\\/$/, '') || 'root';\n    const dirPattern = new RegExp(`${dirName}.*?(\\\\d+)/(\\\\d+)\\\\s*Complete`, 'i');\n    const match = readmeContent.match(dirPattern);\n    if (match) {\n      const claimedComplete = parseInt(match[1]);\n      const claimedTotal = parseInt(match[2]);\n      if (claimedTotal !== stats.total) {\n        mismatches.push({ type: 'FILE_COUNT_MISMATCH', severity: 'high', document: 'task-cards/README.md', directory: dir, description: `${dirName}: README claims ${claimedTotal} total files but directory has ${stats.total} files`, claimed: { total: claimedTotal }, actual: { total: stats.total }, action: `Update to ${stats.complete}/${stats.total} in ${dirName} section` });\n      }\n      if (claimedComplete !== stats.complete && claimedTotal === stats.total) {\n        mismatches.push({ type: 'COMPLETION_COUNT_MISMATCH', severity: 'high', document: 'task-cards/README.md', directory: dir, description: `${dirName}: README claims ${claimedComplete} complete but ${stats.complete} are actually complete`, claimed: { complete: claimedComplete, total: claimedTotal }, actual: { complete: stats.complete, total: stats.total }, action: `Update to ${stats.complete}/${stats.total} in ${dirName} section` });\n      }\n    }\n  }\n}\nif (taskCards) {\n  const actualOverallPct = taskCards.overall_completion_pct;\n  const readmePctMatch = readmeContent.match(/(?:Overall|Total).*?(\\d+)%/i);\n  if (readmePctMatch) {\n    const claimedPct = parseInt(readmePctMatch[1]);\n    if (Math.abs(claimedPct - actualOverallPct) > tolerance) {\n      mismatches.push({ type: 'PERCENTAGE_MISMATCH', severity: 'medium', document: 'task-cards/README.md', description: `README claims ${claimedPct}% overall completion but actual is ${actualOverallPct}%`, claimed: { percentage: claimedPct }, actual: { percentage: actualOverallPct }, action: `Update overall completion percentage from ${claimedPct}% to ${actualOverallPct}%` });\n    }\n  }\n  if (roadmapContent) {\n    const roadmapPctMatches = roadmapContent.matchAll(/(?:Completed?|Progress):\\s*(\\d+)(?:\\/\\d+)?\\s*\\(?(\\d+)%?\\)?/gi);\n    for (const match of roadmapPctMatches) {\n      const claimedPct = parseInt(match[2] || match[1]);\n      if (Math.abs(claimedPct - actualOverallPct) > tolerance) {\n        mismatches.push({ type: 'ROADMAP_PERCENTAGE_MISMATCH', severity: 'medium', document: 'docs/CONSOLIDATED_ROADMAP.md', description: `Roadmap claims ${claimedPct}% completion but task cards show ${actualOverallPct}%`, claimed: { percentage: claimedPct }, actual: { percentage: actualOverallPct }, action: `Update roadmap completion metrics to reflect ${actualOverallPct}% actual completion` });\n        break;\n      }\n    }\n  }\n}\nif (taskCards && taskCards.by_directory) {\n  for (const [dir, stats] of Object.entries(taskCards.by_directory)) {\n    const unknownCards = stats.cards.filter(c => c.status === 'Unknown' || c.status === undefined);\n    if (unknownCards.length > 0 && unknownCards.length > stats.total * 0.2) {\n      mismatches.push({ type: 'STATUS_FORMAT_ISSUE', severity: 'low', document: dir, description: `${unknownCards.length} cards in ${dir} have missing or unrecognized status format`, cards: unknownCards.slice(0, 5).map(c => c.path), action: `Review and standardize Status: field format in ${unknownCards.length} task cards` });\n    }\n  }\n}\nif (statusReports && statusReports.latest && roadmapContent) {\n  const latestReport = statusReports.latest;\n  if (latestReport.completion_pct !== null) {\n    const roadmapPctMatch = roadmapContent.match(/(?:Current|Overall).*?(\\d+)%/i);\n    if (roadmapPctMatch) {\n      const roadmapPct = parseInt(roadmapPctMatch[1]);\n      if (Math.abs(roadmapPct - latestReport.completion_pct) > tolerance) {\n        mismatches.push({ type: 'STATUS_REPORT_MISMATCH', severity: 'medium', document: 'docs/CONSOLIDATED_ROADMAP.md', description: `Latest status report shows ${latestReport.completion_pct}% but roadmap shows ${roadmapPct}%`, claimed: { roadmap_pct: roadmapPct }, actual: { report_pct: latestReport.completion_pct, report_file: latestReport.path }, action: `Reconcile roadmap with latest status report data` });\n      }\n    }\n  }\n}\nconst severityOrder = { high: 0, medium: 1, low: 2 };\nmismatches.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);\nreturn { has_mismatches: mismatches.length > 0, mismatch_count: mismatches.length, mismatches: mismatches, actual_state: { task_cards: taskCards, status_reports: statusReports }, targets_checked: ['task-cards/README.md', 'task-cards/INDEX.md', 'docs/CONSOLIDATED_ROADMAP.md'], check_timestamp: new Date().toISOString() };"
+      },
+      "id": "a234a7b4-2b66-4670-8038-15285999ae9a",
+      "name": "Find All Mismatches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        432,
+        256
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.has_mismatches }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "54ce1b06-ce78-4470-8031-f8a1d99e1efd",
+      "name": "Has Mismatches?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        736,
+        272
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const checkData = $('Find All Mismatches').first().json;\nreturn { status: 'in_sync', message: 'All documentation accurately reflects repository state', scan_type: 'deep_content_analysis', targets_verified: checkData.targets_checked || [], task_cards_scanned: checkData.actual_state?.task_cards?.overall?.total || 0, status_reports_scanned: checkData.actual_state?.status_reports?.report_count || 0, overall_completion: checkData.actual_state?.task_cards?.overall_completion_pct || 0, timestamp: new Date().toISOString() };"
+      },
+      "id": "451a6c2d-d1c0-4292-9dbe-60ccbbc1931e",
+      "name": "Log in Sync",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        864
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let rawOutput = $input.first().json.output || $input.first().json.text || '';\nif (typeof rawOutput === 'object' && rawOutput.tasks) { return rawOutput; }\nif (typeof rawOutput !== 'string') { rawOutput = JSON.stringify(rawOutput); }\nrawOutput = rawOutput.trim();\nif (rawOutput.startsWith('```json')) { rawOutput = rawOutput.slice(7); }\nif (rawOutput.startsWith('```')) { rawOutput = rawOutput.slice(3); }\nif (rawOutput.endsWith('```')) { rawOutput = rawOutput.slice(0, -3); }\nrawOutput = rawOutput.trim();\nrawOutput = rawOutput.replace(/,(\\s*[\\]\\}])/g, '$1');\ntry { const parsed = JSON.parse(rawOutput); return parsed; } catch (e) {\n  const startIdx = rawOutput.indexOf('{');\n  const endIdx = rawOutput.lastIndexOf('}');\n  if (startIdx !== -1 && endIdx > startIdx) {\n    let extracted = rawOutput.substring(startIdx, endIdx + 1);\n    extracted = extracted.replace(/,(\\s*[\\]\\}])/g, '$1');\n    try { return JSON.parse(extracted); } catch (e2) { throw new Error('No valid JSON found in AI output: ' + rawOutput.substring(0, 300)); }\n  }\n  throw new Error('No valid JSON found in AI output: ' + rawOutput.substring(0, 300));\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1616,
+        320
+      ],
+      "id": "3f19b793-0433-49ac-886c-514bca9d875b",
+      "name": "Clean AI Output"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiOutput = $input.first().json;\nconst tasks = aiOutput.tasks || [];\nconsole.log('State Reconciliation generated', tasks.length, 'consolidated correction tasks');\nconst validTasks = tasks.filter(task => task.task_id && task.target && task.description);\nif (validTasks.length === 0) { return { skip: true, message: 'No valid correction tasks generated', original_count: tasks.length }; }\nconst normalizedTasks = validTasks.map(task => ({ task_id: task.task_id, update_type: task.update_type || 'RECONCILIATION_UPDATE', target: task.target, document: task.target, description: task.description, priority: task.priority || 2, changes: task.changes || [], source_workflow: 'state-reconciliation-full' }));\nreturn { skip: false, update_list_id: aiOutput.update_list_id || 'ul-recon-full-' + Date.now(), source: 'state-reconciliation-full', scan_type: 'deep_content_analysis', tasks: normalizedTasks, task_count: normalizedTasks.length };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1856,
+        320
+      ],
+      "id": "cfeb58c5-f9b3-47e6-9495-6ec29afb7267",
+      "name": "Prepare for Distributor"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "336f8f67-4a3e-4230-b88b-640f9c2868e8",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2112,
+        320
+      ],
+      "id": "a9be8547-832f-4156-a1ce-38f1cea7120c",
+      "name": "Has Tasks"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gitlitreview.app.n8n.cloud/webhook/task-distributor",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        2848,
+        304
+      ],
+      "id": "8dd437a3-0b36-4626-939d-b4192b319f6e",
+      "name": "Send Corrections"
+    },
+    {
+      "parameters": {
+        "jsCode": "const sentData = $input.first().json;\nconst mismatchData = $('Find All Mismatches').first().json;\nreturn { workflow: 'State Reconciliation (Full)', status: 'completed', scan_type: 'deep_content_analysis', execution_summary: { mismatches_found: mismatchData.mismatch_count, correction_tasks_sent: sentData.task_count || 0, targets_checked: mismatchData.targets_checked, task_cards_scanned: mismatchData.actual_state?.task_cards?.overall?.total || 0, actual_completion_pct: mismatchData.actual_state?.task_cards?.overall_completion_pct || 0 }, tasks_dispatched: sentData.tasks?.map(t => ({ id: t.task_id, target: t.target, priority: t.priority })) || [], timestamp: new Date().toISOString() };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3072,
+        304
+      ],
+      "id": "65da80f3-4ce9-4bb8-80a0-0e96b04de3e9",
+      "name": "Summary Report"
+    },
+    {
+      "parameters": {
+        "jsCode": "const mismatchData = $input.first().json;\nconst dataForAI = { mismatch_count: mismatchData.mismatch_count, mismatches: mismatchData.mismatches, actual_state: mismatchData.actual_state };\nconst userMessage = 'Analyze and fix these documentation mismatches. Generate consolidated correction tasks using the ACTUAL numbers in the data below:\\n\\n' + JSON.stringify(dataForAI, null, 2);\nreturn { ...mismatchData, formatted_user_message: userMessage };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1024,
+        304
+      ],
+      "id": "770ce2ab-67ac-4dcf-8d3f-27e130c9eceb",
+      "name": "Format AI Prompt"
+    }
+  ],
+  "connections": {
+    "Daily Check": {
+      "main": [
+        [
+          {
+            "node": "Start",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Start",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Start": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gemini 2.5 Flash": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Generate Corrections",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Corrections": {
+      "main": [
+        [
+          {
+            "node": "Clean AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "List All Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "List All Files": {
+      "main": [
+        [
+          {
+            "node": "Filter Task Cards",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter Status Reports",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Task Cards": {
+      "main": [
+        [
+          {
+            "node": "Process Each Task Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Each Task Card": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Card Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Fetch Card Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Card Content": {
+      "main": [
+        [
+          {
+            "node": "Parse Card Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Card Status": {
+      "main": [
+        [
+          {
+            "node": "Process Each Task Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Card Status": {
+      "main": [
+        [
+          {
+            "node": "Merge Aggregated Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Status Reports": {
+      "main": [
+        [
+          {
+            "node": "Has Status Reports?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Status Reports?": {
+      "main": [
+        [
+          {
+            "node": "Process Each Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Each Report": {
+      "main": [
+        [
+          {
+            "node": "Fetch Report Content",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Merge Aggregated Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Fetch Report Content": {
+      "main": [
+        [
+          {
+            "node": "Parse Report Statuses",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Report Statuses": {
+      "main": [
+        [
+          {
+            "node": "Process Each Report",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Aggregate Report Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Report Status": {
+      "main": [
+        [
+          {
+            "node": "Merge Aggregated Data",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge Aggregated Data": {
+      "main": [
+        [
+          {
+            "node": "Prepare Target Fetch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Target Readme": {
+      "main": [
+        [
+          {
+            "node": "Find All Mismatches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Target Fetch": {
+      "main": [
+        [
+          {
+            "node": "Fetch Target Readme",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Target Index",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Target Roadmap",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Target Index": {
+      "main": [
+        [
+          {
+            "node": "Find All Mismatches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find All Mismatches": {
+      "main": [
+        [
+          {
+            "node": "Has Mismatches?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Mismatches?": {
+      "main": [
+        [
+          {
+            "node": "Format AI Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log in Sync",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean AI Output": {
+      "main": [
+        [
+          {
+            "node": "Prepare for Distributor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Tasks": {
+      "main": [
+        [
+          {
+            "node": "Send Corrections",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare for Distributor": {
+      "main": [
+        [
+          {
+            "node": "Has Tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Corrections": {
+      "main": [
+        [
+          {
+            "node": "Summary Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Target Roadmap": {
+      "main": [
+        [
+          {
+            "node": "Find All Mismatches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format AI Prompt": {
+      "main": [
+        [
+          {
+            "node": "Generate Corrections",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": {
+    "node:Daily Check": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "c06749c2-e0cc-4fd9-9ae2-f0523bffe909",
+  "activeVersionId": "c06749c2-e0cc-4fd9-9ae2-f0523bffe909",
+  "versionCounter": 10,
+  "triggerCount": 2,
+  "shared": [
+    {
+      "updatedAt": "2025-12-23T17:12:28.513Z",
+      "createdAt": "2025-12-23T17:12:28.513Z",
+      "role": "workflow:owner",
+      "workflowId": "JVAjIrsS4yKbYIxW",
+      "projectId": "PRnR04izdxw9gkqL",
+      "project": {
+        "updatedAt": "2025-12-23T16:37:31.675Z",
+        "createdAt": "2025-12-23T16:08:01.602Z",
+        "id": "PRnR04izdxw9gkqL",
+        "name": "Joshua Coleman <jcoleman@captech.edu>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-23T16:08:01.602Z",
+            "createdAt": "2025-12-23T16:08:01.602Z",
+            "userId": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+            "projectId": "PRnR04izdxw9gkqL",
+            "user": {
+              "updatedAt": "2025-12-29T05:01:57.000Z",
+              "createdAt": "2025-12-23T16:08:01.276Z",
+              "id": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+              "email": "jcoleman@captech.edu",
+              "firstName": "Joshua",
+              "lastName": "Coleman",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-23T16:37:34.976Z",
+                "personalization_survey_n8n_version": "2.1.3"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "5vQ8lMCyatxB8Fdd",
+                "userActivatedAt": 1766948206272
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-28",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2025-12-25T13:57:33.970Z",
+    "createdAt": "2025-12-25T13:57:33.970Z",
+    "versionId": "c06749c2-e0cc-4fd9-9ae2-f0523bffe909",
+    "workflowId": "JVAjIrsS4yKbYIxW",
+    "nodes": [
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "triggerAtHour": 3
+              }
+            ]
+          }
+        },
+        "id": "036eb768-aeb0-4245-9b65-743f08929082",
+        "name": "Daily Check",
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.3,
+        "position": [
+          -2752,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "state-reconciliation",
+          "responseMode": "lastNode",
+          "options": {}
+        },
+        "id": "1e053bfa-77b7-4d63-94c5-a17d6002358a",
+        "name": "Manual Trigger",
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2.1,
+        "position": [
+          -2752,
+          208
+        ],
+        "webhookId": "b712dce8-a876-4b58-b62e-3133d336f1b1"
+      },
+      {
+        "parameters": {},
+        "id": "9b3a4f0d-cfac-4ba1-bc89-eec082a00e39",
+        "name": "Start",
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          -2528,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "id": "fe8ec068-7651-4bec-982f-8d77f3229a24",
+        "name": "Gemini 2.5 Flash",
+        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+        "typeVersion": 1,
+        "position": [
+          1168,
+          624
+        ],
+        "credentials": {
+          "googlePalmApi": {
+            "id": "kJmLsDFHzgrlPJhY",
+            "name": "Google Gemini(PaLM) Api account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "{{ $json.formatted_user_message }}",
+          "options": {
+            "systemMessage": "You are a documentation reconciliation expert. Generate COMPREHENSIVE correction tasks to fix all detected mismatches between actual repository state and documentation claims.\n\nYour job is to ensure ALL documentation accurately reflects the true state of the repository after your corrections are applied.\n\nTASK CONSOLIDATION RULES:\n1. Group all updates targeting the SAME FILE into ONE task\n2. For task-cards/README.md: Create ONE task with ALL directory count updates\n3. For docs/CONSOLIDATED_ROADMAP.md: Create ONE task with ALL percentage/status updates\n4. Never create multiple tasks for the same document\n5. Include SPECIFIC changes needed using the ACTUAL VALUES provided in the input\n\nSEVERITY-BASED PRIORITIES:\n- HIGH severity (file count, completion count mismatches): priority 1\n- MEDIUM severity (percentage mismatches, roadmap drift): priority 2  \n- LOW severity (status format issues): priority 3\n\nTASK STRUCTURE:\nEach task must have:\n- task_id: unique identifier (e.g., \"recon-readme-001\", \"recon-roadmap-001\")\n- update_type: \"RECONCILIATION_UPDATE\"\n- target: the file path to update\n- description: COMPREHENSIVE list of ALL corrections needed for this file\n- priority: 1 (high), 2 (medium), or 3 (low)\n- changes: array of specific changes with section, field, from, to\n\nOUTPUT RULES:\n1. Output ONLY raw JSON with no markdown formatting\n2. Use ACTUAL VALUES from the input data\n3. All values must be concrete numbers or strings\n4. Output must be valid parseable JSON\n\nExample:\n{\"update_list_id\":\"ul-recon-1703200000\",\"source\":\"state-reconciliation-full\",\"tasks\":[{\"task_id\":\"recon-readme-001\",\"update_type\":\"RECONCILIATION_UPDATE\",\"target\":\"task-cards/README.md\",\"description\":\"Update completion counts\",\"priority\":1,\"changes\":[{\"section\":\"automation\",\"field\":\"completion\",\"from\":\"0/4\",\"to\":\"1/4\"}]}]}"
+          }
+        },
+        "id": "b0815cb0-e6ca-4ae5-81d4-8d5c1fc7eb6b",
+        "name": "Generate Corrections",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          1216,
+          304
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "// Full State Reconciliation Configuration\nreturn {\n  reconciliation_targets: [\n    { path: 'task-cards/README.md', type: 'index', aggregation: 'count_by_status' },\n    { path: 'task-cards/INDEX.md', type: 'index', aggregation: 'count_by_status' },\n    { path: 'docs/CONSOLIDATED_ROADMAP.md', type: 'roadmap', aggregation: 'summarize_progress' }\n  ],\n  status_patterns: {\n    task_status: /^\\*?\\*?Status:?\\*?\\*?\\s*(.+)$/im,\n    completion_pct: /(\\d+)%\\s*(?:complete|done|finished)/i,\n    checkbox_checked: /- \\[x\\]/gi,\n    checkbox_unchecked: /- \\[ \\]/gi,\n    fraction: /(\\d+)\\/(\\d+)\\s*Complete/i,\n    wave_status: /^##\\s*Wave\\s*\\d+.*?Status:\\s*(.+)$/im\n  },\n  status_mappings: {\n    'complete': 'Complete', 'completed': 'Complete', '\u2705 complete': 'Complete', '\u2705 done': 'Complete', 'done': 'Complete',\n    'in progress': 'In Progress', 'in-progress': 'In Progress', '\ud83d\udd04 in progress': 'In Progress', '\ud83d\udd04 active': 'In Progress',\n    'not started': 'Not Started', 'ready': 'Not Started', '\ud83d\udfe2 ready': 'Not Started',\n    'blocked': 'Blocked', '\ud83d\udd34 blocked': 'Blocked', 'deferred': 'Deferred', '\ud83d\udfe1 deferred': 'Deferred'\n  },\n  mismatch_tolerance_pct: 5,\n  run_timestamp: new Date().toISOString()\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -2368,
+          16
+        ],
+        "id": "29a5393b-2a11-46f6-bd87-867172e7d21c",
+        "name": "Workflow Configuration"
+      },
+      {
+        "parameters": {
+          "url": "https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/git/trees/main?recursive=1",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3+json"
+              },
+              {
+                "name": "Authorization",
+                "value": "{{ env.GITHUB_TOKEN }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -2192,
+          16
+        ],
+        "id": "71979f1d-1b4f-4c9d-bc70-c78c290a9ea7",
+        "name": "List All Files"
+      },
+      {
+        "parameters": {
+          "jsCode": "const config = $('Workflow Configuration').first().json;\nconst tree = $input.first().json.tree || [];\nconst taskCards = tree\n  .filter(item => item.type === 'blob' && item.path.startsWith('task-cards/') && item.path.endsWith('.md') && !item.path.includes('README.md') && !item.path.includes('INDEX.md'))\n  .map(item => ({ path: item.path, sha: item.sha, directory: item.path.substring(0, item.path.lastIndexOf('/') + 1) || 'task-cards/' }));\nreturn taskCards.map(card => ({ json: { config, card_path: card.path, card_sha: card.sha, directory: card.directory, total_cards: taskCards.length } }));"
+        },
+        "id": "c26587cd-2f18-4a42-9fa9-13499c735b2e",
+        "name": "Filter Task Cards",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1968,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "options": {
+            "reset": false
+          }
+        },
+        "id": "69aabe99-4b70-4832-abf4-4114deb1353f",
+        "name": "Process Each Task Card",
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -1728,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "url": "=https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{ $json.card_path }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3+json"
+              },
+              {
+                "name": "Authorization",
+                "value": "{{ env.GITHUB_TOKEN }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -1552,
+          176
+        ],
+        "id": "0dd55a5f-4dee-4b2f-8ec6-7bb16194982a",
+        "name": "Fetch Card Content",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const batchItem = $('Process Each Task Card').first().json;\nconst config = batchItem.config;\nconst cardPath = batchItem.card_path;\nconst directory = batchItem.directory;\nconst fileData = $input.first().json;\nlet content = '';\nif (fileData.content) { try { content = Buffer.from(fileData.content, 'base64').toString('utf8'); } catch (e) { content = ''; } }\nlet extractedStatus = 'Unknown';\nlet checkboxComplete = 0;\nlet checkboxTotal = 0;\nif (content) {\n  const statusMatch = content.match(/^\\*?\\*?Status:?\\*?\\*?\\s*(.+)$/im);\n  if (statusMatch) {\n    let rawStatus = statusMatch[1].trim();\n    const normalized = rawStatus.toLowerCase().replace(/[^\\w\\s]/g, '').trim();\n    for (const [key, value] of Object.entries(config.status_mappings)) {\n      if (normalized.includes(key.toLowerCase().replace(/[^\\w\\s]/g, ''))) { extractedStatus = value; break; }\n    }\n    if (extractedStatus === 'Unknown' && rawStatus.length < 30) { extractedStatus = rawStatus; }\n  }\n  const checkedMatches = content.match(/- \\[x\\]/gi);\n  const uncheckedMatches = content.match(/- \\[ \\]/gi);\n  checkboxComplete = checkedMatches ? checkedMatches.length : 0;\n  checkboxTotal = checkboxComplete + (uncheckedMatches ? uncheckedMatches.length : 0);\n}\nreturn { card_path: cardPath, directory: directory, status: extractedStatus, is_complete: extractedStatus === 'Complete', checkbox_complete: checkboxComplete, checkbox_total: checkboxTotal, config: config };"
+        },
+        "id": "007e5cde-955a-4f3a-b672-a014ba0ae7b5",
+        "name": "Parse Card Status",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1360,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const allResults = $input.all().map(item => item.json);\nconst config = allResults[0]?.config || $('Workflow Configuration').first().json;\nconst byDirectory = {};\nfor (const result of allResults) {\n  const dir = result.directory || 'task-cards/';\n  if (!byDirectory[dir]) { byDirectory[dir] = { cards: [], complete: 0, in_progress: 0, not_started: 0, blocked: 0, unknown: 0, total: 0 }; }\n  byDirectory[dir].cards.push({ path: result.card_path, status: result.status });\n  byDirectory[dir].total++;\n  switch (result.status) {\n    case 'Complete': byDirectory[dir].complete++; break;\n    case 'In Progress': byDirectory[dir].in_progress++; break;\n    case 'Not Started': byDirectory[dir].not_started++; break;\n    case 'Blocked': byDirectory[dir].blocked++; break;\n    default: byDirectory[dir].unknown++;\n  }\n}\nlet overall = { complete: 0, in_progress: 0, not_started: 0, blocked: 0, unknown: 0, total: 0 };\nfor (const dir of Object.values(byDirectory)) { overall.complete += dir.complete; overall.in_progress += dir.in_progress; overall.not_started += dir.not_started; overall.blocked += dir.blocked; overall.unknown += dir.unknown; overall.total += dir.total; }\nreturn { source: 'task_cards', by_directory: byDirectory, overall: overall, overall_completion_pct: overall.total > 0 ? Math.round((overall.complete / overall.total) * 100) : 0, config: config, timestamp: new Date().toISOString() };"
+        },
+        "id": "025c8f00-e1da-4243-aab7-40bcdac36502",
+        "name": "Aggregate Card Status",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1424,
+          16
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const config = $('Workflow Configuration').first().json;\nconst tree = $('List All Files').first().json.tree || [];\nconst statusReports = tree.filter(item => item.type === 'blob' && item.path.startsWith('docs/status-reports/') && item.path.endsWith('.md')).map(item => ({ path: item.path, sha: item.sha }));\nif (statusReports.length === 0) { return { json: { config, reports: [], has_reports: false } }; }\nreturn statusReports.map(report => ({ json: { config, report_path: report.path, report_sha: report.sha, total_reports: statusReports.length } }));"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1952,
+          560
+        ],
+        "id": "3f876fc1-a86b-4ead-b608-d95e252d4eae",
+        "name": "Filter Status Reports"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "b778f2fc-373a-413b-94fc-c520c8aa1e90",
+                "leftValue": "={{ $json.has_reports }}",
+                "rightValue": false,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "notEquals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -1712,
+          576
+        ],
+        "id": "5ce6639d-b5aa-4dc5-8938-7f0b87749923",
+        "name": "Has Status Reports?"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.splitInBatches",
+        "typeVersion": 3,
+        "position": [
+          -1408,
+          560
+        ],
+        "id": "1eaadaf8-f4fc-412f-b86f-e7defa8ebce0",
+        "name": "Process Each Report"
+      },
+      {
+        "parameters": {
+          "url": "=https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/{{ $json.report_path }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3+json"
+              },
+              {
+                "name": "Authorization",
+                "value": "{{ env.GITHUB_TOKEN }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          -1200,
+          752
+        ],
+        "id": "d903deaa-29f0-4af5-86f9-cfa29d101e57",
+        "name": "Fetch Report Content",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "const batchItem = $('Process Each Report').first().json;\nconst config = batchItem.config;\nconst reportPath = batchItem.report_path;\nconst fileData = $input.first().json;\nlet content = '';\nif (fileData.content) { try { content = Buffer.from(fileData.content, 'base64').toString('utf8'); } catch (e) { content = ''; } }\nlet summary = { path: reportPath, filename: reportPath.split('/').pop(), date: null, overall_status: 'Unknown', completion_pct: null, key_updates: [] };\nif (content) {\n  const dateMatch = reportPath.match(/(\\d{4}-\\d{2}-\\d{2})/);\n  if (dateMatch) summary.date = dateMatch[1];\n  const statusMatch = content.match(/(?:Overall\\s+)?Status:\\s*(.+)/i);\n  if (statusMatch) summary.overall_status = statusMatch[1].trim();\n  const pctMatch = content.match(/(\\d+)%\\s*(?:complete|done|finished)/i);\n  if (pctMatch) summary.completion_pct = parseInt(pctMatch[1]);\n  const waveMatches = content.matchAll(/Wave\\s*(\\d+).*?(?:Status|:)\\s*(.+)/gi);\n  for (const match of waveMatches) { summary.key_updates.push({ wave: parseInt(match[1]), status: match[2].trim().substring(0, 50) }); }\n}\nreturn { report: summary, config: config };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -976,
+          880
+        ],
+        "id": "d541f25a-a784-423b-a669-59292e77b0f9",
+        "name": "Parse Report Statuses"
+      },
+      {
+        "parameters": {
+          "jsCode": "const allResults = $input.all().map(item => item.json);\nconst config = allResults[0]?.config || $('Workflow Configuration').first().json;\nconst reports = allResults.filter(r => r.report).map(r => r.report).sort((a, b) => { if (a.date && b.date) return b.date.localeCompare(a.date); return 0; });\nconst latestReport = reports[0];\nreturn { source: 'status_reports', reports: reports, latest: latestReport || null, report_count: reports.length, config: config, timestamp: new Date().toISOString() };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -752,
+          880
+        ],
+        "id": "b132d5e9-7d1d-455f-bad8-d3154b6ded98",
+        "name": "Aggregate Report Status"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3.2,
+        "position": [
+          -512,
+          192
+        ],
+        "id": "943959ec-c35b-41f9-9b76-9d81e9b0e27a",
+        "name": "Merge Aggregated Data"
+      },
+      {
+        "parameters": {
+          "jsCode": "const allData = $input.all().map(item => item.json);\nlet taskCardsData = null;\nlet statusReportsData = null;\nlet config = null;\nfor (const data of allData) {\n  if (data.source === 'task_cards') { taskCardsData = data; config = data.config; }\n  else if (data.source === 'status_reports') { statusReportsData = data; if (!config) config = data.config; }\n}\nif (!config) { config = $('Workflow Configuration').first().json; }\nreturn { task_cards: taskCardsData, status_reports: statusReportsData, config: config, targets_to_fetch: config.reconciliation_targets.map(t => t.path), timestamp: new Date().toISOString() };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -304,
+          192
+        ],
+        "id": "7eb9a617-13c9-40f4-bee6-38c806cc3e85",
+        "name": "Prepare Target Fetch"
+      },
+      {
+        "parameters": {
+          "url": "https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/task-cards/README.md",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3+json"
+              },
+              {
+                "name": "Authorization",
+                "value": "{{ env.GITHUB_TOKEN }}"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "id": "831e0d73-6b01-41dc-988b-790c57912ec5",
+        "name": "Fetch Target Readme",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          0,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "url": "https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/task-cards/INDEX.md",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3+json"
+              },
+              {
+                "name": "Authorization",
+                "value": "{{ env.GITHUB_TOKEN }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          0,
+          208
+        ],
+        "id": "db8f4304-fc43-406a-89ad-ff3964b6e50c",
+        "name": "Fetch Target Index",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "url": "https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/contents/docs/CONSOLIDATED_ROADMAP.md",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Accept",
+                "value": "application/vnd.github.v3+json"
+              },
+              {
+                "name": "Authorization",
+                "value": "{{ env.GITHUB_TOKEN }}"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          16,
+          496
+        ],
+        "id": "3b59c17e-8002-46b7-95d6-8c386dde5fee",
+        "name": "Fetch Target Roadmap",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "function safeGetNodeData(nodeName) { try { const node = $(nodeName); if (node && node.first() && node.first().json) { return node.first().json; } return null; } catch (e) { return null; } }\nconst preparedData = safeGetNodeData('Prepare Target Fetch') || {};\nconst taskCards = preparedData.task_cards || null;\nconst statusReports = preparedData.status_reports || null;\nconst config = preparedData.config || {};\nconst readmeData = safeGetNodeData('Fetch Target Readme');\nconst indexData = safeGetNodeData('Fetch Target Index');\nconst roadmapData = safeGetNodeData('Fetch Target Roadmap');\nfunction decodeContent(data) { if (!data || !data.content) return ''; try { return Buffer.from(data.content, 'base64').toString('utf8'); } catch (e) { return ''; } }\nconst readmeContent = decodeContent(readmeData);\nconst indexContent = decodeContent(indexData);\nconst roadmapContent = decodeContent(roadmapData);\nconst mismatches = [];\nconst tolerance = config.mismatch_tolerance_pct || 5;\nif (taskCards && taskCards.by_directory) {\n  for (const [dir, stats] of Object.entries(taskCards.by_directory)) {\n    const dirName = dir.replace('task-cards/', '').replace(/\\/$/, '') || 'root';\n    const dirPattern = new RegExp(`${dirName}.*?(\\\\d+)/(\\\\d+)\\\\s*Complete`, 'i');\n    const match = readmeContent.match(dirPattern);\n    if (match) {\n      const claimedComplete = parseInt(match[1]);\n      const claimedTotal = parseInt(match[2]);\n      if (claimedTotal !== stats.total) {\n        mismatches.push({ type: 'FILE_COUNT_MISMATCH', severity: 'high', document: 'task-cards/README.md', directory: dir, description: `${dirName}: README claims ${claimedTotal} total files but directory has ${stats.total} files`, claimed: { total: claimedTotal }, actual: { total: stats.total }, action: `Update to ${stats.complete}/${stats.total} in ${dirName} section` });\n      }\n      if (claimedComplete !== stats.complete && claimedTotal === stats.total) {\n        mismatches.push({ type: 'COMPLETION_COUNT_MISMATCH', severity: 'high', document: 'task-cards/README.md', directory: dir, description: `${dirName}: README claims ${claimedComplete} complete but ${stats.complete} are actually complete`, claimed: { complete: claimedComplete, total: claimedTotal }, actual: { complete: stats.complete, total: stats.total }, action: `Update to ${stats.complete}/${stats.total} in ${dirName} section` });\n      }\n    }\n  }\n}\nif (taskCards) {\n  const actualOverallPct = taskCards.overall_completion_pct;\n  const readmePctMatch = readmeContent.match(/(?:Overall|Total).*?(\\d+)%/i);\n  if (readmePctMatch) {\n    const claimedPct = parseInt(readmePctMatch[1]);\n    if (Math.abs(claimedPct - actualOverallPct) > tolerance) {\n      mismatches.push({ type: 'PERCENTAGE_MISMATCH', severity: 'medium', document: 'task-cards/README.md', description: `README claims ${claimedPct}% overall completion but actual is ${actualOverallPct}%`, claimed: { percentage: claimedPct }, actual: { percentage: actualOverallPct }, action: `Update overall completion percentage from ${claimedPct}% to ${actualOverallPct}%` });\n    }\n  }\n  if (roadmapContent) {\n    const roadmapPctMatches = roadmapContent.matchAll(/(?:Completed?|Progress):\\s*(\\d+)(?:\\/\\d+)?\\s*\\(?(\\d+)%?\\)?/gi);\n    for (const match of roadmapPctMatches) {\n      const claimedPct = parseInt(match[2] || match[1]);\n      if (Math.abs(claimedPct - actualOverallPct) > tolerance) {\n        mismatches.push({ type: 'ROADMAP_PERCENTAGE_MISMATCH', severity: 'medium', document: 'docs/CONSOLIDATED_ROADMAP.md', description: `Roadmap claims ${claimedPct}% completion but task cards show ${actualOverallPct}%`, claimed: { percentage: claimedPct }, actual: { percentage: actualOverallPct }, action: `Update roadmap completion metrics to reflect ${actualOverallPct}% actual completion` });\n        break;\n      }\n    }\n  }\n}\nif (taskCards && taskCards.by_directory) {\n  for (const [dir, stats] of Object.entries(taskCards.by_directory)) {\n    const unknownCards = stats.cards.filter(c => c.status === 'Unknown' || c.status === undefined);\n    if (unknownCards.length > 0 && unknownCards.length > stats.total * 0.2) {\n      mismatches.push({ type: 'STATUS_FORMAT_ISSUE', severity: 'low', document: dir, description: `${unknownCards.length} cards in ${dir} have missing or unrecognized status format`, cards: unknownCards.slice(0, 5).map(c => c.path), action: `Review and standardize Status: field format in ${unknownCards.length} task cards` });\n    }\n  }\n}\nif (statusReports && statusReports.latest && roadmapContent) {\n  const latestReport = statusReports.latest;\n  if (latestReport.completion_pct !== null) {\n    const roadmapPctMatch = roadmapContent.match(/(?:Current|Overall).*?(\\d+)%/i);\n    if (roadmapPctMatch) {\n      const roadmapPct = parseInt(roadmapPctMatch[1]);\n      if (Math.abs(roadmapPct - latestReport.completion_pct) > tolerance) {\n        mismatches.push({ type: 'STATUS_REPORT_MISMATCH', severity: 'medium', document: 'docs/CONSOLIDATED_ROADMAP.md', description: `Latest status report shows ${latestReport.completion_pct}% but roadmap shows ${roadmapPct}%`, claimed: { roadmap_pct: roadmapPct }, actual: { report_pct: latestReport.completion_pct, report_file: latestReport.path }, action: `Reconcile roadmap with latest status report data` });\n      }\n    }\n  }\n}\nconst severityOrder = { high: 0, medium: 1, low: 2 };\nmismatches.sort((a, b) => severityOrder[a.severity] - severityOrder[b.severity]);\nreturn { has_mismatches: mismatches.length > 0, mismatch_count: mismatches.length, mismatches: mismatches, actual_state: { task_cards: taskCards, status_reports: statusReports }, targets_checked: ['task-cards/README.md', 'task-cards/INDEX.md', 'docs/CONSOLIDATED_ROADMAP.md'], check_timestamp: new Date().toISOString() };"
+        },
+        "id": "a234a7b4-2b66-4670-8038-15285999ae9a",
+        "name": "Find All Mismatches",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          432,
+          256
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "id-1",
+                "leftValue": "={{ $json.has_mismatches }}",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "54ce1b06-ce78-4470-8031-f8a1d99e1efd",
+        "name": "Has Mismatches?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          736,
+          272
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "const checkData = $('Find All Mismatches').first().json;\nreturn { status: 'in_sync', message: 'All documentation accurately reflects repository state', scan_type: 'deep_content_analysis', targets_verified: checkData.targets_checked || [], task_cards_scanned: checkData.actual_state?.task_cards?.overall?.total || 0, status_reports_scanned: checkData.actual_state?.status_reports?.report_count || 0, overall_completion: checkData.actual_state?.task_cards?.overall_completion_pct || 0, timestamp: new Date().toISOString() };"
+        },
+        "id": "451a6c2d-d1c0-4292-9dbe-60ccbbc1931e",
+        "name": "Log in Sync",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1024,
+          864
+        ]
+      },
+      {
+        "parameters": {
+          "jsCode": "let rawOutput = $input.first().json.output || $input.first().json.text || '';\nif (typeof rawOutput === 'object' && rawOutput.tasks) { return rawOutput; }\nif (typeof rawOutput !== 'string') { rawOutput = JSON.stringify(rawOutput); }\nrawOutput = rawOutput.trim();\nif (rawOutput.startsWith('```json')) { rawOutput = rawOutput.slice(7); }\nif (rawOutput.startsWith('```')) { rawOutput = rawOutput.slice(3); }\nif (rawOutput.endsWith('```')) { rawOutput = rawOutput.slice(0, -3); }\nrawOutput = rawOutput.trim();\nrawOutput = rawOutput.replace(/,(\\s*[\\]\\}])/g, '$1');\ntry { const parsed = JSON.parse(rawOutput); return parsed; } catch (e) {\n  const startIdx = rawOutput.indexOf('{');\n  const endIdx = rawOutput.lastIndexOf('}');\n  if (startIdx !== -1 && endIdx > startIdx) {\n    let extracted = rawOutput.substring(startIdx, endIdx + 1);\n    extracted = extracted.replace(/,(\\s*[\\]\\}])/g, '$1');\n    try { return JSON.parse(extracted); } catch (e2) { throw new Error('No valid JSON found in AI output: ' + rawOutput.substring(0, 300)); }\n  }\n  throw new Error('No valid JSON found in AI output: ' + rawOutput.substring(0, 300));\n}"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1616,
+          320
+        ],
+        "id": "3f19b793-0433-49ac-886c-514bca9d875b",
+        "name": "Clean AI Output"
+      },
+      {
+        "parameters": {
+          "jsCode": "const aiOutput = $input.first().json;\nconst tasks = aiOutput.tasks || [];\nconsole.log('State Reconciliation generated', tasks.length, 'consolidated correction tasks');\nconst validTasks = tasks.filter(task => task.task_id && task.target && task.description);\nif (validTasks.length === 0) { return { skip: true, message: 'No valid correction tasks generated', original_count: tasks.length }; }\nconst normalizedTasks = validTasks.map(task => ({ task_id: task.task_id, update_type: task.update_type || 'RECONCILIATION_UPDATE', target: task.target, document: task.target, description: task.description, priority: task.priority || 2, changes: task.changes || [], source_workflow: 'state-reconciliation-full' }));\nreturn { skip: false, update_list_id: aiOutput.update_list_id || 'ul-recon-full-' + Date.now(), source: 'state-reconciliation-full', scan_type: 'deep_content_analysis', tasks: normalizedTasks, task_count: normalizedTasks.length };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1856,
+          320
+        ],
+        "id": "cfeb58c5-f9b3-47e6-9495-6ec29afb7267",
+        "name": "Prepare for Distributor"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "336f8f67-4a3e-4230-b88b-640f9c2868e8",
+                "leftValue": "={{ $json.skip }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "false",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          2112,
+          320
+        ],
+        "id": "a9be8547-832f-4156-a1ce-38f1cea7120c",
+        "name": "Has Tasks"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://gitlitreview.app.n8n.cloud/webhook/task-distributor",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{ $json }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          2848,
+          304
+        ],
+        "id": "8dd437a3-0b36-4626-939d-b4192b319f6e",
+        "name": "Send Corrections"
+      },
+      {
+        "parameters": {
+          "jsCode": "const sentData = $input.first().json;\nconst mismatchData = $('Find All Mismatches').first().json;\nreturn { workflow: 'State Reconciliation (Full)', status: 'completed', scan_type: 'deep_content_analysis', execution_summary: { mismatches_found: mismatchData.mismatch_count, correction_tasks_sent: sentData.task_count || 0, targets_checked: mismatchData.targets_checked, task_cards_scanned: mismatchData.actual_state?.task_cards?.overall?.total || 0, actual_completion_pct: mismatchData.actual_state?.task_cards?.overall_completion_pct || 0 }, tasks_dispatched: sentData.tasks?.map(t => ({ id: t.task_id, target: t.target, priority: t.priority })) || [], timestamp: new Date().toISOString() };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          3072,
+          304
+        ],
+        "id": "65da80f3-4ce9-4bb8-80a0-0e96b04de3e9",
+        "name": "Summary Report"
+      },
+      {
+        "parameters": {
+          "jsCode": "const mismatchData = $input.first().json;\nconst dataForAI = { mismatch_count: mismatchData.mismatch_count, mismatches: mismatchData.mismatches, actual_state: mismatchData.actual_state };\nconst userMessage = 'Analyze and fix these documentation mismatches. Generate consolidated correction tasks using the ACTUAL numbers in the data below:\\n\\n' + JSON.stringify(dataForAI, null, 2);\nreturn { ...mismatchData, formatted_user_message: userMessage };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1024,
+          304
+        ],
+        "id": "770ce2ab-67ac-4dcf-8d3f-27e130c9eceb",
+        "name": "Format AI Prompt"
+      }
+    ],
+    "connections": {
+      "Daily Check": {
+        "main": [
+          [
+            {
+              "node": "Start",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Manual Trigger": {
+        "main": [
+          [
+            {
+              "node": "Start",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Start": {
+        "main": [
+          [
+            {
+              "node": "Workflow Configuration",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gemini 2.5 Flash": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Generate Corrections",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Generate Corrections": {
+        "main": [
+          [
+            {
+              "node": "Clean AI Output",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Workflow Configuration": {
+        "main": [
+          [
+            {
+              "node": "List All Files",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "List All Files": {
+        "main": [
+          [
+            {
+              "node": "Filter Task Cards",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Filter Status Reports",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Task Cards": {
+        "main": [
+          [
+            {
+              "node": "Process Each Task Card",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process Each Task Card": {
+        "main": [
+          [
+            {
+              "node": "Aggregate Card Status",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Fetch Card Content",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Card Content": {
+        "main": [
+          [
+            {
+              "node": "Parse Card Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Card Status": {
+        "main": [
+          [
+            {
+              "node": "Process Each Task Card",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate Card Status": {
+        "main": [
+          [
+            {
+              "node": "Merge Aggregated Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filter Status Reports": {
+        "main": [
+          [
+            {
+              "node": "Has Status Reports?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Status Reports?": {
+        "main": [
+          [
+            {
+              "node": "Process Each Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Process Each Report": {
+        "main": [
+          [
+            {
+              "node": "Fetch Report Content",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Merge Aggregated Data",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Fetch Report Content": {
+        "main": [
+          [
+            {
+              "node": "Parse Report Statuses",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Report Statuses": {
+        "main": [
+          [
+            {
+              "node": "Process Each Report",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Aggregate Report Status",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Aggregate Report Status": {
+        "main": [
+          [
+            {
+              "node": "Merge Aggregated Data",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Merge Aggregated Data": {
+        "main": [
+          [
+            {
+              "node": "Prepare Target Fetch",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Target Readme": {
+        "main": [
+          [
+            {
+              "node": "Find All Mismatches",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Target Fetch": {
+        "main": [
+          [
+            {
+              "node": "Fetch Target Readme",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch Target Index",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Fetch Target Roadmap",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Target Index": {
+        "main": [
+          [
+            {
+              "node": "Find All Mismatches",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find All Mismatches": {
+        "main": [
+          [
+            {
+              "node": "Has Mismatches?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Mismatches?": {
+        "main": [
+          [
+            {
+              "node": "Format AI Prompt",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Log in Sync",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Clean AI Output": {
+        "main": [
+          [
+            {
+              "node": "Prepare for Distributor",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Has Tasks": {
+        "main": [
+          [
+            {
+              "node": "Send Corrections",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare for Distributor": {
+        "main": [
+          [
+            {
+              "node": "Has Tasks",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Corrections": {
+        "main": [
+          [
+            {
+              "node": "Summary Report",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fetch Target Roadmap": {
+        "main": [
+          [
+            {
+              "node": "Find All Mismatches",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format AI Prompt": {
+        "main": [
+          [
+            {
+              "node": "Generate Corrections",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Joshua Coleman",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2025-12-25T13:57:34.060Z",
+        "id": 12,
+        "workflowId": "JVAjIrsS4yKbYIxW",
+        "versionId": "c06749c2-e0cc-4fd9-9ae2-f0523bffe909",
+        "event": "activated",
+        "userId": "519211d5-3194-4461-a8e5-a0a0ada3b87d"
+      }
+    ]
+  }
+}

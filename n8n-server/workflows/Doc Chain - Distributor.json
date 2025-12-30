@@ -1,0 +1,411 @@
+{
+  "updatedAt": "2025-12-24T17:29:41.662Z",
+  "createdAt": "2025-12-23T17:11:33.660Z",
+  "id": "3lTsmIsQFmzpwLE8",
+  "name": "Doc Chain - Distributor",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "task-distributor",
+        "options": {}
+      },
+      "id": "96282d7a-6e69-4eef-8dd8-873d39ecf75d",
+      "name": "Receive List",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -672,
+        16
+      ],
+      "webhookId": "172049ca-9a4a-4e5d-b5cd-b8caa8359bea"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/distributor-reset",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        720
+      ],
+      "id": "ec38ed93-7f6b-4620-81f5-5f0d0ae4d80c",
+      "name": "Reset State",
+      "webhookId": "54f3b61f-650a-4e38-b527-46ebfd317b3a"
+    },
+    {
+      "parameters": {
+        "jsCode": "    const staticData = $getWorkflowStaticData('global');\n    const oldState = staticData.state || {};\n    staticData.state = { pending_tasks: [], in_progress: null, completed: [] };\n    return { \n      reset: true, \n      cleared_pending: oldState.pending_tasks?.length || 0,\n      cleared_in_progress: oldState.in_progress?.task?.task_id || null\n    };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -224,
+        720
+      ],
+      "id": "78b441d0-44c2-47e7-a0e9-b610d7758aa4",
+      "name": "Clear State"
+    },
+    {
+      "parameters": {
+        "jsCode": "   const staticData = $getWorkflowStaticData('global');\n   if (!staticData.state) {\n     staticData.state = { pending_tasks: [], in_progress: null, completed: [] };\n   }\n   const state = staticData.state;\n   \n   // Parse incoming task list\n   const input = $input.first().json;\n   const listData = input.body || input;\n   const tasks = listData.tasks || [];\n   const listId = listData.update_list_id || 'unknown';\n   const trigger = listData.trigger || {};\n   \n   if (!tasks.length) {\n     return { action: 'none', reason: 'no_tasks' };\n   }\n   \n   // STALE TASK RECOVERY: Clear in_progress if stuck for > 10 minutes\n   if (state.in_progress && state.in_progress.started_at) {\n     const startedAt = new Date(state.in_progress.started_at).getTime();\n     const tenMinutes = 10 * 60 * 1000;\n     if (Date.now() - startedAt > tenMinutes) {\n       console.log('Clearing stale in_progress task:', state.in_progress.task?.task_id || 'unknown');\n       state.in_progress.status = 'timeout';\n       state.in_progress.completed_at = new Date().toISOString();\n       state.completed.push(state.in_progress);\n       state.in_progress = null;\n     }\n   }\n   \n   // DEDUPLICATION: Skip tasks for documents already in queue or recently completed\n   const oneHourAgo = Date.now() - (60 * 60 * 1000);\n   const pendingDocs = new Set(state.pending_tasks.map(t => t.task?.document || t.task?.target));\n   const recentlyCompletedDocs = new Set(\n     state.completed\n       .filter(t => new Date(t.completed_at).getTime() > oneHourAgo && t.status === 'completed')\n       .map(t => t.task?.document || t.task?.target)\n   );\n   const inProgressDoc = state.in_progress?.task?.document || state.in_progress?.task?.target;\n   \n   let skipped = 0;\n   const newTasks = tasks.filter(task => {\n     const doc = task.document || task.target;\n     if (!doc) return true; // Keep tasks without document\n     if (pendingDocs.has(doc)) { skipped++; return false; }\n     if (inProgressDoc === doc) { skipped++; return false; }\n     if (recentlyCompletedDocs.has(doc)) { skipped++; return false; }\n     pendingDocs.add(doc); // Track this doc as pending now\n     return true;\n   });\n   \n   if (skipped > 0) {\n     console.log('Skipped', skipped, 'duplicate tasks (already pending or recently completed)');\n   }\n   \n   if (!newTasks.length) {\n     return { action: 'skipped', reason: 'all_duplicates', skipped_count: skipped };\n   }\n   \n   // Add filtered tasks to pending queue with metadata\n   newTasks.forEach(task => {\n     state.pending_tasks.push({\n       task,\n       list_id: listId,\n       trigger,\n       queued_at: new Date().toISOString()\n     });\n   });\n   \n   console.log('Queued', newTasks.length, 'tasks. Total pending:', state.pending_tasks.length);\n   \n   // If nothing in progress, dispatch next task\n   if (!state.in_progress) {\n     const next = state.pending_tasks.shift();\n     if (next) {\n       state.in_progress = next;\n       state.in_progress.started_at = new Date().toISOString();\n       staticData.state = state;\n       return { \n          action: 'dispatch',\n          should_dispatch: true,\n          task: next.task, \n          list_id: next.list_id, \n          trigger: next.trigger \n      };\n     }\n   }\n   \n   staticData.state = state;\n   return { \n  action: 'queued', \n  should_dispatch: false,  // ADD THIS\n  pending_count: state.pending_tasks.length, \n  skipped_count: skipped \n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        16
+      ],
+      "id": "fbd97a45-d78e-4102-8f4d-0b899fd98fe2",
+      "name": "Queue and Dispatch First"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6612b233-6df0-47ef-aafd-10da34f1ae79",
+              "leftValue": "=$json.should_dispatch",
+              "rightValue": "dispatch",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -256,
+        16
+      ],
+      "id": "d9e7a9f0-5b78-4300-8c96-5b2dc0f9ea1c",
+      "name": "Should Dispatch?"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/task-callback",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -672,
+        272
+      ],
+      "id": "e01f24b9-f1dc-463f-9bc3-c60ea95b2da6",
+      "name": "Receive Callback",
+      "webhookId": "760afceb-36ca-415e-923d-af2f2a3cfd52"
+    },
+    {
+      "parameters": {
+        "jsCode": "   const staticData = $getWorkflowStaticData('global');\n   if (!staticData.state) {\n     staticData.state = { pending_tasks: [], in_progress: null, completed: [] };\n   }\n   const state = staticData.state;\n   \n   // Parse callback data\n   const input = $input.first().json;\n   const callbackData = input.body || input;\n   const taskId = callbackData.task_id;\n   const status = callbackData.status || 'completed';\n   \n   console.log('Callback received for task:', taskId, 'status:', status);\n   \n   // Mark current task as complete\n   if (state.in_progress) {\n     state.in_progress.status = status;\n     state.in_progress.completed_at = new Date().toISOString();\n     state.completed.push(state.in_progress);\n     // Keep only last 20 completed\n     if (state.completed.length > 20) state.completed = state.completed.slice(-20);\n   }\n   state.in_progress = null;\n   \n   // Dispatch next task if any pending\n   const next = state.pending_tasks.shift();\n   if (next) {\n     state.in_progress = next;\n     state.in_progress.started_at = new Date().toISOString();\n     staticData.state = state;\n     return { \n       action: 'dispatch', \n       task: next.task, \n       list_id: next.list_id, \n       trigger: next.trigger,\n       pending_remaining: state.pending_tasks.length\n     };\n   }\n   \n   staticData.state = state;\n   return { action: 'done', message: 'All tasks completed', completed_count: state.completed.length };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        272
+      ],
+      "id": "6c4d4b50-a6e5-4ea5-bb79-012fb60d8ff1",
+      "name": "Process Callback and Dispatch Next"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e6a29450-2828-4ff9-a610-d295bdc70d22",
+              "leftValue": "action",
+              "rightValue": "dispatch",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -256,
+        272
+      ],
+      "id": "bc730621-b84a-494c-b86c-2eaa83292554",
+      "name": "Has Next Task"
+    },
+    {
+      "parameters": {
+        "jsCode": "    const staticData = $getWorkflowStaticData('global');\n    const state = staticData.state || { pending_tasks: [], in_progress: null, completed: [] };\n    return {\n      status: 'ok',\n      pending_count: state.pending_tasks?.length || 0,\n      pending_tasks: state.pending_tasks?.map(t => ({\n        task_id: t.task?.task_id,\n        document: t.task?.document,\n        queued_at: t.queued_at\n      })) || [],\n      in_progress: state.in_progress ? {\n        task_id: state.in_progress.task?.task_id,\n        document: state.in_progress.task?.document,\n        started_at: state.in_progress.started_at\n      } : null,\n      completed_count: state.completed?.length || 0,\n      recent_completed: (state.completed || []).slice(-5).map(t => ({\n        task_id: t.task?.task_id,\n        status: t.status,\n        completed_at: t.completed_at\n      })),\n      timestamp: new Date().toISOString()\n    };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        512
+      ],
+      "id": "26764f24-67fa-4689-a477-953a78b28bb5",
+      "name": "Return Status"
+    },
+    {
+      "parameters": {
+        "path": "/distributor-status",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -496,
+        512
+      ],
+      "id": "2f57b267-cd22-4cd9-a2af-196d3da7d4cf",
+      "name": "Get Status",
+      "webhookId": "0e6e7725-05dd-4310-a48b-ca8a6f727787"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "{{ env.N8N_BASE_URL }}/domain-agent",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task",
+              "value": "={{ JSON.stringify($json.task) }}"
+            },
+            {
+              "name": "list_id",
+              "value": "=\"{{ $json.list_id }}\""
+            },
+            {
+              "name": "trigger",
+              "value": "={{ JSON.stringify($json.trigger) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "01b0720c-a9cf-4637-bb88-6ead04077218",
+      "name": "Dispatch to Agent",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "{{ env.N8N_BASE_URL }}/domain-agent",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task",
+              "value": "={{ JSON.stringify($json.task) }}"
+            },
+            {
+              "name": "list_id",
+              "value": "=\"{{ $json.list_id }}\""
+            },
+            {
+              "name": "trigger",
+              "value": "={{ JSON.stringify($json.trigger) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d2c90603-881e-41ca-8eea-7e12f79eedf3",
+      "name": "Dispatch to Next",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        0,
+        240
+      ]
+    }
+  ],
+  "connections": {
+    "Receive List": {
+      "main": [
+        [
+          {
+            "node": "Queue and Dispatch First",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reset State": {
+      "main": [
+        [
+          {
+            "node": "Clear State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue and Dispatch First": {
+      "main": [
+        [
+          {
+            "node": "Should Dispatch?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Should Dispatch?": {
+      "main": [
+        [
+          {
+            "node": "Dispatch to Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Receive Callback": {
+      "main": [
+        [
+          {
+            "node": "Process Callback and Dispatch Next",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Callback and Dispatch Next": {
+      "main": [
+        [
+          {
+            "node": "Has Next Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Next Task": {
+      "main": [
+        [
+          {
+            "node": "Dispatch to Next",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Status": {
+      "main": [
+        [
+          {
+            "node": "Return Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "versionId": "c70d478d-46ce-4a76-be71-eaae0f3300fb",
+  "triggerCount": 4,
+  "shared": [
+    {
+      "updatedAt": "2025-12-23T17:11:33.663Z",
+      "createdAt": "2025-12-23T17:11:33.663Z",
+      "role": "workflow:owner",
+      "workflowId": "3lTsmIsQFmzpwLE8",
+      "projectId": "PRnR04izdxw9gkqL",
+      "project": {
+        "updatedAt": "2025-12-23T16:37:31.675Z",
+        "createdAt": "2025-12-23T16:08:01.602Z",
+        "id": "PRnR04izdxw9gkqL",
+        "name": "Joshua Coleman <jcoleman@captech.edu>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-23T16:08:01.602Z",
+            "createdAt": "2025-12-23T16:08:01.602Z",
+            "userId": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+            "projectId": "PRnR04izdxw9gkqL",
+            "user": {
+              "updatedAt": "2025-12-29T05:01:57.000Z",
+              "createdAt": "2025-12-23T16:08:01.276Z",
+              "id": "519211d5-3194-4461-a8e5-a0a0ada3b87d",
+              "email": "jcoleman@captech.edu",
+              "firstName": "Joshua",
+              "lastName": "Coleman",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-23T16:37:34.976Z",
+                "personalization_survey_n8n_version": "2.1.3"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "5vQ8lMCyatxB8Fdd",
+                "userActivatedAt": 1766948206272
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2025-12-28",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": []
+}

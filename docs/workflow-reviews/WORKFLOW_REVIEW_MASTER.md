@@ -20,6 +20,8 @@ This document provides a comprehensive step-through review system for validating
 | 4 | Doc Chain - State Reconciliation | 35 | ✅ Active | ⬜ | ⬜ |
 | 5 | Doc Chain - Staleness | 32 | ✅ Active | ⬜ | ⬜ |
 | 6 | Doc Chain - Errors | 5 | ✅ Active | ⬜ | ⬜ |
+| 7 | Doc Chain - PR Review | 14 | ✅ Active | ⬜ | ⬜ |
+| 8 | Doc Chain - Release | 10 | ✅ Active | ⬜ | ⬜ |
 
 ---
 
@@ -142,6 +144,8 @@ The Distributor workflow contains **BOTH old and new architectures**:
 - [REVIEW_04_STATE_RECONCILIATION.md](./REVIEW_04_STATE_RECONCILIATION.md)
 - [REVIEW_05_STALENESS.md](./REVIEW_05_STALENESS.md)
 - [REVIEW_06_ERRORS.md](./REVIEW_06_ERRORS.md)
+- [REVIEW_07_PR_REVIEW.md](./REVIEW_07_PR_REVIEW.md)
+- [REVIEW_08_RELEASE.md](./REVIEW_08_RELEASE.md)
 
 ---
 
