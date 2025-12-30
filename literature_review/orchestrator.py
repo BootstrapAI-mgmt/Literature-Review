@@ -1269,6 +1269,83 @@ def generate_executive_summary(results: Dict, database: ResearchDatabase, output
     except Exception as e:
         logger.error(f"Failed to generate executive summary: {e}")
         return False
+
+
+def generate_evolution_proposals(
+    gap_analysis_path: Optional[str] = None,
+    pillar_definitions_path: str = DEFINITIONS_FILE,
+    output_path: Optional[str] = None,
+    output_folder: str = OUTPUT_FOLDER
+) -> List[Dict]:
+    """
+    Generate evolution proposals from gap analysis.
+    
+    Args:
+        gap_analysis_path: Optional custom gap analysis path
+        pillar_definitions_path: Path to pillar definitions
+        output_path: Optional custom output path for proposals
+        output_folder: Output folder for generated files
+    
+    Returns:
+        List of generated proposals
+    """
+    from literature_review.analysis.pillar_evolution import (
+        PillarEvolutionManager,
+        ModificationType
+    )
+    
+    gap_analysis_path = gap_analysis_path or os.path.join(
+        output_folder, "gap_analysis_report.json"
+    )
+    output_path = output_path or os.path.join(
+        output_folder, "pillar_proposals.json"
+    )
+    
+    # Check if gap analysis exists
+    if not os.path.exists(gap_analysis_path):
+        logger.warning(f"Gap analysis not found at {gap_analysis_path}. Cannot generate proposals.")
+        return []
+    
+    try:
+        with open(gap_analysis_path, 'r', encoding='utf-8') as f:
+            gap = json.load(f)
+        
+        manager = PillarEvolutionManager(
+            pillar_definitions_path,
+            output_path if Path(output_path).exists() else None
+        )
+        
+        # Find requirements with high coverage but potentially needing validation updates
+        proposals = []
+        for pillar_name, pillar_data in gap.items():
+            if not pillar_name.startswith("Pillar"):
+                continue
+                
+            analysis = pillar_data.get("analysis", {})
+            for req_name, req_data in analysis.items():
+                if isinstance(req_data, dict):
+                    for sub_name, sub_data in req_data.items():
+                        if not isinstance(sub_data, dict):
+                            continue
+                            
+                        coverage = sub_data.get("completeness_percent", 0)
+                        papers = len(sub_data.get("contributing_papers", []))
+                        
+                        # High coverage with evidence = candidate for validation
+                        if coverage > 60 and papers >= 2:
+                            proposal = manager.generate_proposal_from_gap(
+                                gap, sub_name, "add_validation"
+                            )
+                            proposals.append(proposal.to_dict())
+        
+        manager.save_proposals(output_path)
+        
+        logger.info(f"Generated {len(proposals)} evolution proposals")
+        return proposals
+        
+    except Exception as e:
+        logger.error(f"Failed to generate evolution proposals: {e}")
+        return []
 # --- END PRE-MAIN HELPER FUNCTIONS ---
 
 
