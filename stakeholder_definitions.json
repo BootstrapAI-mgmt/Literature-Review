@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0.0",
+  "last_updated": "2025-12-19T00:00:00Z",
+  
+  "stakeholder_categories": {
+    "hardware_engineers": {
+      "name": "Hardware Engineers",
+      "description": "Engineers implementing neuromorphic chips and hardware",
+      "primary_pillars": ["Pillar 2", "Pillar 4", "Pillar 6"],
+      "key_requirements": [],
+      "impact_areas": [
+        "Validated efficiency metrics",
+        "Hardware-specific benchmarks",
+        "Deployment architectures"
+      ],
+      "contact_groups": []
+    },
+    "neuroscientists": {
+      "name": "Neuroscientists",
+      "description": "Researchers studying biological neural systems",
+      "primary_pillars": ["Pillar 1", "Pillar 3", "Pillar 5"],
+      "key_requirements": [],
+      "impact_areas": [
+        "Biological validation of models",
+        "Experimental protocols",
+        "Neural mechanism understanding"
+      ],
+      "contact_groups": []
+    },
+    "ml_practitioners": {
+      "name": "ML Practitioners",
+      "description": "ML engineers building practical SNN systems",
+      "primary_pillars": ["Pillar 2", "Pillar 4", "Pillar 7"],
+      "key_requirements": [],
+      "impact_areas": [
+        "Reproducible training pipelines",
+        "Benchmark performance",
+        "Framework integration"
+      ],
+      "contact_groups": []
+    },
+    "system_integrators": {
+      "name": "System Integrators",
+      "description": "Engineers building complete neuromorphic systems",
+      "primary_pillars": ["Pillar 7"],
+      "key_requirements": [],
+      "impact_areas": [
+        "Cross-pillar protocols",
+        "Integration standards",
+        "System-level validation"
+      ],
+      "contact_groups": []
+    }
+  },
+  
+  "gap_stakeholder_mappings": []
+}
