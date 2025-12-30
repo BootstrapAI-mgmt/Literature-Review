@@ -1,227 +1,179 @@
-# Task Cards
-
-This folder contains all implementation task cards organized by category and wave.
-
-## 📁 Folder Structure
-
-### `/agent/` - Core Agent Tasks (4 cards)
-**Critical path tasks for agent functionality improvements**
-
-**Files:**
-- `AGENT_TASK_CARDS.md` - All 4 agent task cards:
-  - Task #1: Fix DRA Prompting (2-3h) - 🟢 Ready
-  - Task #2: Refactor Judge Version History (4-6h) - 🟢 Ready
-  - Task #3: Document Chunking (6-8h) - 🟢 Ready
-  - Task #4: Deep Coverage Database Decision (2-3h) - ✅ COMPLETE
-
-**Wave:** Wave 1 (Foundation)  
-**Status:** 1/4 Complete
-
----
-
-### `/automation/` - Automation & Error Handling (5 cards)
-**Reliability and operational improvements**
-
-**Files:**
-- `AUTOMATION_TASK_CARD_13.1.md` - Enhanced Retry Logic (6-8h) - 🟢 Ready
-- `AUTOMATION_TASK_CARD_13.2.md` - File Locking & Concurrency (4-6h) - ✅ COMPLETE
-- `AUTOMATION_TASK_CARD_14.md` - Improved Logging (4-6h) - 🟢 Ready
-- `AUTOMATION_TASK_CARD_15.md` - Health Checks (3-4h) - 🟢 Ready
-- `N8N_STATE_RECON_STATUS_DETECTION.md` - N8N-RECON-001 (4-6h) - ✅ COMPLETE
-
-**Wave:** Wave 2  
-**Status:** 2/5 Complete
-
----
-
-### `/integration/` - Integration Tests (15 cards)
-**Component-level integration test specifications**
-
-**Files:**
-- `INTEGRATION_TESTING_TASK_CARDS.md` - Original 8 integration test cards (master reference)
-- `INTEGRATION_TASK_CARD_6.md` - INT-001: Journal→Judge Flow (8-10h) - 🟢 Ready
-- `INTEGRATION_TASK_CARD_7.md` - INT-003: Version History→CSV Sync (5-7h) - 🟢 Ready
-- `INTEGRATION_TASK_CARD_8.md` - INT-002: Judge DRA Appeal Flow (8-10h) - 🟢 Ready
-- `INTEGRATION_TASK_CARD_9.md` - INT-004/005: Orchestrator Integration (8-10h) - 🟢 Ready
-
-**Wave:** Wave 2-3  
-**Status:** 0/15 Complete (enhanced scope with evidence quality features)  
-**Dependencies:** Evidence enhancement cards #16-21
-
----
-
-### `/e2e/` - End-to-End Tests (2 cards)
-**Full pipeline validation tests**
-
-**Files:**
-- `INTEGRATION_TASK_CARD_10.md` - E2E-001: Full Pipeline Test (12-16h) - 🟢 Ready
-- `INTEGRATION_TASK_CARD_11.md` - E2E-002: Convergence Loop Test (12-16h) - 🟢 Ready
-
-**Wave:** Wave 4  
-**Status:** 0/2 Complete  
-**Dependencies:** All integration tests (#6-9), Evidence enhancement (#16-21)
-
----
-
-### `/evidence-enhancement/` - Evidence Quality Features (9 cards)
-**Advanced evidence quality assessment features**
-
-**Files:**
-- `EVIDENCE_ENHANCEMENT_TASK_CARDS.md` - Master reference for all 8 cards
-- `TASK-16-Multi-Dimensional-Scoring.md` - Multi-dimensional evidence scoring (8-10h) - 🟢 Ready
-- `TASK-17-Provenance-Tracking.md` - Evidence provenance tracking (6-8h) - 🟢 Ready
-- `TASK-18-Inter-Rater-Reliability.md` - Consensus for borderline claims (6-8h) - 🟢 Ready
-- `TASK-19-Temporal-Coherence.md` - Temporal analysis (4-6h) - 🟢 Ready
-- `TASK-20-Evidence-Triangulation.md` - Multi-reviewer triangulation (6-8h) - 🟢 Ready
-- `TASK-21-GRADE-Quality-Assessment.md` - GRADE quality levels (8-10h) - 🟢 Ready
-- `TASK-22-Publication-Bias-Detection.md` - Publication bias detection (6-8h) - 🟡 Optional
-- `TASK-23-Conflict-of-Interest-Analysis.md` - COI analysis (4-6h) - 🟡 Optional
-
-**Wave:** Waves 2-4  
-**Status:** 0/9 Complete  
-**Priority:** Core features (#16-21) required for integration tests
-
----
-
-### `/incremental-review/` - Incremental Review & CLI/Dashboard Parity (16 cards) ⭐ NEW
-**Incremental review logic and dashboard/CLI feature parity improvements**
-
-**Files:**
-- **[README.md](incremental-review/README.md)** - Task card index and progress tracking
-- **[INCR-W1-1-Gap-Extraction-Engine.md](incremental-review/INCR-W1-1-Gap-Extraction-Engine.md)** - Gap extraction engine (6-8h) - 🟢 Ready
-- 15 additional task cards (pending specification)
-
-**Master Plan:**
-- **[INCREMENTAL_REVIEW_WAVE_PLAN.md](INCREMENTAL_REVIEW_WAVE_PLAN.md)** - Complete wave implementation roadmap
-
-**Waves:** 4 waves (Foundation → Integration → UX → Advanced)  
-**Effort:** 85-110 hours (10-14 developer-days)  
-**Status:** 0/16 Complete (0% specified)  
-**Priority:** 🔴 Critical for production readiness
-
-**Wave Breakdown:**
-- **Wave 1 (Foundation):** 6 tasks, 28-36 hours
-- **Wave 2 (Integration):** 5 tasks, 32-42 hours
-- **Wave 3 (UX):** 3 tasks, 14-18 hours
-- **Wave 4 (Advanced):** 2 tasks, 11-14 hours (optional)
-
----
-
-## 📄 Root Task Card Files
-
-- **`INDIVIDUAL_TASK_CARDS_SUMMARY.md`** - Summary of all individual integration task cards with implementation guide
-- **`INCREMENTAL_REVIEW_WAVE_PLAN.md`** ⭐ NEW - Master wave plan for incremental review implementation
-
----
-
-## 📊 Overall Progress
-
-| Category | Total | Complete | In Progress | Ready | Completion % |
-|----------|-------|----------|-------------|-------|--------------|
-| Agent | 4 | 1 | 0 | 3 | 25% |
-| Automation | 5 | 2 | 0 | 3 | 40% |
-| Dashboard-CLI Parity | 18 | 2 | 0 | 16 | 11% |
-| Integration | 15 | 0 | 0 | 15 | 0% |
-| E2E | 2 | 0 | 0 | 2 | 0% |
-| Evidence Enhancement | 9 | 0 | 0 | 9 | 0% |
-| Incremental Review | 16 | 0 | 0 | 16 | 0% |
-| **TOTAL** | **69** | **5** | **0** | **64** | **7%** |
-
----
-
-## 🎯 Implementation Order
-
-### Wave 1 (Foundation) - ✅ COMPLETE
-1. ✅ Task #4: Deep Coverage Decision
-2. ✅ Task #13.2: File Locking & Concurrency
-3. ✅ Orchestrator refactoring (PR #11)
-4. ✅ Test infrastructure setup (Task #5)
-
-### Wave 2 (Core Features) - 🔄 IN PROGRESS
-**Automation:**
-- Task #13.1: Enhanced Retry Logic (6-8h)
-- Task #14: Improved Logging (4-6h)
-
-**Evidence Quality (Parallel):**
-- Task #16: Multi-Dimensional Scoring (8-10h) ⭐ BLOCKS integration tests
-- Task #17: Provenance Tracking (6-8h) ⭐ BLOCKS integration tests
-
-**Integration Tests (After #16, #17):**
-- Task #6: Journal→Judge Flow (8-10h)
-- Task #7: Version History→CSV Sync (5-7h)
-
-### Wave 3 (Advanced Features)
-**Evidence Quality:**
-- Task #18: Inter-Rater Reliability (6-8h)
-- Task #19: Temporal Coherence (4-6h)
-- Task #20: Evidence Triangulation (6-8h)
-
-**Integration Tests:**
-- Task #8: Judge DRA Appeal Flow (8-10h)
-- Task #9: Orchestrator Integration (8-10h)
-
-### Wave 4 (Completion & Polish)
-**Evidence Quality:**
-- Task #21: GRADE Quality Assessment (8-10h)
-
-**E2E Tests:**
-- Task #10: Full Pipeline Test (12-16h)
-- Task #11: Convergence Loop Test (12-16h)
-
-**Remaining:**
-- Task #1: Fix DRA Prompting (2-3h)
-- Task #2: Refactor Judge Version History (4-6h)
-- Task #3: Document Chunking (6-8h)
-- Task #15: Health Checks (3-4h)
-
-**Optional:**
-- Task #22: Publication Bias Detection (6-8h)
-- Task #23: COI Analysis (4-6h)
-
----
-
-## 🔗 Dependencies
-
-```
-Evidence Enhancement (#16, #17)
-    ↓
-Integration Tests Wave 2 (#6, #7)
-    ↓
-Evidence Enhancement (#18, #19, #20)
-    ↓
-Integration Tests Wave 3 (#8, #9)
-    ↓
-Evidence Enhancement (#21)
-    ↓
-E2E Tests (#10, #11)
-```
-
----
-
-## 📝 Task Card Format
-
-Each task card includes:
-- **Problem Statement** - What needs to be solved
-- **Acceptance Criteria** - Original + Enhanced (for evidence quality)
-- **Implementation Guide** - Step-by-step with code examples
-- **Test Cases** - Core + Enhanced validation
-- **Success Criteria** - Measurable outcomes
-- **Estimated Effort** - Time estimates
-- **Dependencies** - Blocking tasks
-- **Status Indicators** - Ready, In Progress, Complete
-
----
-
-## 🎨 Status Legend
-
-- ✅ **COMPLETE** - Implemented and merged
-- 🔄 **IN PROGRESS** - Currently being developed
-- 🟢 **READY** - Specifications complete, ready for implementation
-- 🟡 **OPTIONAL** - Nice-to-have features
-- 🔴 **BLOCKED** - Waiting on dependencies
-
----
-
-**Last Updated:** 2024-05-15  
-**Next Milestone:** Complete Wave 2 (Evidence Enhancement #16-17, Integration Tests #6-7)  
-**Reference:** `/docs/CONSOLIDATED_ROADMAP.md` for complete project overview
+IyBUYXNrIENhcmRzCgpUaGlzIGZvbGRlciBjb250YWlucyBhbGwgaW1wbGVt
+ZW50YXRpb24gdGFzayBjYXJkcyBvcmdhbml6ZWQgYnkgY2F0ZWdvcnkgYW5k
+IHdhdmUuCgojIyDwn5OBIEZvbGRlciBTdHJ1Y3R1cmUKCiMjIyBgL2FnZW50
+L2AgLSBDb3JlIEFnZW50IFRhc2tzICg0IGNhcmRzKQoqKkNyaXRpY2FsIHBh
+dGggdGFza3MgZm9yIGFnZW50IGZ1bmN0aW9uYWxpdHkgaW1wcm92ZW1lbnRz
+KioKCioqRmlsZXM6KioKLSBgQUdFTlRfVEFTS19DQVJEUy5tZGAgLSBBbGwg
+NCBhZ2VudCB0YXNrIGNhcmRzOgogIC0gVGFzayAjMTogRml4IERSQSBQcm9t
+cHRpbmcgKDItM2gpIC0g8J+foiBSZWFkeQogIC0gVGFzayAjMjogUmVmYWN0
+b3IgSnVkZ2UgVmVyc2lvbiBIaXN0b3J5ICg0LTZoKSAtIPCfn6IgUmVhZHkK
+ICAtIFRhc2sgIzM6IERvY3VtZW50IENodW5raW5nICg2LThoKSAtIPCfn6Ig
+UmVhZHkKICAtIFRhc2sgIzQ6IERlZXAgQ292ZXJhZ2UgRGF0YWJhc2UgRGVj
+aXNpb24gKDItM2gpIC0g4pyFIENPTVBMRVRFCgoqKldhdmU6KiogV2F2ZSAx
+IChGb3VuZGF0aW9uKSAgCioqU3RhdHVzOioqIDEvNCBDb21wbGV0ZQoKLS0t
+CgojIyMgYC9hdXRvbWF0aW9uL2AgLSBBdXRvbWF0aW9uICYgRXJyb3IgSGFu
+ZGxpbmcgKDUgY2FyZHMpCioqUmVsaWFiaWxpdHkgYW5kIG9wZXJhdGlvbmFs
+IGltcHJvdmVtZW50cyoqCgoqKkZpbGVzOioqCi0gYEFVVE9NQVRJT05fVEFT
+S19DQVJEXzEzLjEubWRgIC0gRW5oYW5jZWQgUmV0cnkgTG9naWMgKDYtOGgp
+IC0g8J+foiBSZWFkeQotIGBBVVRPTUFUSU9OX1RBU0tfQ0FSRF8xMy4yLm1k
+YCAtIEZpbGUgTG9ja2luZyAmIENvbmN1cnJlbmN5ICg0LTZoKSAtIOKchSBD
+T01QTEVURQotIGBBVVRPTUFUSU9OX1RBU0tfQ0FSRF8xNC5tZGAgLSBJbXBy
+b3ZlZCBSZWZpbmVkIExvZ2dpbmcgKDQtNmgpIC0g8J+foiBSZWFkeQotIGBB
+VVROT01BVElPTl9UQVNLX0NBUkRfMTUubWRgIC0gSGVhbHRoIENoZWNrcyAo
+My00aCkgLSDwn5+iIFJlYWR5Ci0gYE44Tl9TVEFURV9SRUNPTl9TVEFUVVNf
+REVURUNUSU9OLm1kYCAtIE44Ti1SRUNPTi0wMDEgKDQtNmgpIC0g4pyFIENP
+TVBMRVRFCgoqKldhdmU6KiogV2F2ZSAyICAKKipTdGF0dXM6KiogMi81IENv
+bXBsZXRlCgotLS0KCiMjIyBgL2ludGVncmF0aW9uL2AgLSBJbnRlZ3JhdGlv
+biBUZXN0cyAoMTUgY2FyZHMpCioqQ29tcG9uZW50LWxldmVsIGludGVncmF0
+aW9uIHRlc3Qgc3BlY2lmaWNhdGlvbnMqKgoKKipGaWxlczoqKgotIGBJTlRF
+R1JBVElPTl9URVNUSU5HX1RBU0tfQ0FSRFMubWRgIC0gT3JpZ2luYWwgOCBp
+bnRlZ3JhdGlvbiB0ZXN0IGNhcmRzIChtYXN0ZXIgcmVmZXJlbmNlKQotIGBJ
+TlRFR1JBVElPTl9UQVNLX0NBUkRfNi5tZGAgLSBJTlQtMDAxOiBKb3VybmFs
+4oaSSnVkZ2UgRmxvdyAoOC0xMGgpIC0g8J+foiBSZWFkeQotIGBJTlRFR1JB
+VElPTl9UQVNLX0NBUkRfNy5tZGAgLSBJTlQtMDAzOiBWZXJzaW9uIEhpc3Rv
+cnnihpJDU1YgU3luYyAoNS03aCkgLSDwn5+iIFJlYWR5Ci0gYElOVEVHUkFU
+SU9OX1RBU0tfQ0FSRF84Lm1kYCAtIElOVC0wMDI6IEp1ZGdlIERSQSBBcHBl
+YWwgRmxvdyAoOC0xMGgpIC0g8J+foiBSZWFkeQotIGBJTlRFR1JBVElPTl9U
+QVNLX0NBUkRfOS5tZGAgLSBJTlQtMDA0LzAwNTogT3JjaGVzdHJhdG9yIElu
+dGVncmF0aW9uICg4LTEwaCkgLSDwn5+iIFJlYWR5CgoqKldhdmU6KiogV2F2
+ZSAyLTMgIAoqKlN0YXR1czoqKiAwLzE1IENvbXBsZXRlIChlbmhhbmNlZCBz
+Y29wZSB3aXRoIGV2aWRlbmNlIHF1YWxpdHkgZmVhdHVyZXMpICAKKipEZXBl
+bmRlbmNpZXM6KiogRXZpZGVuY2UgZW5oYW5jZW1lbnQgY2FyZHMgIzE2LTIx
+CgotLS0KCiMjIyBgL2UyZS9gIC0gRW5kLXRvLUVuZCBUZXN0cyAoMiBjYXJk
+cykKKipGdWxsIHBpcGVsaW5lIHZhbGlkYXRpb24gdGVzdHMqKgoKKipGaWxl
+czovLwotIGBJTlRFR1JBVElPTl9UQVNLX0NBUkRfMTAubWRgIC0gRTJFLTAw
+MTogRnVsbCBQcmltYXJ5IFBpcGVsaW5lIFRlc3QgKDEyLTE2aCkgLSDwn5+i
+IFJlYWR5Ci0gYElOVEVHUkFUSU9OX1RBU0tfQ0FSRF8xMS5tZGAgLSBFT0Ut
+MDAyOiBDb252ZXJnZW5jZSBMb29wIFRlc3QgKDEyLTE2aCkgLSDwn5+iIFJl
+YWR5CgoqKldhdmU6KiogV2F2ZSA0ICAKKipTdGF0dXM6KiogMC8yIENvbXBs
+ZXRlICAKKipEZXBlbmRlbmNpZXM6KiogQWxsIGludGVncmF0aW9uIHRlc3Rz
+ICgjNi05KSwgRXZpZGVuY2UgZW5oYW5jZW1lbnQgKCMxNi0yMSkKCi0tLQoK
+IyMjIGAvZXZpZGVuY2UtZW5oYW5jZW1lbnQvYAg2IEV2aWRlbmNlIFF1YWxp
+dHkgRmVhdHVyZXMgKDkgY2FyZHMpCioqQWR2YW5jZWQgZXZpZGVuY2UgcXVh
+bGl0eSBhc3Nlc3NtZW50IGZlYXR1cmVzKioKCioqRmlsZXM6KioKLSBgRVZJ
+REVOQ0VfRU5IQU5DRU1FTlRfVEFTS19DQVJEUy5tZGAgLSBNYXN0ZXIgcmVm
+ZXJlbmNlIGZvciBhbGwgOCBjYXJkcwotIGBUQVNLLTE2LU11bHRpLURpbWVu
+c2lvbm5hbC1TY29yaW5nLm1kYCAtIE11bHRpLWRpbWVuc2lvbmFsIGV2aWRl
+bmNlIHNjb3JpbmcgKDgtMTBoKSAtIPCfn6IgUmVhZHkKLSBgVEFTSy0xNy1Q
+cm92ZW5hbmNlLVRyYWNraW5nLm1kYCAtIEV2aWRlbmNlIHByb3ZlbmFuY2Ug
+dHJhY2tpbmcgKDYtOGgpIC0g8J+foiBSZWFkeQotIGBUQVNLLTE4LUludGVy
+LVJhdGVyLVJlbGlhYmlsaXR5Lm1kYCAtIENvbnNlbnN1cyBmb3IgYm9yZGVy
+bGluZSBjbGFpbXMgKDYtOGgpIC0g8J+foiBSZWFkeQotIGBUQVNLLTE5LVRl
+bXBvcmFsLUNvaGVyZW5jZS5tZGAgLSBUZW1wb3JhbCBhbmFseXNpcyAoNC02
+aCkgLSDwn5+iIFJlYWR5Ci0gYFRBU0stMjAtRXZpZGVuY2UtVHJpYW5ndWxh
+dGlvbi5tZGAgLSBNdWx0aS1yZXZpZXdlciB0cmlhbmd1bGF0aW9uICg2LTho
+KSAtIPCfn6IgUmVhZHkKLSBgVEFTSy0yMS1HUkFERS1RdWFsaXR5LUFzc2Vz
+c21lbnQubWRgIC0gR1JBREUgcXVhbGl0eSBsZXZlbHMgKDgtMTBoKSAtIPCf
+n6IgUmVhZHkKLSBgVEFTSy0yMi1QdWJsaWNhdGlvbi1CaWFzLURldGVjdGlv
+bi5tZGAgLSBQdWJsaWNhdGlvbiBiaWFzIGRldGVjdGlvbiAoNi04aCkgLSDw
+n5+hIE9wdGlvbmFsCi0gYFRBU0stMjMtQ29uZmxpY3Qtb2YtSW50ZXJlc3Qt
+QW5hbHlzaXMubWRgIC0gQ09JIGFuYWx5c2lzICg0LTZoKSAtIPCfn6EgT3B0
+aW9uYWwKCioqV2F2ZToqKiBXYXZlcyAyLTQgIAoqKlN0YXR1czoqKiAwLzkg
+Q29tcGxldGUgIAoqKlByaW9yaXR5OioqIENvcmUgZmVhdHVyZXMgKCMxNi0y
+MSkgcmVxdWlyZWQgZm9yIGludGVncmF0aW9uIHRlc3RzCgotLS0KCiMjIyBg
+L2luY3JlbWVudGFsLXJldmlldy9gIC0gSW5jcmVtZW50YWwgUmV2aWV3ICYg
+Q0xJL0Rhc2hib2FyZCBQYXJpdHkgKDE2IGNhcmRzKSDirZAgTkVXCioqSW5j
+cmVtZW50YWwgcmV2aWV3IGxvZ2ljIGFuZCBkYXNoYm9hcmQvQ0xJIGZlYXR1
+cmUgcGFyaXR5IGltcHJvdmVtZW50cyoqCgoqKkZpbGVzOioqCi0gKipbUkVB
+RE1FLm1kXShpbmNyZW1lbnRhbC1yZXZpZXcvUkVBRE1FLm1kKSoqIC0gVGFz
+ SyBjYXJkIGluZGV4IGFuZCBwcm9ncmVzcyB0cmFja2luZwotICoqW0lOQ1It
+VzEtMS1HYXAtRXh0cmFjdGlvbi1FbmdpbmUubWRdKGluY3JlbWVudGFsLXJl
+dmlldy9JTkNSLVcxLTEtR2FwLUV4dHJhY3Rpb24tRW5naW5lLm1kKSoqIC0g
+R2FwIGV4dHJhY3Rpb24gZW5naW5lICg2LThoKSAtIPCfn6IgUmVhZHkKLSAx
+NSBhZGRpdGlvbmFscmlldy9JTkNSLVcxLTEtR2FwLUV4dHJhY3Rpb24tRW5n
+aW5lLm1kKSoqIC0gR2FwIGV4dHJhY3Rpb24gZW5naW5lICg2LThoKSAtIPCf
+n6IgUmVhZHkKLSAxNSBhZGRpdGlvbmFsIHRhc2sgY2FyZHMgKHBlbmRpbmcgc
+3BlY2lmaWNhdGlvbikKCioqTWFzdGVyIFBsYW46KioKLSAqKltJTkNSRU1FTl
+RBTF9SRVZJRVdfV0FWRV9QTEFOLm1kXShJTkNSRU1FTlRBTF9SRVZJRVdfV0F
+WRV9QTEFOLm1kKSoqIC0gQ29tcGxldGUgd2F2ZSBpbXBsZW1lbnRhdGlvbiBy
+b2FkbWFwCgoqKldhdmVzOioqIDQgd2F2ZXMgKEZvdW5kYXRpb24g4oaSIElu
+dGVncmF0aW9uIOKGkiBVWCDihpIgQWR2YW5jZWQpICAKKipFZmZvcnQ6Kiog
+ODUtMTEwIGhvdXJzICgxMC0xNCBkZXZlbG9wZXItZGF5cykgICAKKipTdGF0
+dXM6KiogMC8xNiBDb21wbGV0ZSAoMCUgLiAxIHJlYWR5LCAxNSBwZW5kaW5n
+IHNwZWMpICAKKipQcmlvcml0eToqKiDwn5S0IENyaXRpY2FsIGZvciBwcm9k
+dWN0aW9uIHJlYWRpbmVzcwqKq1dhdmUgQnJlYWtkb3duOioqCi0gKipXYXZl
+IDEgKEZvdW5kYXRpb24pOioqIDYgdGFza3MsIDI4LTM2IGhvdXJzCi0gKipX
+QXZlIDIgKEludGVncmF0aW9uKToqKiA1IHRhc2tzLCAzMi00MiBob3Vycwot
+ICoqV2F2ZSAzIChVWCk6KiogMyB0YXNrcywgMTQtMTggaG91cnMKLSAqKldh
+dmUgNCAoQWR2YW5jZWQpOioqIDIgdGFza3MsIDExLTE0IGhvdXJzIChvcHRp
+b25hbCkKCi0tLQoKIyMg8J+ThCBAbm90ZSBQcm9qZWN0IENhdGFsb2cgcmVj
+ZW50bHkgdXNlcyA1MSB0YXNrcyBub3cgKGZyb20gNjcpICAKIyMg8J+TiCBS
+b290IFRhc2sgQ2FyZCBGaWxlcwoKLSAqK2BJTkRJVklEVUFMX1RBU0tfQ0FS
+RFNfU1VNTUFSWS5tZGAqKiAtIFN1bW1hcnkgb2YgYWxsIGluZGl2aWR1YWwg
+aW50ZWdyYXRpb24gdGFzayBjYXJkcyB3aXRoIGltcGxlbWVudGF0aW9uIGd1
+aWRlCi0gKipgSU5DUkVNRU5UQUxfUkVWSUVXX1dBVkVfUExBTi5tZGAqKiDi
+rZAgTkVVIC0gTWFzdGVyIHdhdmUgcGxhbiBmb3IgaW5jcmVtZW50YWwgcmV2
+aWV3IGltcGxlbWVudGF0aW9uCgotLS0KCiMjIPCfnIogT3ZlcmFsbCBQcm9n
+cmVzcwoKPC9kaXY+CgoKfCBGcm9udCBFbmQvQ1JJIFBhcmFjaHV0ZSB8IFRv
+dGFsIHwgQ29tcGxldGUgfCBJbiBQcm9ncmVzcyB8IFJlYWR5IHwgQ29tcGxl
+dGlvbiAlIHwKfC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS18LS0tLS0t
+LXwtLS0tLS0tLS0tLXwtLS0tLS0tLS0tLS0tLXwtLS0tLS0tfC0tLS0tLS0t
+LS0tLS0tLXwKfCBBZ2VudCB8IDQgfCAxIHwgMCAgICAgIHwgMyAgICAgfCAy
+NSUgICAgICB8CnwgQXV0b21hdGlvbiB8IDUgfCAyIHwgMCAgICAgIHwgMyAg
+ICAgfCA0MCUgICAgICB8CnwgSW50ZWdyYXRpb24gfCAxNSB8IDAgfCAwICAg
+ICAgfCAxNSAgICAgfCAwJSAgICAgICAgfAp8IEUyRSB8IDIgfCAwIHwgMCAg
+ICAgIHwgMiAgICAgfCAwJSAgICAgICAgfAp8IEV2aWRlbmNlIEVuaGFuY2Vt
+ZW50IHwgOSB8IDAgfCAwICAgICAgfCA5ICAgICAgfCAwJSAgICAgICAgfAp8
+IEluY3JlbWVudGFsIFJldmlldyB8IDE2IHwgMCAgICAgIHwgMCAgICAgIHwg
+MSAgICAgIHwgMCUgICAgICAgIHwKfCAqKlRPTExBTCoqIHwgKio1MSoqIHwg
+KiozKiogfCAqKjAqKiAgICAgIHwgKiozMyoqIHwgKio2JSoqICAgICAgfAoo
+Ci0tLQoKIyMg8J+OryBJbXBsZW1lbnRhdGlvbiBPcmRlcgoKIyMjIFdhdmUg
+MSAoRm91bmRhdGlvbikgLSDinIUgQ09NUExFVEUKMS4g4pyFIFRhc2sgIzQ6
+IERlZXAgQ292ZXJhZ2UgRGVjaXNpb24KMi4g4pyFIFRhc2sgIzEzLjI6IEZp
+bGUgTG9ja2luZyAmIENvbmN1cnJlbmN5CjMuIOKchSBPcmNoZXN0cmF0b3Ig
+cmVmYWN0b3JpbmcgKFBSICMxMSkKNC4g4pyFIFRlc3QgaW5mcmFzdHJ1Y3R1
+cmUgc2V0dXAgKFRhc2sgIzUpCgojIyMgV2F2ZSAyIChDb3JlIEZlYXR1cmVz
+KSAtIPCflIQgSU4gUFJPR1JFU1MKKipBdXRvbWF0aW9uOioqCi0gVGFzayAj
+MTMuMTogRW5oYW5jZWQgUmV0cnkgTG9naWMgKDYtOGgpCi0gVGFzayAjMTQ6
+IEltcHJvdmVkIExvZ2dpbmcgKDQtNmgpCgoqKkV2aWRlbmNlIFF1YWxpdHkg
+KFBhcmFsbGVsKToqKgotIFRhc2sgIzE2OiBNdWx0aS1EaW1lbnNpb25hbCBT
+Y29yaW5nICg4LTEwaCkg4q2QIEJMT0NLUyBpbnRlZ3JhdGlvbiB0ZXN0cwot
+IFRhc2sgIzE3OiBQcm92ZW5hbmNlIFRyYWNraW5nICg2LThoKSDirZAgQkxP
+Q0tTIGludGVncmF0aW9uIHRlc3RzCgoqKkludGVncmF0aW9uIFRlc3RzIChB
+ZnRlciAjMTYsICMxNyk6KioKLSBUYXNrICM2OiBKb3VybmFs4oaSSnVkZ2Ug
+RmxvdyAoOC0xMGgpCi0gVGFzayAjNzogVmVyc2lvbiBIaXN0b3J54oaSQ1NW
+IFN5bmMgKDUtN2gpCgojIyMgV2F2ZSAzIChBZHZhbmNlZCBGZWF0dXJlcykK
+KipFdmlkZW5jZSBRdWFsaXR5OioqCi0gVGFzayAjMTg6IEludGVyLVJhdGVy
+IFJlbGlhYmlsaXR5ICg2LThoKQotIFRhc2sgIzE5OiBUZW1wb3JhbCBDb2hl
+cmVuY2UgKDQtNmgpCi0gVGFzayAjMjA6IEV2aWRlbmNlIFRyaWFuZ3VsYXRp
+b24gKDYtOGgpCgoqKkludGVncmF0aW9uIFRlc3RzOioqCi0gVGFzayAjODog
+SnVkZ2UgRFJBIEFwcGVhbCBGbG93ICg4LTEwaCkKLSBUYXNrICM5OiBPcmNo
+ZXN0cmF0b3IgSW50ZWdyYXRpb24gKDgtMTBoKQoKIyMjIFdhdmUgNCAoQ29t
+cGxldGlvbiAmIFBvbGlzaCkKKipFdmlkZW5jZSBRdWFsaXR5OioqCi0gVGFz
+ayAjMjE6IEdSQURFIFF1YWxpdHkgQXNzZXNzbWVudCAoOC0xMGgpCgoqKkUy
+RSBUZXN0czoqKgotIFRhc2sgIzEwOiBGdWxsIFBpcGVsaW5lIFRlc3QgKDEy
+LTE2aCkKLSBUYXNrICMxMTogQ29udmVyZ2VuY2UgTG9vcCBUZXN0ICgxMi0x
+NmgpCgoqKlJlbWFpbmluZzoqKgotIFRhc2sgIzE6IEZpeCBEUkEgUHJvbXB0
+aW5nICgyLTNoKQotIFRhc2sgIzI6IFJlZmFjdG9yIEp1ZGdlIFZlcnNpb24g
+SGlzdG9yeSAoNC02aCkKLSBUYXNrICMzOiBEb2N1bWVudCBDaHVua2luZyAo
+Ni04aCkKLSBUYXNrICMxNTogSGVhbHRoIENoZWNrcyAoMy00aCkKCioqT3B0
+aW9uYWw6KioKLSBUYXNrICMyMjogUHVibGljYXRpb24gQmlhcyBEZXRlY3Rp
+b24gKDYtOGgpCi0gVGFzayAjMjM6IENPSSBBbmFseXNpc1x0KDQtNmgpCgot
+LS0KCiMjIPCflJcgRGVwZW5kZW5jaWVzCgBgYGAKRXZpZGVuY2UgRW5oYW5j
+ZW1lbnQgKCMxNiwgIzE3KQogICAg4oaT
+SW50ZWdyYXRpb24gVGVzdHMgV2F2ZSAyICgjNiwgIzcpCiAgICDihpMKRXZp
+ZGVuY2UgRW5oYW5jZW1lbnQgKCMxOCwgIzE5LCAjMjApCiAgICDihpMKSW50
+ZWdyYXRpb24gVGVzdHMgV2F2ZSAzICgjOCwgIzkpCiAgICDihpMKRXZpZGVu
+Y2UgRW5oYW5jZW1lbnQgKCMyMSkKICAgIOKGkwpFMkUgVGVzdHMgKCMxMCwg
+IzExKQpgYGAKCi0tLQoKIyMg8J+TnSBUYXNrIENhcmQgRm9ybWF0CgpFYWNo
+IHRhc2sgY2FyZCBpbmNsdWRlczoKLSAqKlByb2JsZW0gU3RhdGVtZW50Kiog
+LSBXaGF0IG5lZWRzIHRvIGJlIHNvbHZlZAotICoqQWNjZXB0YW5jZSBDcml0
+ZXJpYSoqIC0gT3JpZ2luYWwgKyBFbmhhbmNlZCAoZm9yIGV2aWRlbmNlIHF1
+YWxpdHkpCi0gKipJbXBsZW1lbnRhdGlvbiBHdWlkZSoqIC0gU3RlcC1ieS1z
+dGVwIHdpdGggY29kZSBleGFtcGxlcwotICoqVGVzdCBDYXNlcyoqIC0gQ29y
+ZSArIEVuaGFuY2VkIHZhbGlkYXRpb24KLSAqKlN1Y2Nlc3MgQ3JpdGVyaWEq
+KiAtIE1lYXN1cmFibGUgb3V0Y29tZXMKLSAqKkVzdGltYXRlZCBFZmZvcnQq
+KiAtIFRpbWUgZXN0aW1hdGVzCi0gKipEZXBlbmRlbmNpZXMqKiAtIEJsb2Nr
+aW5nIHRhc2tzCi0gKipTdGF0dXMgSW5kaWNhdG9ycyoqIC0gUmVhZHksIElu
+IFByb2dyZXNzLCBDb21wbGV0ZQoKLS0tCgojIyDwn46oIFN0YXR1cyBMZWdl
+bmQKCi0g4pyFICoqQ09NUExFVEUqKiAtIEltcGxlbWVudGVkIGFuZCBtZXJn
+ZWQKLSDwn5SEICoqSU4gUFJPR1JFU1MqKiAtIEN1cnJlbnRseSBiZWluZyBk
+ZXZlbG9wZWQKLSDwn5+iICoqUkVBRFkqKiAtIFNwZWNpZmljYXRpb25zIGNv
+bXBsZXRlLCByZWFkeSBmb3IgaW1wbGVtZW50YXRpb24KLSDwn5+hICoqT1BU
+SU9OQUwqKiAtIE5pY2UtdG8taGF2ZSBmZWF0dXJlcwotIPCflLQgKipCTE9D
+S0VEKiogLSBXYWl0aW5nIG9uIGRlcGVuZGVuY2llcwoKLS0tCgoqKkxhc3Qg
+VXBkYXRlZDoqKiAyMDI0LTA1LTE4ICAKKipOZXh0IE1pbGVzdG9uZToqKiBD
+b21wbGV0ZSBXYXZlIDIgKEV2aWRlbmNlIEVuaGFuY2VtZW50ICMxNi0xNywg
+SW50ZWdyYXRpb24gVGVzdHMgIzYtNykgIAoqKlJlZmVyZW5jZToqKiBgL2Rv
+Y3MvQ09OU09MSURBVEVEX1JPQURNQVAubWRgIGZvciBjb21wbGV0ZSBwcm9q
+ZWN0IG92ZXJ2aWV3
