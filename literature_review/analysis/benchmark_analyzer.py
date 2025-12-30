@@ -232,14 +232,25 @@ class BenchmarkAnalyzer:
         if m1 == m2:
             return True
         
-        # Partial match (one contains the other)
-        if m1 in m2 or m2 in m1:
-            return True
+        # Word-based matching to reduce false positives
+        # Split into words and check for overlap
+        words1 = set(m1.split())
+        words2 = set(m2.split())
         
-        # Key term match
+        # One is fully contained in the other as a word sequence
+        if m1 in m2 or m2 in m1:
+            # Ensure at least 3 chars to avoid trivial matches
+            if len(m1) >= 3 and len(m2) >= 3:
+                return True
+        
+        # Key term match - both must contain the same key term as a word
         key_terms = ["latency", "accuracy", "power", "efficiency", "sparsity", 
                      "energy", "capacity", "speed", "throughput"]
         for term in key_terms:
+            # Check if term appears as a word (not substring)
+            if term in words1 and term in words2:
+                return True
+            # Also check if term is a substring in both with word boundaries
             if term in m1 and term in m2:
                 return True
         
