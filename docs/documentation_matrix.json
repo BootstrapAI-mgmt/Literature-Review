@@ -328,9 +328,9 @@
         "pipeline_orchestrator.py"
       ],
       "created_date": "2025-11-11",
-      "last_reviewed": "2025-12-16",
+      "last_reviewed": "2025-12-30",
       "review_interval_days": 7,
-      "next_review": "2025-12-23"
+      "next_review": "2026-01-06"
     },
     {
       "path": "docs/README.md",
