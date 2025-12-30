@@ -46,8 +46,7 @@
     },
     {
       "parameters": {
-        "mode": "combine",
-        "combineBy": "combineByPosition",
+        "mode": "append",
         "options": {}
       },
       "id": "92fc419e-87a1-440d-b10b-22c4c1ea2895",
@@ -821,7 +820,7 @@
       "main": [
         [
           {
-            "node": "Start Review",
+            "node": "Workflow Configuration",
             "type": "main",
             "index": 0
           }
@@ -832,9 +831,9 @@
       "main": [
         [
           {
-            "node": "Start Review",
+            "node": "Workflow Configuration",
             "type": "main",
-            "index": 1
+            "index": 0
           }
         ]
       ]

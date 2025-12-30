@@ -960,9 +960,9 @@
       ],
       "scripts": [],
       "created_date": "2025-11-14",
-      "last_reviewed": "2025-12-30",
-      "review_interval_days": 3,
-      "next_review": "2026-01-02",
+      "last_reviewed": "2025-11-30",
+      "review_interval_days": 7,
+      "next_review": "2025-12-07",
       "update_triggers": [
         "STATUS_UPDATE",
         "COMPLETION_PERCENTAGE"
