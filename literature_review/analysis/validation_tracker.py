@@ -92,6 +92,13 @@ class ValidationTracker:
     3. Gaps between requirements and their validation
     """
     
+    # Constants for alignment calculation
+    PARTIAL_ALIGNMENT_SCORE = 0.3
+    METHOD_ALIGNMENT_TERMS = [
+        "fmri", "eeg", "recording", "simulation", "benchmark",
+        "comparison", "ablation", "timing", "accuracy", "power"
+    ]
+    
     def __init__(
         self,
         pillar_definitions_path: str,
@@ -194,28 +201,34 @@ class ValidationTracker:
         req_info: Dict
     ) -> ValidationCoverageItem:
         """Analyze validation coverage for a single requirement."""
-        strategy = req_info.get("validation_strategy", {})
+        strategy = req_info.get("validation_strategy")  # Don't default to {} to detect None
         pillar_criteria = req_info.get("pillar_validation_criteria", {})
         
         # Determine if strategy is defined at requirement level
         # Empty dict {} explicitly means no strategy, even if pillar-level exists
         has_requirement_strategy = bool(
-            strategy.get("method") or 
-            strategy.get("benchmark_protocol") or
-            strategy.get("acceptance_criteria")
+            strategy and (
+                strategy.get("method") or 
+                strategy.get("benchmark_protocol") or
+                strategy.get("acceptance_criteria")
+            )
         )
         
         # Pillar-level criteria serve as fallback only if no requirement-level strategy exists
-        # and the strategy dict is not explicitly empty (None vs {})
+        # and the strategy was not explicitly set (None vs empty dict {})
         has_strategy = has_requirement_strategy
         if not has_requirement_strategy and strategy is None and pillar_criteria:
             # Only use pillar-level if no strategy was defined at all (None, not empty dict)
             has_strategy = True
         
+        # Ensure strategy is a dict for subsequent operations
+        if strategy is None:
+            strategy = {}
+        
         # Get validation method details
-        validation_method = strategy.get("method", "") if strategy else ""
-        benchmark_protocol = strategy.get("benchmark_protocol", "") if strategy else ""
-        acceptance_criteria = strategy.get("acceptance_criteria", "") if strategy else ""
+        validation_method = strategy.get("method", "")
+        benchmark_protocol = strategy.get("benchmark_protocol", "")
+        acceptance_criteria = strategy.get("acceptance_criteria", "")
         
         # If no per-requirement strategy, try pillar-level criteria
         if not validation_method and pillar_criteria and has_strategy:
@@ -322,7 +335,7 @@ class ValidationTracker:
         
         if alignment >= 0.7:
             return ValidationStatus.VALIDATED, CoverageLevel.FULL, alignment
-        elif alignment >= 0.3 or len(evidence_papers) > 0:
+        elif alignment >= self.PARTIAL_ALIGNMENT_SCORE or len(evidence_papers) > 0:
             return ValidationStatus.PARTIAL, CoverageLevel.PARTIAL, alignment
         else:
             return ValidationStatus.UNVALIDATED, CoverageLevel.NONE, alignment
@@ -334,19 +347,16 @@ class ValidationTracker:
     ) -> float:
         """Calculate alignment between validation method and evidence methods."""
         if not validation_method or not evidence_methods:
-            return 0.0 if not evidence_methods else 0.3  # Partial credit for having evidence
+            # Partial credit for having evidence without matching method
+            return 0.0 if not evidence_methods else self.PARTIAL_ALIGNMENT_SCORE
         
         # Simple keyword matching for now
         method_lower = validation_method.lower()
         
-        # Key method terms to match
-        method_terms = ["fmri", "eeg", "recording", "simulation", "benchmark", 
-                       "comparison", "ablation", "timing", "accuracy", "power"]
-        
         matches = 0
         total_terms = 0
         
-        for term in method_terms:
+        for term in self.METHOD_ALIGNMENT_TERMS:
             if term in method_lower:
                 total_terms += 1
                 for evidence_method in evidence_methods:
@@ -355,7 +365,7 @@ class ValidationTracker:
                         break
         
         if total_terms == 0:
-            return 0.3  # Default partial alignment
+            return self.PARTIAL_ALIGNMENT_SCORE  # Default partial alignment
         
         return matches / total_terms
     
@@ -519,8 +529,21 @@ class ValidationTracker:
         if not self.coverage_items:
             self.analyze_validation_coverage()
         
-        summary = self._calculate_summary()
+        summary = self.get_summary()
         return summary["coverage_percentage"]
+    
+    def get_summary(self) -> Dict:
+        """
+        Get summary statistics for validation coverage.
+        
+        Returns:
+            Dict with total_requirements, validated, partially_validated,
+            unvalidated, no_strategy, coverage_percentage, strategy_definition_rate
+        """
+        if not self.coverage_items:
+            self.analyze_validation_coverage()
+        
+        return self._calculate_summary()
 
 
 def generate_validation_matrix(

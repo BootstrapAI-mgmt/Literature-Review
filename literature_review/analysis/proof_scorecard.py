@@ -106,7 +106,7 @@ class ProofScorecardAnalyzer:
         if self.validation_tracker:
             result["validation_coverage"] = {
                 "score": self.validation_tracker.get_validation_score(),
-                "summary": self.validation_tracker._calculate_summary(),
+                "summary": self.validation_tracker.get_summary(),
                 "weight_in_readiness": "20%"
             }
         
