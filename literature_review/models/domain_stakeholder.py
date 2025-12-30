@@ -146,9 +146,13 @@ class LiteratureStakeholderImpact:
         self.filled_date = filled_date
 
 
-def generate_impact_id(source_paper: str, gap_id: str, stakeholder: str, sequence: int) -> str:
+def generate_impact_id(source_paper: str, sequence: int) -> str:
     """
     Generate a unique impact ID.
+    
+    Args:
+        source_paper: Source paper filename
+        sequence: Sequence number for uniqueness
     
     Format: LSI-{paper_short}-{sequence:03d}
     Example: LSI-snn_review-001

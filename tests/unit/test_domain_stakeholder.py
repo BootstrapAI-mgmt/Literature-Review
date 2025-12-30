@@ -215,8 +215,6 @@ class TestGenerateImpactId:
         """Test basic ID generation."""
         impact_id = generate_impact_id(
             source_paper="snn_review_2024.pdf",
-            gap_id="GAP-123",
-            stakeholder="hardware engineers",
             sequence=1
         )
         
@@ -225,8 +223,8 @@ class TestGenerateImpactId:
     
     def test_generate_sequential_ids(self):
         """Test sequential ID generation."""
-        id1 = generate_impact_id("paper.pdf", "GAP-1", "researchers", 1)
-        id2 = generate_impact_id("paper.pdf", "GAP-1", "researchers", 2)
+        id1 = generate_impact_id("paper.pdf", 1)
+        id2 = generate_impact_id("paper.pdf", 2)
         
         assert id1 != id2
         assert id1.endswith("-001")
@@ -236,8 +234,6 @@ class TestGenerateImpactId:
         """Test ID generation with HTML file."""
         impact_id = generate_impact_id(
             source_paper="document.html",
-            gap_id="GAP-456",
-            stakeholder="clinicians",
             sequence=5
         )
         
