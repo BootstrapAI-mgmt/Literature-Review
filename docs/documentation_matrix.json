@@ -1,6 +1,6 @@
 {
   "version": "1.3",
-  "last_updated": "2025-12-30",
+  "last_updated": "2025-12-31",
   "description": "Machine-readable documentation dependency matrix with staleness detection support",
   "staleness_config": {
     "enabled": true,
@@ -317,7 +317,7 @@
       "path": "README.md",
       "level": "L1",
       "status": "current",
-      "last_updated": "2025-12-16",
+      "last_updated": "2025-12-31",
       "owner": "@core",
       "depends_on": [
         "docs/DASHBOARD_GUIDE.md",
@@ -328,9 +328,9 @@
         "pipeline_orchestrator.py"
       ],
       "created_date": "2025-11-11",
-      "last_reviewed": "2025-11-30",
+      "last_reviewed": "2025-12-31",
       "review_interval_days": 7,
-      "next_review": "2025-12-07"
+      "next_review": "2026-01-07"
     },
     {
       "path": "docs/README.md",
