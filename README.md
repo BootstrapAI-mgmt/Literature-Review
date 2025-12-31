@@ -18,7 +18,7 @@ For Codespaces, bootstrap the n8n integration with:
 source ./bootstrap-n8n.sh
 ```
 
-This enables AI-assisted workflow management. See [Codespace n8n Setup](docs/claude-integration/CODESPACE-N8N-SETUP.md) for details.
+This enables AI-assisted workflow management. See [Codespace n8n Setup](docs/claude-integration/CODESPACE-N2N-SETUP.md) for details.
 
 ### 🌐 Web Dashboard (NEW!)
 
@@ -647,7 +647,7 @@ All project documentation is organized in the `docs/` folder:
 |----------|-------------|
 | [docs/README.md](docs/README.md) | Documentation index and quick reference |
 | [docs/USER_MANUAL.md](docs/USER_MANUAL.md) | Complete user manual |
-| [docs/DASHBOARD_GUIDE.md](docs/DASHBOARD_GUIDED.md) | Web dashboard guide |
+| [docs/DASHBOARD_GUIDE.md](docs/DASHBOARD_GUIDE.md) | Web dashboard guide |
 | [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | REST API documentation |
 | [docs/TESTING_GUIDE.md](docs/TESTING_GUIDE.md) | Testing procedures |
 | [docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md) | Deployment instructions |
