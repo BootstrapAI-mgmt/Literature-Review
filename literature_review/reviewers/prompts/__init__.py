@@ -19,6 +19,16 @@ from literature_review.reviewers.prompts.operationalization_prompt import (
     format_claims_batch
 )
 
+from literature_review.reviewers.prompts.stakeholder_extraction_prompt import (
+    STAKEHOLDER_IMPACT_EXTRACTION_PROMPT,
+    STAKEHOLDER_IMPACT_BATCH_PROMPT,
+    MIN_CONFIDENCE_THRESHOLD,
+    MAX_IMPACTS_PER_PAPER,
+    format_stakeholder_extraction_prompt,
+    format_stakeholder_batch_prompt,
+    parse_extraction_response
+)
+
 __all__ = [
     # Benchmark prompts (from PR #99)
     "BENCHMARK_EXTRACTION_PROMPT",
@@ -29,5 +39,13 @@ __all__ = [
     "BATCH_OPERATIONALIZATION_PROMPT",
     "BATCH_EVIDENCE_TRUNCATION_LIMIT",
     "format_claim_for_prompt",
-    "format_claims_batch"
+    "format_claims_batch",
+    # Stakeholder extraction prompts
+    "STAKEHOLDER_IMPACT_EXTRACTION_PROMPT",
+    "STAKEHOLDER_IMPACT_BATCH_PROMPT",
+    "MIN_CONFIDENCE_THRESHOLD",
+    "MAX_IMPACTS_PER_PAPER",
+    "format_stakeholder_extraction_prompt",
+    "format_stakeholder_batch_prompt",
+    "parse_extraction_response"
 ]
