@@ -52,7 +52,7 @@
         "README.md",
         "docs/USER_MANUAL.md"
       ],
-      "review_interval_days": 7,
+      "review_interval_days": 0,
       "priority": "high",
       "staleness_indicators": [
         "pipeline_orchestrator.py",
