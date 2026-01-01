@@ -3,7 +3,7 @@
 **Task ID:** VM-W0.5-3  
 **Wave:** 0.5 (Modularization Infrastructure)  
 **Priority:** HIGH (P3 - Highest effort, enables LLM comparison)  
-**Estimated Effort:** 12 hours  
+**Estimated Effort:** 14 hours *(+2h for rate limiting, fallback, and cache integration)*  
 **Status:** Not Started  
 **Dependencies:** None (can start in parallel)  
 **Blocks:** Model comparison benchmarks (MC-01, MC-02, MC-03)  
@@ -42,6 +42,9 @@ This prevents:
 - [ ] `--model` CLI flag available in pipeline_orchestrator.py
 - [ ] Model can be switched via environment variable
 - [ ] Existing hardcoded calls migrated to use abstraction
+- [ ] Rate limiting works per-provider
+- [ ] Fallback chain executes on quota errors
+- [ ] Response caching integrates with existing API cache
 
 ---
 
@@ -120,6 +123,8 @@ class ModelConfig:
     - Generation parameters
     - Pricing for cost tracking
     - Provider-specific capabilities
+    - Rate limiting configuration
+    - Fallback chain support
     """
     provider: ModelProvider
     model_name: str
@@ -140,6 +145,19 @@ class ModelConfig:
     supports_system_prompt: bool = True
     supports_thinking_mode: bool = False
     max_context_length: int = 128000
+    
+    # Rate limiting configuration
+    requests_per_minute: int = 60
+    tokens_per_minute: int = 100000
+    retry_delay_seconds: float = 1.0
+    max_retries: int = 3
+    
+    # Fallback configuration
+    fallback_model: Optional[str] = None  # Model name to fall back to
+    
+    # Cache integration
+    cache_responses: bool = True
+    cache_ttl_seconds: int = 3600  # 1 hour default
     
     # Display name
     display_name: str = ""
@@ -1092,6 +1110,9 @@ cost = config.estimate_cost(tokens["input"], tokens["output"])
 - [ ] MC-01: Same-prompt comparison test passes
 - [ ] MC-02: Cost tracking works across providers
 - [ ] MC-03: Latency measurement works
+- [ ] Rate limiter respects per-provider limits
+- [ ] Fallback chain handles quota errors gracefully
+- [ ] Response cache integrates with existing infrastructure
 - [ ] Migration guide documents all required changes
 - [ ] Existing tests pass with default model
 
@@ -1116,3 +1137,470 @@ cost = config.estimate_cost(tokens["input"], tokens["output"])
 - Implement automatic fallback between providers
 - Add model-specific prompt optimization
 - Support fine-tuned models
+
+---
+
+## Additional Deliverables
+
+### Rate Limiting Manager
+
+**File:** `literature_review/utils/rate_limiter.py`
+
+```python
+"""
+Per-Provider Rate Limiting
+
+Implements token bucket rate limiting for each LLM provider to prevent
+quota errors and enable graceful degradation.
+"""
+
+import time
+import threading
+from dataclasses import dataclass, field
+from typing import Dict, Optional
+from collections import deque
+
+from literature_review.config.model_config import ModelConfig, ModelProvider
+
+
+@dataclass
+class RateLimitBucket:
+    """Token bucket for rate limiting."""
+    capacity: int
+    refill_rate: float  # tokens per second
+    tokens: float = field(default=0)
+    last_refill: float = field(default_factory=time.time)
+    lock: threading.Lock = field(default_factory=threading.Lock)
+    
+    def acquire(self, tokens: int = 1, timeout: float = 30.0) -> bool:
+        """Acquire tokens, blocking until available or timeout."""
+        deadline = time.time() + timeout
+        
+        while time.time() < deadline:
+            with self.lock:
+                self._refill()
+                if self.tokens >= tokens:
+                    self.tokens -= tokens
+                    return True
+            
+            # Wait before retry
+            time.sleep(0.1)
+        
+        return False
+    
+    def _refill(self):
+        """Refill tokens based on elapsed time."""
+        now = time.time()
+        elapsed = now - self.last_refill
+        self.tokens = min(self.capacity, self.tokens + elapsed * self.refill_rate)
+        self.last_refill = now
+
+
+class RateLimiter:
+    """Manages rate limiting across all providers."""
+    
+    _instance = None
+    _lock = threading.Lock()
+    
+    def __new__(cls):
+        if cls._instance is None:
+            with cls._lock:
+                if cls._instance is None:
+                    cls._instance = super().__new__(cls)
+                    cls._instance._buckets = {}
+        return cls._instance
+    
+    def get_bucket(self, config: ModelConfig) -> RateLimitBucket:
+        """Get or create rate limit bucket for a model config."""
+        key = f"{config.provider.value}:{config.model_name}"
+        
+        if key not in self._buckets:
+            self._buckets[key] = RateLimitBucket(
+                capacity=config.requests_per_minute,
+                refill_rate=config.requests_per_minute / 60.0
+            )
+        
+        return self._buckets[key]
+    
+    def acquire(self, config: ModelConfig, tokens: int = 1) -> bool:
+        """Acquire rate limit tokens for the given model."""
+        bucket = self.get_bucket(config)
+        return bucket.acquire(tokens)
+    
+    def wait_for_capacity(self, config: ModelConfig):
+        """Wait until rate limit capacity is available."""
+        bucket = self.get_bucket(config)
+        bucket.acquire(1, timeout=60.0)
+
+
+def get_rate_limiter() -> RateLimiter:
+    """Get global rate limiter instance."""
+    return RateLimiter()
+```
+
+### Fallback Chain Handler
+
+**File:** `literature_review/utils/model_fallback.py`
+
+```python
+"""
+Model Fallback Chain Handler
+
+Implements automatic fallback between models when quota errors or
+failures occur, with configurable fallback chains.
+"""
+
+import logging
+from typing import List, Optional, Callable, Any
+from dataclasses import dataclass
+
+from literature_review.config.model_config import (
+    ModelConfig, get_model_by_name, get_model_config
+)
+from literature_review.utils.llm_client import get_llm_client, LLMClient
+
+logger = logging.getLogger(__name__)
+
+
+# Default fallback chains per provider
+DEFAULT_FALLBACK_CHAINS = {
+    "gemini-2.5-flash": ["gemini-1.5-pro", "gpt-4-turbo"],
+    "gpt-4-turbo": ["gpt-4o", "gemini-2.5-flash"],
+    "gpt-4o": ["gpt-4-turbo", "gemini-2.5-flash"],
+    "claude-3.5-sonnet": ["claude-3-opus", "gpt-4-turbo"],
+}
+
+
+@dataclass
+class FallbackResult:
+    """Result from a fallback chain execution."""
+    success: bool
+    model_used: str
+    response: Optional[str] = None
+    attempts: int = 0
+    errors: List[str] = None
+    
+    def __post_init__(self):
+        if self.errors is None:
+            self.errors = []
+
+
+class ModelFallbackHandler:
+    """Handles automatic fallback between models."""
+    
+    def __init__(self, primary_model: Optional[str] = None):
+        self.primary_model = primary_model or get_model_config().model_name
+        self.fallback_chains = DEFAULT_FALLBACK_CHAINS.copy()
+    
+    def set_fallback_chain(self, model: str, fallbacks: List[str]):
+        """Set custom fallback chain for a model."""
+        self.fallback_chains[model] = fallbacks
+    
+    def get_fallback_chain(self, model: str) -> List[str]:
+        """Get fallback chain for a model."""
+        chain = [model]
+        
+        # Add configured fallbacks
+        if model in self.fallback_chains:
+            chain.extend(self.fallback_chains[model])
+        
+        # Also check model config for single fallback
+        try:
+            config = get_model_by_name(model)
+            if config.fallback_model and config.fallback_model not in chain:
+                chain.append(config.fallback_model)
+        except ValueError:
+            pass
+        
+        return chain
+    
+    def execute_with_fallback(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        json_mode: bool = False,
+        max_attempts: int = 3
+    ) -> FallbackResult:
+        """
+        Execute a prompt with automatic fallback.
+        
+        Tries the primary model first, then falls back through the chain
+        if quota or rate limit errors occur.
+        """
+        chain = self.get_fallback_chain(self.primary_model)
+        errors = []
+        
+        for i, model_name in enumerate(chain[:max_attempts]):
+            try:
+                config = get_model_by_name(model_name)
+                client = get_llm_client(config)
+                
+                response = client.generate(
+                    prompt=prompt,
+                    system_prompt=system_prompt,
+                    json_mode=json_mode
+                )
+                
+                return FallbackResult(
+                    success=True,
+                    model_used=model_name,
+                    response=response,
+                    attempts=i + 1,
+                    errors=errors
+                )
+                
+            except Exception as e:
+                error_msg = f"{model_name}: {str(e)}"
+                errors.append(error_msg)
+                logger.warning(f"Model {model_name} failed: {e}")
+                
+                # Check if it's a recoverable error
+                if not self._is_recoverable_error(e):
+                    break
+        
+        return FallbackResult(
+            success=False,
+            model_used=chain[0],
+            attempts=len(errors),
+            errors=errors
+        )
+    
+    def _is_recoverable_error(self, error: Exception) -> bool:
+        """Check if error is recoverable via fallback."""
+        error_str = str(error).lower()
+        recoverable_patterns = [
+            "rate limit",
+            "quota exceeded",
+            "429",
+            "503",
+            "temporarily unavailable",
+            "overloaded"
+        ]
+        return any(p in error_str for p in recoverable_patterns)
+
+
+def execute_with_fallback(
+    prompt: str,
+    system_prompt: Optional[str] = None,
+    json_mode: bool = False,
+    primary_model: Optional[str] = None
+) -> FallbackResult:
+    """Convenience function for fallback execution."""
+    handler = ModelFallbackHandler(primary_model)
+    return handler.execute_with_fallback(prompt, system_prompt, json_mode)
+```
+
+### Cache Integration
+
+**File:** `literature_review/utils/model_cache.py`
+
+```python
+"""
+Model Response Cache Integration
+
+Integrates the model abstraction layer with the existing API cache
+for response caching across model switches.
+"""
+
+import hashlib
+import json
+import logging
+from typing import Optional, Dict, Any
+from pathlib import Path
+
+from literature_review.config.model_config import ModelConfig, get_model_config
+
+logger = logging.getLogger(__name__)
+
+# Try to import existing cache infrastructure
+try:
+    from literature_review.utils.api_manager import get_cache_path, load_cache, save_cache
+    HAS_API_CACHE = True
+except ImportError:
+    HAS_API_CACHE = False
+
+
+class ModelResponseCache:
+    """Cache for model responses with model-aware keying."""
+    
+    def __init__(self, cache_dir: str = "api_cache"):
+        self.cache_dir = Path(cache_dir)
+        self.cache_dir.mkdir(exist_ok=True)
+    
+    def _make_key(self, prompt: str, config: ModelConfig) -> str:
+        """Create cache key from prompt and model config."""
+        key_data = {
+            "prompt": prompt,
+            "model": config.model_name,
+            "provider": config.provider.value,
+            "temperature": config.temperature,
+        }
+        key_str = json.dumps(key_data, sort_keys=True)
+        return hashlib.sha256(key_str.encode()).hexdigest()[:16]
+    
+    def get(self, prompt: str, config: Optional[ModelConfig] = None) -> Optional[str]:
+        """Get cached response if available."""
+        if config is None:
+            config = get_model_config()
+        
+        if not config.cache_responses:
+            return None
+        
+        key = self._make_key(prompt, config)
+        cache_file = self.cache_dir / f"model_{key}.json"
+        
+        if cache_file.exists():
+            try:
+                with open(cache_file) as f:
+                    data = json.load(f)
+                
+                # Check TTL
+                import time
+                if time.time() - data.get("timestamp", 0) < config.cache_ttl_seconds:
+                    logger.debug(f"Cache hit for {config.model_name}: {key}")
+                    return data.get("response")
+            except Exception as e:
+                logger.warning(f"Cache read error: {e}")
+        
+        return None
+    
+    def set(self, prompt: str, response: str, config: Optional[ModelConfig] = None):
+        """Cache a response."""
+        if config is None:
+            config = get_model_config()
+        
+        if not config.cache_responses:
+            return
+        
+        key = self._make_key(prompt, config)
+        cache_file = self.cache_dir / f"model_{key}.json"
+        
+        import time
+        data = {
+            "prompt": prompt[:200],  # Truncated for reference
+            "response": response,
+            "model": config.model_name,
+            "timestamp": time.time()
+        }
+        
+        try:
+            with open(cache_file, 'w') as f:
+                json.dump(data, f)
+            logger.debug(f"Cached response for {config.model_name}: {key}")
+        except Exception as e:
+            logger.warning(f"Cache write error: {e}")
+
+
+# Global cache instance
+_model_cache: Optional[ModelResponseCache] = None
+
+
+def get_model_cache() -> ModelResponseCache:
+    """Get global model cache instance."""
+    global _model_cache
+    if _model_cache is None:
+        _model_cache = ModelResponseCache()
+    return _model_cache
+```
+
+---
+
+## Cross-Task Integration
+
+This task integrates with the other Wave 0.5 tasks:
+
+### Integration with VM-W0.5-1 (Metrics Configuration)
+
+Model-specific metrics can be tracked in the metrics config:
+
+```yaml
+# tests/validation/config/metrics.yaml
+
+metrics:
+  # Model-specific latency thresholds
+  - id: MC-03-GEMINI
+    name: Gemini Latency Baseline
+    category: benchmark
+    threshold: 2.0
+    unit: seconds
+    
+  - id: MC-03-GPT4
+    name: GPT-4 Latency Baseline
+    category: benchmark
+    threshold: 5.0
+    unit: seconds
+    
+  - id: MC-03-CLAUDE
+    name: Claude Latency Baseline
+    category: benchmark
+    threshold: 4.0
+    unit: seconds
+```
+
+### Integration with VM-W0.5-2 (Domain Fixtures)
+
+Domain-model matrix testing for comprehensive validation:
+
+```python
+# tests/validation/test_domain_model_matrix.py
+
+import pytest
+from itertools import product
+
+DOMAINS = ["neuromorphic-computing", "thermophoresis"]
+MODELS = ["gemini-flash", "gpt-4-turbo"]
+
+@pytest.mark.parametrize("domain,model", list(product(DOMAINS, MODELS)))
+def test_domain_model_combination(domain, model):
+    """Test all domain × model combinations."""
+    from tests.validation.fixtures.domain_fixture import get_domain_fixture
+    from literature_review.config.model_config import set_model
+    
+    fixture = get_domain_fixture(domain)
+    model_config = set_model(model)
+    
+    # Run validation with specific domain and model
+    results = run_claim_validation(
+        claims=fixture.golden_dataset.claims[:10],
+        model_config=model_config
+    )
+    
+    assert results.accuracy >= fixture.baselines.judge_accuracy
+```
+
+### Combined Validation Context Fixture
+
+```python
+# tests/conftest.py - Combined fixture for all Wave 0.5 features
+
+@pytest.fixture
+def validation_context(metrics_config, domain_fixture, request):
+    """Combined validation context with all modularization features."""
+    from literature_review.config.model_config import get_model_config, set_model
+    
+    model_name = request.config.getoption("--model", default=None)
+    if model_name:
+        set_model(model_name)
+    
+    return {
+        "metrics": metrics_config,
+        "domain": domain_fixture,
+        "model": get_model_config(),
+        "profile": metrics_config.active_profile,
+    }
+
+
+@pytest.fixture
+def full_validation_context(validation_context, request):
+    """Full context with rate limiting and fallback enabled."""
+    from literature_review.utils.rate_limiter import get_rate_limiter
+    from literature_review.utils.model_fallback import ModelFallbackHandler
+    
+    return {
+        **validation_context,
+        "rate_limiter": get_rate_limiter(),
+        "fallback_handler": ModelFallbackHandler(
+            validation_context["model"].model_name
+        ),
+    }
+```

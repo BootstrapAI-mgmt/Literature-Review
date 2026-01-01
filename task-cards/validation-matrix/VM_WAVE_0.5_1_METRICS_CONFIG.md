@@ -581,6 +581,140 @@ metrics:
     unit: seconds
     description: "Deep review analysis per claim"
 
+  - id: BM-04
+    name: Orchestrator Throughput
+    category: benchmark
+    threshold: 10
+    comparison: ">="
+    unit: papers_per_hour
+    description: "Full orchestrator pipeline throughput"
+
+  - id: BM-05
+    name: Component Memory Usage
+    category: benchmark
+    threshold: 2048
+    comparison: "<"
+    unit: megabytes
+    description: "Peak memory per component"
+
+  - id: BM-06
+    name: Parallel Scaling Efficiency
+    category: benchmark
+    threshold: 0.75
+    comparison: ">="
+    unit: ratio
+    description: "Efficiency when scaling to 4 workers"
+
+  # ---------------------------------------------------------------------------
+  # Quality Benchmark Metrics (QB-*)
+  # ---------------------------------------------------------------------------
+  - id: QB-01
+    name: Golden Dataset Coverage
+    category: benchmark
+    threshold: 50
+    comparison: ">="
+    unit: claims
+    description: "Minimum annotated claims in golden dataset"
+
+  - id: QB-02
+    name: Pillar Mapping Coverage
+    category: benchmark
+    threshold: 100
+    comparison: ">="
+    unit: claims
+    description: "Claims with known pillar mappings"
+
+  - id: QB-03
+    name: Cross-Domain Diversity
+    category: benchmark
+    threshold: 3
+    comparison: ">="
+    unit: domains
+    description: "Number of domains represented in golden dataset"
+
+  - id: QB-04
+    name: Weak Evidence Cases
+    category: benchmark
+    threshold: 30
+    comparison: ">="
+    unit: claims
+    description: "False-positive testing claims"
+
+  - id: QB-05
+    name: Known Gap Coverage
+    category: benchmark
+    threshold: 10
+    comparison: ">="
+    unit: gaps
+    description: "Gaps with known solution recommendations"
+
+  # ---------------------------------------------------------------------------
+  # Output Quality Metrics (OQ-03 to OQ-10)
+  # ---------------------------------------------------------------------------
+  - id: OQ-03
+    name: Search Suggestions Schema Valid
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: boolean
+    description: "suggested_searches.json passes JSON schema"
+
+  - id: OQ-04
+    name: Search Suggestions Readable
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: boolean
+    description: "suggested_searches.md is human-readable"
+
+  - id: OQ-05
+    name: Search Plan Coherence
+    category: output_quality
+    threshold: 0.90
+    comparison: ">="
+    unit: ratio
+    description: "optimized_search_plan.json strategy coherence"
+
+  - id: OQ-06
+    name: Proof Chain Completeness
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: ratio
+    description: "All approved claims linked in proof_chain.json"
+
+  - id: OQ-07
+    name: Sufficiency Matrix Coverage
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: ratio
+    description: "All pillars represented in sufficiency_matrix.json"
+
+  - id: OQ-08
+    name: Triangulation Accuracy
+    category: output_quality
+    threshold: 0.85
+    comparison: ">="
+    unit: ratio
+    description: "Cross-validation accuracy in triangulation.json"
+
+  - id: OQ-09
+    name: Evidence Decay Correctness
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: boolean
+    description: "Temporal weighting correct in evidence_decay.json"
+
+  - id: OQ-10
+    name: Output File Consistency
+    category: output_quality
+    threshold: 0
+    comparison: "=="
+    unit: count
+    description: "No orphaned references between output files"
+
   # ---------------------------------------------------------------------------
   # E2E Metrics (E2E-*)
   # ---------------------------------------------------------------------------
@@ -956,3 +1090,64 @@ def test_judge_accuracy_simple(golden_dataset, check_metric):
 - `production` profile should match acceptance criteria from task cards
 - `quick` profile enables fast feedback during development
 - Environment overrides are useful for CI matrix testing
+
+---
+
+## Cross-Task Integration
+
+This task integrates with the other Wave 0.5 tasks:
+
+### Integration with VM-W0.5-2 (Domain Fixtures)
+
+Domain fixtures can reference this metrics config for domain-specific thresholds:
+
+```python
+# Domain fixtures can override metrics per domain
+from tests.validation.config.metrics_config import get_metrics_config
+
+class DomainTestFixture:
+    def get_domain_threshold(self, metric_id: str) -> float:
+        """Get threshold, with optional domain override."""
+        base = get_metrics_config().get_threshold(metric_id)
+        domain_override = self.baselines.get(metric_id)
+        return domain_override if domain_override is not None else base
+```
+
+### Integration with VM-W0.5-3 (Model Abstraction)
+
+Model-specific metrics can be added for per-model thresholds:
+
+```yaml
+# Model-specific latency thresholds
+metrics:
+  - id: MC-03-GEMINI
+    name: Gemini Latency Baseline
+    category: benchmark
+    threshold: 2.0
+    unit: seconds
+    
+  - id: MC-03-GPT4
+    name: GPT-4 Latency Baseline
+    category: benchmark
+    threshold: 5.0
+    unit: seconds
+```
+
+### Combined Validation Context Fixture
+
+```python
+# tests/conftest.py - Combined fixture for all Wave 0.5 features
+@pytest.fixture
+def validation_context(metrics_config, domain_fixture, request):
+    """Combined validation context with all modularization features."""
+    from literature_review.config.model_config import get_model_config
+    
+    model_name = request.config.getoption("--model", default=None)
+    
+    return {
+        "metrics": metrics_config,
+        "domain": domain_fixture,
+        "model": get_model_config() if model_name else None,
+        "profile": metrics_config.active_profile,
+    }
+```
