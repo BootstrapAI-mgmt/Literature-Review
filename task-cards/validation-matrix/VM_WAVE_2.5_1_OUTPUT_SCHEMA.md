@@ -820,6 +820,26 @@ for error in result.errors:
 
 ---
 
+## Related Documentation
+
+- [OUTPUT_FILE_REFERENCE.md](../../docs/OUTPUT_FILE_REFERENCE.md) - Complete output inventory
+- [tests/validation/schemas/](../../tests/validation/schemas/) - JSON schema definitions
+- [VM-W2.5-2](VM_WAVE_2.5_2_RECOMMENDATION_QUALITY.md) - Recommendation quality tests (depends on this card)
+- [VM-W4-1](VM_WAVE_4_1_E2E_VISUALIZATION.md) - E2E tests (depends on this card)
+
+---
+
+## Schema File Deliverables
+
+| File | Purpose |
+|------|---------|  
+| `tests/validation/schemas/gap_analysis_report.schema.json` | Gap analysis JSON schema |
+| `tests/validation/schemas/suggested_searches.schema.json` | Search suggestions JSON schema |
+| `tests/validation/schemas/proof_chain.schema.json` | Proof chain JSON schema |
+| `tests/validation/outputs/schema_validator.py` | Schema validation utility function |
+
+---
+
 ## Notes
 
 - Schema should be permissive enough to handle format evolution

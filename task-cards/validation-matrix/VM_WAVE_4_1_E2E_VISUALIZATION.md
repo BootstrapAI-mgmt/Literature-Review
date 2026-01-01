@@ -38,10 +38,10 @@ Visualization tests verify that:
 - [ ] E2E-04: Incremental run (+5 papers, <10min)
 - [ ] E2E-05: Recovery test (checkpoint restore)
 - [ ] E2E-06: Multi-domain test (no cross-contamination)
-- [ ] VI-01: INCR_W2_3_UI_PREVIEW.html renders correctly
-- [ ] VI-02: genealogy_test.html interactive elements work
-- [ ] VI-03: Dashboard data binding validation
-- [ ] VI-04: Cross-browser compatibility (Chrome, Firefox)
+- [ ] VI-01: All 10 HTML visualizations render (7 waterfalls + 3 overviews)
+- [ ] VI-02: Plotly interactive features work (zoom, pan, hover, download)
+- [ ] VI-03: Embedded JSON data matches source files
+- [ ] VI-04: Self-contained (no external CDN dependencies)
 
 ---
 
@@ -55,10 +55,10 @@ Visualization tests verify that:
 | E2E-04 | Incremental Run | +5 papers | Updated review | <10 min, only new papers processed |
 | E2E-05 | Recovery Test | Crashed mid-run | Resumed from checkpoint | No data loss, <30s recovery |
 | E2E-06 | Multi-Domain | 2 domains × 20 papers | Separate reviews | No cross-contamination |
-| VI-01 | UI Preview Render | INCR_W2_3_UI_PREVIEW.html | Visible content | All sections render |
-| VI-02 | Genealogy Interactive | genealogy_test.html | Clickable nodes | Events fire correctly |
-| VI-03 | Dashboard Binding | Dashboard + live data | Accurate display | Data matches source |
-| VI-04 | Cross-Browser | Chrome, Firefox | Consistent render | No layout breaks |
+| VI-01 | HTML Visualization Render | All 10 HTML outputs | Visible content | 7 waterfalls + 3 overviews render |
+| VI-02 | Plotly Interactive Features | Visualization interactivity | Full functionality | Zoom, pan, hover, download work |
+| VI-03 | Embedded Data Integrity | JSON in HTML vs source | Data match | Embedded JSON = source files |
+| VI-04 | Self-Contained Validation | External dependencies check | No CDN calls | All assets inline or local |
 
 ---
 

@@ -29,11 +29,11 @@ These recommendations directly influence user actions and research direction. Po
 - [ ] OQ-03: suggested_searches.json passes schema validation
 - [ ] OQ-04: suggested_searches.md is human-readable with clear formatting
 - [ ] OQ-05: optimized_search_plan.json contains coherent strategy
-- [ ] RA-01: Search suggestions match known solutions in golden dataset (≥80%)
-- [ ] RA-02: Priority ranking accuracy validated against human order
-- [ ] RA-03: Every gap has traceable recommendations
-- [ ] RA-04: Recommendations are parseable by downstream tools
-- [ ] RA-05: No duplicate recommendations in output
+- [ ] RA-01: Search query relevance (≥80% rated relevant by domain experts)
+- [ ] RA-02: Priority classification accuracy (CRITICAL=0% coverage gaps, HIGH=<20% coverage)
+- [ ] RA-03: Database appropriateness (domain→database mapping validation)
+- [ ] RA-04: Query uniqueness (<5% duplicate suggestions)
+- [ ] RA-05: Recommendation completeness (100% gaps have recommendations)
 
 ---
 
@@ -44,11 +44,11 @@ These recommendations directly influence user actions and research direction. Po
 | OQ-03 | Suggested Searches Schema | suggested_searches.json | Valid JSON matching schema | All required fields present |
 | OQ-04 | Suggested Searches Readable | suggested_searches.md | Human-readable format | Clear headers, descriptions, priorities |
 | OQ-05 | Search Plan Coherence | optimized_search_plan.json | Logical strategy | Dependencies ordered, no circular refs |
-| RA-01 | Suggestion Relevance | Golden dataset gaps + suggestions | Match rate ≥80% | Suggestions address known gaps |
-| RA-02 | Priority Accuracy | Human-ranked priorities | Correlation ≥0.7 | Ranking matches expert judgment |
-| RA-03 | Gap Traceability | All gaps + recommendations | 100% coverage | Every gap linked to recommendation |
-| RA-04 | Actionability | Recommendation structure | Parseable output | Valid search query syntax |
-| RA-05 | Deduplication | All recommendations | No duplicates | Unique suggestions only |
+| RA-01 | Search Query Relevance | Generated queries + expert review | ≥80% relevant | Queries address intended gaps |
+| RA-02 | Priority Classification | Gap severity + coverage level | Correct mapping | CRITICAL=0% coverage, HIGH=<20% |
+| RA-03 | Database Appropriateness | Domain + suggested databases | Valid mapping | Domain→database alignment |
+| RA-04 | Query Uniqueness | All recommendations | <5% duplicates | Minimal redundant suggestions |
+| RA-05 | Recommendation Completeness | All gaps + recommendations | 100% coverage | Every gap has ≥1 recommendation |
 
 ---
 
