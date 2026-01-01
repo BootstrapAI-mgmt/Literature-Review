@@ -2,9 +2,9 @@
 
 **Created:** December 31, 2025  
 **Source:** Third-Party Assessment & Internal Review  
-**Total Tasks:** 19 (6 Waves) *(updated: added Wave 2.5)*  
-**Total Effort:** 168 hours base *(+24h for Wave 2.5, +4h for Wave 4 VI-*)*  
-**Timeline:** 10-12 weeks
+**Total Tasks:** 22 (7 Waves) *(updated: added Wave 0.5 and Wave 2.5)*  
+**Total Effort:** 194 hours base *(+26h for Wave 0.5, +24h for Wave 2.5, +4h for Wave 4 VI-*)*  
+**Timeline:** 12-14 weeks
 
 ---
 
@@ -15,6 +15,7 @@
 | 2025-12-31 | Initial creation | Third-party assessment |
 | 2025-12-31 | Added FV-07→10, AV-07; expanded Wave 5 | Third-party review feedback |
 | 2025-12-31 | Added Wave 2.5 (OQ-*, RA-*, VI-*); output validation | Third-party output gap analysis |
+| 2025-12-31 | Added Wave 0.5 (MT-*, DF-*, MC-*); modularization infrastructure | Third-party modularization assessment |
 
 ---
 
@@ -38,6 +39,14 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
                     │  VM-W0-2: Golden Dataset Spec       │
                     └───────────────┬─────────────────────┘
                                     │ (Week 1-2)
+                                    ▼
+                    WAVE 0.5: Modularization Infrastructure (NEW)
+                    ┌─────────────────────────────────────┐
+                    │  VM-W0.5-1: Metrics Configuration   │
+                    │  VM-W0.5-2: Domain Test Fixtures    │
+                    │  VM-W0.5-3: Model Abstraction Layer │
+                    └───────────────┬─────────────────────┘
+                                    │ (Week 2-3)
                     ┌───────────────┴───────────────┐
                     ▼                               ▼
         WAVE 1A: Functional Tests       WAVE 1B: Golden Dataset
@@ -45,7 +54,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 │ VM-W1-1: PDF Extraction       │ │ VM-W1-4: Golden Dataset       │
 │ VM-W1-2: Claim Identification │ │          Creation             │
 │ VM-W1-3: Judge Decisions      │ └───────────────────────────────┘
-└───────────────────────────────┘   (Week 3-4)
+└───────────────────────────────┘   (Week 4-5)
                     │
                     ▼
               WAVE 2: Accuracy & Efficiency
@@ -53,29 +62,29 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 │ VM-W2-1: Accuracy Baseline    │ VM-W2-3: Efficiency Metrics│
 │ VM-W2-2: Judge Calibration    │ VM-W2-4: Cost Tracking     │
 └───────────────────────────────┴───────────────────────────┘
-                    │ (Week 5-6)
+                    │ (Week 6-7)
                     ▼
-        WAVE 2.5: Output Quality Validation (NEW)
+        WAVE 2.5: Output Quality Validation
 ┌───────────────────────────────────────────────────────────┐
 │ VM-W2.5-1: Core Output Schema   │ VM-W2.5-3: Evidence     │
 │ VM-W2.5-2: Recommendation       │            Enhancement  │
 │            Quality              │                         │
 └───────────────────────────────┴───────────────────────────┘
-                    │ (Week 6-7)
+                    │ (Week 7-8)
                     ▼
               WAVE 3: Component Benchmarks
 ┌───────────────────────────────────────────────────────────┐
 │ VM-W3-1: Journal Reviewer BM  │ VM-W3-3: DRA Benchmark     │
 │ VM-W3-2: Judge Benchmark      │ VM-W3-4: Orchestrator BM   │
 └───────────────────────────────┴───────────────────────────┘
-                    │ (Week 7-8)
+                    │ (Week 8-9)
                     ▼
               WAVE 4: E2E & Quality
 ┌───────────────────────────────────────────────────────────┐
 │ VM-W4-1: E2E Scenario Suite   │ VM-W4-2: Quality Benchmarks│
 │          + Visualization (VI) │                            │
 └───────────────────────────────┴───────────────────────────┘
-                    │ (Week 9-10)
+                    │ (Week 10-11)
                     ▼
               WAVE 5: Integration & CI/CD
 ┌───────────────────────────────────────────────────────────┐
@@ -91,6 +100,9 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 |--------------|------------------|-------------|
 | VM-W0-1 | - | Test infrastructure foundation |
 | VM-W0-2 | QB-01→05 (spec) | Golden dataset specification |
+| **VM-W0.5-1** | **MT-01, MT-02** | Metrics configuration system |
+| **VM-W0.5-2** | **DF-01, DF-02** | Domain test fixtures |
+| **VM-W0.5-3** | **MC-01, MC-02, MC-03** | Model abstraction layer |
 | VM-W1-1 | FV-01, FV-02 | PDF extraction validation |
 | VM-W1-2 | FV-03, AV-01, AV-02 | Claim identification accuracy |
 | VM-W1-3 | FV-04, FV-05, FV-06, **FV-10** | Judge decisions + Version sync |
@@ -116,6 +128,9 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 > - OQ-01→10: Output Quality validation
 > - RA-01→05: Recommendation Accuracy validation
 > - VI-01→04: Visualization Integrity validation
+> - MT-01→02: Metrics configuration validation
+> - DF-01→02: Domain fixture validation
+> - MC-01→03: Model comparison benchmarks
 
 ---
 
@@ -150,7 +165,59 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 
 ---
 
-## Wave 1: Core Functional Validation (Week 3-4) - 32 hours
+## Wave 0.5: Modularization Infrastructure (Week 2-3) - 26 hours
+
+> **Added in response to third-party Modularization Assessment**
+> 
+> This wave addresses key modularization gaps that limit the pipeline's flexibility
+> and testability across different domains, LLM providers, and threshold configurations.
+> Implements infrastructure for domain-agnostic validation and model comparison benchmarks.
+
+### VM-W0.5-1: Metrics Configuration System
+- **File:** `VM_WAVE_0.5_1_METRICS_CONFIG.md`
+- **Effort:** 6 hours
+- **Priority:** HIGH (P1 - Lowest risk, immediate benefit)
+- **Status:** Not Started
+- **Dependencies:** VM-W0-1
+- **Validation IDs:** MT-01, MT-02
+- **Deliverables:**
+  - `tests/validation/config/metrics_config.py` - MetricsConfig dataclass
+  - `tests/validation/config/metrics.yaml` - Externalized thresholds
+  - Profile system (dev, prod, quick, ci)
+  - Environment variable overrides
+  - `--metrics-profile` CLI flag for pytest
+
+### VM-W0.5-2: Domain Test Fixtures
+- **File:** `VM_WAVE_0.5_2_DOMAIN_FIXTURES.md`
+- **Effort:** 8 hours
+- **Priority:** HIGH (P2 - Builds on existing ResearchConfig)
+- **Status:** Not Started
+- **Dependencies:** VM-W0-1
+- **Validation IDs:** DF-01, DF-02
+- **Deliverables:**
+  - `tests/validation/fixtures/domain_fixture.py` - DomainTestFixture class
+  - `tests/validation/fixtures/domain_registry.py` - DomainRegistry
+  - `golden_dataset.schema.json` - Domain-agnostic schema
+  - `--domain` and `--all-domains` CLI flags for pytest
+  - Cross-domain validation report generator
+
+### VM-W0.5-3: Model Abstraction Layer
+- **File:** `VM_WAVE_0.5_3_MODEL_ABSTRACTION.md`
+- **Effort:** 12 hours
+- **Priority:** HIGH (P3 - Highest effort, enables model comparison)
+- **Status:** Not Started
+- **Dependencies:** None (can start in parallel)
+- **Validation IDs:** MC-01, MC-02, MC-03
+- **Deliverables:**
+  - `literature_review/config/model_config.py` - ModelConfig abstraction
+  - `literature_review/utils/llm_client.py` - Provider-agnostic LLM client
+  - Support for Gemini, OpenAI, Anthropic, local (Ollama)
+  - `--model` CLI flag for pipeline_orchestrator.py
+  - Model comparison benchmark tests
+
+---
+
+## Wave 1: Core Functional Validation (Week 4-5) - 32 hours
 
 ### VM-W1-1: PDF Extraction Validation
 - **File:** `VM_WAVE_1_1_PDF_EXTRACTION.md`
@@ -206,7 +273,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 
 ---
 
-## Wave 2: Accuracy & Efficiency (Week 5-6) - 32 hours
+## Wave 2: Accuracy & Efficiency (Week 6-7) - 32 hours
 
 ### VM-W2-1: Accuracy Baseline Tests
 - **File:** `VM_WAVE_2_1_ACCURACY_BASELINE.md`
@@ -321,7 +388,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 
 ---
 
-## Wave 3: Component Benchmarks (Week 8-9) - 24 hours
+## Wave 3: Component Benchmarks (Week 10-11) - 24 hours
 
 ### VM-W3-1: Journal Reviewer Benchmark
 - **File:** `VM_WAVE_3_1_JOURNAL_REVIEWER_BM.md`
@@ -380,7 +447,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 
 ---
 
-## Wave 4: E2E & Quality + Visualization (Week 10-11) - 24 hours *(expanded for VI-*)*
+## Wave 4: E2E & Quality + Visualization (Week 11-12) - 24 hours *(expanded for VI-*)*
 
 ### VM-W4-1: E2E Scenario Suite + Visualization Integrity
 - **File:** `VM_WAVE_4_1_E2E_VISUALIZATION.md`
@@ -420,7 +487,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 
 ---
 
-## Wave 5: Integration & Reporting (Week 11-12) - 16 hours *(expanded per review feedback)*
+## Wave 5: Integration & Reporting (Week 12-14) - 16 hours *(expanded per review feedback)*
 
 ### VM-W5-1: CI/CD Integration
 - **File:** `VM_WAVE_5_1_CICD_INTEGRATION.md`
