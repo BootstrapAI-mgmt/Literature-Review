@@ -97,6 +97,9 @@ proof_scorecard_output/
 outputs/
 *_output/
 
+# Exception for test validation outputs directory
+!tests/validation/outputs/
+
 # n8n integration symlink (points to n8n-server/)
 n8n_server
 
