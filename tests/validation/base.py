@@ -92,7 +92,8 @@ class ValidationTestCase(ABC):
         actual: float,
         threshold: float,
         comparison: str = "gte",  # gte, lte, eq
-        metadata: Optional[Dict] = None
+        metadata: Optional[Dict] = None,
+        tolerance: float = 0.001
     ) -> ValidationResult:
         """
         Validate a value against a threshold.
@@ -104,6 +105,7 @@ class ValidationTestCase(ABC):
             threshold: Expected threshold
             comparison: "gte" (>=), "lte" (<=), "eq" (==)
             metadata: Additional test metadata
+            tolerance: Tolerance for equality comparison (default: 0.001)
         
         Returns:
             ValidationResult with pass/fail status
@@ -113,7 +115,7 @@ class ValidationTestCase(ABC):
         elif comparison == "lte":
             passed = actual <= threshold
         else:  # eq
-            passed = abs(actual - threshold) < 0.001
+            passed = abs(actual - threshold) < tolerance
         
         result = ValidationResult(
             test_id=test_id,
@@ -134,13 +136,26 @@ class ValidationTestCase(ABC):
         self,
         test_id: str,
         test_name: str,
-        numerator: int,
-        denominator: int,
+        numerator: float,
+        denominator: float,
         threshold_percent: float,
         comparison: str = "gte",
         metadata: Optional[Dict] = None
     ) -> ValidationResult:
-        """Validate a percentage against threshold."""
+        """Validate a percentage against threshold.
+        
+        Args:
+            test_id: Validation matrix ID (e.g., "AV-01")
+            test_name: Human-readable test name
+            numerator: Numerator value (int or float)
+            denominator: Denominator value (int or float)
+            threshold_percent: Expected threshold percentage
+            comparison: "gte" (>=), "lte" (<=), "eq" (==)
+            metadata: Additional test metadata
+        
+        Returns:
+            ValidationResult with pass/fail status
+        """
         if denominator == 0:
             actual = 0.0
         else:

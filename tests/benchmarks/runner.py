@@ -67,9 +67,22 @@ class BenchmarkResult:
 class HardwareProfiler:
     """Capture hardware profile for benchmark reproducibility."""
     
+    # Default interval for CPU usage measurement (None = non-blocking)
+    DEFAULT_CPU_INTERVAL = None
+    
     @staticmethod
-    def capture() -> Dict[str, Any]:
-        """Capture current hardware profile."""
+    def capture(cpu_interval: float = None) -> Dict[str, Any]:
+        """
+        Capture current hardware profile.
+        
+        Args:
+            cpu_interval: Interval in seconds for CPU usage measurement.
+                         None = non-blocking (returns cached value).
+                         0.1 = blocks for 100ms for accurate measurement.
+        
+        Returns:
+            Dictionary with platform, cpu, memory, and disk information.
+        """
         profile = {
             "platform": {
                 "system": platform.system(),
@@ -88,7 +101,7 @@ class HardwareProfiler:
                 "physical_cores": psutil.cpu_count(logical=False),
                 "logical_cores": psutil.cpu_count(logical=True),
                 "frequency_mhz": getattr(cpu_freq, 'current', None) if cpu_freq else None,
-                "usage_percent": psutil.cpu_percent(interval=0.1)
+                "usage_percent": psutil.cpu_percent(interval=cpu_interval)
             }
             
             # Memory information
@@ -99,9 +112,16 @@ class HardwareProfiler:
                 "used_percent": mem.percent
             }
             
-            # Disk information
+            # Disk information - cross-platform approach
             try:
-                disk = psutil.disk_usage('/')
+                # Get the root path based on OS
+                if platform.system() == "Windows":
+                    import pathlib
+                    root_path = pathlib.Path.home().anchor  # e.g., "C:\\"
+                else:
+                    root_path = "/"
+                
+                disk = psutil.disk_usage(root_path)
                 profile["disk"] = {
                     "total_gb": round(disk.total / (1024**3), 2),
                     "free_gb": round(disk.free / (1024**3), 2)

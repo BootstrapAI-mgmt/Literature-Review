@@ -5,6 +5,7 @@ Provides utilities for loading and managing golden dataset test fixtures.
 """
 
 import json
+import logging
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Any
@@ -16,21 +17,26 @@ from tests.golden_dataset.schema import (
     GoldenDataset
 )
 
+logger = logging.getLogger(__name__)
+
 
 class GoldenDatasetLoader:
     """Load and manage golden dataset files."""
     
     DEFAULT_DATA_DIR = Path(__file__).parent / "data"
     
-    def __init__(self, data_dir: Optional[Path] = None):
+    def __init__(self, data_dir: Optional[Path] = None, warn_on_missing: bool = True):
         """
         Initialize the loader.
         
         Args:
             data_dir: Directory containing golden dataset files.
                      Defaults to tests/golden_dataset/data/
+            warn_on_missing: Whether to log a warning when files are not found.
+                            Defaults to True.
         """
         self.data_dir = Path(data_dir) if data_dir else self.DEFAULT_DATA_DIR
+        self.warn_on_missing = warn_on_missing
     
     def load_claims(self, filename: str = "claims.json") -> List[GoldenClaim]:
         """
@@ -40,10 +46,12 @@ class GoldenDatasetLoader:
             filename: Name of claims file
             
         Returns:
-            List of GoldenClaim objects
+            List of GoldenClaim objects (empty list if file not found)
         """
         filepath = self.data_dir / filename
         if not filepath.exists():
+            if self.warn_on_missing:
+                logger.warning(f"Golden dataset file not found: {filepath}")
             return []
         
         with open(filepath, 'r') as f:
@@ -74,10 +82,12 @@ class GoldenDatasetLoader:
             filename: Name of verdicts file
             
         Returns:
-            List of GoldenVerdict objects
+            List of GoldenVerdict objects (empty list if file not found)
         """
         filepath = self.data_dir / filename
         if not filepath.exists():
+            if self.warn_on_missing:
+                logger.warning(f"Golden dataset file not found: {filepath}")
             return []
         
         with open(filepath, 'r') as f:
@@ -106,10 +116,12 @@ class GoldenDatasetLoader:
             filename: Name of gaps file
             
         Returns:
-            List of GoldenGap objects
+            List of GoldenGap objects (empty list if file not found)
         """
         filepath = self.data_dir / filename
         if not filepath.exists():
+            if self.warn_on_missing:
+                logger.warning(f"Golden dataset file not found: {filepath}")
             return []
         
         with open(filepath, 'r') as f:
@@ -141,6 +153,8 @@ class GoldenDatasetLoader:
         """
         filepath = self.data_dir / f"{name}_dataset.json"
         if not filepath.exists():
+            if self.warn_on_missing:
+                logger.warning(f"Golden dataset not found: {filepath}")
             return None
         
         with open(filepath, 'r') as f:
