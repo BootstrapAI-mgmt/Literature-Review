@@ -5,12 +5,11 @@ Tests for establishing accuracy baselines.
 """
 
 import pytest
-from tests.validation.base import AccuracyValidationTestCase
 
 
 @pytest.mark.validation
 @pytest.mark.accuracy
-class TestAccuracyBaseline(AccuracyValidationTestCase):
+class TestAccuracyBaseline:
     """Placeholder for accuracy baseline validation tests."""
     
     @pytest.mark.skip(reason="Placeholder - implement with golden dataset")

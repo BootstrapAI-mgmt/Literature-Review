@@ -5,12 +5,11 @@ Tests for validating efficiency metrics.
 """
 
 import pytest
-from tests.validation.base import EfficiencyValidationTestCase
 
 
 @pytest.mark.validation
 @pytest.mark.efficiency
-class TestEfficiencyMetrics(EfficiencyValidationTestCase):
+class TestEfficiencyMetrics:
     """Placeholder for efficiency metrics validation tests."""
     
     @pytest.mark.skip(reason="Placeholder - implement with golden dataset")

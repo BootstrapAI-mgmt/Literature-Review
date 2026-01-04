@@ -5,15 +5,12 @@ Tests for validating PDF text extraction functionality.
 """
 
 import pytest
-from tests.validation.base import ValidationTestCase
 
 
 @pytest.mark.validation
 @pytest.mark.functional
-class TestPDFExtraction(ValidationTestCase):
+class TestPDFExtraction:
     """Placeholder for PDF extraction validation tests."""
-    
-    TEST_CATEGORY = "FV"
     
     @pytest.mark.skip(reason="Placeholder - implement with golden dataset")
     def test_pdf_text_extraction_accuracy(self):

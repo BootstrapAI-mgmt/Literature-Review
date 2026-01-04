@@ -5,13 +5,12 @@ Tests for validating API cost tracking.
 """
 
 import pytest
-from tests.validation.base import EfficiencyValidationTestCase
 
 
 @pytest.mark.validation
 @pytest.mark.efficiency
 @pytest.mark.cost
-class TestCostTracking(EfficiencyValidationTestCase):
+class TestCostTracking:
     """Placeholder for cost tracking validation tests."""
     
     @pytest.mark.skip(reason="Placeholder - implement with golden dataset")

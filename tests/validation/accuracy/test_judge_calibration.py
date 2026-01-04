@@ -5,13 +5,12 @@ Tests for validating Judge score calibration.
 """
 
 import pytest
-from tests.validation.base import AccuracyValidationTestCase
 
 
 @pytest.mark.validation
 @pytest.mark.accuracy
 @pytest.mark.calibration
-class TestJudgeCalibration(AccuracyValidationTestCase):
+class TestJudgeCalibration:
     """Placeholder for Judge calibration validation tests."""
     
     @pytest.mark.skip(reason="Placeholder - implement with golden dataset")
