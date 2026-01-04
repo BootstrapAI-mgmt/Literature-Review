@@ -1,7 +1,7 @@
 {
   "version": "0.1.0",
-  "created_date": "2025-12-31T00:00:00Z",
-  "last_updated": "2025-12-31T00:00:00Z",
+  "created_date": "2025-01-01T00:00:00Z",
+  "last_updated": "2025-01-01T00:00:00Z",
   "description": "Sample golden dataset for development and testing. Replace with full dataset.",
   "annotated_claims": [
     {
@@ -29,7 +29,7 @@
         "rationale": "Clear quantitative results with error bars, multiple trials, and power measurements."
       },
       "annotator_ids": ["dev_annotator"],
-      "annotation_date": "2025-12-31T00:00:00Z",
+      "annotation_date": "2025-01-01T10:00:00Z",
       "inter_rater_agreement": null,
       "test_categories": ["precision", "judge_accuracy", "pillar_mapping"],
       "is_edge_case": false,
@@ -60,7 +60,7 @@
         "rationale": "No methodology, no data, purely assertion-based claim."
       },
       "annotator_ids": ["dev_annotator"],
-      "annotation_date": "2025-12-31T00:00:00Z",
+      "annotation_date": "2025-01-01T11:00:00Z",
       "inter_rater_agreement": null,
       "test_categories": ["recall", "false_approval_prevention"],
       "is_edge_case": false,
@@ -91,7 +91,7 @@
         "rationale": "Relevant but preliminary results without statistical validation."
       },
       "annotator_ids": ["dev_annotator"],
-      "annotation_date": "2025-12-31T00:00:00Z",
+      "annotation_date": "2025-01-01T12:00:00Z",
       "inter_rater_agreement": null,
       "test_categories": ["calibration", "borderline"],
       "is_edge_case": true,
@@ -122,7 +122,7 @@
         "rationale": "Excellent experimental methodology with direct measurements, proper comparison, and statistical validation."
       },
       "annotator_ids": ["dev_annotator", "expert_reviewer_1"],
-      "annotation_date": "2025-12-31T00:00:00Z",
+      "annotation_date": "2025-01-01T14:00:00Z",
       "inter_rater_agreement": 0.92,
       "test_categories": ["precision", "judge_accuracy", "high_quality"],
       "is_edge_case": false,
@@ -153,7 +153,7 @@
         "rationale": "Theoretical analysis is sound but no experimental validation provided. Speculative language indicates uncertainty."
       },
       "annotator_ids": ["dev_annotator"],
-      "annotation_date": "2025-12-31T00:00:00Z",
+      "annotation_date": "2025-01-01T15:00:00Z",
       "inter_rater_agreement": null,
       "test_categories": ["recall", "theoretical_claims"],
       "is_edge_case": false,
