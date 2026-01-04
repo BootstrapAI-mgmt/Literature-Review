@@ -9,6 +9,7 @@ pytest-mock>=3.11.0
 pytest-timeout>=2.1.0
 playwright>=1.40.0
 pytest-playwright>=0.4.3
+psutil>=5.9.0
 
 # Code Quality
 black>=23.7.0
