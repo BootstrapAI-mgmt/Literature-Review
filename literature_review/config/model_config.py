@@ -107,7 +107,11 @@ class ModelConfig:
     def validate(self) -> bool:
         """Validate configuration."""
         if not self.api_key:
-            logger.warning(f"API key not set: {self.api_key_env}")
+            logger.warning(
+                "API key is not set for model '%s' (provider: %s)",
+                self.model_name,
+                self.provider.value,
+            )
             return False
         return True
     
