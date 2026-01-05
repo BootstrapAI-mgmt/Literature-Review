@@ -265,20 +265,20 @@ curl -X POST https://gitlitreview.app.n8n.cloud/webhook/distributor-reset
 
 | Test | Status | Date | Notes |
 |------|--------|------|-------|
-| 1.1 Manual change triggers chain | ⬜ | - | - |
-| 1.2 Multiple files changed | ⬜ | - | - |
-| 2.1 N8N commit filtered | ⬜ | - | - |
-| 2.2 Matrix update ignored | ⬜ | - | - |
-| 3.1 Duplicate submission | ⬜ | - | - |
-| 3.2 Recently completed | ⬜ | - | - |
-| 4.1 Mismatch detection | ⬜ | - | - |
-| 4.2 No mismatches | ⬜ | - | - |
-| 5.1 GitHub API failure | ⬜ | - | - |
-| 5.2 AI model failure | ⬜ | - | - |
-| 6.1 Staleness digest | ⬜ | - | - |
-| 6.2 Duplicate issue prevention | ⬜ | - | - |
-| 7.1 Status endpoint | ⬜ | - | - |
-| 7.2 Reset endpoint | ⬜ | - | - |
+| 1.1 Manual change triggers chain | ✅ | 2025-12-30 | Verified E2E flow from commit to matrix update. |
+| 1.2 Multiple files changed | ✅ | 2025-12-30 | Sequential processing verified (Execution 100, 101, 102). |
+| 2.1 N8N commit filtered | ✅ | 2025-12-30 | Filtered at "Filter Valid Events" (Execution 94). |
+| 2.2 Matrix update ignored | ✅ | 2025-12-30 | Filtered at "Find Affected Docs" (Execution 95). |
+| 3.1 Duplicate submission | ✅ | 2025-12-30 | Distributor deduplication verified. |
+| 3.2 Recently completed | ✅ | 2025-12-31 | Distributor deduplication verified (Execution 180). |
+| 4.1 Mismatch detection | ✅ | 2025-12-30 | Detected discrepancy in docs count. |
+| 4.2 No mismatches | ✅ | 2025-12-30 | Reached "Log in Sync" after corrections. |
+| 5.1 GitHub API failure | ✅ | 2025-12-31 | Verified Error Handler extraction of task_id. |
+| 5.2 AI model failure | ✅ | 2025-12-31 | Issue #120 displays backticked Task ID. |
+| 6.1 Staleness digest | ✅ | 2025-12-30 | Gemini suggested AUTOMATED_UPDATE (Execution 85). |
+| 6.2 Duplicate issue prevention | ✅ | 2025-12-31 | Execution 193 completed successfully. |
+| 7.1 Status endpoint | ✅ | 2025-12-30 | Verified /webhook/distributor-status returns JSON. |
+| 7.2 Reset endpoint | ✅ | 2025-12-30 | Verified /webhook/distributor-reset clears state. |
 
 ---
 
@@ -286,8 +286,8 @@ curl -X POST https://gitlitreview.app.n8n.cloud/webhook/distributor-reset
 
 | Phase | Status | Date | Reviewer |
 |-------|--------|------|----------|
-| All tests executed | ⬜ | - | - |
-| Issues documented | ⬜ | - | - |
-| Fixes verified | ⬜ | - | - |
+| All tests executed | ✅ | 2025-12-31 | Antigravity |
+| Issues documented | ✅ | 2025-12-31 | Antigravity |
+| Fixes verified | ✅ | 2025-12-31 | Antigravity |
 
-**Final Integration Sign-off:** ⬜ Pending
+**Final Integration Sign-off:** ✅ Complete / Verified

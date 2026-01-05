@@ -1,0 +1,25 @@
+validation_type: bidirectional_sync
+
+rules:
+  - name: pr_to_task_sync
+    description: "Every merged PR with task reference updates corresponding task card"
+    validation: 
+      - find_prs: merged AND (title contains "OP-W" OR body contains "OP-W")
+      - for_each_pr:
+          - extract: task_id from title or body
+          - locate: task-cards/{task_id}.md
+          - assert: status == "✅ Complete"
+          
+  - name: task_to_pr_sync  
+    description: "Every task marked complete has corresponding merged PR"
+    validation:
+      - find_tasks: task-cards/*.md WHERE status == "Complete"
+      - for_each_task: 
+          - assert: linked_pr exists AND is_merged
+          
+  - name: wave_index_sync
+    description: "Wave index reflects individual task statuses"
+    validation:
+      - for_each_wave_index: task-cards/*_WAVE_INDEX.md
+          - for_each_task_row:
+              - assert: status matches individual_task_card_status

@@ -1,0 +1,42 @@
+document: docs/MASTER_REPOSITORY_ROADMAP.md
+validation_type: task_status_sync
+
+expected_sections:
+  - name: "At a Glance"
+    validation: wave_status_table
+    rules:
+      - for_each_wave: 
+          - if: all_task_cards_marked_complete
+            then: wave_status == "✅ Complete"
+          - if: any_task_card_in_progress
+            then: wave_status contains percentage
+          - completion_percentage: 
+              formula: (completed_tasks / total_tasks) * 100
+              tolerance: 0%  # Must be exact
+  
+  - name: "Operationalization Wave"
+    validation: pr_merge_sync
+    expected_state: "✅ Complete"  # Based on PRs #97-105
+    task_mapping:
+      OP-W1-1: PR#97  # Schema Foundation
+      OP-W2-1: PR#98  # Action Extraction
+      OP-W2-2: PR#99  # Benchmark Extraction
+      OP-W3-1: PR#100 # Validation Tracker
+      OP-W3-2: PR#101 # Action Vector Generator
+      OP-W4-1: PR#102 # Pillar Research Log
+      OP-W4-2: PR#103 # Modification Proposals
+      OP-W4-3: PR#105 # Stakeholder Matrix
+  
+  - name: "Validation Matrix Wave"
+    validation: existence_check
+    expected_state: "Section exists"  # Per PR#122
+    task_count: 22
+    
+  - name: "Wave 0.5 Modularization"
+    validation: existence_check
+    expected_state: "Section exists"  # Per Jan 1, 2026 commits
+    task_count: 3
+
+freshness:
+  max_age_days: 3
+  relative_to: latest_merged_pr
