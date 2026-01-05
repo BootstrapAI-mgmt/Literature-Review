@@ -10,13 +10,53 @@ import shutil
 import os
 import json
 from pathlib import Path
-from typing import Dict, Any
+from typing import Dict, Any, TYPE_CHECKING
 
 # Add parent directory to path for imports
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from tests.fixtures.test_data_generator import TestDataGenerator
+
+# =============================================================================
+# Metrics Configuration Integration
+# =============================================================================
+
+# Import metrics config (created by VM-W0.5-1)
+try:
+    from tests.validation.config.metrics_config import (
+        load_metrics_config,
+        get_metrics_config,
+        MetricsConfig,
+        MetricCategory
+    )
+    METRICS_AVAILABLE = True
+except ImportError:
+    METRICS_AVAILABLE = False
+    MetricsConfig = None
+    MetricCategory = None
+
+
+def pytest_addoption(parser):
+    """Add custom command-line options for metrics configuration."""
+    parser.addoption(
+        "--metrics-profile",
+        action="store",
+        default="development",
+        help="Metrics profile: development, production, quick, ci"
+    )
+    parser.addoption(
+        "--skip-category",
+        action="append",
+        default=[],
+        help="Skip metric categories: accuracy, efficiency, benchmark, e2e"
+    )
+    parser.addoption(
+        "--only-category",
+        action="store",
+        default=None,
+        help="Run only this metric category"
+    )
 
 
 @pytest.fixture(scope="function")
@@ -221,3 +261,55 @@ def browser_context_args(browser_context_args):
         },
         "ignore_https_errors": True,
     }
+
+
+# =============================================================================
+# Metrics Configuration Fixtures
+# =============================================================================
+
+@pytest.fixture(scope="session")
+def metrics_config(request):
+    """Load metrics configuration with profile applied."""
+    if not METRICS_AVAILABLE:
+        pytest.skip("Metrics config not available")
+    
+    profile = request.config.getoption("--metrics-profile")
+    config = load_metrics_config(profile=profile)
+    
+    # Apply category skips
+    skip_cats = request.config.getoption("--skip-category")
+    for cat_name in skip_cats:
+        try:
+            cat = MetricCategory(cat_name)
+            config.disable_category(cat)
+        except ValueError:
+            pass
+    
+    # Apply only-category filter
+    only_cat = request.config.getoption("--only-category")
+    if only_cat:
+        try:
+            target = MetricCategory(only_cat)
+            for cat in list(MetricCategory):
+                if cat != target:
+                    config.disable_category(cat)
+        except ValueError:
+            pass
+    
+    return config
+
+
+@pytest.fixture
+def get_threshold(metrics_config):
+    """Fixture to get thresholds by ID."""
+    def _get(metric_id: str) -> float:
+        return metrics_config.get_threshold(metric_id)
+    return _get
+
+
+@pytest.fixture
+def check_metric(metrics_config):
+    """Fixture to check if a value passes a metric."""
+    def _check(metric_id: str, value: float) -> bool:
+        return metrics_config.check(metric_id, value)
+    return _check
