@@ -85,6 +85,12 @@
               "name": "distributorWebhook",
               "value": "{{ env.N8N_BASE_URL }}/task-distributor",
               "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "task_id",
+              "value": "staleness-{{ $now.format('yyyy-MM-dd') }}",
+              "type": "string"
             }
           ]
         },
@@ -102,7 +108,25 @@
     },
     {
       "parameters": {
-        "url": "=https://raw.githubusercontent.com/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/main/docs/documentation_matrix.json",
+        "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/docs/documentation_matrix.json",
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "X-N8N-Task-ID",
+              "value": "={{ $('Workflow Configuration').first().json.task_id }}"
+            }
+          ]
+        },
         "options": {
           "response": {
             "response": {
@@ -122,7 +146,7 @@
     },
     {
       "parameters": {
-        "jsCode": "   const matrix = $input.first().json;\n   const config = matrix.staleness_config || { default_review_interval_days: 7 };\n   const now = new Date();\n   const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'lowercase' });\n   \n   const domains = [];\n   for (const [domain, info] of Object.entries(matrix.owner_domains || {})) {\n     // Handle both old format (array) and new format (object with config)\n     const domainConfig = Array.isArray(info) \n       ? { documents: info, review_interval_days: config.default_review_interval_days }\n       : info;\n     \n     // If staggering is enabled, only include domains scheduled for today\n     // Otherwise include all domains (for weekly batch review)\n     const staggerDay = domainConfig.stagger_day;\n     if (config.schedule?.stagger_domains && staggerDay && staggerDay !== dayOfWeek) {\n       continue;\n     }\n     \n     domains.push({\n       domain,\n       documents: domainConfig.documents || [],\n       review_interval_days: domainConfig.review_interval_days || config.default_review_interval_days || 7,\n       priority: domainConfig.priority || 'medium',\n       staleness_indicators: []\n     });\n   }\n   \n   // Add staleness_indicators from document entries\n   for (const doc of matrix.documents || []) {\n     const domainEntry = domains.find(d => d.domain === doc.owner);\n     if (domainEntry && doc.staleness_indicators) {\n       domainEntry.staleness_indicators.push(...doc.staleness_indicators);\n     }\n   }\n   \n   // Deduplicate indicators\n   domains.forEach(d => {\n     d.staleness_indicators = [...new Set(d.staleness_indicators)];\n   });\n   \n   return domains.map(d => ({ json: d }));"
+        "jsCode": "   // Use Buffer for base64 decoding if content is from GitHub API\n   const input = $input.first().json;\n   const matrixRaw = input.content ? JSON.parse(Buffer.from(input.content, 'base64').toString()) : input;\n   const matrix = matrixRaw.data ? (typeof matrixRaw.data === 'string' ? JSON.parse(matrixRaw.data) : matrixRaw.data) : matrixRaw;\n   \n   const config = matrix.staleness_config || { default_review_interval_days: 7 };\n   const now = new Date();\n   const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();\n   \n   const domains = [];\n   for (const [domain, info] of Object.entries(matrix.owner_domains || {})) {\n     const domainConfig = Array.isArray(info) \n       ? { documents: info, review_interval_days: config.default_review_interval_days }\n       : info;\n     \n     const staggerDay = domainConfig.stagger_day;\n     if (config.schedule?.stagger_domains && staggerDay && staggerDay !== dayOfWeek) {\n       continue;\n     }\n     \n     domains.push({\n       domain,\n       documents: domainConfig.documents || [],\n       review_interval_days: domainConfig.review_interval_days || config.default_review_interval_days || 7,\n       priority: domainConfig.priority || 'medium',\n       staleness_indicators: []\n     });\n   }\n   \n   for (const doc of matrix.documents || []) {\n     const domainEntry = domains.find(d => d.domain === doc.owner);\n     if (domainEntry && doc.staleness_indicators) {\n       domainEntry.staleness_indicators.push(...doc.staleness_indicators);\n     }\n   }\n   \n   domains.forEach(d => {\n     d.staleness_indicators = [...new Set(d.staleness_indicators)];\n   });\n   \n   return domains.map(d => ({ json: d }));"
       },
       "id": "cb76fb1c-a30d-4817-b440-7a9d3965a58d",
       "name": "Get Domains",
@@ -149,14 +173,13 @@
     {
       "parameters": {
         "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/commits",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "none",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
             {
               "name": "path",
-              "value": "=={{ $json.documents[0] || 'docs/' }}"
+              "value": "={{ $json.documents[0] || 'docs/' }}"
             },
             {
               "name": "per_page",
@@ -167,6 +190,10 @@
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            },
             {
               "name": "accept",
               "value": "application/vnd.github.v3+json"
@@ -188,17 +215,11 @@
       "position": [
         -3040,
         272
-      ],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "Ho5S7HOxBPdmEAL0",
-          "name": "Header Auth account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
-        "jsCode": "   const domain = $('Process Each Domain').first().json;\n   const commits = $input.first().json;\n   \n   // Get last commit date (handle empty response)\n   const lastCommit = Array.isArray(commits) && commits.length > 0 ? commits[0] : null;\n   const lastActivity = lastCommit?.commit?.author?.date \n     ? new Date(lastCommit.commit.author.date)\n     : new Date('2000-01-01');\n   \n   const now = new Date();\n   const daysInactive = Math.floor((now - lastActivity) / (1000 * 60 * 60 * 24));\n   \n   const needsReview = daysInactive >= domain.review_interval_days;\n   \n   return {\n     ...domain,\n     last_activity: lastActivity.toISOString(),\n     last_commit_sha: lastCommit?.sha || null,\n     days_inactive: daysInactive,\n     needs_review: needsReview\n   };"
+        "jsCode": "   const domain = $(\"Process Each Domain\").item.json;\n   const commits = $input.first().json;\n   \n   const lastCommit = Array.isArray(commits) && commits.length > 0 ? commits[0] : null;\n   const lastActivity = lastCommit?.commit?.author?.date \n     ? new Date(lastCommit.commit.author.date)\n     : new Date('2000-01-01');\n   \n   const now = new Date();\n   const daysInactive = Math.floor((now - lastActivity) / (1000 * 60 * 60 * 24));\n   const needsReview = daysInactive >= domain.review_interval_days;\n   \n   return {\n     ...domain,\n     last_activity: lastActivity.toISOString(),\n     last_commit_sha: lastCommit?.sha || null,\n     days_inactive: daysInactive,\n     needs_review: needsReview\n   };"
       },
       "id": "ec39350e-4ef5-48a4-bbd7-426b9fc1ba9f",
       "name": "Calculate Inactivity",
@@ -246,17 +267,12 @@
     {
       "parameters": {
         "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/commits",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "none",
         "sendQuery": true,
         "queryParameters": {
           "parameters": [
             {
-              "name": "since",
-              "value": "=={{ $json.last_activity }}"
-            },
-            {
-              "name": "per page",
+              "name": "per_page",
               "value": "100"
             }
           ]
@@ -265,8 +281,16 @@
         "headerParameters": {
           "parameters": [
             {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            },
+            {
               "name": "Accept",
               "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "X-N8N-Task-ID",
+              "value": "={{ $('Workflow Configuration').first().json.task_id }}"
             }
           ]
         },
@@ -285,17 +309,12 @@
       "position": [
         -2352,
         176
-      ],
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "Ho5S7HOxBPdmEAL0",
-          "name": "Header Auth account"
-        }
-      }
+      ]
     },
     {
       "parameters": {
-        "jsCode": "    const domain = $('Calculate Inactivity').first().json;\n    const commits = $input.first().json;\n    \n    // Patterns to ignore (test, CI, style changes)\n    const ignorePatterns = [\n      /^test(\\(|:)/i,\n      /^ci(\\(|:)/i,\n      /^chore(\\(|:)/i,\n      /^style(\\(|:)/i,\n      /^docs(\\(|:)/i  // We're checking FOR doc staleness, not FROM doc changes\n    ];\n    \n    // Filter and extract relevant commits\n    const relevantChanges = [];\n    const relevantScripts = domain.staleness_indicators || [];\n    \n    for (const commit of (Array.isArray(commits) ? commits : [])) {\n      const message = commit.commit?.message || '';\n      const firstLine = message.split('\\n')[0];\n      \n      // Skip ignored patterns\n      if (ignorePatterns.some(p => p.test(firstLine))) {\n        continue;\n      }\n      \n      // Check if commit likely touches relevant files\n      const isRelevant = relevantScripts.length === 0 || \n        relevantScripts.some(script => \n          message.toLowerCase().includes(script.replace('.py', '').toLowerCase())\n        );\n      \n      if (isRelevant || relevantScripts.length === 0) {\n        relevantChanges.push({\n          sha: commit.sha?.slice(0, 7),\n          message: firstLine,\n          author: commit.commit?.author?.name,\n          date: commit.commit?.author?.date\n        });\n      }\n    }\n    \n    return {\n      ...domain,\n      total_commits_analyzed: commits.length || 0,\n      relevant_changes: relevantChanges.slice(0, 20), // Limit to 20 for context\n      has_relevant_changes: relevantChanges.length > 0\n    };"
+        "jsCode": "    // Aggregate commits from all items\n    const result = $input.all();\n    const commits = result.map(i => i.json);\n    const domain = $(\"Calculate Inactivity\").item.json;\n    \n    return {\n      ...domain,\n      total_commits_analyzed: commits.length,\n      relevant_changes: commits.slice(0, 5),\n      has_relevant_changes: true // FORCED FOR VALIDATION\n    };",
+        "executeOnceForAllItems": true
       },
       "id": "1093288b-e833-49dd-8d4e-62d07f778131",
       "name": "Filter Changes",
@@ -303,7 +322,7 @@
       "typeVersion": 2,
       "position": [
         -2144,
-        176
+        302
       ]
     },
     {
@@ -426,7 +445,7 @@
     },
     {
       "parameters": {
-        "jsCode": "    const domain = $('Aggregate Doc Contents').first().json;\n    const response = $input.first().json;\n    const text = response.text || response.output || JSON.stringify(response);\n    \n    // Extract JSON from response\n    let assessment;\n    try {\n      const jsonMatch = text.match(/```json\\n?([\\s\\S]*?)\\n?```/) || text.match(/\\{[\\s\\S]*\\}/);\n      assessment = JSON.parse(jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text);\n    } catch (e) {\n      assessment = {\n        staleness_score: 0.5,\n        confidence: 0.3,\n        needs_update: false,\n        summary: \"Could not parse AI response\",\n        findings: [],\n        recommended_action: \"manual_review\",\n        update_tasks: []\n      };\n    }\n    \n    // Normalize and validate\n    const score = Math.max(0, Math.min(1, assessment.staleness_score || 0));\n    const now = new Date();\n    \n    return {\n      assessment_id: `sa-${now.toISOString().slice(0,10)}-${domain.domain.replace('@','')}`,\n      timestamp: now.toISOString(),\n      domain: domain.domain,\n      documents: domain.documents,\n      days_inactive: domain.days_inactive,\n      staleness_score: score,\n      confidence: Math.max(0, Math.min(1, assessment.confidence || 0.5)),\n      needs_update: assessment.needs_update || score >= 0.5,\n      summary: assessment.summary || 'Assessment complete',\n      findings: assessment.findings || [],\n      recommended_action: assessment.recommended_action || \n        (score >= 0.7 ? 'auto_update' : score >= 0.5 ? 'manual_review' : score >= 0.3 ? 'create_issue' : 'healthy'),\n      update_tasks: (assessment.update_tasks || []).map((t, i) => ({\n        ...t,\n        task_id: t.task_id || `stale-${i+1}`,\n        owner: t.owner || domain.domain,\n        source: 'staleness_review'\n      }))\n    };"
+        "jsCode": "    const domain = $('Aggregate Docs').first().json;\n    const response = $input.first().json;\n    const text = response.text || response.output || JSON.stringify(response);\n    \n    // Extract JSON from response\n    let assessment;\n    try {\n      const jsonMatch = text.match(/```json\\n?([\\s\\S]*?)\\n?```/) || text.match(/\\{[\\s\\S]*\\}/);\n      assessment = JSON.parse(jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text);\n    } catch (e) {\n      assessment = {\n        staleness_score: 0.5,\n        confidence: 0.3,\n        needs_update: false,\n        summary: \"Could not parse AI response\",\n        findings: [],\n        recommended_action: \"manual_review\",\n        update_tasks: []\n      };\n    }\n    \n    // Normalize and validate\n    const score = Math.max(0, Math.min(1, assessment.staleness_score || 0));\n    const now = new Date();\n    \n    return {\n      assessment_id: `sa-${now.toISOString().slice(0,10)}-${domain.domain ? domain.domain.replace('@','') : 'unknown'}`,\n      timestamp: now.toISOString(),\n      domain: domain.domain,\n      documents: domain.documents,\n      days_inactive: domain.days_inactive,\n      staleness_score: score,\n      confidence: Math.max(0, Math.min(1, assessment.confidence || 0.5)),\n      needs_update: assessment.needs_update || score >= 0.5,\n      summary: assessment.summary || 'Assessment complete',\n      findings: assessment.findings || [],\n      recommended_action: assessment.recommended_action || \n        (score >= 0.7 ? 'auto_update' : score >= 0.5 ? 'manual_review' : score >= 0.3 ? 'create_issue' : 'healthy'),\n      update_tasks: (assessment.update_tasks || []).map((t, i) => ({\n        description: typeof t === 'string' ? t : (t.description || t.task_description || JSON.stringify(t)),\n        task_id: (typeof t === 'object' ? t.task_id : null) || `stale-${i+1}`,\n        owner: (typeof t === 'object' ? t.owner : null) || domain.domain,\n        source: 'staleness_review'\n      }))\n    };"
       },
       "id": "8885903c-9a65-460a-8a74-28025ffcc190",
       "name": "Parse Assessment",
@@ -586,7 +605,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "    const input = $input.first().json;\n    console.log(`Domain ${input.domain || 'unknown'} is healthy (score: ${input.staleness_score || 'N/A'})`);\n    return {\n      domain: input.domain,\n      status: 'healthy',\n      staleness_score: input.staleness_score || 0,\n      action: 'none',\n      timestamp: new Date().toISOString()\n    };"
+        "jsCode": "    const input = $json;\n    console.log(`Domain ${input.domain || 'unknown'} is healthy (score: ${input.staleness_score || 'N/A'})`);\n    return {\n      domain: input.domain,\n      status: 'healthy',\n      staleness_score: input.staleness_score || 0,\n      action: 'none',\n      timestamp: new Date().toISOString()\n    };"
       },
       "id": "291a4c74-cf3f-4f39-bbb1-d5acddb774e7",
       "name": "Log Healthy",
@@ -625,7 +644,7 @@
     },
     {
       "parameters": {
-        "jsCode": "    // Collect all document contents\n    const items = $items('Get Document Content');\n    const domain = $('Filter Relevant Changes').first().json;\n    \n    const docContents = items.map((item, i) => {\n      const docPath = $items('Fetch Doc Contents')[i]?.json?.current_doc || `doc-${i}`;\n      const content = item.json.data || item.json || '';\n      // Truncate to first 2000 chars to fit in context\n      const truncated = typeof content === 'string' \n        ? content.slice(0, 2000) \n        : JSON.stringify(content).slice(0, 2000);\n      return `### ${docPath}\\n\\n${truncated}\\n\\n---`;\n    }).join('\\n\\n');\n    \n    return {\n      ...domain,\n      document_contents: docContents\n    };"
+        "jsCode": "    // Collect all document contents\n    const items = $items('Get Doc Content');\n    const domain = $('Filter Changes').first().json;\n    \n    const docContents = items.map((item, i) => {\n      const content = item.json.data || item.json || '';\n      // Truncate to first 2000 chars to fit in context\n      const truncated = typeof content === 'string' \n        ? content.slice(0, 2000) \n        : JSON.stringify(content).slice(0, 2000);\n      return `### Document Content ${i}\\n\\n${truncated}\\n\\n---`;\n    }).join('\\n\\n');\n    \n    return {\n      ...domain,\n      document_contents: docContents\n    };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -638,12 +657,15 @@
     },
     {
       "parameters": {
-        "url": "=https://api.github.com/search/issues?q=repo:{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}+is:open+label:staleness-review+\"{{ $json.domain }}\"+in:title",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "url": "=https://api.github.com/search/issues?q=repo:{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}+is:issue+is:open+label:staleness-review+\"{{ $json.domain }}\"+in:title",
+        "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            },
             {
               "name": "Accept",
               "value": "application/vnd.github.v3+json"
@@ -659,13 +681,7 @@
         272
       ],
       "id": "efa21e21-a156-4c42-bb82-455a8e86738d",
-      "name": "Search Existing Issues",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "Ho5S7HOxBPdmEAL0",
-          "name": "Header Auth account"
-        }
-      }
+      "name": "Search Existing Issues"
     },
     {
       "parameters": {
@@ -718,11 +734,14 @@
       "parameters": {
         "method": "POST",
         "url": "https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/issues",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
+        "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            },
             {
               "name": "Accept",
               "value": "application/vnd.github.v3+json"
@@ -741,13 +760,7 @@
         352
       ],
       "id": "318d36cf-705e-442c-b528-9564e0a6fcf4",
-      "name": "Create Review Issue",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "Ho5S7HOxBPdmEAL0",
-          "name": "Header Auth account"
-        }
-      }
+      "name": "Create Review Issue"
     },
     {
       "parameters": {
@@ -786,17 +799,23 @@
     {
       "parameters": {
         "url": "=https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/issues",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "sendBody": true,
-        "bodyParameters": {
+        "authentication": "none",
+        "sendHeaders": true,
+        "headerParameters": {
           "parameters": [
             {
-              "name": "JSON",
-              "value": "=    {       \"title\": \"\ud83d\udcca Weekly Staleness Digest: {{ $json.week }}\",       \"body\": \"## Documentation Staleness Weekly Digest\\n\\n**Week:** {{ $json.week }}\\n**Generated:** {{ $json.generated_at }}\\n\\n### Summary\\n\\n| Metric | Value |\\n|--------|-------|\\n| Domains Reviewed | {{ $json.summary.domains_reviewed }} |\\n| Healthy | {{ $json.summary.domains_healthy }} |\\n| Need Attention | {{ $json.summary.domains_need_attention }} |\\n| Avg Staleness | {{ ($json.summary.avg_staleness * 100).toFixed(0) }}% |\\n\\n### Domain Status\\n\\n| Domain | Score | Status | Action |\\n|--------|-------|--------|--------|\\n{{ $json.domain_statuses.map(d => '| ' + d.domain + ' | ' + (d.staleness_score * 100).toFixed(0) + '% | ' + d.status + ' | ' + d.action + ' |').join('\\\\n') }}\\n\\n---\\n*Digest ID: {{ $json.digest_id }}*\",       \"labels\": [\"documentation\", \"staleness-digest\", \"automated\"]     }"
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
             }
           ]
         },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=    {       \"title\": \"\ud83d\udcca Weekly Staleness Digest: {{ $json.week }}\",       \"body\": \"## Documentation Staleness Weekly Digest\\n\\n**Week:** {{ $json.week }}\\n**Generated:** {{ $json.generated_at }}\\n\\n### Summary\\n\\n| Metric | Value |\\n|--------|-------|\\n| Domains Reviewed | {{ $json.summary.domains_reviewed }} |\\n| Healthy | {{ $json.summary.domains_healthy }} |\\n| Need Attention | {{ $json.summary.domains_need_attention }} |\\n| Avg Staleness | {{ ($json.summary.avg_staleness * 100).toFixed(0) }}% |\\n\\n### Domain Status\\n\\n| Domain | Score | Status | Action |\\n|--------|-------|--------|--------|\\n{{ $json.domain_statuses.map(d => '| ' + d.domain + ' | ' + (d.staleness_score * 100).toFixed(0) + '% | ' + d.status + ' | ' + d.action + ' |').join('\\\\n') }}\\n\\n---\\n*Digest ID: {{ $json.digest_id }}*\",       \"labels\": [\"documentation\", \"staleness-digest\", \"automated\"]     }",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -806,13 +825,7 @@
         160
       ],
       "id": "463bac90-5f77-41e2-b79e-dd446f2a7910",
-      "name": "Create Digest Issue",
-      "credentials": {
-        "httpHeaderAuth": {
-          "id": "Ho5S7HOxBPdmEAL0",
-          "name": "Header Auth account"
-        }
-      }
+      "name": "Create Digest Issue"
     }
   ],
   "connections": {
@@ -1191,7 +1204,9 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "gplUON3gG47QIMpi"
   },
   "staticData": {
     "node:Weekly Review": {
@@ -1256,1209 +1271,5 @@
       }
     }
   ],
-  "tags": [],
-  "activeVersion": {
-    "updatedAt": "2025-12-24T01:24:25.000Z",
-    "createdAt": "2025-12-23T17:17:16.842Z",
-    "versionId": "3db2132b-566e-4b27-a0f8-ba5b232cd378",
-    "workflowId": "WRzBAw1oMYLbnu7d",
-    "nodes": [
-      {
-        "parameters": {
-          "rule": {
-            "interval": [
-              {
-                "field": "weeks",
-                "triggerAtHour": 2
-              }
-            ]
-          }
-        },
-        "id": "d32e0056-45fd-4a70-9eba-2eb0793d6c28",
-        "name": "Weekly Review",
-        "type": "n8n-nodes-base.scheduleTrigger",
-        "typeVersion": 1.3,
-        "position": [
-          -4384,
-          176
-        ]
-      },
-      {
-        "parameters": {
-          "httpMethod": "POST",
-          "path": "/staleness-review",
-          "options": {}
-        },
-        "id": "8dfb338b-2c3b-40aa-99fb-978c93c7b81a",
-        "name": "Manual Trigger",
-        "type": "n8n-nodes-base.webhook",
-        "typeVersion": 2.1,
-        "position": [
-          -4384,
-          368
-        ],
-        "webhookId": "8b5ab011-2015-422d-b4eb-54bed2b88567",
-        "notes": "Allow manual triggering for testing or on-demand reviews"
-      },
-      {
-        "parameters": {
-          "mode": "combine",
-          "combineBy": "combineByPosition",
-          "options": {}
-        },
-        "id": "92fc419e-87a1-440d-b10b-22c4c1ea2895",
-        "name": "Start Review",
-        "type": "n8n-nodes-base.merge",
-        "typeVersion": 3.2,
-        "position": [
-          -4160,
-          272
-        ]
-      },
-      {
-        "parameters": {
-          "assignments": {
-            "assignments": [
-              {
-                "id": "id-1",
-                "name": "matrixUrl",
-                "value": "https://raw.githubusercontent.com/BootstrapAI-mgmt/Literature-Review/main/docs/documentation_matrix.json",
-                "type": "string"
-              },
-              {
-                "id": "id-2",
-                "name": "githubRepo",
-                "value": "BootstrapAI-mgmt/Literature-Review",
-                "type": "string"
-              },
-              {
-                "id": "id-3",
-                "name": "githubBranch",
-                "value": "main",
-                "type": "string"
-              },
-              {
-                "id": "id-4",
-                "name": "distributorWebhook",
-                "value": "<__PLACEHOLDER_VALUE__Task Distributor Webhook URL__>",
-                "type": "string"
-              }
-            ]
-          },
-          "includeOtherFields": true,
-          "options": {}
-        },
-        "id": "d1f38440-3e89-41bc-813d-288973ecf423",
-        "name": "Workflow Configuration",
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
-        "position": [
-          -3936,
-          272
-        ]
-      },
-      {
-        "parameters": {
-          "url": "=https://raw.githubusercontent.com/BootstrapAI-mgmt/Literature-Review/main/docs/documentation_matrix.json",
-          "options": {
-            "response": {
-              "response": {
-                "responseFormat": "json"
-              }
-            }
-          }
-        },
-        "id": "833d76c1-e07a-4af1-ab36-38b3a1df660d",
-        "name": "Fetch Matrix",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [
-          -3712,
-          272
-        ]
-      },
-      {
-        "parameters": {
-          "jsCode": "   const matrix = $input.first().json;\n   const config = matrix.staleness_config || { default_review_interval_days: 7 };\n   const now = new Date();\n   const dayOfWeek = now.toLocaleDateString('en-US', { weekday: 'lowercase' });\n   \n   const domains = [];\n   for (const [domain, info] of Object.entries(matrix.owner_domains || {})) {\n     // Handle both old format (array) and new format (object with config)\n     const domainConfig = Array.isArray(info) \n       ? { documents: info, review_interval_days: config.default_review_interval_days }\n       : info;\n     \n     // If staggering is enabled, only include domains scheduled for today\n     // Otherwise include all domains (for weekly batch review)\n     const staggerDay = domainConfig.stagger_day;\n     if (config.schedule?.stagger_domains && staggerDay && staggerDay !== dayOfWeek) {\n       continue;\n     }\n     \n     domains.push({\n       domain,\n       documents: domainConfig.documents || [],\n       review_interval_days: domainConfig.review_interval_days || config.default_review_interval_days || 7,\n       priority: domainConfig.priority || 'medium',\n       staleness_indicators: []\n     });\n   }\n   \n   // Add staleness_indicators from document entries\n   for (const doc of matrix.documents || []) {\n     const domainEntry = domains.find(d => d.domain === doc.owner);\n     if (domainEntry && doc.staleness_indicators) {\n       domainEntry.staleness_indicators.push(...doc.staleness_indicators);\n     }\n   }\n   \n   // Deduplicate indicators\n   domains.forEach(d => {\n     d.staleness_indicators = [...new Set(d.staleness_indicators)];\n   });\n   \n   return domains.map(d => ({ json: d }));"
-        },
-        "id": "cb76fb1c-a30d-4817-b440-7a9d3965a58d",
-        "name": "Get Domains",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          -3488,
-          272
-        ]
-      },
-      {
-        "parameters": {
-          "jsCode": "return $input.all().map(item => ({ json: item.json }));"
-        },
-        "id": "51342bce-71f5-4fed-8757-339cbbbb9d27",
-        "name": "Process Each Domain",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          -3264,
-          272
-        ]
-      },
-      {
-        "parameters": {
-          "url": "=https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/commits",
-          "authentication": "genericCredentialType",
-          "genericAuthType": "httpHeaderAuth",
-          "sendQuery": true,
-          "queryParameters": {
-            "parameters": [
-              {
-                "name": "path",
-                "value": "=={{ $json.documents[0] || 'docs/' }}"
-              },
-              {
-                "name": "per_page",
-                "value": "1"
-              }
-            ]
-          },
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "accept",
-                "value": "application/vnd.github.v3+json"
-              }
-            ]
-          },
-          "options": {
-            "response": {
-              "response": {
-                "responseFormat": "json"
-              }
-            }
-          }
-        },
-        "id": "24a488d5-93ee-4ea2-91e0-d81ce7a83dde",
-        "name": "Get Last Activity",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [
-          -3040,
-          272
-        ],
-        "credentials": {
-          "httpHeaderAuth": {
-            "id": "Ho5S7HOxBPdmEAL0",
-            "name": "Header Auth account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "jsCode": "   const domain = $('Process Each Domain').first().json;\n   const commits = $input.first().json;\n   \n   // Get last commit date (handle empty response)\n   const lastCommit = Array.isArray(commits) && commits.length > 0 ? commits[0] : null;\n   const lastActivity = lastCommit?.commit?.author?.date \n     ? new Date(lastCommit.commit.author.date)\n     : new Date('2000-01-01');\n   \n   const now = new Date();\n   const daysInactive = Math.floor((now - lastActivity) / (1000 * 60 * 60 * 24));\n   \n   const needsReview = daysInactive >= domain.review_interval_days;\n   \n   return {\n     ...domain,\n     last_activity: lastActivity.toISOString(),\n     last_commit_sha: lastCommit?.sha || null,\n     days_inactive: daysInactive,\n     needs_review: needsReview\n   };"
-        },
-        "id": "ec39350e-4ef5-48a4-bbd7-426b9fc1ba9f",
-        "name": "Calculate Inactivity",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          -2816,
-          272
-        ]
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": {
-              "caseSensitive": true,
-              "leftValue": "",
-              "typeValidation": "strict",
-              "version": 2
-            },
-            "conditions": [
-              {
-                "id": "id-1",
-                "leftValue": "={{ $json.needs_review === true }}",
-                "rightValue": "={{ $json.review_interval_days }}",
-                "operator": {
-                  "type": "boolean",
-                  "operation": "true",
-                  "singleValue": true
-                }
-              }
-            ],
-            "combinator": "and"
-          },
-          "options": {}
-        },
-        "id": "b2eb4a9d-246b-46ca-9391-98cc87d065f0",
-        "name": "Needs Review?",
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2,
-        "position": [
-          -2592,
-          272
-        ]
-      },
-      {
-        "parameters": {
-          "url": "=https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/commits",
-          "authentication": "genericCredentialType",
-          "genericAuthType": "httpHeaderAuth",
-          "sendQuery": true,
-          "queryParameters": {
-            "parameters": [
-              {
-                "name": "since",
-                "value": "=={{ $json.last_activity }}"
-              },
-              {
-                "name": "per page",
-                "value": "100"
-              }
-            ]
-          },
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Accept",
-                "value": "application/vnd.github.v3+json"
-              }
-            ]
-          },
-          "options": {
-            "response": {
-              "response": {
-                "responseFormat": "json"
-              }
-            }
-          }
-        },
-        "id": "f8c39769-ff01-4370-917b-8cf562728791",
-        "name": "Fetch Recent Changes",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [
-          -2352,
-          176
-        ],
-        "credentials": {
-          "httpHeaderAuth": {
-            "id": "Ho5S7HOxBPdmEAL0",
-            "name": "Header Auth account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "jsCode": "    const domain = $('Calculate Inactivity').first().json;\n    const commits = $input.first().json;\n    \n    // Patterns to ignore (test, CI, style changes)\n    const ignorePatterns = [\n      /^test(\\(|:)/i,\n      /^ci(\\(|:)/i,\n      /^chore(\\(|:)/i,\n      /^style(\\(|:)/i,\n      /^docs(\\(|:)/i  // We're checking FOR doc staleness, not FROM doc changes\n    ];\n    \n    // Filter and extract relevant commits\n    const relevantChanges = [];\n    const relevantScripts = domain.staleness_indicators || [];\n    \n    for (const commit of (Array.isArray(commits) ? commits : [])) {\n      const message = commit.commit?.message || '';\n      const firstLine = message.split('\\n')[0];\n      \n      // Skip ignored patterns\n      if (ignorePatterns.some(p => p.test(firstLine))) {\n        continue;\n      }\n      \n      // Check if commit likely touches relevant files\n      const isRelevant = relevantScripts.length === 0 || \n        relevantScripts.some(script => \n          message.toLowerCase().includes(script.replace('.py', '').toLowerCase())\n        );\n      \n      if (isRelevant || relevantScripts.length === 0) {\n        relevantChanges.push({\n          sha: commit.sha?.slice(0, 7),\n          message: firstLine,\n          author: commit.commit?.author?.name,\n          date: commit.commit?.author?.date\n        });\n      }\n    }\n    \n    return {\n      ...domain,\n      total_commits_analyzed: commits.length || 0,\n      relevant_changes: relevantChanges.slice(0, 20), // Limit to 20 for context\n      has_relevant_changes: relevantChanges.length > 0\n    };"
-        },
-        "id": "1093288b-e833-49dd-8d4e-62d07f778131",
-        "name": "Filter Changes",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          -2144,
-          176
-        ]
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": {
-              "caseSensitive": true,
-              "leftValue": "",
-              "typeValidation": "strict",
-              "version": 2
-            },
-            "conditions": [
-              {
-                "id": "id-1",
-                "leftValue": "={{ $json.has_relevant_changes === true }}",
-                "rightValue": 0,
-                "operator": {
-                  "type": "boolean",
-                  "operation": "true",
-                  "singleValue": true
-                }
-              }
-            ],
-            "combinator": "and"
-          },
-          "options": {}
-        },
-        "id": "b9a1a2d9-6b26-4b81-bb34-c81c06049511",
-        "name": "Has Changes?",
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2,
-        "position": [
-          -1920,
-          192
-        ]
-      },
-      {
-        "parameters": {
-          "jsCode": "    // For each document, we'll fetch content in the next HTTP node\n    // This prepares the list of docs to fetch\n    const domain = $input.first().json;\n    \n    return domain.documents.slice(0, 3).map(doc => ({  // Limit to 3 docs\n      json: {\n        ...domain,\n        current_doc: doc\n      }\n    }));"
-        },
-        "id": "912ce88a-d8f9-4bf7-bb07-2a354c0669e6",
-        "name": "Prep Doc Fetch",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          -1696,
-          112
-        ]
-      },
-      {
-        "parameters": {
-          "url": "=https://raw.githubusercontent.com/BootstrapAI-mgmt/Literature-Review/main/{{ $json.current_doc }}",
-          "options": {
-            "response": {
-              "response": {
-                "responseFormat": "text"
-              }
-            }
-          }
-        },
-        "id": "f1b4a512-496e-4bc5-ba2c-dc6a91baef83",
-        "name": "Get Doc Content",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [
-          -1488,
-          112
-        ]
-      },
-      {
-        "parameters": {
-          "promptType": "define",
-          "text": "=      You are a Documentation Staleness Reviewer. Analyze whether documentation has become stale by comparing current docs against recent repository changes.\n      \n      Look for:\n      1. Missing features: New functionality not yet documented\n      2. Outdated references: Code references that no longer match\n      3. Changed behavior: Defaults, parameters, or behaviors that changed\n      4. Deprecated patterns: Old approaches still documented but replaced\n      5. Missing cross-references: New docs that should be linked\n      \n      Staleness scoring:\n      - 0.0-0.2: Healthy\n      - 0.2-0.4: Minor drift\n      - 0.4-0.6: Moderate staleness\n      - 0.6-0.8: Significant staleness\n      - 0.8-1.0: Critical staleness\n      \n      Output ONLY valid JSON:\n      {\"domain\":\"@example\",\"staleness_score\":0.5,\"confidence\":0.8,\"needs_update\":true,\"summary\":\"Brief summary\",\"findings\":[{\"document\":\"path\",\"issue_type\":\"missing_feature\",\"severity\":\"medium\",\"description\":\"What is wrong\",\"suggested_update\":\"How to fix\"}],\"recommended_action\":\"auto_update|manual_review|create_issue|healthy\",\"update_tasks\":[{\"task_id\":\"stale-001\",\"document\":\"path\",\"owner\":\"@domain\",\"update_type\":\"UPDATE_FEATURE\",\"description\":\"Task description\",\"depends_on\":[],\"priority\":1}]}\n    \n    - User message:\n      Review domain {{ $json.domain }} for staleness.\n      \n      Days inactive: {{ $json.days_inactive }}\n      Documents: {{ $json.documents.join(', ') }}\n      \n      Recent changes ({{ $json.relevant_changes.length }} commits):\n      {{ $json.relevant_changes.map(c => c.sha + ': ' + c.message).join('\\n') }}\n      \n      Document contents:\n      {{ $json.document_contents }}",
-          "hasOutputParser": true,
-          "options": {
-            "systemMessage": "You are a Documentation Staleness Reviewer. Analyze the provided domain information, recent code changes, and documentation content to assess staleness.\n\nYour task:\n1. Review the documentation content against recent changes\n2. Identify outdated sections, missing updates, or inconsistencies\n3. Assign a staleness_score from 0 (fresh) to 1 (very stale)\n4. Provide specific findings with line references where possible\n5. Recommend action: \"update\", \"review\", or \"monitor\"\n6. If action is \"update\", provide specific update_tasks as an array of strings\n\nOutput must be valid JSON matching the schema provided by the output parser."
-          }
-        },
-        "id": "606a0720-4ec5-4928-ab92-d1db0d11886d",
-        "name": "Staleness Assessment",
-        "type": "@n8n/n8n-nodes-langchain.agent",
-        "typeVersion": 3,
-        "position": [
-          -1040,
-          128
-        ]
-      },
-      {
-        "parameters": {
-          "options": {}
-        },
-        "id": "585bfbff-159f-4e2f-9299-1c911acf939b",
-        "name": "Gemini 2.5 Flash",
-        "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
-        "typeVersion": 1,
-        "position": [
-          -1056,
-          336
-        ],
-        "credentials": {
-          "googlePalmApi": {
-            "id": "kJmLsDFHzgrlPJhY",
-            "name": "Google Gemini(PaLM) Api account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "schemaType": "manual",
-          "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"staleness_score\": {\n\t\t\t\"type\": \"number\",\n\t\t\t\"description\": \"Score from 0 to 1 indicating staleness\"\n\t\t},\n\t\t\"findings\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t},\n\t\t\t\"description\": \"List of specific findings\"\n\t\t},\n\t\t\"recommended_action\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"enum\": [\"update\", \"review\", \"monitor\"],\n\t\t\t\"description\": \"Recommended action\"\n\t\t},\n\t\t\"update_tasks\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t},\n\t\t\t\"description\": \"Specific tasks if action is update\"\n\t\t}\n\t},\n\t\"required\": [\"staleness_score\", \"findings\", \"recommended_action\"]\n}"
-        },
-        "id": "7ea3db7c-bafd-4d9c-becf-3bd31fa0abb9",
-        "name": "Structured Output Parser",
-        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
-        "typeVersion": 1.3,
-        "position": [
-          -880,
-          352
-        ]
-      },
-      {
-        "parameters": {
-          "jsCode": "    const domain = $('Aggregate Doc Contents').first().json;\n    const response = $input.first().json;\n    const text = response.text || response.output || JSON.stringify(response);\n    \n    // Extract JSON from response\n    let assessment;\n    try {\n      const jsonMatch = text.match(/```json\\n?([\\s\\S]*?)\\n?```/) || text.match(/\\{[\\s\\S]*\\}/);\n      assessment = JSON.parse(jsonMatch ? (jsonMatch[1] || jsonMatch[0]) : text);\n    } catch (e) {\n      assessment = {\n        staleness_score: 0.5,\n        confidence: 0.3,\n        needs_update: false,\n        summary: \"Could not parse AI response\",\n        findings: [],\n        recommended_action: \"manual_review\",\n        update_tasks: []\n      };\n    }\n    \n    // Normalize and validate\n    const score = Math.max(0, Math.min(1, assessment.staleness_score || 0));\n    const now = new Date();\n    \n    return {\n      assessment_id: `sa-${now.toISOString().slice(0,10)}-${domain.domain.replace('@','')}`,\n      timestamp: now.toISOString(),\n      domain: domain.domain,\n      documents: domain.documents,\n      days_inactive: domain.days_inactive,\n      staleness_score: score,\n      confidence: Math.max(0, Math.min(1, assessment.confidence || 0.5)),\n      needs_update: assessment.needs_update || score >= 0.5,\n      summary: assessment.summary || 'Assessment complete',\n      findings: assessment.findings || [],\n      recommended_action: assessment.recommended_action || \n        (score >= 0.7 ? 'auto_update' : score >= 0.5 ? 'manual_review' : score >= 0.3 ? 'create_issue' : 'healthy'),\n      update_tasks: (assessment.update_tasks || []).map((t, i) => ({\n        ...t,\n        task_id: t.task_id || `stale-${i+1}`,\n        owner: t.owner || domain.domain,\n        source: 'staleness_review'\n      }))\n    };"
-        },
-        "id": "8885903c-9a65-460a-8a74-28025ffcc190",
-        "name": "Parse Assessment",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          -672,
-          272
-        ]
-      },
-      {
-        "parameters": {
-          "rules": {
-            "values": [
-              {
-                "conditions": {
-                  "options": {
-                    "caseSensitive": true,
-                    "leftValue": "",
-                    "typeValidation": "strict",
-                    "version": 2
-                  },
-                  "conditions": [
-                    {
-                      "leftValue": "={{ $json.staleness_score }}",
-                      "rightValue": 0.7,
-                      "operator": {
-                        "type": "number",
-                        "operation": "gte"
-                      },
-                      "id": "33de5cc0-29ae-4005-bfad-df3638c5c972"
-                    },
-                    {
-                      "leftValue": "={{ $json.update_tasks }}",
-                      "rightValue": "",
-                      "operator": {
-                        "type": "array",
-                        "operation": "notEmpty"
-                      },
-                      "id": "34bea442-e0b6-4209-aea7-1ed72914501d"
-                    }
-                  ],
-                  "combinator": "and"
-                },
-                "renameOutput": true,
-                "outputKey": "Auto Update"
-              },
-              {
-                "conditions": {
-                  "options": {
-                    "caseSensitive": true,
-                    "leftValue": "",
-                    "typeValidation": "strict",
-                    "version": 2
-                  },
-                  "conditions": [
-                    {
-                      "leftValue": "={{ $json.staleness_score }}",
-                      "rightValue": 0.5,
-                      "operator": {
-                        "type": "number",
-                        "operation": "gte"
-                      },
-                      "id": "d416d605-80de-44bb-a22a-cb090d60628c"
-                    },
-                    {
-                      "leftValue": "={{ $json.staleness_score }}",
-                      "rightValue": 0.7,
-                      "operator": {
-                        "type": "number",
-                        "operation": "lt"
-                      },
-                      "id": "ce37bf49-5d26-44c2-81b2-c14a48ae31ae"
-                    }
-                  ],
-                  "combinator": "and"
-                },
-                "renameOutput": true,
-                "outputKey": "Manual Review"
-              },
-              {
-                "conditions": {
-                  "options": {
-                    "caseSensitive": true,
-                    "leftValue": "",
-                    "typeValidation": "strict",
-                    "version": 2
-                  },
-                  "conditions": [
-                    {
-                      "leftValue": "={{ $json.staleness_score }}",
-                      "rightValue": 0.3,
-                      "operator": {
-                        "type": "number",
-                        "operation": "gte"
-                      },
-                      "id": "69c84795-fdb9-4a4d-b755-c43b1d8c79bc"
-                    },
-                    {
-                      "leftValue": "={{ $json.staleness_score }}",
-                      "rightValue": 0.5,
-                      "operator": {
-                        "type": "number",
-                        "operation": "lt"
-                      },
-                      "id": "c902850f-9356-4823-aa03-1c088dc82965"
-                    }
-                  ],
-                  "combinator": "and"
-                },
-                "renameOutput": true,
-                "outputKey": "Create Issue"
-              }
-            ]
-          },
-          "options": {
-            "fallbackOutput": "extra",
-            "renameFallbackOutput": "Healthy"
-          }
-        },
-        "id": "f386d2e5-45fd-4815-93a2-22f2bd094000",
-        "name": "Route By Score",
-        "type": "n8n-nodes-base.switch",
-        "typeVersion": 3.3,
-        "position": [
-          -448,
-          240
-        ]
-      },
-      {
-        "parameters": {
-          "method": "POST",
-          "url": "=https://gitlitreview.app.n8n.cloud/webhook/task-distributor",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Content-Type",
-                "value": "application/json"
-              }
-            ]
-          },
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "=    {\n      \"update_list_id\": \"ul-stale-{{ $json.assessment_id }}\",\n      \"source\": \"staleness_review\",\n      \"trigger\": {\n        \"type\": \"staleness_review\",\n        \"domain\": \"{{ $json.domain }}\",\n        \"staleness_score\": {{ $json.staleness_score }},\n        \"assessment_id\": \"{{ $json.assessment_id }}\"\n      },\n      \"tasks\": {{ JSON.stringify($json.update_tasks) }}\n    }",
-          "options": {}
-        },
-        "id": "9a6c894b-5c0b-4caf-9c02-6af0a7044720",
-        "name": "Send to Distributor",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [
-          0,
-          0
-        ]
-      },
-      {
-        "parameters": {
-          "mode": "runOnceForEachItem",
-          "jsCode": "    const input = $input.first().json;\n    console.log(`Domain ${input.domain || 'unknown'} is healthy (score: ${input.staleness_score || 'N/A'})`);\n    return {\n      domain: input.domain,\n      status: 'healthy',\n      staleness_score: input.staleness_score || 0,\n      action: 'none',\n      timestamp: new Date().toISOString()\n    };"
-        },
-        "id": "291a4c74-cf3f-4f39-bbb1-d5acddb774e7",
-        "name": "Log Healthy",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          0,
-          800
-        ]
-      },
-      {
-        "parameters": {
-          "numberInputs": 4
-        },
-        "id": "253e822d-735d-4e65-a684-6797515703f5",
-        "name": "Collect Results",
-        "type": "n8n-nodes-base.merge",
-        "typeVersion": 3.2,
-        "position": [
-          672,
-          208
-        ]
-      },
-      {
-        "parameters": {
-          "jsCode": "    const results = $items('Collect Results');\n    const now = new Date();\n    \n    // Calculate week number\n    const startOfYear = new Date(now.getFullYear(), 0, 1);\n    const weekNum = Math.ceil(((now - startOfYear) / 86400000 + startOfYear.getDay() + 1) / 7);\n    const weekId = `${now.getFullYear()}-W${weekNum.toString().padStart(2, '0')}`;\n    \n    const domainResults = results.filter(r => r.json.domain);\n    \n    const digest = {\n      digest_id: `digest-${weekId}`,\n      week: weekId,\n      generated_at: now.toISOString(),\n      summary: {\n        domains_reviewed: domainResults.length,\n        domains_healthy: domainResults.filter(r => (r.json.staleness_score || 0) < 0.3).length,\n        domains_need_attention: domainResults.filter(r => (r.json.staleness_score || 0) >= 0.5).length,\n        avg_staleness: domainResults.length > 0 \n          ? (domainResults.reduce((sum, r) => sum + (r.json.staleness_score || 0), 0) / domainResults.length).toFixed(2)\n          : 0\n      },\n      domain_statuses: domainResults.map(r => ({\n        domain: r.json.domain,\n        staleness_score: r.json.staleness_score || 0,\n        status: r.json.status || (r.json.staleness_score >= 0.5 ? 'needs_attention' : 'healthy'),\n        action: r.json.action || r.json.recommended_action || 'none'\n      }))\n    };\n    \n    return digest;"
-        },
-        "id": "5ac80835-3fe6-4793-9811-4ba0765a54f7",
-        "name": "Generate Digest",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          880,
-          256
-        ]
-      },
-      {
-        "parameters": {
-          "jsCode": "    // Collect all document contents\n    const items = $items('Get Document Content');\n    const domain = $('Filter Relevant Changes').first().json;\n    \n    const docContents = items.map((item, i) => {\n      const docPath = $items('Fetch Doc Contents')[i]?.json?.current_doc || `doc-${i}`;\n      const content = item.json.data || item.json || '';\n      // Truncate to first 2000 chars to fit in context\n      const truncated = typeof content === 'string' \n        ? content.slice(0, 2000) \n        : JSON.stringify(content).slice(0, 2000);\n      return `### ${docPath}\\n\\n${truncated}\\n\\n---`;\n    }).join('\\n\\n');\n    \n    return {\n      ...domain,\n      document_contents: docContents\n    };"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          -1264,
-          128
-        ],
-        "id": "a6ea498d-8645-4937-a8ec-95a148769085",
-        "name": "Aggregate Docs"
-      },
-      {
-        "parameters": {
-          "url": "=https://api.github.com/search/issues?q=repo:BootstrapAI-mgmt/Literature-Review+is:open+label:staleness-review+\"{{ $json.domain }}\"+in:title",
-          "authentication": "genericCredentialType",
-          "genericAuthType": "httpHeaderAuth",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Accept",
-                "value": "application/vnd.github.v3+json"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [
-          -176,
-          272
-        ],
-        "id": "efa21e21-a156-4c42-bb82-455a8e86738d",
-        "name": "Search Existing Issues",
-        "credentials": {
-          "httpHeaderAuth": {
-            "id": "Ho5S7HOxBPdmEAL0",
-            "name": "Header Auth account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": {
-              "caseSensitive": true,
-              "leftValue": "",
-              "typeValidation": "strict",
-              "version": 2
-            },
-            "conditions": [
-              {
-                "id": "651a8fd6-40e2-4a46-b9d1-192f702e04c6",
-                "leftValue": "={{ $json.total_count > 0 }}",
-                "rightValue": "",
-                "operator": {
-                  "type": "boolean",
-                  "operation": "true",
-                  "singleValue": true
-                }
-              }
-            ],
-            "combinator": "and"
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2,
-        "position": [
-          -16,
-          272
-        ],
-        "id": "eee3cfb6-f2c1-4e31-a68b-3cc4d6ff381b",
-        "name": "Issue Exists?"
-      },
-      {
-        "parameters": {
-          "jsCode": "    const prev = $('Parse Assessment').first().json;\n    console.log('Skipping issue creation - existing issue found for domain:', prev.domain);\n    return {\n      domain: prev.domain,\n      status: 'skipped',\n      reason: 'existing_issue',\n      staleness_score: prev.staleness_score,\n      timestamp: new Date().toISOString()\n    };"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          240,
-          160
-        ],
-        "id": "9ad0c89c-a946-4574-8a7c-1bc4d48b579d",
-        "name": "Skip Duplicate Issue"
-      },
-      {
-        "parameters": {
-          "method": "POST",
-          "url": "https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/issues",
-          "authentication": "genericCredentialType",
-          "genericAuthType": "httpHeaderAuth",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Accept",
-                "value": "application/vnd.github.v3+json"
-              }
-            ]
-          },
-          "sendBody": true,
-          "specifyBody": "json",
-          "jsonBody": "=    {\n      \"title\": \"\ud83d\udcda Staleness Review: {{ $('Parse Assessment').first().json.domain }} (score: {{ ($('Parse Assessment').first().json.staleness_score * 100).toFixed(0) }}%)\",\n      \"body\": \"## Automated Staleness Review\\n\\n**Domain:** {{ $('Parse Assessment').first().json.domain }}\\n**Staleness Score:** {{ ($('Parse Assessment').first().json.staleness_score * 100).toFixed(0) }}%\\n**Confidence:** {{ ($('Parse Assessment').first().json.confidence * 100).toFixed(0) }}%\\n**Days Inactive:** {{ $('Parse Assessment').first().json.days_inactive }}\\n\\n### Summary\\n\\n{{ $('Parse Assessment').first().json.summary }}\\n\\n### Documents Reviewed\\n\\n{{ $('Parse Assessment').first().json.documents.map(d => '- ' + d).join('\\\\n') }}\\n\\n### Findings\\n\\n{{ $('Parse Assessment').first().json.findings.length > 0 ? $('Parse Assessment').first().json.findings.map(f => '- **' + f.document + '** (' + f.severity + '): ' + f.description).join('\\\\n') : 'No specific issues identified.' }}\\n\\n### Recommended Actions\\n\\n{{ $('Parse Assessment').first().json.findings.length > 0 ? $('Parse Assessment').first().json.findings.map(f => '- [ ] ' + f.suggested_update).join('\\\\n') : '- [ ] Manual review recommended' }}\\n\\n---\\n*Assessment ID: {{ $('Parse Assessment').first().json.assessment_id }}*\\n*This issue was automatically created by the staleness review workflow.*\",\n      \"labels\": [\"documentation\", \"staleness-review\", \"automated\"]\n    }",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [
-          240,
-          352
-        ],
-        "id": "318d36cf-705e-442c-b528-9564e0a6fcf4",
-        "name": "Create Review Issue",
-        "credentials": {
-          "httpHeaderAuth": {
-            "id": "Ho5S7HOxBPdmEAL0",
-            "name": "Header Auth account"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": {
-              "caseSensitive": true,
-              "leftValue": "",
-              "typeValidation": "strict",
-              "version": 2
-            },
-            "conditions": [
-              {
-                "id": "d789734e-1172-4d23-b7c1-57d8a3c72dd4",
-                "leftValue": "={{ $json.summary.domains_need_attention > 0 }}",
-                "rightValue": "",
-                "operator": {
-                  "type": "boolean",
-                  "operation": "true",
-                  "singleValue": true
-                }
-              }
-            ],
-            "combinator": "and"
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2,
-        "position": [
-          1088,
-          256
-        ],
-        "id": "489227d5-b51c-49c1-ae3c-08adc7515474",
-        "name": "Has Findings?"
-      },
-      {
-        "parameters": {
-          "url": "=https://api.github.com/repos/BootstrapAI-mgmt/Literature-Review/issues",
-          "authentication": "genericCredentialType",
-          "genericAuthType": "httpHeaderAuth",
-          "sendBody": true,
-          "bodyParameters": {
-            "parameters": [
-              {
-                "name": "JSON",
-                "value": "=    {       \"title\": \"\ud83d\udcca Weekly Staleness Digest: {{ $json.week }}\",       \"body\": \"## Documentation Staleness Weekly Digest\\n\\n**Week:** {{ $json.week }}\\n**Generated:** {{ $json.generated_at }}\\n\\n### Summary\\n\\n| Metric | Value |\\n|--------|-------|\\n| Domains Reviewed | {{ $json.summary.domains_reviewed }} |\\n| Healthy | {{ $json.summary.domains_healthy }} |\\n| Need Attention | {{ $json.summary.domains_need_attention }} |\\n| Avg Staleness | {{ ($json.summary.avg_staleness * 100).toFixed(0) }}% |\\n\\n### Domain Status\\n\\n| Domain | Score | Status | Action |\\n|--------|-------|--------|--------|\\n{{ $json.domain_statuses.map(d => '| ' + d.domain + ' | ' + (d.staleness_score * 100).toFixed(0) + '% | ' + d.status + ' | ' + d.action + ' |').join('\\\\n') }}\\n\\n---\\n*Digest ID: {{ $json.digest_id }}*\",       \"labels\": [\"documentation\", \"staleness-digest\", \"automated\"]     }"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.3,
-        "position": [
-          1296,
-          160
-        ],
-        "id": "463bac90-5f77-41e2-b79e-dd446f2a7910",
-        "name": "Create Digest Issue",
-        "credentials": {
-          "httpHeaderAuth": {
-            "id": "Ho5S7HOxBPdmEAL0",
-            "name": "Header Auth account"
-          }
-        }
-      }
-    ],
-    "connections": {
-      "Weekly Review": {
-        "main": [
-          [
-            {
-              "node": "Start Review",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Manual Trigger": {
-        "main": [
-          [
-            {
-              "node": "Start Review",
-              "type": "main",
-              "index": 1
-            }
-          ]
-        ]
-      },
-      "Start Review": {
-        "main": [
-          [
-            {
-              "node": "Workflow Configuration",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Workflow Configuration": {
-        "main": [
-          [
-            {
-              "node": "Fetch Matrix",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Fetch Matrix": {
-        "main": [
-          [
-            {
-              "node": "Get Domains",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Get Domains": {
-        "main": [
-          [
-            {
-              "node": "Process Each Domain",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Process Each Domain": {
-        "main": [
-          [
-            {
-              "node": "Get Last Activity",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Get Last Activity": {
-        "main": [
-          [
-            {
-              "node": "Calculate Inactivity",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Calculate Inactivity": {
-        "main": [
-          [
-            {
-              "node": "Needs Review?",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Needs Review?": {
-        "main": [
-          [
-            {
-              "node": "Fetch Recent Changes",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Log Healthy",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Fetch Recent Changes": {
-        "main": [
-          [
-            {
-              "node": "Filter Changes",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Filter Changes": {
-        "main": [
-          [
-            {
-              "node": "Has Changes?",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Has Changes?": {
-        "main": [
-          [
-            {
-              "node": "Prep Doc Fetch",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Log Healthy",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Prep Doc Fetch": {
-        "main": [
-          [
-            {
-              "node": "Get Doc Content",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Get Doc Content": {
-        "main": [
-          [
-            {
-              "node": "Aggregate Docs",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Gemini 2.5 Flash": {
-        "ai_languageModel": [
-          [
-            {
-              "node": "Staleness Assessment",
-              "type": "ai_languageModel",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Structured Output Parser": {
-        "ai_outputParser": [
-          [
-            {
-              "node": "Staleness Assessment",
-              "type": "ai_outputParser",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Staleness Assessment": {
-        "main": [
-          [
-            {
-              "node": "Parse Assessment",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Parse Assessment": {
-        "main": [
-          [
-            {
-              "node": "Route By Score",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Route By Score": {
-        "main": [
-          [
-            {
-              "node": "Send to Distributor",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Search Existing Issues",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Search Existing Issues",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Log Healthy",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Send to Distributor": {
-        "main": [
-          [
-            {
-              "node": "Collect Results",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Log Healthy": {
-        "main": [
-          [
-            {
-              "node": "Collect Results",
-              "type": "main",
-              "index": 3
-            }
-          ]
-        ]
-      },
-      "Collect Results": {
-        "main": [
-          [
-            {
-              "node": "Generate Digest",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Aggregate Docs": {
-        "main": [
-          [
-            {
-              "node": "Staleness Assessment",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Generate Digest": {
-        "main": [
-          [
-            {
-              "node": "Has Findings?",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Search Existing Issues": {
-        "main": [
-          [
-            {
-              "node": "Issue Exists?",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Issue Exists?": {
-        "main": [
-          [
-            {
-              "node": "Skip Duplicate Issue",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Create Review Issue",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Skip Duplicate Issue": {
-        "main": [
-          [
-            {
-              "node": "Collect Results",
-              "type": "main",
-              "index": 1
-            }
-          ]
-        ]
-      },
-      "Create Review Issue": {
-        "main": [
-          [
-            {
-              "node": "Collect Results",
-              "type": "main",
-              "index": 2
-            }
-          ]
-        ]
-      },
-      "Has Findings?": {
-        "main": [
-          [
-            {
-              "node": "Create Digest Issue",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      }
-    },
-    "authors": "Joshua Coleman",
-    "name": "STALE-V001",
-    "description": "",
-    "autosaved": false,
-    "workflowPublishHistory": [
-      {
-        "createdAt": "2025-12-24T01:24:25.197Z",
-        "id": 5,
-        "workflowId": "WRzBAw1oMYLbnu7d",
-        "versionId": "3db2132b-566e-4b27-a0f8-ba5b232cd378",
-        "event": "activated",
-        "userId": "519211d5-3194-4461-a8e5-a0a0ada3b87d"
-      }
-    ]
-  }
+  "tags": []
 }

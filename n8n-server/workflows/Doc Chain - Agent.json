@@ -26,6 +26,15 @@
     {
       "parameters": {
         "url": "={{ \"https://raw.githubusercontent.com/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/main/\" + $json.task.document }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-N8N-Task-ID",
+              "value": "={{ $json.task.task_id }}"
+            }
+          ]
+        },
         "options": {
           "response": {
             "response": {
@@ -45,6 +54,7 @@
     },
     {
       "parameters": {
+        "modelName": "gemini-1.5-flash",
         "options": {}
       },
       "id": "36b1e4e2-fb31-438f-ab62-180cbc8864b2",
@@ -138,6 +148,10 @@
             {
               "name": "Accept",
               "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "X-N8N-Task-ID",
+              "value": "={{ $json.task_id }}"
             }
           ]
         },
@@ -179,6 +193,10 @@
             {
               "name": "Authorization",
               "value": "token {{ env.GITHUB_TOKEN }}"
+            },
+            {
+              "name": "X-N8N-Task-ID",
+              "value": "={{ $json.task_id }}"
             }
           ]
         },
@@ -259,16 +277,21 @@
     {
       "parameters": {
         "url": "https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/docs/documentation_matrix.json",
+        "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
+            {
+              "name": "Authorization",
+              "value": "token {{ env.GITHUB_TOKEN }}"
+            },
             {
               "name": "Accept",
               "value": "application/vnd.github.v3+json"
             },
             {
-              "name": "Authorization",
-              "value": "token {{ env.GITHUB_TOKEN }}"
+              "name": "X-N8N-Task-ID",
+              "value": "={{ $('Parse Webhook Data').first().json.task.task_id }}"
             }
           ]
         },
@@ -300,12 +323,21 @@
       "parameters": {
         "method": "PUT",
         "url": "https://api.github.com/repos/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/contents/docs/documentation_matrix.json",
+        "authentication": "none",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "Authorization",
               "value": "token {{ env.GITHUB_TOKEN }}"
+            },
+            {
+              "name": "Accept",
+              "value": "application/vnd.github.v3+json"
+            },
+            {
+              "name": "X-N8N-Task-ID",
+              "value": "={{ $('Update Review Tracking').first().json.task_id }}"
             }
           ]
         },
@@ -493,7 +525,9 @@
   },
   "settings": {
     "executionOrder": "v1",
-    "availableInMCP": false
+    "availableInMCP": false,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "gplUON3gG47QIMpi"
   },
   "staticData": null,
   "meta": {
@@ -579,7 +613,16 @@
       },
       {
         "parameters": {
-          "url": "={{ \"https://raw.githubusercontent.com/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/main/\" + $json.task.document }}",
+          "url": "={{ \"https://raw.githubusercontent.com/{{ env.REPO_OWNER }}/{{ env.REPO_NAME }}/main/\" + $json.task.document + \"-FORCE-FAILURE\" }}",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "X-N8N-Task-ID",
+                "value": "={{ $json.task.task_id }}"
+              }
+            ]
+          },
           "options": {
             "response": {
               "response": {
@@ -1044,6 +1087,9 @@
           ]
         ]
       }
+    },
+    "settings": {
+      "errorWorkflow": "gplUON3gG47QIMpi"
     },
     "authors": "Joshua Coleman",
     "name": "AGENT-V001",

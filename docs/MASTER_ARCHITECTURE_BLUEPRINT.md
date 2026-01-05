@@ -92,6 +92,12 @@ literature_review/
 │   ├── __init__.py
 │   └── research_config.py          # ResearchConfig class
 │
+├── models/                         # Data models (Operationalization)
+│   ├── __init__.py
+│   ├── action_vector.py            # ActionVector dataclass
+│   ├── validation_strategy.py      # ValidationStrategy dataclass
+│   └── domain_stakeholder.py       # Stakeholder definitions
+│
 ├── analysis/                       # Evaluation & scoring modules
 │   ├── __init__.py
 │   ├── judge.py                    # Claim evaluation (Accept/Reject/Flag)
@@ -107,12 +113,25 @@ literature_review/
 │   ├── requirements.py             # Requirements analysis
 │   ├── relevance_assessor.py       # Relevance scoring
 │   ├── result_merger.py            # Result consolidation
-│   └── sufficiency_matrix.py       # Evidence sufficiency
+│   ├── sufficiency_matrix.py       # Evidence sufficiency
+│   │
+│   │   # Operationalization Analysis
+│   ├── action_generator.py         # Action vector generation
+│   ├── benchmark_analyzer.py       # Benchmark extraction
+│   ├── domain_stakeholder_extractor.py # Stakeholder analysis
+│   ├── pillar_evolution.py         # Pillar lifecycle management
+│   ├── validation_tracker.py       # Validation coverage tracking
+│   └── research_log_manager.py     # Research log management
 │
 ├── reviewers/                      # Paper processing
 │   ├── __init__.py
 │   ├── journal_reviewer.py         # Initial paper screening
-│   └── deep_reviewer.py            # Deep analysis for appeals
+│   ├── deep_reviewer.py            # Deep analysis for appeals
+│   └── prompts/                    # LLM Prompts
+│       ├── __init__.py
+│       ├── benchmark_prompt.py
+│       ├── operationalization_prompt.py
+│       └── stakeholder_extraction_prompt.py
 │
 ├── triggers/                       # Automation triggers
 │   ├── __init__.py
@@ -125,7 +144,8 @@ literature_review/
 │
 ├── optimization/                   # Performance optimization
 │   ├── __init__.py
-│   └── search_optimizer.py         # Search query optimization
+│   ├── search_optimizer.py         # Search query optimization
+│   └── evolution_cli.py            # Evolution CLI tools
 │
 ├── utils/                          # Shared utilities
 │   ├── __init__.py
@@ -195,6 +215,7 @@ scripts/
 ├── generate_plots.py               # Visualization generation
 ├── incremental_status.py           # Incremental review status
 ├── migrate_deep_coverage.py        # Data migration (PR #4)
+├── migrate_pillar_definitions.py   # Pillar definitions migration
 ├── migrate_state.py                # State migration utility
 ├── optimize_searches.py            # Search optimization
 ├── post_merge_validation.py        # Post-merge checks
@@ -234,7 +255,8 @@ tests/
 ├── test_pr4_migration.py       # PR #4 validation
 ├── test_research_config.py     # Config tests
 ├── test_google_ai_sdk_imports.py
-└── test_api_documentation.py
+├── test_api_documentation.py
+└── smoke_test_enhanced_pipeline.py # Enhanced pipeline smoke test
 ```
 
 ### CI/CD: `.github/workflows/`
