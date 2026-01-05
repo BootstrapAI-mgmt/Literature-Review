@@ -1,0 +1,45 @@
+document: docs/MASTER_ARCHITECTURE_BLUEPRINT.md
+validation_type: structural_sync
+
+expected_sections:
+  - name: "Package Structure"
+    validation: directory_match
+    source: literature_review/
+    rules:
+      - all_py_files_documented: true
+      - all_directories_documented: true
+      - no_orphan_entries: true
+  
+  - name: "Core Components"
+    validation: module_coverage
+    modules:
+      - literature_review/orchestrator.py
+      - literature_review/reviewers/journal_reviewer.py
+      - literature_review/reviewers/deep_reviewer.py
+      - literature_review/analysis/judge.py
+      - literature_review/analysis/gap_analyzer.py
+      # NEW: Must include Operationalization modules
+      - literature_review/models/action_vector.py
+      - literature_review/analysis/validation_tracker.py
+      - literature_review/analysis/action_generator.py
+      - literature_review/analysis/pillar_evolution.py
+      - literature_review/analysis/stakeholder_analyzer.py
+      - literature_review/analysis/benchmark_analyzer.py
+  
+  - name: "Data Files"
+    validation: output_file_coverage
+    expected_outputs:
+      - review_log.json
+      - review_version_history.json
+      - gap_analysis_output/
+      # NEW: Operationalization outputs
+      - action_vectors.json
+      - validation_gap_matrix.json
+      - requirement_benchmark_matrix.json
+      - pillar_research_log.json
+      - pillar_proposals.json
+      - stakeholder_impact_matrix.json
+
+freshness: 
+  max_age_days: 7
+  relative_to: latest_commit_affecting_structure
