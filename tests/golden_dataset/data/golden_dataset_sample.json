@@ -1,0 +1,238 @@
+{
+  "version": "0.1.0",
+  "created_date": "2025-01-01T00:00:00Z",
+  "last_updated": "2025-01-01T00:00:00Z",
+  "description": "Sample golden dataset for development and testing. Replace with full dataset.",
+  "annotated_claims": [
+    {
+      "claim_id": "GD-CLM-0001",
+      "dataset_version": "0.1.0",
+      "source_paper": "sample_neuromorphic_2024.pdf",
+      "source_page": 5,
+      "source_section": "Results",
+      "claim_text": "The spiking neural network achieved 95% accuracy on MNIST classification using only 1mW power.",
+      "evidence_text": "Figure 3 shows classification accuracy of 95.2% ± 0.3% across 10 trials, with power consumption measured at 0.98mW.",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.1",
+      "mapping_rationale": "Demonstrates sensory encoding and classification capability with clear quantitative evidence.",
+      "expected_verdict": "approved",
+      "verdict_rationale": "Strong quantitative evidence with statistical measures and reproducible methodology.",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.8,
+        "rationale": "Clear quantitative results with error bars, multiple trials, and power measurements."
+      },
+      "annotator_ids": ["dev_annotator"],
+      "annotation_date": "2025-01-01T10:00:00Z",
+      "inter_rater_agreement": null,
+      "test_categories": ["precision", "judge_accuracy", "pillar_mapping"],
+      "is_edge_case": false,
+      "edge_case_type": null
+    },
+    {
+      "claim_id": "GD-CLM-0002",
+      "dataset_version": "0.1.0",
+      "source_paper": "sample_review_2023.pdf",
+      "source_page": 12,
+      "source_section": "Discussion",
+      "claim_text": "Neuromorphic systems are generally more energy-efficient than traditional computing.",
+      "evidence_text": "As is well-known in the field, neuromorphic approaches offer efficiency advantages.",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.1",
+      "mapping_rationale": "Relates to efficiency claims but lacks specific evidence.",
+      "expected_verdict": "rejected",
+      "verdict_rationale": "No quantitative evidence provided. Relies on general assertion without data.",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 1,
+        "rigor_score": 1,
+        "relevance_score": 3,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.0,
+        "rationale": "No methodology, no data, purely assertion-based claim."
+      },
+      "annotator_ids": ["dev_annotator"],
+      "annotation_date": "2025-01-01T11:00:00Z",
+      "inter_rater_agreement": null,
+      "test_categories": ["recall", "false_approval_prevention"],
+      "is_edge_case": false,
+      "edge_case_type": null
+    },
+    {
+      "claim_id": "GD-CLM-0003",
+      "dataset_version": "0.1.0",
+      "source_paper": "sample_stdp_2024.pdf",
+      "source_page": 8,
+      "source_section": "Methods",
+      "claim_text": "Our STDP implementation shows timing-dependent weight changes.",
+      "evidence_text": "Preliminary experiments suggest weight modifications occur, though statistical analysis is ongoing.",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.2",
+      "mapping_rationale": "Directly addresses STDP mechanisms.",
+      "expected_verdict": "borderline",
+      "verdict_rationale": "Evidence exists but is incomplete. Composite score expected around threshold.",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 3,
+        "rigor_score": 2,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 2,
+        "recency_bonus": 0.8,
+        "rationale": "Relevant but preliminary results without statistical validation."
+      },
+      "annotator_ids": ["dev_annotator"],
+      "annotation_date": "2025-01-01T12:00:00Z",
+      "inter_rater_agreement": null,
+      "test_categories": ["calibration", "borderline"],
+      "is_edge_case": true,
+      "edge_case_type": "borderline_evidence"
+    },
+    {
+      "claim_id": "GD-CLM-0004",
+      "dataset_version": "0.1.0",
+      "source_paper": "sample_memristor_2024.pdf",
+      "source_page": 15,
+      "source_section": "Experimental Results",
+      "claim_text": "The memristive crossbar array demonstrates 10x reduction in energy consumption compared to digital CMOS implementation.",
+      "evidence_text": "Table 4 reports energy measurements: memristive array consumed 0.5pJ per MAC operation vs 5pJ for equivalent CMOS, validated across 1000 inference operations with standard deviation < 2%.",
+      "correct_pillar": "Pillar 2: Neuromorphic Implementation",
+      "correct_requirement": "REQ-N2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Provides direct evidence of hardware energy efficiency with comparative measurements.",
+      "expected_verdict": "approved",
+      "verdict_rationale": "Strong comparative quantitative data with statistical validation and clear methodology.",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.9,
+        "rationale": "Excellent experimental methodology with direct measurements, proper comparison, and statistical validation."
+      },
+      "annotator_ids": ["dev_annotator", "expert_reviewer_1"],
+      "annotation_date": "2025-01-01T14:00:00Z",
+      "inter_rater_agreement": 0.92,
+      "test_categories": ["precision", "judge_accuracy", "high_quality"],
+      "is_edge_case": false,
+      "edge_case_type": null
+    },
+    {
+      "claim_id": "GD-CLM-0005",
+      "dataset_version": "0.1.0",
+      "source_paper": "sample_reservoir_2023.pdf",
+      "source_page": 7,
+      "source_section": "Analysis",
+      "claim_text": "Reservoir computing with delay-coupled oscillators could potentially solve temporal pattern recognition tasks.",
+      "evidence_text": "Theoretical analysis suggests that the proposed architecture may exhibit the necessary dynamics for temporal processing, pending experimental verification.",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.3",
+      "correct_sub_requirement": "Sub-1.3.2",
+      "mapping_rationale": "Relates to temporal processing but lacks empirical evidence.",
+      "expected_verdict": "rejected",
+      "verdict_rationale": "Purely theoretical claim with no experimental evidence. Uses speculative language (could, may, potentially).",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.5,
+        "rationale": "Theoretical analysis is sound but no experimental validation provided. Speculative language indicates uncertainty."
+      },
+      "annotator_ids": ["dev_annotator"],
+      "annotation_date": "2025-01-01T15:00:00Z",
+      "inter_rater_agreement": null,
+      "test_categories": ["recall", "theoretical_claims"],
+      "is_edge_case": false,
+      "edge_case_type": null
+    }
+  ],
+  "expected_verdicts": [
+    {
+      "claim_id": "GD-CLM-0001",
+      "expected_verdict": "approved",
+      "expected_composite_score_range": [3.5, 4.5],
+      "expected_strength_range": [4, 5],
+      "expected_relevance_range": [4, 5],
+      "true_positive_probability": 0.95,
+      "rejection_reasons": []
+    },
+    {
+      "claim_id": "GD-CLM-0002",
+      "expected_verdict": "rejected",
+      "expected_composite_score_range": [1.0, 2.0],
+      "expected_strength_range": [1, 2],
+      "expected_relevance_range": [2, 4],
+      "true_positive_probability": 0.05,
+      "rejection_reasons": ["Insufficient evidence strength", "No quantitative data"]
+    },
+    {
+      "claim_id": "GD-CLM-0003",
+      "expected_verdict": "borderline",
+      "expected_composite_score_range": [2.7, 3.3],
+      "expected_strength_range": [2, 4],
+      "expected_relevance_range": [3, 5],
+      "true_positive_probability": 0.50,
+      "rejection_reasons": ["Preliminary results", "Statistical analysis incomplete"]
+    },
+    {
+      "claim_id": "GD-CLM-0004",
+      "expected_verdict": "approved",
+      "expected_composite_score_range": [4.0, 5.0],
+      "expected_strength_range": [4, 5],
+      "expected_relevance_range": [4, 5],
+      "true_positive_probability": 0.98,
+      "rejection_reasons": []
+    },
+    {
+      "claim_id": "GD-CLM-0005",
+      "expected_verdict": "rejected",
+      "expected_composite_score_range": [1.8, 2.5],
+      "expected_strength_range": [1, 3],
+      "expected_relevance_range": [3, 5],
+      "true_positive_probability": 0.15,
+      "rejection_reasons": ["No experimental validation", "Speculative language", "Theoretical only"]
+    }
+  ],
+  "known_gaps": [
+    {
+      "gap_id": "GD-GAP-0001",
+      "dataset_version": "0.1.0",
+      "pillar": "Pillar 2: Neuromorphic Implementation",
+      "requirement_id": "REQ-N2.1",
+      "sub_requirement_id": "Sub-2.1.3",
+      "requirement_text": "Hardware implementation of temporal coding mechanisms",
+      "current_completeness": 15.0,
+      "expected_severity": "CRITICAL",
+      "database_state_file": "gap_test_states/gap_0001_state.json",
+      "why_is_gap": "No papers in database address temporal coding hardware implementation.",
+      "expected_in_report": true
+    }
+  ],
+  "recommendation_quality": [
+    {
+      "gap_id": "GD-GAP-0001",
+      "expected_recommendation_themes": [
+        "temporal coding",
+        "hardware implementation",
+        "spike timing",
+        "neuromorphic chip"
+      ],
+      "expected_minimum_rating": 4,
+      "reference_recommendation": "Search for papers on temporal coding circuits in neuromorphic hardware, particularly implementations on Intel Loihi or IBM TrueNorth platforms."
+    }
+  ]
+}

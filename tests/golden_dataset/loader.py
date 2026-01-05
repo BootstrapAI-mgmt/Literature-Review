@@ -1,256 +1,193 @@
 """
-Golden Dataset Loading Utilities
+Golden Dataset Loader
 
-Provides utilities for loading and managing golden dataset test fixtures.
+Utilities for loading and working with the golden dataset.
 """
 
 import json
-import logging
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Any
+from typing import List, Optional, Dict, Any
+import logging
+import functools
 
-from tests.golden_dataset.schema import (
-    GoldenClaim,
-    GoldenVerdict,
-    GoldenGap,
-    GoldenDataset
+from .schema import (
+    GoldenDataset,
+    AnnotatedClaim,
+    ExpectedVerdict,
+    KnownGap,
+    RecommendationQuality,
+    Verdict
 )
 
 logger = logging.getLogger(__name__)
 
 
 class GoldenDatasetLoader:
-    """Load and manage golden dataset files."""
+    """
+    Load and query the golden dataset.
     
-    DEFAULT_DATA_DIR = Path(__file__).parent / "data"
+    Example:
+        loader = GoldenDatasetLoader()
+        dataset = loader.load()
+        
+        # Get claims for precision testing
+        precision_claims = loader.get_claims_for_test("precision")
+        
+        # Get approved claims only
+        approved = loader.get_claims_by_verdict(Verdict.APPROVED)
+    """
     
-    def __init__(self, data_dir: Optional[Path] = None, warn_on_missing: bool = True):
+    DEFAULT_PATH = Path(__file__).parent / "data" / "golden_dataset.json"
+    
+    def __init__(self, dataset_path: Optional[Path] = None):
         """
-        Initialize the loader.
+        Initialize loader.
         
         Args:
-            data_dir: Directory containing golden dataset files.
-                     Defaults to tests/golden_dataset/data/
-            warn_on_missing: Whether to log a warning when files are not found.
-                            Defaults to True.
+            dataset_path: Path to golden dataset JSON. Uses default if not specified.
         """
-        self.data_dir = Path(data_dir) if data_dir else self.DEFAULT_DATA_DIR
-        self.warn_on_missing = warn_on_missing
+        self.dataset_path = dataset_path or self.DEFAULT_PATH
+        self._dataset: Optional[GoldenDataset] = None
     
-    def load_claims(self, filename: str = "claims.json") -> List[GoldenClaim]:
-        """
-        Load golden claims from JSON file.
-        
-        Args:
-            filename: Name of claims file
-            
-        Returns:
-            List of GoldenClaim objects (empty list if file not found)
-        """
-        filepath = self.data_dir / filename
-        if not filepath.exists():
-            if self.warn_on_missing:
-                logger.warning(f"Golden dataset file not found: {filepath}")
-            return []
-        
-        with open(filepath, 'r') as f:
-            data = json.load(f)
-        
-        claims = []
-        for item in data:
-            claims.append(GoldenClaim(
-                claim_id=item["claim_id"],
-                pillar=item["pillar"],
-                sub_requirement=item["sub_requirement"],
-                claim_text=item["claim_text"],
-                evidence_text=item["evidence_text"],
-                expected_verdict=item["expected_verdict"],
-                expected_reasoning=item.get("expected_reasoning"),
-                evidence_quality_scores=item.get("evidence_quality_scores", {}),
-                source_paper=item.get("source_paper"),
-                metadata=item.get("metadata", {})
-            ))
-        
-        return claims
-    
-    def load_verdicts(self, filename: str = "verdicts.json") -> List[GoldenVerdict]:
-        """
-        Load golden verdicts from JSON file.
-        
-        Args:
-            filename: Name of verdicts file
-            
-        Returns:
-            List of GoldenVerdict objects (empty list if file not found)
-        """
-        filepath = self.data_dir / filename
-        if not filepath.exists():
-            if self.warn_on_missing:
-                logger.warning(f"Golden dataset file not found: {filepath}")
-            return []
-        
-        with open(filepath, 'r') as f:
-            data = json.load(f)
-        
-        verdicts = []
-        for item in data:
-            verdicts.append(GoldenVerdict(
-                verdict_id=item["verdict_id"],
-                claim_id=item["claim_id"],
-                verdict=item["verdict"],
-                reasoning=item["reasoning"],
-                confidence=item["confidence"],
-                judge_model=item.get("judge_model"),
-                timestamp=item.get("timestamp", ""),
-                metadata=item.get("metadata", {})
-            ))
-        
-        return verdicts
-    
-    def load_gaps(self, filename: str = "gaps.json") -> List[GoldenGap]:
-        """
-        Load golden gaps from JSON file.
-        
-        Args:
-            filename: Name of gaps file
-            
-        Returns:
-            List of GoldenGap objects (empty list if file not found)
-        """
-        filepath = self.data_dir / filename
-        if not filepath.exists():
-            if self.warn_on_missing:
-                logger.warning(f"Golden dataset file not found: {filepath}")
-            return []
-        
-        with open(filepath, 'r') as f:
-            data = json.load(f)
-        
-        gaps = []
-        for item in data:
-            gaps.append(GoldenGap(
-                gap_id=item["gap_id"],
-                pillar=item["pillar"],
-                sub_requirement=item["sub_requirement"],
-                gap_description=item["gap_description"],
-                severity=item["severity"],
-                suggested_searches=item.get("suggested_searches", []),
-                metadata=item.get("metadata", {})
-            ))
-        
-        return gaps
-    
-    def load_dataset(self, name: str = "default") -> Optional[GoldenDataset]:
-        """
-        Load a complete golden dataset.
-        
-        Args:
-            name: Name of the dataset (looks for {name}_dataset.json)
-            
-        Returns:
-            GoldenDataset object or None if not found
-        """
-        filepath = self.data_dir / f"{name}_dataset.json"
-        if not filepath.exists():
-            if self.warn_on_missing:
-                logger.warning(f"Golden dataset not found: {filepath}")
-            return None
-        
-        with open(filepath, 'r') as f:
-            data = json.load(f)
-        
-        claims = [
-            GoldenClaim(
-                claim_id=c["claim_id"],
-                pillar=c["pillar"],
-                sub_requirement=c["sub_requirement"],
-                claim_text=c["claim_text"],
-                evidence_text=c["evidence_text"],
-                expected_verdict=c["expected_verdict"],
-                expected_reasoning=c.get("expected_reasoning"),
-                evidence_quality_scores=c.get("evidence_quality_scores", {}),
-                source_paper=c.get("source_paper"),
-                metadata=c.get("metadata", {})
+    def load(self) -> GoldenDataset:
+        """Load the golden dataset from disk."""
+        if not self.dataset_path.exists():
+            raise FileNotFoundError(
+                f"Golden dataset not found at {self.dataset_path}. "
+                "Run the generation script first."
             )
-            for c in data.get("claims", [])
-        ]
         
-        verdicts = [
-            GoldenVerdict(
-                verdict_id=v["verdict_id"],
-                claim_id=v["claim_id"],
-                verdict=v["verdict"],
-                reasoning=v["reasoning"],
-                confidence=v["confidence"],
-                judge_model=v.get("judge_model"),
-                timestamp=v.get("timestamp", ""),
-                metadata=v.get("metadata", {})
-            )
-            for v in data.get("verdicts", [])
-        ]
+        with open(self.dataset_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
         
-        gaps = [
-            GoldenGap(
-                gap_id=g["gap_id"],
-                pillar=g["pillar"],
-                sub_requirement=g["sub_requirement"],
-                gap_description=g["gap_description"],
-                severity=g["severity"],
-                suggested_searches=g.get("suggested_searches", []),
-                metadata=g.get("metadata", {})
-            )
-            for g in data.get("gaps", [])
-        ]
-        
-        return GoldenDataset(
-            name=data["name"],
-            version=data["version"],
-            description=data["description"],
-            claims=claims,
-            verdicts=verdicts,
-            gaps=gaps,
-            created_at=data.get("created_at", ""),
-            metadata=data.get("metadata", {})
-        )
+        self._dataset = GoldenDataset(**data)
+        logger.info(f"Loaded golden dataset v{self._dataset.version}: {self._dataset.stats}")
+        return self._dataset
     
-    def save_dataset(self, dataset: GoldenDataset, filename: Optional[str] = None) -> Path:
+    @property
+    def dataset(self) -> GoldenDataset:
+        """Get loaded dataset, loading if necessary."""
+        if self._dataset is None:
+            self.load()
+        return self._dataset
+    
+    def get_claims_for_test(self, test_category: str) -> List[AnnotatedClaim]:
+        """Get claims designated for a specific test category."""
+        return [
+            claim for claim in self.dataset.annotated_claims
+            if test_category in claim.test_categories
+        ]
+    
+    def get_claims_by_verdict(self, verdict: Verdict) -> List[AnnotatedClaim]:
+        """Get claims with a specific expected verdict."""
+        return [
+            claim for claim in self.dataset.annotated_claims
+            if claim.expected_verdict == verdict
+        ]
+    
+    def get_edge_cases(self) -> List[AnnotatedClaim]:
+        """Get all edge case claims."""
+        return [
+            claim for claim in self.dataset.annotated_claims
+            if claim.is_edge_case
+        ]
+    
+    def get_claims_by_pillar(self, pillar_name: str) -> List[AnnotatedClaim]:
+        """Get claims for a specific pillar."""
+        return [
+            claim for claim in self.dataset.annotated_claims
+            if pillar_name in claim.correct_pillar
+        ]
+    
+    def get_high_confidence_claims(self) -> List[AnnotatedClaim]:
+        """Get claims with high annotator confidence."""
+        return [
+            claim for claim in self.dataset.annotated_claims
+            if claim.verdict_confidence.value == "high"
+        ]
+    
+    def get_calibration_data(self) -> List[tuple]:
         """
-        Save a golden dataset to JSON file.
+        Get data for calibration analysis.
         
-        Args:
-            dataset: GoldenDataset to save
-            filename: Optional filename (defaults to {name}_dataset.json)
+        Returns:
+            List of (predicted_probability, actual_outcome) tuples
+            where outcome is 1 for approved, 0 for rejected.
+        """
+        calibration_data = []
+        
+        for claim in self.dataset.annotated_claims:
+            # Find matching verdict entry
+            verdict_entry = next(
+                (v for v in self.dataset.expected_verdicts if v.claim_id == claim.claim_id),
+                None
+            )
             
-        Returns:
-            Path to saved file
-        """
-        if filename is None:
-            filename = f"{dataset.name}_dataset.json"
+            if verdict_entry:
+                probability = verdict_entry.true_positive_probability
+                outcome = 1 if claim.expected_verdict == Verdict.APPROVED else 0
+                calibration_data.append((probability, outcome))
         
-        filepath = self.data_dir / filename
-        
-        # Ensure directory exists
-        self.data_dir.mkdir(parents=True, exist_ok=True)
-        
-        with open(filepath, 'w') as f:
-            json.dump(dataset.to_dict(), f, indent=2)
-        
-        return filepath
+        return calibration_data
     
-    def list_datasets(self) -> List[str]:
+    def get_gap_test_cases(self) -> List[KnownGap]:
+        """Get all known gap test cases."""
+        return self.dataset.known_gaps
+    
+    def get_recommendation_test_cases(self) -> List[RecommendationQuality]:
+        """Get recommendation quality test cases."""
+        return self.dataset.recommendation_quality
+    
+    def validate_dataset(self) -> Dict[str, Any]:
         """
-        List available golden datasets.
+        Validate dataset integrity.
         
         Returns:
-            List of dataset names
+            Validation report with any issues found.
         """
-        if not self.data_dir.exists():
-            return []
+        issues = []
         
-        datasets = []
-        for filepath in self.data_dir.glob("*_dataset.json"):
-            name = filepath.stem.replace("_dataset", "")
-            datasets.append(name)
+        # Check for duplicate claim IDs
+        claim_ids = [c.claim_id for c in self.dataset.annotated_claims]
+        duplicates = [id for id in claim_ids if claim_ids.count(id) > 1]
+        if duplicates:
+            issues.append(f"Duplicate claim IDs: {set(duplicates)}")
         
-        return datasets
+        # Check verdict entries match claims
+        claim_id_set = set(claim_ids)
+        for verdict in self.dataset.expected_verdicts:
+            if verdict.claim_id not in claim_id_set:
+                issues.append(f"Verdict references unknown claim: {verdict.claim_id}")
+        
+        # Check minimum dataset sizes (these are advisory for sample datasets)
+        stats = self.dataset.stats
+        if stats["total_claims"] < 50:
+            issues.append(f"Insufficient claims: {stats['total_claims']} < 50 minimum")
+        if stats["total_gaps"] < 20:
+            issues.append(f"Insufficient gaps: {stats['total_gaps']} < 20 minimum")
+        
+        return {
+            "valid": len(issues) == 0,
+            "issues": issues,
+            "stats": stats
+        }
+
+
+def check_golden_dataset_available() -> bool:
+    """Check if golden dataset is available for testing."""
+    loader = GoldenDatasetLoader()
+    return loader.dataset_path.exists()
+
+
+def requires_golden_dataset(func):
+    """Decorator to skip test if golden dataset not available."""
+    import pytest
+    
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        if not check_golden_dataset_available():
+            pytest.skip("Golden dataset not available")
+        return func(*args, **kwargs)
+    
+    return wrapper
