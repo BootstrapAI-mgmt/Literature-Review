@@ -12,6 +12,7 @@ Usage:
     pytest tests/benchmarks/model_comparison/
 """
 
+import json
 import pytest
 import time
 from typing import List, Dict, Any
@@ -156,16 +157,17 @@ class TestModelComparison:
                 cost = config.estimate_cost(tokens["input"], tokens["output"])
                 
                 # Evaluate accuracy (did it extract correctly?)
-                import json
+                # Accuracy weights: title=1/3, authors=1/3, year=1/3
+                ACCURACY_WEIGHT = 1.0 / 3.0
                 try:
                     data = json.loads(response)
                     accuracy = 0.0
                     if data.get("title"):
-                        accuracy += 0.33
+                        accuracy += ACCURACY_WEIGHT
                     if data.get("authors") and len(data["authors"]) == 2:
-                        accuracy += 0.33
+                        accuracy += ACCURACY_WEIGHT
                     if data.get("year") == 2024:
-                        accuracy += 0.34
+                        accuracy += ACCURACY_WEIGHT
                 except json.JSONDecodeError:
                     accuracy = 0.0
                 

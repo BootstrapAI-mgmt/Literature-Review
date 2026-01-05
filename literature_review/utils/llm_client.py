@@ -42,8 +42,13 @@ class GeminiClient(LLMClient):
     """Client for Google Gemini models."""
     
     def __init__(self, config: ModelConfig):
-        from google import genai
-        from google.genai import types
+        try:
+            from google import genai
+            from google.genai import types
+        except ImportError:
+            raise ImportError(
+                "google-genai package not installed. Install with: pip install google-genai"
+            )
         
         self.config = config
         api_key = os.environ.get(config.api_key_env)

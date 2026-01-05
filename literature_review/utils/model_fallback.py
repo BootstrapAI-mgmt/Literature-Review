@@ -117,15 +117,38 @@ class ModelFallbackHandler:
         )
     
     def _is_recoverable_error(self, error: Exception) -> bool:
-        """Check if error is recoverable via fallback."""
+        """
+        Check if error is recoverable via fallback.
+        
+        Recoverable errors are typically rate limits, quota issues, or 
+        temporary service unavailability that might be resolved by trying 
+        a different provider.
+        """
         error_str = str(error).lower()
+        error_type = type(error).__name__.lower()
+        
+        # Check exception type first for more reliable detection
+        type_patterns = ["ratelimit", "quota", "resourceexhausted", "serviceunavailable"]
+        if any(p in error_type for p in type_patterns):
+            return True
+        
+        # Check error message for specific patterns
+        # Using word boundaries to reduce false positives
         recoverable_patterns = [
             "rate limit",
+            "rate_limit",
+            "ratelimit",
             "quota exceeded",
-            "429",
-            "503",
+            "quota_exceeded",
+            "resource exhausted",
+            "http 429",
+            "status 429",
+            "code 429",
+            "http 503",
+            "status 503",
             "temporarily unavailable",
-            "overloaded"
+            "service overloaded",
+            "too many requests",
         ]
         return any(p in error_str for p in recoverable_patterns)
 

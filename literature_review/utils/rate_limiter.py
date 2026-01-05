@@ -61,20 +61,25 @@ class RateLimiter:
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
-                    cls._instance._buckets: Dict[str, RateLimitBucket] = {}
+                    cls._instance._init_buckets()
         return cls._instance
+    
+    def _init_buckets(self):
+        """Initialize buckets dictionary. Called only once during singleton creation."""
+        self._buckets: Dict[str, RateLimitBucket] = {}
+        self._bucket_lock = threading.Lock()
     
     def get_bucket(self, config: ModelConfig) -> RateLimitBucket:
         """Get or create rate limit bucket for a model config."""
         key = f"{config.provider.value}:{config.model_name}"
         
-        if key not in self._buckets:
-            self._buckets[key] = RateLimitBucket(
-                capacity=config.requests_per_minute,
-                refill_rate=config.requests_per_minute / 60.0
-            )
-        
-        return self._buckets[key]
+        with self._bucket_lock:
+            if key not in self._buckets:
+                self._buckets[key] = RateLimitBucket(
+                    capacity=config.requests_per_minute,
+                    refill_rate=config.requests_per_minute / 60.0
+                )
+            return self._buckets[key]
     
     def acquire(self, config: ModelConfig, tokens: int = 1) -> bool:
         """Acquire rate limit tokens for the given model."""
@@ -88,7 +93,8 @@ class RateLimiter:
     
     def reset(self):
         """Reset all rate limit buckets (useful for testing)."""
-        self._buckets = {}
+        with self._bucket_lock:
+            self._buckets = {}
 
 
 def get_rate_limiter() -> RateLimiter:
