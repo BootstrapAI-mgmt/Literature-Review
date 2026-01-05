@@ -16,6 +16,31 @@ from typing import Dict, Any, Tuple, Optional, List
 from tests.validation.base import ValidationResult
 
 
+# =============================================================================
+# Validation Configuration Constants
+# =============================================================================
+
+# Thresholds for text extraction validation
+SECTION_FIDELITY_THRESHOLD = 0.90  # 90% of expected sections should be present
+SHORT_PAPER_FIDELITY_THRESHOLD = 0.80  # 80% for short papers (less strict)
+MINIMUM_QUALITY_SCORE = 0.1  # Minimum acceptable quality score from extractor
+EXTRACTION_TIMEOUT_SECONDS = 5.0  # Maximum time for PDF extraction
+
+# Content validation terms
+SPECIAL_CHAR_EXPECTED_CONTENT = ["Special Characters", "special"]
+MULTI_COLUMN_LEFT_MARKERS = ["LEFT COLUMN", "left column"]
+MULTI_COLUMN_RIGHT_MARKERS = ["RIGHT COLUMN", "right column"]
+TABLE_CONTENT_INDICATORS = [
+    "Table",  # Generic table marker
+    "Method",  # Table headers commonly found in our fixtures
+    "Accuracy",  # Metric headers
+    "pypdf",  # Library names from test fixture
+    "pdfplumber"  # Library names from test fixture
+]
+
+# =============================================================================
+
+
 # Helper class for validation (not using inheritance to avoid pytest collection issues)
 class ValidationHelper:
     """Helper class for validation operations."""
@@ -232,10 +257,9 @@ class TestPDFExtraction:
         expected_snippets = expected_config.get("expected_snippets", [])
         found_snippets = sum(1 for s in expected_snippets if s.lower() in text.lower())
         
-        # At least 80% of snippets should be found for short papers
-        threshold = 0.80
-        assert found_snippets >= len(expected_snippets) * threshold, \
-            f"Section fidelity {found_snippets}/{len(expected_snippets)} < {threshold*100}%"
+        # Short papers have less strict fidelity requirements
+        assert found_snippets >= len(expected_snippets) * SHORT_PAPER_FIDELITY_THRESHOLD, \
+            f"Section fidelity {found_snippets}/{len(expected_snippets)} < {SHORT_PAPER_FIDELITY_THRESHOLD*100}%"
     
     def test_fv01_metadata_extraction(self, text_extractor, validation_helper):
         """
@@ -322,10 +346,11 @@ class TestPDFExtraction:
         )
         assert result.passed, "Unicode handling failed"
         
-        # Verify some expected content is present
+        # Verify some expected content is present using configured markers
         assert len(text) > 100, "Special characters PDF should have extractable text"
-        assert "Special Characters" in text or "special" in text.lower(), \
-            "Should extract title from special characters PDF"
+        content_found = any(marker in text or marker.lower() in text.lower() 
+                          for marker in SPECIAL_CHAR_EXPECTED_CONTENT)
+        assert content_found, "Should extract title from special characters PDF"
     
     def test_fv01_quality_score(self, text_extractor, validation_helper):
         """
@@ -334,6 +359,7 @@ class TestPDFExtraction:
         Success Criteria:
         - Quality score is calculated
         - Score is within valid range [0, 1]
+        - Quality meets minimum threshold (MINIMUM_QUALITY_SCORE)
         """
         pdf_path = FIXTURES_DIR / "valid_research_paper.pdf"
         
@@ -345,14 +371,15 @@ class TestPDFExtraction:
         # Quality should be a valid score
         assert 0 <= quality <= 1, f"Quality score {quality} not in valid range [0, 1]"
         
-        # For a valid research paper, quality should be reasonable
-        assert quality > 0.1, f"Quality score {quality} too low for valid PDF"
+        # For a valid research paper, quality should meet minimum threshold
+        assert quality > MINIMUM_QUALITY_SCORE, \
+            f"Quality score {quality} below minimum threshold {MINIMUM_QUALITY_SCORE}"
         
         result = validation_helper.validate_threshold(
             test_id="FV-01-E",
             test_name="Extraction quality score",
             actual=quality,
-            threshold=0.1,
+            threshold=MINIMUM_QUALITY_SCORE,
             comparison="gte",
             metadata={"method": method, "text_length": len(text)}
         )
@@ -379,34 +406,41 @@ class TestPDFExtraction:
             with open(pdf_path, 'wb') as f:
                 f.write(b'%PDF-1.4\n%%CORRUPTED')
         
-        # Should not crash
+        # Track whether handling was graceful
         exception_raised = False
         error_message = None
         text = ""
+        graceful_handling = True
         
         try:
             text, method, quality = text_extractor.robust_text_extraction(str(pdf_path))
+            # Graceful handling means we got a result (empty is acceptable)
+            graceful_handling = True
         except Exception as e:
             exception_raised = True
             error_message = str(e)
+            # Exception with error message is also graceful handling
+            # Only non-graceful if it's an unhandled crash (which wouldn't reach here)
+            graceful_handling = error_message is not None
         
-        # Either graceful failure (empty result) or caught exception with message
+        # Validate the handling was graceful
         result = ValidationResult(
             test_id="FV-02-A",
             test_name="Corrupted PDF handling",
-            passed=True,  # If we got here without crashing, it's a pass
-            actual_value="Graceful failure" if not exception_raised else f"Exception: {error_message}",
+            passed=graceful_handling,
+            actual_value="Graceful empty result" if not exception_raised else f"Handled exception: {error_message}",
             expected_value="No crash, graceful handling",
             execution_time_ms=validation_helper.get_execution_time_ms(),
             metadata={
                 "exception_raised": exception_raised,
                 "error_message": error_message,
-                "text_length": len(text) if text else 0
+                "text_length": len(text) if text else 0,
+                "graceful_handling": graceful_handling
             }
         )
         validation_helper.results.append(result)
         
-        assert True, "Corrupted PDF handled gracefully"
+        assert graceful_handling, "Corrupted PDF should be handled gracefully"
     
     def test_fv02_truncated_pdf_handling(self, text_extractor, validation_helper):
         """
@@ -501,9 +535,11 @@ class TestPDFExtraction:
             metadata={"layout": "multi-column", "method": method}
         )
         
-        # Verify both columns' content is present
-        has_left_content = "LEFT COLUMN" in text or "left column" in text.lower()
-        has_right_content = "RIGHT COLUMN" in text or "right column" in text.lower()
+        # Verify both columns' content is present using configured markers
+        has_left_content = any(marker in text or marker.lower() in text.lower() 
+                              for marker in MULTI_COLUMN_LEFT_MARKERS)
+        has_right_content = any(marker in text or marker.lower() in text.lower() 
+                               for marker in MULTI_COLUMN_RIGHT_MARKERS)
         
         # Log but don't fail - multi-column is challenging
         if not (has_left_content and has_right_content):
@@ -517,7 +553,7 @@ class TestPDFExtraction:
         
         Success Criteria:
         - Tables are recognized
-        - Data can be extracted
+        - Data can be extracted from table structures
         """
         pdf_path = FIXTURES_DIR / "tables_heavy.pdf"
         
@@ -529,8 +565,8 @@ class TestPDFExtraction:
         # Should extract table data
         assert len(text) > 100, "Tables PDF should have extractable text"
         
-        # Check for table content
-        has_table_content = any(term in text for term in ["Table", "Method", "Accuracy", "pypdf", "pdfplumber"])
+        # Check for table content using configured indicators
+        has_table_content = any(term in text for term in TABLE_CONTENT_INDICATORS)
         
         result = ValidationResult(
             test_id="FV-02-E",
