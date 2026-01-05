@@ -1,0 +1,19 @@
+{
+    "task_id": "update-architecture-blueprint",
+    "domain": "documentation",
+    "action": "sync_module_listing",
+    "document": "docs/MASTER_ARCHITECTURE_BLUEPRINT.md",
+    "context": {
+        "changed_files": [
+            "literature_review/models/new_module.py",
+            "literature_review/analysis/new_analyzer.py"
+        ],
+        "commit_sha": "def456abc789",
+        "commit_message": "feat: add new analysis modules"
+    },
+    "instructions": {
+        "operation": "ensure_modules_documented",
+        "target_section": "Package Structure",
+        "validation_required": true
+    }
+}

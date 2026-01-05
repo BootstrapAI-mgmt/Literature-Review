@@ -1,0 +1,17 @@
+{
+    "trigger": "scheduled",
+    "timestamp": "2026-01-05T06:00:00Z",
+    "scope": "full_repository",
+    "documents_to_check": [
+        "docs/MASTER_ARCHITECTURE_BLUEPRINT.md",
+        "docs/MASTER_REPOSITORY_ROADMAP.md",
+        "task-cards/OPERATIONALIZATION_WAVE_INDEX.md"
+    ],
+    "validation_rules": {
+        "check_module_coverage": true,
+        "check_wave_status": true,
+        "check_task_sync": true,
+        "check_freshness": true
+    },
+    "expected_corrections": []
+}

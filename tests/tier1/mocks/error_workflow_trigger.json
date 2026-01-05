@@ -1,0 +1,26 @@
+{
+    "workflow": "Doc Chain - Errors",
+    "trigger": "error_callback",
+    "error": {
+        "type": "WorkflowExecutionError",
+        "workflow": "Doc Chain - Agent",
+        "execution_id": "exec_12345",
+        "message": "Agent failed to complete task: API rate limit exceeded",
+        "timestamp": "2026-01-05T12:30:00Z",
+        "severity": "high",
+        "recoverable": true
+    },
+    "context": {
+        "original_task": {
+            "task_id": "update-architecture-blueprint",
+            "domain": "documentation"
+        },
+        "retry_count": 3,
+        "max_retries": 3
+    },
+    "action_required": {
+        "create_issue": true,
+        "notify_maintainers": true,
+        "escalate": false
+    }
+}

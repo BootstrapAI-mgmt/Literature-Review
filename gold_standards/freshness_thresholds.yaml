@@ -1,0 +1,111 @@
+# gold_standards/freshness_thresholds.yaml
+# Freshness thresholds for documentation staleness detection
+# Per Master Validation Plan V2.0.0 Appendix C.4
+
+version: "2.0.0"
+last_validated: "2026-01-05"
+validation_tier: "T4-STAL"
+
+global_settings:
+  default_max_age_days: 30
+  timestamp_patterns:
+    - "**Updated:** (\\w+ \\d+, \\d+)"
+    - "**Last Updated:** (\\d{4}-\\d{2}-\\d{2})"
+    - "Updated: (\\d{4}-\\d{2}-\\d{2})"
+
+document_types:
+  - pattern: "MASTER_*.md"
+    category: "master_documents"
+    max_age_days: 7
+    relative_to: "any_structural_change"
+    priority: critical
+    description: "Master documents must reflect current state within 1 week"
+    triggers:
+      - new_python_file
+      - new_directory
+      - wave_completion
+      - major_feature_merge
+
+  - pattern: "task-cards/*.md"
+    category: "task_cards"
+    max_age_days: 3
+    relative_to: "related_pr_merge"
+    priority: high
+    description: "Task cards must update within 3 days of PR merge"
+    triggers:
+      - pr_merge_with_task_reference
+      - manual_status_update
+
+  - pattern: "*_WAVE_INDEX.md"
+    category: "wave_indexes"
+    max_age_days: 1
+    relative_to: "any_task_status_change"
+    priority: high
+    description: "Wave indexes must update within 24 hours of task changes"
+    triggers:
+      - task_card_status_change
+      - wave_completion
+
+  - pattern: "docs/guides/*.md"
+    category: "guides"
+    max_age_days: 14
+    relative_to: "related_feature_change"
+    priority: medium
+    description: "Guides should update within 2 weeks of feature changes"
+    triggers:
+      - cli_change
+      - api_change
+      - configuration_change
+
+  - pattern: "README.md"
+    category: "readme"
+    max_age_days: 30
+    relative_to: "major_feature_change"
+    priority: low
+    description: "README updates for major features only"
+    triggers:
+      - new_major_feature
+      - breaking_change
+
+staleness_actions:
+  critical:
+    threshold_exceeded_by: 0
+    actions:
+      - create_github_issue:
+          title: "Critical: {document} is stale"
+          labels: ["documentation", "critical", "stale"]
+      - block_pr_merge:
+          condition: "affected_document_is_stale"
+
+  high:
+    threshold_exceeded_by: 0
+    actions:
+      - create_github_issue:
+          title: "High Priority: {document} needs update"
+          labels: ["documentation", "high-priority", "stale"]
+
+  medium:
+    threshold_exceeded_by: 7
+    actions:
+      - create_refresh_task:
+          priority: 2
+          queue: "documentation-updates"
+
+  low:
+    threshold_exceeded_by: 14
+    actions:
+      - log_for_weekly_review:
+          report: "staleness_digest"
+
+exceptions:
+  - pattern: "docs/archive/*.md"
+    max_age_days: null
+    reason: "Archived documents are historical records"
+
+  - pattern: "CHANGELOG.md"
+    max_age_days: null
+    reason: "Changelog updates only on release"
+
+  - pattern: "docs/**/examples/*.md"
+    max_age_days: 60
+    reason: "Examples change less frequently"
