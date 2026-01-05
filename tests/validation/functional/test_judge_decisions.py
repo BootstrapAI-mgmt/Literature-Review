@@ -379,10 +379,18 @@ class TestDRAResubmission:
         - Rejection reasons included
         """
         rejected_claims = REJECTED_CLAIMS_FOR_DRA
-        received_count = len(rejected_claims)
         
-        assert received_count >= len(REJECTED_CLAIMS_FOR_DRA), \
-            "DRA should receive all rejected claims"
+        # Verify all claims have required fields for DRA processing
+        for claim in rejected_claims:
+            assert "claim_id" in claim, "Claim must have claim_id"
+            assert "original_claim" in claim, "Claim must have original_claim"
+            assert "rejection_reason" in claim, "Claim must have rejection_reason"
+            assert "source_paper" in claim, "Claim must have source_paper"
+        
+        # Verify DRA receives expected count of claims
+        received_count = len(rejected_claims)
+        assert received_count >= 2, \
+            "DRA should receive at least 2 rejected claims for testing"
     
     def test_fv06_dra_returns_improved_claims(self, mock_dra):
         """
@@ -696,7 +704,7 @@ class TestJudgeScoreCalculation:
                 repro * 0.05
             )
             
-            is_correct = abs(calculated - expected) < 0.1
+            is_correct = abs(calculated - expected) < 0.01
             
             assert is_correct, \
                 f"Composite score mismatch: calculated {calculated:.2f}, expected {expected}"
@@ -771,9 +779,9 @@ class TestJudgeIntegration:
         }
         
         calculated = calculate_composite_score(quality)
-        expected = 3.85
+        expected = 3.55  # (4*0.30)+(4*0.25)+(4*0.25)+(3/3*0.10)+(1.0*0.05)+(4*0.05)
         
-        is_correct = abs(calculated - expected) < 0.1
+        is_correct = abs(calculated - expected) < 0.01
         
         assert is_correct, f"calculate_composite_score: expected ~{expected}, got {calculated}"
     
