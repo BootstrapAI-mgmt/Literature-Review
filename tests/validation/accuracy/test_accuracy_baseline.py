@@ -12,64 +12,16 @@ from typing import Dict, List, Optional
 from tests.validation.base import ValidationResult
 from tests.golden_dataset.loader import (
     GoldenDatasetLoader,
-    requires_golden_dataset,
     check_golden_dataset_available
 )
 from tests.golden_dataset.schema import AnnotatedClaim, Verdict
 from tests.validation.utils.claim_matcher import ClaimMatcher
-
-
-# ============================================================================
-# Helper functions for accuracy calculations
-# ============================================================================
-
-
-def calculate_precision(true_positives: int, false_positives: int) -> float:
-    """Calculate precision: TP / (TP + FP)."""
-    total = true_positives + false_positives
-    return (true_positives / total) * 100 if total > 0 else 0.0
-
-
-def calculate_recall(true_positives: int, false_negatives: int) -> float:
-    """Calculate recall: TP / (TP + FN)."""
-    total = true_positives + false_negatives
-    return (true_positives / total) * 100 if total > 0 else 0.0
-
-
-def calculate_f1(precision: float, recall: float) -> float:
-    """Calculate F1 score."""
-    if precision + recall == 0:
-        return 0.0
-    return 2 * (precision * recall) / (precision + recall)
-
-
-def validate_threshold(
-    test_id: str,
-    test_name: str,
-    actual: float,
-    threshold: float,
-    comparison: str = "gte",
-    metadata: Optional[Dict] = None
-) -> ValidationResult:
-    """Validate a value against a threshold."""
-    if comparison == "gte":
-        passed = actual >= threshold
-    elif comparison == "lte":
-        passed = actual <= threshold
-    else:  # eq
-        passed = abs(actual - threshold) < 0.001
-    
-    return ValidationResult(
-        test_id=test_id,
-        test_name=test_name,
-        passed=passed,
-        actual_value=actual,
-        expected_value=f"{comparison} {threshold}",
-        threshold=threshold,
-        margin=actual - threshold,
-        execution_time_ms=0.0,
-        metadata=metadata or {}
-    )
+from tests.validation.utils.helpers import (
+    calculate_precision,
+    calculate_recall,
+    calculate_f1,
+    validate_threshold
+)
 
 
 # ============================================================================

@@ -6,112 +6,23 @@ Validates FV-03, AV-01, and AV-02 from the validation matrix.
 
 import pytest
 import json
-import time
 from pathlib import Path
-from typing import Dict, List, Set, Tuple, Optional, Any
+from typing import Dict, List, Optional
 from collections import defaultdict
-from dataclasses import dataclass, field
-from datetime import datetime
 
 from tests.validation.base import ValidationResult
 from tests.golden_dataset.loader import (
     GoldenDatasetLoader,
-    requires_golden_dataset,
     check_golden_dataset_available
 )
 from tests.golden_dataset.schema import AnnotatedClaim, Verdict
-
-
-# ============================================================================
-# Helper functions for validation
-# ============================================================================
-
-
-def validate_percentage(
-    test_id: str,
-    test_name: str,
-    numerator: float,
-    denominator: float,
-    threshold_percent: float,
-    comparison: str = "gte",
-    metadata: Optional[Dict] = None
-) -> ValidationResult:
-    """Validate a percentage against threshold."""
-    if denominator == 0:
-        actual = 0.0
-    else:
-        actual = (numerator / denominator) * 100
-    
-    if comparison == "gte":
-        passed = actual >= threshold_percent
-    elif comparison == "lte":
-        passed = actual <= threshold_percent
-    else:  # eq
-        passed = abs(actual - threshold_percent) < 0.001
-    
-    return ValidationResult(
-        test_id=test_id,
-        test_name=test_name,
-        passed=passed,
-        actual_value=actual,
-        expected_value=f"{comparison} {threshold_percent}",
-        threshold=threshold_percent,
-        margin=actual - threshold_percent,
-        execution_time_ms=0.0,
-        metadata={
-            **(metadata or {}),
-            "numerator": numerator,
-            "denominator": denominator
-        }
-    )
-
-
-def validate_threshold(
-    test_id: str,
-    test_name: str,
-    actual: float,
-    threshold: float,
-    comparison: str = "gte",
-    metadata: Optional[Dict] = None
-) -> ValidationResult:
-    """Validate a value against a threshold."""
-    if comparison == "gte":
-        passed = actual >= threshold
-    elif comparison == "lte":
-        passed = actual <= threshold
-    else:  # eq
-        passed = abs(actual - threshold) < 0.001
-    
-    return ValidationResult(
-        test_id=test_id,
-        test_name=test_name,
-        passed=passed,
-        actual_value=actual,
-        expected_value=f"{comparison} {threshold}",
-        threshold=threshold,
-        margin=actual - threshold,
-        execution_time_ms=0.0,
-        metadata=metadata or {}
-    )
-
-
-def calculate_precision(true_positives: int, false_positives: int) -> float:
-    """Calculate precision: TP / (TP + FP)."""
-    total = true_positives + false_positives
-    return (true_positives / total) * 100 if total > 0 else 0.0
-
-
-def calculate_recall(true_positives: int, false_negatives: int) -> float:
-    """Calculate recall: TP / (TP + FN)."""
-    total = true_positives + false_negatives
-    return (true_positives / total) * 100 if total > 0 else 0.0
-
-
-def calculate_f1(precision: float, recall: float) -> float:
-    """Calculate F1 score."""
-    if precision + recall == 0:
-        return 0.0
-    return 2 * (precision * recall) / (precision + recall)
+from tests.validation.utils.helpers import (
+    calculate_precision,
+    calculate_recall,
+    calculate_f1,
+    validate_threshold,
+    validate_percentage
+)
 
 
 # ============================================================================
