@@ -8,6 +8,20 @@ import pytest
 from tests.benchmarks.runner import BenchmarkRunner, HardwareProfiler
 
 
+def pytest_addoption(parser):
+    """Add model comparison options."""
+    try:
+        parser.addoption(
+            "--models",
+            action="store",
+            default=None,
+            help="Comma-separated list of models to compare for model comparison benchmarks"
+        )
+    except ValueError:
+        # Option already exists
+        pass
+
+
 @pytest.fixture
 def benchmark_runner():
     """Create a BenchmarkRunner instance for testing."""

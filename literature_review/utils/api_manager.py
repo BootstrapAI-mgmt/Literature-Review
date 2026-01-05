@@ -19,6 +19,9 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from global_rate_limiter import global_limiter, ErrorAction
 from cost_tracker import get_cost_tracker
 
+# Import model configuration
+from literature_review.config.model_config import get_model_config
+
 load_dotenv()
 
 # --- Logging ---
@@ -123,11 +126,12 @@ class APIManager:
         response_text = ""
         retry_attempts = 3
         retry_delay = 5
+        model_name = get_model_config().model_name
         for attempt in range(retry_attempts):
             try:
                 current_config_object = self.json_generation_config if is_json else self.text_generation_config
                 response = self.client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model=model_name,
                     contents=prompt,
                     config=current_config_object
                 )
@@ -146,7 +150,7 @@ class APIManager:
                         
                         cost_tracker.log_api_call(
                             module=module,
-                            model="gemini-2.5-flash",
+                            model=model_name,
                             input_tokens=input_tokens,
                             output_tokens=output_tokens,
                             cached_tokens=cached_tokens,
@@ -188,7 +192,7 @@ class APIManager:
                                 
                                 cost_tracker.log_api_call(
                                     module=module,
-                                    model="gemini-2.5-flash",
+                                    model=model_name,
                                     input_tokens=input_tokens,
                                     output_tokens=output_tokens,
                                     cached_tokens=cached_tokens,
