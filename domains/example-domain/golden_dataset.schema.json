@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "golden_dataset.schema.json",
+  "title": "Domain Golden Dataset",
+  "description": "Schema for domain-specific golden datasets used in validation testing",
+  "type": "object",
+  "required": ["metadata", "claims"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["domain_id", "created_at", "version"],
+      "properties": {
+        "domain_id": {
+          "type": "string",
+          "description": "Must match domain's research_config.json domain.id"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+$"
+        },
+        "annotator_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "papers": {
+      "type": "array",
+      "description": "Reference papers with known claims",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "expected_claim_count"],
+        "properties": {
+          "id": {"type": "string"},
+          "title": {"type": "string"},
+          "pdf_path": {"type": "string"},
+          "expected_claim_count": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "description": "Human-annotated claims with expected verdicts",
+      "items": {
+        "type": "object",
+        "required": ["id", "text", "pillar", "expected_verdict"],
+        "properties": {
+          "id": {"type": "string"},
+          "paper_id": {"type": "string"},
+          "text": {"type": "string", "minLength": 10},
+          "pillar": {"type": "string"},
+          "expected_verdict": {
+            "type": "string",
+            "enum": ["APPROVE", "REJECT", "DEEP_REVIEW"]
+          },
+          "expected_scores": {
+            "type": "object",
+            "properties": {
+              "strength": {"type": "number", "minimum": 1, "maximum": 5},
+              "relevance": {"type": "number", "minimum": 1, "maximum": 5},
+              "specificity": {"type": "number", "minimum": 1, "maximum": 5},
+              "composite": {"type": "number", "minimum": 1, "maximum": 5}
+            }
+          },
+          "annotation_notes": {"type": "string"},
+          "difficulty": {
+            "type": "string",
+            "enum": ["easy", "medium", "hard", "boundary"]
+          }
+        }
+      }
+    },
+    "expected_verdicts": {
+      "type": "array",
+      "description": "Summary of expected verdict distribution",
+      "items": {
+        "type": "object",
+        "required": ["claim_id", "verdict"],
+        "properties": {
+          "claim_id": {"type": "string"},
+          "verdict": {"type": "string"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "known_gaps": {
+      "type": "array",
+      "description": "Known gaps that should be detected",
+      "items": {
+        "type": "object",
+        "required": ["id", "pillar", "description"],
+        "properties": {
+          "id": {"type": "string"},
+          "pillar": {"type": "string"},
+          "description": {"type": "string"},
+          "severity": {
+            "type": "string",
+            "enum": ["critical", "high", "medium", "low"]
+          },
+          "expected_search_terms": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    },
+    "expected_recommendations": {
+      "type": "array",
+      "description": "Expected search recommendations for gaps",
+      "items": {
+        "type": "object",
+        "required": ["gap_id", "recommendation"],
+        "properties": {
+          "gap_id": {"type": "string"},
+          "recommendation": {"type": "string"},
+          "expected_databases": {
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    }
+  }
+}

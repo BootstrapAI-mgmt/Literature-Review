@@ -1,0 +1,14 @@
+{
+  "metadata": {
+    "domain_id": "example-domain",
+    "created_at": "2026-01-01T00:00:00Z",
+    "version": "1.0",
+    "annotator_count": 0,
+    "description": "Template golden dataset - replace with actual annotated data"
+  },
+  "papers": [],
+  "claims": [],
+  "expected_verdicts": [],
+  "known_gaps": [],
+  "expected_recommendations": []
+}

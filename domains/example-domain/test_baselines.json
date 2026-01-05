@@ -1,0 +1,11 @@
+{
+  "claim_precision": 0.85,
+  "claim_recall": 0.80,
+  "judge_accuracy": 0.90,
+  "dra_recovery_rate": 0.40,
+  "gap_false_negative_rate": 0.05,
+  "max_runtime_per_paper": 120.0,
+  "max_cost_per_paper": 0.50,
+  "recommendation_relevance": 0.80,
+  "gap_coverage": 1.0
+}

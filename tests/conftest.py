@@ -221,3 +221,94 @@ def browser_context_args(browser_context_args):
         },
         "ignore_https_errors": True,
     }
+
+
+# =============================================================================
+# Domain Fixture Integration (VM-W0.5-2)
+# =============================================================================
+
+# Import domain fixtures
+try:
+    from tests.validation.fixtures.domain_fixture import (
+        get_domain_registry,
+        get_domain_fixture,
+        DomainTestFixture,
+        list_available_domains
+    )
+    DOMAINS_AVAILABLE = True
+except ImportError:
+    DOMAINS_AVAILABLE = False
+
+
+def pytest_addoption(parser):
+    """Add domain-related command-line options."""
+    parser.addoption(
+        "--domain",
+        action="store",
+        default="neuromorphic-computing",
+        help="Domain to test (default: neuromorphic-computing)"
+    )
+    parser.addoption(
+        "--all-domains",
+        action="store_true",
+        default=False,
+        help="Run tests on all available domains"
+    )
+
+
+@pytest.fixture(scope="session")
+def domain_fixture(request) -> "DomainTestFixture":
+    """Load domain fixture for single-domain tests."""
+    if not DOMAINS_AVAILABLE:
+        pytest.skip("Domain fixtures not available")
+    
+    domain_id = request.config.getoption("--domain")
+    try:
+        return get_domain_fixture(domain_id)
+    except KeyError as e:
+        pytest.fail(str(e))
+
+
+@pytest.fixture(scope="session")
+def all_domain_fixtures(request) -> dict:
+    """Load all domain fixtures for cross-domain tests."""
+    if not DOMAINS_AVAILABLE:
+        pytest.skip("Domain fixtures not available")
+    
+    return get_domain_registry().get_all()
+
+
+def pytest_generate_tests(metafunc):
+    """Parameterize tests across domains if requested."""
+    if not DOMAINS_AVAILABLE:
+        return
+    
+    if "domain_id" in metafunc.fixturenames:
+        all_domains_flag = metafunc.config.getoption("--all-domains", default=False)
+        
+        if all_domains_flag:
+            domains = list_available_domains()
+        else:
+            domains = [metafunc.config.getoption("--domain", default="neuromorphic-computing")]
+        
+        metafunc.parametrize("domain_id", domains)
+
+
+@pytest.fixture
+def domain_golden_dataset(domain_fixture):
+    """Get golden dataset from domain fixture."""
+    if not domain_fixture.has_golden_dataset():
+        pytest.skip(f"No golden dataset for domain: {domain_fixture.domain_id}")
+    return domain_fixture.golden_dataset
+
+
+@pytest.fixture
+def domain_baselines(domain_fixture):
+    """Get expected baselines from domain fixture."""
+    return domain_fixture.baselines
+
+
+@pytest.fixture
+def domain_pillars(domain_fixture):
+    """Get pillar names from domain fixture."""
+    return domain_fixture.get_pillar_names()
