@@ -1,0 +1,473 @@
+# =============================================================================
+# Validation Matrix Metrics Configuration
+# =============================================================================
+# 
+# This file defines all validation thresholds externally from test code.
+# Thresholds can be overridden via:
+#   1. Profile selection (--metrics-profile dev|production|quick)
+#   2. Environment variables (METRIC_AV03_THRESHOLD=0.85)
+#
+# =============================================================================
+
+# Enable/disable entire categories (uncomment to disable)
+enabled_categories:
+  - accuracy
+  - efficiency
+  - output_quality
+  - benchmark
+  - visualization
+  - e2e
+
+# =============================================================================
+# Metric Definitions
+# =============================================================================
+
+metrics:
+  # ---------------------------------------------------------------------------
+  # Accuracy Metrics (AV-*)
+  # ---------------------------------------------------------------------------
+  - id: AV-01
+    name: Claim Extraction Precision
+    category: accuracy
+    threshold: 0.85
+    comparison: ">="
+    unit: ratio
+    description: "True positives / (True positives + False positives)"
+
+  - id: AV-02
+    name: Claim Extraction Recall
+    category: accuracy
+    threshold: 0.80
+    comparison: ">="
+    unit: ratio
+    description: "True positives / (True positives + False negatives)"
+
+  - id: AV-03
+    name: Judge Accuracy
+    category: accuracy
+    threshold: 0.90
+    comparison: ">="
+    unit: ratio
+    description: "Judge verdicts matching golden dataset"
+
+  - id: AV-04
+    name: Judge Calibration (Brier Score)
+    category: accuracy
+    threshold: 0.15
+    comparison: "<"
+    unit: score
+    description: "Lower is better; measures probability calibration"
+
+  - id: AV-05
+    name: DRA Recovery Rate
+    category: accuracy
+    threshold: 0.40
+    comparison: ">="
+    unit: ratio
+    description: "Deep review recovers initially rejected claims"
+
+  - id: AV-06
+    name: Gap False Negative Rate
+    category: accuracy
+    threshold: 0.05
+    comparison: "<"
+    unit: ratio
+    description: "Known gaps missed by pipeline"
+
+  - id: AV-07
+    name: Pre-filter Accuracy
+    category: accuracy
+    threshold: 0.95
+    comparison: ">="
+    unit: ratio
+    description: "Pre-filter correctly identifies relevant papers"
+
+  - id: AV-08
+    name: Human Correlation
+    category: accuracy
+    threshold: 0.80
+    comparison: ">="
+    unit: correlation
+    description: "Spearman correlation with human rankings"
+
+  # ---------------------------------------------------------------------------
+  # Efficiency Metrics (EV-*)
+  # ---------------------------------------------------------------------------
+  - id: EV-01
+    name: Pipeline Full Run Time
+    category: efficiency
+    threshold: 7200
+    comparison: "<"
+    unit: seconds
+    description: "Full pipeline run for 100 papers"
+
+  - id: EV-02
+    name: Incremental Mode Speedup
+    category: efficiency
+    threshold: 0.60
+    comparison: ">="
+    unit: ratio
+    description: "Speed improvement vs fresh run"
+
+  - id: EV-03
+    name: Cache Hit Rate
+    category: efficiency
+    threshold: 0.70
+    comparison: ">="
+    unit: ratio
+    description: "API cache hit rate"
+
+  - id: EV-04
+    name: API Cost per Paper
+    category: efficiency
+    threshold: 0.50
+    comparison: "<"
+    unit: dollars
+    description: "Average API cost per paper processed"
+
+  - id: EV-05
+    name: Pre-filter Reduction
+    category: efficiency
+    threshold: 0.30
+    comparison: ">="
+    unit: ratio
+    description: "Percentage of papers filtered before deep analysis"
+
+  - id: EV-06
+    name: Rate Limit Violations
+    category: efficiency
+    threshold: 0
+    comparison: "=="
+    unit: count
+    description: "Number of rate limit errors"
+
+  - id: EV-07
+    name: Checkpoint Recovery Time
+    category: efficiency
+    threshold: 30
+    comparison: "<"
+    unit: seconds
+    description: "Time to resume from checkpoint"
+
+  # ---------------------------------------------------------------------------
+  # Output Quality Metrics (OQ-*, RA-*)
+  # ---------------------------------------------------------------------------
+  - id: OQ-01
+    name: Gap Report Schema Valid
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: boolean
+    description: "gap_analysis_report.json passes JSON schema"
+
+  - id: OQ-02
+    name: Executive Summary Sections
+    category: output_quality
+    threshold: 5
+    comparison: ">="
+    unit: count
+    description: "Required sections present in executive_summary.md"
+
+  - id: RA-01
+    name: Search Query Relevance
+    category: output_quality
+    threshold: 0.80
+    comparison: ">="
+    unit: ratio
+    description: "Percentage of queries rated relevant by experts"
+
+  - id: RA-02
+    name: Priority Classification Accuracy
+    category: output_quality
+    threshold: 0.90
+    comparison: ">="
+    unit: ratio
+    description: "Correct CRITICAL/HIGH/MEDIUM/LOW assignment"
+
+  - id: RA-03
+    name: Database Appropriateness
+    category: output_quality
+    threshold: 0.95
+    comparison: ">="
+    unit: ratio
+    description: "Domain→database mapping correctness"
+
+  - id: RA-04
+    name: Query Uniqueness
+    category: output_quality
+    threshold: 0.95
+    comparison: ">="
+    unit: ratio
+    description: "Non-duplicate recommendation rate"
+
+  - id: RA-05
+    name: Recommendation Completeness
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: ratio
+    description: "All gaps have at least one recommendation"
+
+  # ---------------------------------------------------------------------------
+  # Benchmark Metrics (BM-*)
+  # ---------------------------------------------------------------------------
+  - id: BM-01
+    name: Journal Reviewer Latency
+    category: benchmark
+    threshold: 45
+    comparison: "<"
+    unit: seconds
+    description: "Single paper analysis time (20-page PDF)"
+
+  - id: BM-02
+    name: Judge Throughput
+    category: benchmark
+    threshold: 20
+    comparison: ">="
+    unit: claims_per_minute
+    description: "Batch claim evaluation rate"
+
+  - id: BM-03
+    name: DRA Analysis Time
+    category: benchmark
+    threshold: 30
+    comparison: "<"
+    unit: seconds
+    description: "Deep review analysis per claim"
+
+  - id: BM-04
+    name: Orchestrator Throughput
+    category: benchmark
+    threshold: 10
+    comparison: ">="
+    unit: papers_per_hour
+    description: "Full orchestrator pipeline throughput"
+
+  - id: BM-05
+    name: Component Memory Usage
+    category: benchmark
+    threshold: 2048
+    comparison: "<"
+    unit: megabytes
+    description: "Peak memory per component"
+
+  - id: BM-06
+    name: Parallel Scaling Efficiency
+    category: benchmark
+    threshold: 0.75
+    comparison: ">="
+    unit: ratio
+    description: "Efficiency when scaling to 4 workers"
+
+  # ---------------------------------------------------------------------------
+  # Quality Benchmark Metrics (QB-*)
+  # ---------------------------------------------------------------------------
+  - id: QB-01
+    name: Golden Dataset Coverage
+    category: benchmark
+    threshold: 50
+    comparison: ">="
+    unit: claims
+    description: "Minimum annotated claims in golden dataset"
+
+  - id: QB-02
+    name: Pillar Mapping Coverage
+    category: benchmark
+    threshold: 100
+    comparison: ">="
+    unit: claims
+    description: "Claims with known pillar mappings"
+
+  - id: QB-03
+    name: Cross-Domain Diversity
+    category: benchmark
+    threshold: 3
+    comparison: ">="
+    unit: domains
+    description: "Number of domains represented in golden dataset"
+
+  - id: QB-04
+    name: Weak Evidence Cases
+    category: benchmark
+    threshold: 30
+    comparison: ">="
+    unit: claims
+    description: "False-positive testing claims"
+
+  - id: QB-05
+    name: Known Gap Coverage
+    category: benchmark
+    threshold: 10
+    comparison: ">="
+    unit: gaps
+    description: "Gaps with known solution recommendations"
+
+  # ---------------------------------------------------------------------------
+  # Output Quality Metrics (OQ-03 to OQ-10)
+  # ---------------------------------------------------------------------------
+  - id: OQ-03
+    name: Search Suggestions Schema Valid
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: boolean
+    description: "suggested_searches.json passes JSON schema"
+
+  - id: OQ-04
+    name: Search Suggestions Readable
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: boolean
+    description: "suggested_searches.md is human-readable"
+
+  - id: OQ-05
+    name: Search Plan Coherence
+    category: output_quality
+    threshold: 0.90
+    comparison: ">="
+    unit: ratio
+    description: "optimized_search_plan.json strategy coherence"
+
+  - id: OQ-06
+    name: Proof Chain Completeness
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: ratio
+    description: "All approved claims linked in proof_chain.json"
+
+  - id: OQ-07
+    name: Sufficiency Matrix Coverage
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: ratio
+    description: "All pillars represented in sufficiency_matrix.json"
+
+  - id: OQ-08
+    name: Triangulation Accuracy
+    category: output_quality
+    threshold: 0.85
+    comparison: ">="
+    unit: ratio
+    description: "Cross-validation accuracy in triangulation.json"
+
+  - id: OQ-09
+    name: Evidence Decay Correctness
+    category: output_quality
+    threshold: 1.0
+    comparison: "=="
+    unit: boolean
+    description: "Temporal weighting correct in evidence_decay.json"
+
+  - id: OQ-10
+    name: Output File Consistency
+    category: output_quality
+    threshold: 0
+    comparison: "=="
+    unit: count
+    description: "No orphaned references between output files"
+
+  # ---------------------------------------------------------------------------
+  # E2E Metrics (E2E-*)
+  # ---------------------------------------------------------------------------
+  - id: E2E-01
+    name: Small Run Time
+    category: e2e
+    threshold: 900
+    comparison: "<"
+    unit: seconds
+    description: "10 papers complete run"
+
+  - id: E2E-01-COST
+    name: Small Run Cost
+    category: e2e
+    threshold: 5.0
+    comparison: "<"
+    unit: dollars
+    description: "10 papers API cost"
+
+  - id: E2E-02
+    name: Medium Run Time
+    category: e2e
+    threshold: 3600
+    comparison: "<"
+    unit: seconds
+    description: "50 papers complete run"
+
+  - id: E2E-03
+    name: Large Run Time
+    category: e2e
+    threshold: 14400
+    comparison: "<"
+    unit: seconds
+    description: "200 papers complete run"
+
+  # ---------------------------------------------------------------------------
+  # Visualization Metrics (VI-*)
+  # ---------------------------------------------------------------------------
+  - id: VI-01
+    name: HTML Render Count
+    category: visualization
+    threshold: 10
+    comparison: ">="
+    unit: count
+    description: "All 10 HTML visualizations render"
+
+  - id: VI-02
+    name: Plotly Features
+    category: visualization
+    threshold: 4
+    comparison: ">="
+    unit: count
+    description: "Zoom, pan, hover, download all work"
+
+
+# =============================================================================
+# Threshold Profiles
+# =============================================================================
+
+profiles:
+  development:
+    description: "Relaxed thresholds for development/debugging"
+    thresholds:
+      AV-03: 0.85      # Lower judge accuracy for dev
+      AV-05: 0.35      # Lower DRA recovery for dev
+      EV-01: 14400     # Allow 4 hours in dev
+      EV-04: 1.00      # Allow higher cost in dev
+      BM-01: 60        # Relaxed latency for dev
+    disabled_categories: []
+    disabled_metrics: []
+
+  production:
+    description: "Strict thresholds for production validation"
+    thresholds:
+      AV-03: 0.92      # Higher judge accuracy for prod
+      AV-05: 0.45      # Higher DRA recovery for prod
+      EV-04: 0.40      # Stricter cost control
+      RA-01: 0.85      # Higher relevance bar
+    disabled_categories: []
+    disabled_metrics: []
+
+  quick:
+    description: "Fast validation run (accuracy only, skip benchmarks)"
+    thresholds:
+      EV-01: 3600      # 1 hour max
+    disabled_categories:
+      - benchmark
+      - e2e
+      - visualization
+    disabled_metrics:
+      - BM-01
+      - BM-02
+      - BM-03
+
+  ci:
+    description: "CI/CD pipeline validation (balanced speed/coverage)"
+    thresholds:
+      EV-01: 1800      # 30 min max for CI
+      E2E-01: 600      # Faster E2E timeout
+    disabled_categories:
+      - benchmark      # Skip full benchmarks in CI
+    disabled_metrics: []
