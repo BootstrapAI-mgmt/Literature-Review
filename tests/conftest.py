@@ -239,14 +239,17 @@ try:
 except ImportError:
     DOMAINS_AVAILABLE = False
 
+# Default domain - the primary research domain for this project
+DEFAULT_DOMAIN = "neuromorphic-computing"
+
 
 def pytest_addoption(parser):
     """Add domain-related command-line options."""
     parser.addoption(
         "--domain",
         action="store",
-        default="neuromorphic-computing",
-        help="Domain to test (default: neuromorphic-computing)"
+        default=DEFAULT_DOMAIN,
+        help=f"Domain to test (default: {DEFAULT_DOMAIN})"
     )
     parser.addoption(
         "--all-domains",
@@ -289,7 +292,7 @@ def pytest_generate_tests(metafunc):
         if all_domains_flag:
             domains = list_available_domains()
         else:
-            domains = [metafunc.config.getoption("--domain", default="neuromorphic-computing")]
+            domains = [metafunc.config.getoption("--domain", default=DEFAULT_DOMAIN)]
         
         metafunc.parametrize("domain_id", domains)
 

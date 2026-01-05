@@ -57,8 +57,14 @@ def validate_domain(domain_dir: Path) -> Dict[str, Any]:
         try:
             with open(config_path) as f:
                 config = json.load(f)
-            result["stats"]["domain_id"] = config.get("domain", {}).get("id", "unknown")
-            result["stats"]["domain_name"] = config.get("domain", {}).get("name", "unknown")
+            domain_section = config.get("domain", {})
+            result["stats"]["domain_id"] = domain_section.get("id", "<missing_domain_id>")
+            result["stats"]["domain_name"] = domain_section.get("name", "<missing_domain_name>")
+            
+            # Validate required domain fields
+            if not domain_section.get("id"):
+                result["errors"].append("Missing 'domain.id' in research_config.json")
+                result["valid"] = False
         except json.JSONDecodeError as e:
             result["errors"].append(f"Invalid JSON in research_config.json: {e}")
             result["valid"] = False
@@ -86,6 +92,7 @@ def validate_all_domains(domains_dir: Path) -> List[Dict[str, Any]]:
     for subdir in sorted(domains_dir.iterdir()):
         if not subdir.is_dir():
             continue
+        # Skip hidden directories only - validate ALL domains including example-domain
         if subdir.name.startswith((".", "_")):
             continue
         

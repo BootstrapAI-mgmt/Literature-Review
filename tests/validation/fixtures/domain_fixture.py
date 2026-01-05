@@ -183,10 +183,16 @@ class DomainTestFixture:
     def get_pillar_names(self) -> List[str]:
         """Get list of pillar names for this domain."""
         pillars = self.research_config.pillar_definitions
-        # Filter out special keys that aren't pillars
+        # Filter out special keys that aren't actual pillar definitions
+        # Pillar keys typically start with "Pillar" or contain descriptive names
+        # Exclude known metadata keys
+        excluded_keys = {
+            "Framework_Overview", "Cross_Cutting_Requirements", 
+            "Success_Criteria", "metadata", "schema_version"
+        }
         pillar_names = [
             k for k in pillars.keys() 
-            if k.startswith("Pillar") or k.startswith("pillar")
+            if k not in excluded_keys and not k.startswith("_")
         ]
         return pillar_names
 
@@ -217,8 +223,9 @@ class DomainRegistry:
             if not subdir.is_dir():
                 continue
             
-            # Skip template/example directories
-            if subdir.name.startswith((".", "_", "example")):
+            # Skip hidden directories and template directories
+            # Only skip 'example-domain' specifically, not all example-prefixed dirs
+            if subdir.name.startswith((".", "_")) or subdir.name == "example-domain":
                 continue
             
             # Check for research_config.json
