@@ -23,6 +23,30 @@ from tests.validation.config.metrics_config import (
     check_metric,
 )
 
+# Path to the metrics.yaml config file
+METRICS_CONFIG_PATH = str(Path(__file__).parent / "metrics.yaml")
+
+
+@pytest.fixture
+def config_path():
+    """Fixture providing path to metrics.yaml config file."""
+    return METRICS_CONFIG_PATH
+
+
+@pytest.fixture
+def fresh_config(config_path):
+    """Fixture providing a fresh MetricsConfig instance."""
+    return MetricsConfig.load(config_path)
+
+
+@pytest.fixture(autouse=True)
+def reset_global_config():
+    """Reset global config state before and after each test."""
+    import tests.validation.config.metrics_config as mc
+    mc._metrics_config = None
+    yield
+    mc._metrics_config = None
+
 
 class TestMetricDefinition:
     """Tests for MetricDefinition class."""
@@ -113,10 +137,9 @@ class TestMetricDefinition:
 class TestMetricsConfigLoad:
     """Tests for MetricsConfig loading (MT-01)."""
     
-    def test_load_yaml_config(self):
+    def test_load_yaml_config(self, config_path):
         """MT-01: Test loading metrics.yaml configuration."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = MetricsConfig.load(config_path)
         
         # Verify metrics were loaded
         assert len(config.metrics) > 0
@@ -139,10 +162,9 @@ class TestMetricsConfigLoad:
         assert "AV-03" in config.metrics
         assert "AV-01" in config.metrics
     
-    def test_metric_properties(self):
+    def test_metric_properties(self, config_path):
         """MT-01: Verify all metric IDs have valid thresholds."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = MetricsConfig.load(config_path)
         
         for metric_id, metric in config.metrics.items():
             assert metric.id == metric_id
@@ -151,10 +173,9 @@ class TestMetricsConfigLoad:
             assert isinstance(metric.category, MetricCategory)
             assert isinstance(metric.comparison, ComparisonOperator)
     
-    def test_all_categories_represented(self):
+    def test_all_categories_represented(self, config_path):
         """Verify all metric categories have at least one metric."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = MetricsConfig.load(config_path)
         
         for category in MetricCategory:
             metrics = config.get_metrics_by_category(category)
@@ -164,10 +185,9 @@ class TestMetricsConfigLoad:
 class TestProfileSwitching:
     """Tests for profile switching (MT-02)."""
     
-    def test_apply_development_profile(self):
+    def test_apply_development_profile(self, fresh_config):
         """MT-02: Test applying development profile."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         # Get original threshold
         original_threshold = config.get_threshold("AV-03")
@@ -179,20 +199,18 @@ class TestProfileSwitching:
         assert config.active_profile == "development"
         assert config.get_threshold("AV-03") == 0.85  # Development has 0.85
     
-    def test_apply_production_profile(self):
+    def test_apply_production_profile(self, fresh_config):
         """MT-02: Test applying production profile."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         config.apply_profile("production")
         
         assert config.active_profile == "production"
         assert config.get_threshold("AV-03") == 0.92  # Production has 0.92
     
-    def test_apply_quick_profile_disables_categories(self):
+    def test_apply_quick_profile_disables_categories(self, fresh_config):
         """MT-02: Test quick profile disables benchmark/e2e categories."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         # Before applying quick profile
         assert MetricCategory.BENCHMARK in config.enabled_categories
@@ -206,10 +224,9 @@ class TestProfileSwitching:
         assert MetricCategory.E2E not in config.enabled_categories
         assert MetricCategory.VISUALIZATION not in config.enabled_categories
     
-    def test_unknown_profile_raises_error(self):
+    def test_unknown_profile_raises_error(self, fresh_config):
         """Test that unknown profile raises ValueError."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         with pytest.raises(ValueError) as exc_info:
             config.apply_profile("nonexistent_profile")
@@ -220,10 +237,9 @@ class TestProfileSwitching:
 class TestEnvironmentOverrides:
     """Tests for environment variable overrides."""
     
-    def test_env_override_threshold(self, monkeypatch):
+    def test_env_override_threshold(self, fresh_config, monkeypatch):
         """Test environment variable overrides threshold."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         # Set environment variable
         monkeypatch.setenv("METRIC_AV03_THRESHOLD", "0.75")
@@ -234,10 +250,9 @@ class TestEnvironmentOverrides:
         # Verify threshold was changed
         assert config.get_threshold("AV-03") == 0.75
     
-    def test_env_override_invalid_value(self, monkeypatch):
+    def test_env_override_invalid_value(self, fresh_config, monkeypatch):
         """Test invalid environment variable is ignored."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         original_threshold = config.get_threshold("AV-03")
         
@@ -254,10 +269,9 @@ class TestEnvironmentOverrides:
 class TestCategoryFiltering:
     """Tests for category enable/disable."""
     
-    def test_disable_category(self):
+    def test_disable_category(self, fresh_config):
         """Test disabling a category."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         assert config.is_category_enabled(MetricCategory.BENCHMARK)
         
@@ -265,10 +279,9 @@ class TestCategoryFiltering:
         
         assert not config.is_category_enabled(MetricCategory.BENCHMARK)
     
-    def test_enable_category(self):
+    def test_enable_category(self, fresh_config):
         """Test enabling a category."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         # First disable
         config.disable_category(MetricCategory.BENCHMARK)
@@ -278,10 +291,9 @@ class TestCategoryFiltering:
         config.enable_category(MetricCategory.BENCHMARK)
         assert config.is_category_enabled(MetricCategory.BENCHMARK)
     
-    def test_get_enabled_metrics(self):
+    def test_get_enabled_metrics(self, fresh_config):
         """Test getting only enabled metrics."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         # All metrics should be enabled initially
         all_metrics = config.get_enabled_metrics()
@@ -300,34 +312,28 @@ class TestCategoryFiltering:
 class TestConvenienceFunctions:
     """Tests for convenience functions."""
     
-    def test_check_metric_passes(self):
+    def test_check_metric_passes(self, config_path):
         """Test check_metric convenience function for passing value."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        # Load fresh config
+        # Load fresh config (global state is reset by autouse fixture)
         import tests.validation.config.metrics_config as mc
-        mc._metrics_config = None  # Reset global state
-        mc.load_metrics_config(str(config_path))
+        mc.load_metrics_config(config_path)
         
         # AV-03 has threshold 0.90 with >=
         assert check_metric("AV-03", 0.92) is True
         assert check_metric("AV-03", 0.85) is False
     
-    def test_get_threshold(self):
+    def test_get_threshold(self, config_path):
         """Test get_threshold convenience function."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
         import tests.validation.config.metrics_config as mc
-        mc._metrics_config = None  # Reset global state
-        mc.load_metrics_config(str(config_path))
+        mc.load_metrics_config(config_path)
         
         threshold = get_threshold("AV-03")
         assert threshold == 0.90
     
-    def test_unknown_metric_raises_error(self):
+    def test_unknown_metric_raises_error(self, config_path):
         """Test that unknown metric ID raises KeyError."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
         import tests.validation.config.metrics_config as mc
-        mc._metrics_config = None  # Reset global state
-        mc.load_metrics_config(str(config_path))
+        mc.load_metrics_config(config_path)
         
         with pytest.raises(KeyError):
             get_threshold("UNKNOWN-99")
@@ -336,14 +342,12 @@ class TestConvenienceFunctions:
 class TestGlobalConfigAccessor:
     """Tests for global configuration accessor."""
     
-    def test_load_and_get_metrics_config(self):
+    def test_load_and_get_metrics_config(self, config_path):
         """Test load and get metrics config functions."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
         import tests.validation.config.metrics_config as mc
-        mc._metrics_config = None  # Reset global state
         
-        # Load config
-        loaded_config = load_metrics_config(str(config_path), profile="development")
+        # Load config (global state is reset by autouse fixture)
+        loaded_config = load_metrics_config(config_path, profile="development")
         
         # Get same config
         got_config = get_metrics_config()
@@ -351,13 +355,11 @@ class TestGlobalConfigAccessor:
         assert loaded_config is got_config
         assert got_config.active_profile == "development"
     
-    def test_load_with_profile(self):
+    def test_load_with_profile(self, config_path):
         """Test loading config with profile applied."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
         import tests.validation.config.metrics_config as mc
-        mc._metrics_config = None  # Reset global state
         
-        config = load_metrics_config(str(config_path), profile="production")
+        config = load_metrics_config(config_path, profile="production")
         
         assert config.active_profile == "production"
         assert config.get_threshold("AV-03") == 0.92
@@ -366,10 +368,9 @@ class TestGlobalConfigAccessor:
 class TestYAMLSchema:
     """Tests for YAML schema validation."""
     
-    def test_all_metrics_have_required_fields(self):
+    def test_all_metrics_have_required_fields(self, fresh_config):
         """Verify all metrics in YAML have required fields."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         for metric_id, metric in config.metrics.items():
             assert metric.id, f"Missing id for {metric_id}"
@@ -377,18 +378,16 @@ class TestYAMLSchema:
             assert metric.category, f"Missing category for {metric_id}"
             assert metric.threshold is not None, f"Missing threshold for {metric_id}"
     
-    def test_all_profiles_have_descriptions(self):
+    def test_all_profiles_have_descriptions(self, fresh_config):
         """Verify all profiles have descriptions."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         for profile_name, profile in config.profiles.items():
             assert profile.description, f"Missing description for profile {profile_name}"
     
-    def test_profile_thresholds_reference_valid_metrics(self):
+    def test_profile_thresholds_reference_valid_metrics(self, fresh_config):
         """Verify profile thresholds reference existing metrics."""
-        config_path = Path(__file__).parent.parent / "config" / "metrics.yaml"
-        config = MetricsConfig.load(str(config_path))
+        config = fresh_config
         
         for profile_name, profile in config.profiles.items():
             for metric_id in profile.threshold_overrides:
