@@ -44,6 +44,9 @@ from . import requirements as dra
 # --- NEW: Import GRADE Assessment (Task Card #21) ---
 from .grade_assessment import assess_methodological_quality
 
+# Import model configuration
+from literature_review.config.model_config import get_model_config
+
 # --- CONFIGURATION ---
 load_dotenv()
 
@@ -196,13 +199,14 @@ class APIManager:
         self.rate_limit()
 
         response_text = ""
+        model_name = get_model_config().model_name
         for attempt in range(API_CONFIG['RETRY_ATTEMPTS']):
             try:
                 # --- MODIFICATION: Select correct config ---
                 current_config_object = self.json_generation_config if is_json else self.text_generation_config
 
                 response = self.client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model=model_name,
                     contents=prompt,
                     config=current_config_object
                 )
@@ -322,6 +326,7 @@ class APIManager:
         self.rate_limit()
         
         response_text = ""
+        model_name = get_model_config().model_name
         for attempt in range(API_CONFIG['RETRY_ATTEMPTS']):
             try:
                 thinking_config = types.ThinkingConfig(thinking_budget=0)
@@ -337,7 +342,7 @@ class APIManager:
                 )
                 
                 response = self.client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model=model_name,
                     contents=prompt,
                     config=custom_config
                 )

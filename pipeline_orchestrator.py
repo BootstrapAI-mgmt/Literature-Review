@@ -1144,8 +1144,25 @@ def main():
         help="Directory containing PDF and CSV files for analysis. "
              "If not specified, uses current directory for database discovery."
     )
+    parser.add_argument(
+        "--model",
+        type=str,
+        default=None,
+        help="LLM model to use (e.g., gemini-2.5-flash, gpt-4-turbo, claude-sonnet). "
+             "Can also be set via MODEL_NAME environment variable."
+    )
 
     args = parser.parse_args()
+    
+    # Set model configuration if specified via CLI
+    if args.model:
+        from literature_review.config.model_config import set_model, get_model_config
+        try:
+            model_config = set_model(args.model)
+            print(f"🤖 Using model: {model_config.display_name}")
+        except ValueError as e:
+            print(f"⚠️  Invalid model: {e}")
+            sys.exit(1)
     
     # Load research domain configuration first (before any other operations)
     research_config_path = args.research_config

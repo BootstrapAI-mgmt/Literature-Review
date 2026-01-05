@@ -43,6 +43,9 @@ from literature_review.config.research_config import (
     is_config_loaded
 )
 
+# Import model configuration
+from literature_review.config.model_config import get_model_config
+
 # --- CONFIGURATION ---
 load_dotenv()
 
@@ -198,10 +201,11 @@ class APIManager:
         self.rate_limit()
 
         response_text = ""
+        model_name = get_model_config().model_name
         for attempt in range(API_CONFIG['RETRY_ATTEMPTS']):
             try:
                 response = self.client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model=model_name,
                     contents=prompt,
                     config=self.json_generation_config
                 )

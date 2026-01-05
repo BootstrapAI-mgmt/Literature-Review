@@ -43,6 +43,9 @@ from literature_review.config.research_config import (
     is_config_loaded
 )
 
+# Import model configuration
+from literature_review.config.model_config import get_model_config
+
 # Note: pandas is imported locally in the function that needs it
 # import pandas as pd
 
@@ -275,11 +278,12 @@ class APIManager:
         logger.debug(f"Cache miss for hash: {prompt_hash}. Calling API...")
         self.rate_limit()
         response_text = ""
+        model_name = get_model_config().model_name
         for attempt in range(REVIEW_CONFIG['RETRY_ATTEMPTS']):
             try:
                 current_config_object = self.json_generation_config if is_json else self.text_generation_config
                 response = self.client.models.generate_content(
-                    model="gemini-2.5-flash",
+                    model=model_name,
                     contents=prompt,
                     config=current_config_object
                 )
