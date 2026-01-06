@@ -5888,7 +5888,7 @@
                     // Render HTML in iframe
                     viewer.innerHTML = `
                         <div class="d-flex justify-content-between mb-2">
-                            <h6>${file.filename}</h6>
+                            <h6>${escapeHtml(file.filename)}</h6>
                             <a href="${fileUrl}" class="btn btn-sm btn-outline-primary" download>
                                 💾 Download
                             </a>
@@ -5905,12 +5905,12 @@
                     
                     viewer.innerHTML = `
                         <div class="d-flex justify-content-between mb-2">
-                            <h6>${file.filename}</h6>
+                            <h6>${escapeHtml(file.filename)}</h6>
                             <a href="${fileUrl}" class="btn btn-sm btn-outline-primary" download>
                                 💾 Download
                             </a>
                         </div>
-                        <pre class="bg-dark text-light p-3" style="max-height: 600px; overflow-y: auto; border-radius: 5px;"><code>${JSON.stringify(jsonData, null, 2)}</code></pre>
+                        <pre class="bg-dark text-light p-3" style="max-height: 600px; overflow-y: auto; border-radius: 5px;"><code>${escapeHtml(JSON.stringify(jsonData, null, 2))}</code></pre>
                     `;
                 } else if (file.mime_type?.startsWith('text/') || file.filename.endsWith('.md')) {
                     // Fetch and display text/markdown
@@ -5919,7 +5919,7 @@
                     
                     viewer.innerHTML = `
                         <div class="d-flex justify-content-between mb-2">
-                            <h6>${file.filename}</h6>
+                            <h6>${escapeHtml(file.filename)}</h6>
                             <a href="${fileUrl}" class="btn btn-sm btn-outline-primary" download>
                                 💾 Download
                             </a>
@@ -5930,7 +5930,7 @@
                     // Download-only for binary files
                     viewer.innerHTML = `
                         <div class="text-center p-5">
-                            <h5>${file.filename}</h5>
+                            <h5>${escapeHtml(file.filename)}</h5>
                             <p class="text-muted">Preview not available for this file type</p>
                             <a href="${fileUrl}" class="btn btn-primary" download>
                                 💾 Download File
@@ -5941,7 +5941,7 @@
             } catch (error) {
                 viewer.innerHTML = `
                     <div class="alert alert-danger">
-                        Failed to load file: ${error.message}
+                        Failed to load file: ${escapeHtml(error.message || 'Unknown error')}
                     </div>
                 `;
             }

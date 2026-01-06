@@ -4315,7 +4315,7 @@ async def get_sufficiency_summary(
         return {
             "available": False,
             "quadrants": {},
-            "message": f"Error reading sufficiency data: {str(e)}"
+            "message": "Error reading sufficiency data. Please check the logs for details."
         }
 
 @app.get(
@@ -5441,7 +5441,7 @@ async def scan_checkpoints(
                     checkpoint_file.stat().st_mtime
                 ).isoformat(),
                 "valid": False,
-                "error": str(e)
+                "error": "Failed to parse checkpoint file"
             })
     
     # Sort by modification time (newest first)
