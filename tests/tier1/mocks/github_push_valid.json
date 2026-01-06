@@ -1,0 +1,28 @@
+{
+    "ref": "refs/heads/main",
+    "before": "abc123def456789012345678901234567890abcd",
+    "after": "def456abc789012345678901234567890abcdef",
+    "repository": {
+        "full_name": "BootstrapAI-mgmt/Literature-Review"
+    },
+    "pusher": {
+        "name": "developer",
+        "email": "developer@example.com"
+    },
+    "commits": [
+        {
+            "id": "def456abc789012345678901234567890abcdef",
+            "message": "docs: update architecture blueprint with new modules",
+            "timestamp": "2026-01-05T12:00:00Z",
+            "author": {
+                "name": "Developer",
+                "email": "developer@example.com"
+            },
+            "added": [],
+            "removed": [],
+            "modified": [
+                "docs/MASTER_ARCHITECTURE_BLUEPRINT.md"
+            ]
+        }
+    ]
+}

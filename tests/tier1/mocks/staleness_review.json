@@ -1,0 +1,29 @@
+{
+    "trigger": "scheduled",
+    "timestamp": "2026-01-05T06:00:00Z",
+    "scope": "all_documents",
+    "thresholds": {
+        "master_documents": 7,
+        "task_cards": 3,
+        "wave_indexes": 1,
+        "guides": 14
+    },
+    "documents_checked": [
+        {
+            "path": "docs/MASTER_ARCHITECTURE_BLUEPRINT.md",
+            "last_modified": "2026-01-04T12:00:00Z",
+            "age_days": 1,
+            "threshold_days": 7,
+            "status": "fresh"
+        },
+        {
+            "path": "docs/MASTER_REPOSITORY_ROADMAP.md",
+            "last_modified": "2026-01-03T12:00:00Z",
+            "age_days": 2,
+            "threshold_days": 7,
+            "status": "fresh"
+        }
+    ],
+    "stale_documents": [],
+    "action_required": false
+}

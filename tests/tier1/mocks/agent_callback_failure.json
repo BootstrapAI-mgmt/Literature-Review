@@ -1,0 +1,19 @@
+{
+    "task_id": "update-architecture-blueprint",
+    "status": "failure",
+    "error": {
+        "type": "DocumentParseError",
+        "message": "Failed to parse MASTER_ARCHITECTURE_BLUEPRINT.md: Invalid YAML frontmatter",
+        "recoverable": true,
+        "retry_count": 3
+    },
+    "partial_result": {
+        "document": "docs/MASTER_ARCHITECTURE_BLUEPRINT.md",
+        "action_attempted": "sync_module_listing",
+        "changes_made": []
+    },
+    "metrics": {
+        "execution_time_ms": 450,
+        "tokens_used": 120
+    }
+}

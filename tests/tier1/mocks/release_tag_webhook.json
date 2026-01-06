@@ -1,0 +1,18 @@
+{
+    "ref": "refs/tags/v2.1.0",
+    "ref_type": "tag",
+    "repository": {
+        "full_name": "BootstrapAI-mgmt/Literature-Review"
+    },
+    "sender": {
+        "login": "release-manager"
+    },
+    "release": {
+        "tag_name": "v2.1.0",
+        "name": "Literature Review v2.1.0",
+        "body": "## Release Notes\n\n### Features\n- Validation Framework v2.0.0\n- Enhanced documentation sync\n\n### Fixes\n- Improved error handling",
+        "draft": false,
+        "prerelease": false,
+        "created_at": "2026-01-05T14:00:00Z"
+    }
+}

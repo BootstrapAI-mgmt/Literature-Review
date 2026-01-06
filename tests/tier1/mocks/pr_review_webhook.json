@@ -1,0 +1,25 @@
+{
+    "action": "opened",
+    "number": 130,
+    "pull_request": {
+        "number": 130,
+        "title": "feat: add new analysis module for validation",
+        "body": "## Summary\n\nAdds new validation analysis module.\n\n## Task Reference\n\nRelated to OP-W3-1 (Validation Tracker)\n\n## Changes\n\n- Add literature_review/analysis/validation_analysis.py\n- Update tests",
+        "state": "open",
+        "head": {
+            "ref": "feature/validation-analysis",
+            "sha": "abc123def456"
+        },
+        "base": {
+            "ref": "main"
+        },
+        "user": {
+            "login": "developer"
+        },
+        "created_at": "2026-01-05T12:00:00Z",
+        "updated_at": "2026-01-05T12:00:00Z"
+    },
+    "repository": {
+        "full_name": "BootstrapAI-mgmt/Literature-Review"
+    }
+}
