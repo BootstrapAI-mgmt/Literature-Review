@@ -508,6 +508,114 @@ def create_tables_heavy_pdf():
     return filepath
 
 
+def create_scanned_document_pdf():
+    """Create a simulated scanned (image-only) PDF.
+    
+    This creates a PDF that embeds text as an image rather than as
+    searchable text, simulating a scanned document that requires OCR.
+    """
+    from reportlab.lib.utils import ImageReader
+    from PIL import Image, ImageDraw, ImageFont
+    import io
+    
+    filepath = FIXTURES_DIR / "scanned_document.pdf"
+    
+    # Create an image with text rendered as pixels (simulating a scan)
+    img_width, img_height = 612, 792  # Letter size in points
+    img = Image.new('RGB', (img_width, img_height), color='white')
+    draw = ImageDraw.Draw(img)
+    
+    # Add some "scanned" text as image
+    # Use default font (we can't rely on specific fonts being installed)
+    try:
+        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+        font_bold = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
+    except (IOError, OSError):
+        # Fallback to default font if DejaVu is not available
+        font = ImageFont.load_default()
+        font_bold = font
+    
+    # Draw title
+    draw.text((72, 72), "Scanned Document Test", fill='black', font=font_bold)
+    
+    # Draw body text
+    y_pos = 120
+    lines = [
+        "This is a simulated scanned document.",
+        "The text in this PDF is rendered as an image,",
+        "not as searchable text content.",
+        "",
+        "OCR (Optical Character Recognition) is required",
+        "to extract text from this type of document.",
+        "",
+        "Key points:",
+        "- No embedded text layer",
+        "- Text extraction returns minimal/no content",
+        "- OCR fallback should be attempted",
+        "",
+        "This document tests graceful handling of",
+        "image-based PDFs in the extraction pipeline."
+    ]
+    
+    for line in lines:
+        draw.text((72, y_pos), line, fill='black', font=font)
+        y_pos += 24
+    
+    # Convert PIL image to a format reportlab can use
+    img_buffer = io.BytesIO()
+    img.save(img_buffer, format='PNG')
+    img_buffer.seek(0)
+    
+    # Create PDF with image
+    c = canvas.Canvas(str(filepath), pagesize=letter)
+    img_reader = ImageReader(img_buffer)
+    c.drawImage(img_reader, 0, 0, width=letter[0], height=letter[1])
+    c.save()
+    
+    print(f"Created: {filepath}")
+    return filepath
+
+
+def create_password_protected_pdf():
+    """Create a password-protected PDF.
+    
+    Uses pypdf to add encryption to a simple PDF document.
+    """
+    import pypdf
+    
+    filepath = FIXTURES_DIR / "password_protected.pdf"
+    temp_path = FIXTURES_DIR / "temp_for_encryption.pdf"
+    
+    # First create an unencrypted PDF
+    c = canvas.Canvas(str(temp_path), pagesize=letter)
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(1*inch, 10*inch, "Password Protected Document")
+    c.setFont("Helvetica", 10)
+    c.drawString(1*inch, 9.5*inch, "This document is protected with a password.")
+    c.drawString(1*inch, 9.2*inch, "The extraction system should detect this protection")
+    c.drawString(1*inch, 8.9*inch, "and handle it gracefully without crashing.")
+    c.save()
+    
+    # Now encrypt it with pypdf
+    reader = pypdf.PdfReader(str(temp_path))
+    writer = pypdf.PdfWriter()
+    
+    for page in reader.pages:
+        writer.add_page(page)
+    
+    # Add encryption with password "testpassword"
+    writer.encrypt(user_password="testpassword", owner_password="ownerpassword")
+    
+    with open(filepath, 'wb') as f:
+        writer.write(f)
+    
+    # Clean up temp file
+    os.remove(temp_path)
+    
+    print(f"Created: {filepath}")
+    return filepath
+
+
 def create_all_fixtures():
     """Generate all test fixtures."""
     FIXTURES_DIR.mkdir(parents=True, exist_ok=True)
@@ -521,6 +629,8 @@ def create_all_fixtures():
     created_files.append(create_special_characters_pdf())
     created_files.append(create_multi_column_pdf())
     created_files.append(create_tables_heavy_pdf())
+    created_files.append(create_scanned_document_pdf())
+    created_files.append(create_password_protected_pdf())
     
     print(f"\nAll {len(created_files)} fixtures created in: {FIXTURES_DIR}")
     return created_files

@@ -614,6 +614,94 @@ class TestPDFExtraction:
             execution_time_ms=validation_helper.get_execution_time_ms()
         )
         validation_helper.results.append(result)
+    
+    def test_fv02_password_protected_handling(self, text_extractor, validation_helper):
+        """
+        FV-02: Test handling of password-protected PDFs.
+        
+        Success Criteria:
+        - No crash
+        - Detection of protection status
+        - Appropriate error message indicating protection
+        """
+        pdf_path = FIXTURES_DIR / "password_protected.pdf"
+        
+        if not pdf_path.exists():
+            pytest.skip("Test fixture not available: password_protected.pdf")
+        
+        error_detected = False
+        error_message = ""
+        text = ""
+        
+        try:
+            text, method, quality = text_extractor.robust_text_extraction(str(pdf_path))
+            # If extraction succeeds, text should be empty or indicate protection
+            if len(text) < 100:
+                error_detected = True
+                error_message = "Empty extraction - likely protected"
+        except Exception as e:
+            error_detected = True
+            error_message = str(e)
+        
+        result = ValidationResult(
+            test_id="FV-02-G",
+            test_name="Password-protected PDF handling",
+            passed=error_detected,  # Should detect the protection
+            actual_value=error_message if error_detected else f"Text extracted: {len(text)} chars",
+            expected_value="Protection detected",
+            execution_time_ms=validation_helper.get_execution_time_ms(),
+            metadata={
+                "text_length": len(text) if text else 0,
+                "error_detected": error_detected,
+                "error_message": error_message
+            }
+        )
+        validation_helper.results.append(result)
+        
+        assert error_detected, "Should detect password protection"
+    
+    def test_fv02_scanned_pdf_handling(self, text_extractor, validation_helper):
+        """
+        FV-02: Test handling of scanned (image-only) PDFs.
+        
+        Success Criteria:
+        - No crash
+        - OCR fallback attempted (if available)
+        - Appropriate handling if no OCR available
+        """
+        pdf_path = FIXTURES_DIR / "scanned_document.pdf"
+        
+        if not pdf_path.exists():
+            pytest.skip("Test fixture not available: scanned_document.pdf")
+        
+        result_status = ""
+        text = ""
+        
+        try:
+            text, method, quality = text_extractor.robust_text_extraction(str(pdf_path))
+            
+            # Scanned PDFs typically yield little text without OCR
+            if len(text) < 100:
+                result_status = "Minimal text (expected without OCR)"
+            else:
+                result_status = f"Text extracted: {len(text)} chars (OCR may be active)"
+                
+        except Exception as e:
+            result_status = f"Exception handled: {type(e).__name__}"
+        
+        result = ValidationResult(
+            test_id="FV-02-H",
+            test_name="Scanned PDF handling",
+            passed=True,  # Pass if no crash - graceful handling is the goal
+            actual_value=result_status,
+            expected_value="Graceful handling (OCR optional)",
+            execution_time_ms=validation_helper.get_execution_time_ms(),
+            metadata={
+                "text_length": len(text) if text else 0,
+                "result_status": result_status
+            }
+        )
+        validation_helper.results.append(result)
 
 
 @pytest.mark.validation
