@@ -526,13 +526,47 @@ def create_scanned_document_pdf():
     draw = ImageDraw.Draw(img)
     
     # Add some "scanned" text as image
-    # Use default font (we can't rely on specific fonts being installed)
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
-        font_bold = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 18)
-    except (IOError, OSError):
-        # Fallback to default font if DejaVu is not available
+    # Try multiple common font locations for cross-platform compatibility
+    font = None
+    font_bold = None
+    font_paths = [
+        # Linux common locations
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/TTF/DejaVuSans.ttf",
+        "/usr/share/fonts/dejavu-sans/DejaVuSans.ttf",
+        # macOS
+        "/Library/Fonts/Arial.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        # Windows
+        "C:\\Windows\\Fonts\\arial.ttf",
+    ]
+    font_bold_paths = [
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/TTF/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/dejavu-sans/DejaVuSans-Bold.ttf",
+        "/Library/Fonts/Arial Bold.ttf",
+        "/System/Library/Fonts/Helvetica.ttc",
+        "C:\\Windows\\Fonts\\arialbd.ttf",
+    ]
+    
+    for font_path in font_paths:
+        try:
+            font = ImageFont.truetype(font_path, 14)
+            break
+        except (IOError, OSError):
+            continue
+    
+    for font_path in font_bold_paths:
+        try:
+            font_bold = ImageFont.truetype(font_path, 18)
+            break
+        except (IOError, OSError):
+            continue
+    
+    # Fallback to default font if no system fonts are available
+    if font is None:
         font = ImageFont.load_default()
+    if font_bold is None:
         font_bold = font
     
     # Draw title

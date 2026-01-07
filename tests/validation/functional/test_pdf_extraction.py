@@ -25,6 +25,8 @@ SECTION_FIDELITY_THRESHOLD = 0.90  # 90% of expected sections should be present
 SHORT_PAPER_FIDELITY_THRESHOLD = 0.80  # 80% for short papers (less strict)
 MINIMUM_QUALITY_SCORE = 0.1  # Minimum acceptable quality score from extractor
 EXTRACTION_TIMEOUT_SECONDS = 5.0  # Maximum time for PDF extraction
+# Max text length considered "minimal" for edge case PDFs (protected, scanned, etc.)
+MINIMAL_TEXT_LENGTH_THRESHOLD = 100
 
 # Content validation terms
 SPECIAL_CHAR_EXPECTED_CONTENT = ["Special Characters", "special"]
@@ -636,7 +638,7 @@ class TestPDFExtraction:
         try:
             text, method, quality = text_extractor.robust_text_extraction(str(pdf_path))
             # If extraction succeeds, text should be empty or indicate protection
-            if len(text) < 100:
+            if len(text) < MINIMAL_TEXT_LENGTH_THRESHOLD:
                 error_detected = True
                 error_message = "Empty extraction - likely protected"
         except Exception as e:
@@ -681,7 +683,7 @@ class TestPDFExtraction:
             text, method, quality = text_extractor.robust_text_extraction(str(pdf_path))
             
             # Scanned PDFs typically yield little text without OCR
-            if len(text) < 100:
+            if len(text) < MINIMAL_TEXT_LENGTH_THRESHOLD:
                 result_status = "Minimal text (expected without OCR)"
             else:
                 result_status = f"Text extracted: {len(text)} chars (OCR may be active)"
