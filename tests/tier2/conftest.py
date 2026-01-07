@@ -56,7 +56,9 @@ ENDPOINTS = {
     "state_reconciliation": "/state-reconciliation",
     "staleness_review": "/staleness-review",
     "pr_review": "/pr-review",
+    "error_workflow": "/error-handler",
 }
+
 
 
 @pytest.fixture
