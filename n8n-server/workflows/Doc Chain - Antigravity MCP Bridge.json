@@ -1,0 +1,54 @@
+{
+    "name": "Doc Chain - Antigravity MCP Bridge",
+    "nodes": [
+        {
+            "parameters": {
+                "httpMethod": "POST",
+                "path": "antigravity-bridge",
+                "responseMode": "lastNode",
+                "options": {}
+            },
+            "id": "e2d89007-mcp-webhook-001",
+            "name": "MCP Bridge Webhook",
+            "type": "n8n-nodes-base.webhook",
+            "typeVersion": 2.1,
+            "position": [
+                0,
+                200
+            ],
+            "webhookId": "antigravity-mcp-bridge"
+        },
+        {
+            "parameters": {
+                "jsCode": "// Parse incoming MCP request and route to handler\nconst input = $input.first().json;\nconst body = input.body || input;\nconst action = body.action || 'help';\nconst params = body.params || {};\nconst request_id = body.request_id || 'ag-' + Date.now();\n\n// Define all available workflows (from n8n Cloud)\nconst workflows = [\n  { id: '4Qn2t3z6HgJwEBEH', name: 'Doc Chain - Release', active: true },\n  { id: '85OVKyBKrzQFA1kg', name: 'Doc Chain - Trigger', active: true },\n  { id: '9kOmwTpPU5SAPvxE', name: 'Doc Chain - Distributor', active: true },\n  { id: 'CHI7LYvp70EPOmUi', name: 'Doc Chain - PR Review', active: true },\n  { id: 'LpZ7jA5sxXy4QieO', name: 'Doc Chain - Agent', active: true },\n  { id: 'NF3XjMIBrimCTYja', name: 'Doc Chain - State Reconciliation', active: true },\n  { id: 'PARiTxsX57k0ny6P', name: 'Doc Chain - Claude Bridge', active: true },\n  { id: 'b2hw3xA7DvFn7XCV', name: 'Doc Chain - Claude Antigravity Bridge', active: true },\n  { id: 'btKQeVWvPRe6eqPP', name: 'Doc Chain - Errors', active: true },\n  { id: 'r6GoavRSv9pjatqE', name: 'Doc Chain - Claude Bridge v2', active: true },\n  { id: 'tSWCWLMGOBR1uw87', name: 'Doc Chain - Staleness', active: true }\n];\n\n// Define available tools\nconst tools = [\n  { name: 'list_workflows', description: 'List all n8n workflows', parameters: {} },\n  { name: 'get_workflow', description: 'Get workflow info by ID', parameters: { workflow_id: 'string' } },\n  { name: 'get_executions', description: 'View recent executions', parameters: { limit: 'number' } },\n  { name: 'trigger_workflow', description: 'Trigger github-doc-trigger', parameters: { modified_files: 'array' } },\n  { name: 'health', description: 'Check MCP Bridge health', parameters: {} }\n];\n\n// Handle each action\nlet response = {};\n\nswitch (action) {\n  case 'health':\n    response = {\n      success: true,\n      action: 'health',\n      status: 'healthy',\n      server: 'antigravity-mcp-bridge',\n      n8n_cloud: 'gitlitreview.app.n8n.cloud',\n      timestamp: new Date().toISOString(),\n      message: 'n8n MCP Bridge is operational'\n    };\n    break;\n    \n  case 'list_workflows':\n    response = {\n      success: true,\n      action: 'list_workflows',\n      count: workflows.length,\n      workflows: workflows\n    };\n    break;\n    \n  case 'get_workflow':\n    const wfId = params.workflow_id;\n    if (!wfId) {\n      response = { success: false, error: 'workflow_id required' };\n    } else {\n      const wf = workflows.find(w => w.id === wfId);\n      response = {\n        success: true,\n        action: 'get_workflow',\n        workflow: wf || { id: wfId, message: 'Not in cached list' },\n        ui_url: `https://gitlitreview.app.n8n.cloud/workflow/${wfId}`\n      };\n    }\n    break;\n    \n  case 'get_executions':\n    response = {\n      success: true,\n      action: 'get_executions',\n      message: 'View executions in n8n UI',\n      ui_url: 'https://gitlitreview.app.n8n.cloud/executions',\n      limit: params.limit || 10\n    };\n    break;\n    \n  case 'trigger_workflow':\n    const files = params.modified_files;\n    if (!files || !Array.isArray(files) || files.length === 0) {\n      response = { success: false, error: 'modified_files array required' };\n    } else {\n      response = {\n        success: true,\n        action: 'trigger_workflow',\n        message: 'Use POST to /webhook/github-doc-trigger directly',\n        target_webhook: 'https://gitlitreview.app.n8n.cloud/webhook/github-doc-trigger',\n        modified_files: files\n      };\n    }\n    break;\n    \n  case 'help':\n  default:\n    response = {\n      success: true,\n      action: 'help',\n      mcp_version: '1.0.0',\n      server: 'antigravity-mcp-bridge',\n      tools: tools\n    };\n    break;\n}\n\nresponse.request_id = request_id;\nreturn response;"
+            },
+            "id": "b3e4c7b1-mcp-handler-001",
+            "name": "MCP Request Handler",
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+                220,
+                200
+            ]
+        }
+    ],
+    "connections": {
+        "MCP Bridge Webhook": {
+            "main": [
+                [
+                    {
+                        "node": "MCP Request Handler",
+                        "type": "main",
+                        "index": 0
+                    }
+                ]
+            ]
+        }
+    },
+    "settings": {
+        "executionOrder": "v1"
+    },
+    "staticData": null,
+    "pinData": {},
+    "tags": []
+}

@@ -21,12 +21,20 @@ def n8n_available():
         return False
     
     try:
-        payloader = Payloader(timeout=5)
-        # Try a simple endpoint check
-        payloader.check_distributor_status()
+        import requests
+        # Use a simple health check - send minimal payload to trigger
+        # We check the github-doc-trigger endpoint which should exist
+        payloader = Payloader(timeout=10)
+        response = payloader.send_to_webhook("/github-doc-trigger", {"test": True})
+        # If we get any response (even error), n8n is available
         return True
-    except PayloaderError:
+    except PayloaderError as e:
+        # Check if it's a connection error vs a webhook error
+        # Webhook errors (404, 500) mean n8n IS available but endpoint has issue
+        if "Webhook error" in str(e):
+            return True  # n8n is available, just endpoint issue
         return False
+
 
 
 @pytest.fixture
