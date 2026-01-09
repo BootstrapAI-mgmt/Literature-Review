@@ -8,6 +8,16 @@
  * - Side-by-side job comparison
  */
 
+/**
+ * Escape HTML to prevent XSS
+ */
+function escapeHtml(text) {
+    if (text === null || text === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(text);
+    return div.innerHTML;
+}
+
 class BulkJobManager {
     constructor() {
         this.selectedJobs = new Set();
@@ -274,7 +284,7 @@ class BulkJobManager {
             // Populate job list
             if (jobList) {
                 jobList.innerHTML = jobNames
-                    .map(name => `<li class="list-group-item">${name}</li>`)
+                    .map(name => `<li class="list-group-item">${escapeHtml(name)}</li>`)
                     .join('');
             }
             
