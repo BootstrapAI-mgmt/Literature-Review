@@ -1,0 +1,44 @@
+{
+  "version": "1.0.0",
+  "description": "Registry of open access papers for golden dataset annotation - cross-domain validation",
+  "created_date": "2026-01-10",
+  "domains": [
+    "neuromorphic",
+    "nano_thermal",
+    "fusion",
+    "quantum",
+    "microbio",
+    "climate",
+    "materials",
+    "bioimaging"
+  ],
+  "domain_descriptions": {
+    "neuromorphic": "Neuromorphic Computing: SNNs, neuromorphic chips, event-based sensors",
+    "nano_thermal": "Nanoparticle Heat Transfer: Nanofluids, thermal conductivity, heat exchangers",
+    "fusion": "Fusion Energy: Tokamak physics, plasma confinement, ITER, stellarators",
+    "quantum": "Quantum Computing: Qubit technologies, quantum algorithms, error correction",
+    "microbio": "Microbiology & Genomics: CRISPR, gene expression, microbiome, sequencing",
+    "climate": "Climate Science: Climate models, carbon cycle, sea level rise, extreme weather",
+    "materials": "Materials Science: Battery materials, superconductors, metamaterials, 2D materials",
+    "bioimaging": "Biomedical Imaging: MRI, CT, PET, ultrasound, image reconstruction"
+  },
+  "papers": [],
+  "statistics": {
+    "total_papers": 0,
+    "by_domain": {
+      "neuromorphic": 0,
+      "nano_thermal": 0,
+      "fusion": 0,
+      "quantum": 0,
+      "microbio": 0,
+      "climate": 0,
+      "materials": 0,
+      "bioimaging": 0
+    },
+    "annotation_status": {
+      "pending": 0,
+      "in_progress": 0,
+      "complete": 0
+    }
+  }
+}
