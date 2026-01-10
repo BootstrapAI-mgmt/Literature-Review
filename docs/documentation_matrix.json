@@ -145,6 +145,7 @@
     },
     "@architecture": {
       "documents": [
+        "docs/MASTER_ARCHITECTURE_BLUEPRINT.md",
         "docs/architecture/SYSTEM_ARCHITECTURE_BLUEPRINT.md",
         "docs/architecture/ARCHITECTURE_ANALYSIS.md",
         "docs/architecture/ARCHITECTURE_REFACTOR.md",
@@ -154,6 +155,7 @@
       "review_interval_days": 21,
       "priority": "high",
       "staleness_indicators": [
+        "literature_review/**/*.py",
         "literature_review/orchestrator.py",
         "literature_review/config/research_config.py",
         "pipeline_orchestrator.py",
