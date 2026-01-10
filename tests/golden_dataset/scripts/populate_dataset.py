@@ -219,6 +219,18 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Figure 3: PPR of 1.8 ± 0.15 at 50ms ISI, validated against Zucker & Regehr (2002) reference data.",
                 "requirement": "REQ-B1.4", "sub_requirement": "Sub-1.4.1",
                 "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Long-term structural plasticity shows 23% increase in spine density after 7 days of enriched stimulation.",
+                "evidence_text": "Two-photon imaging (n=6 mice): Spine count 45.2 ± 3.1 vs 36.7 ± 2.8 baseline (p<0.01).",
+                "requirement": "REQ-B1.4", "sub_requirement": "Sub-1.4.3",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 4
+            },
+            {
+                "claim_text": "Prefrontal top-down gating reduces irrelevant sensory responses by 40%.",
+                "evidence_text": "Single-unit recordings (n=89 neurons) show 40% ± 8% reduction in non-attended stimulus responses.",
+                "requirement": "REQ-B1.2", "sub_requirement": "Sub-1.2.3",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 4
             }
         ]
         
@@ -253,6 +265,18 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Informal testing showed promising results that warrant further investigation.",
                 "requirement": "REQ-B1.3", "sub_requirement": "Sub-1.3.1",
                 "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
+            },
+            {
+                "claim_text": "Temporal dynamics are preserved in our encoding scheme.",
+                "evidence_text": "We believe the spike timing captures essential temporal features.",
+                "requirement": "REQ-B1.1", "sub_requirement": "Sub-1.1.4",
+                "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
+            },
+            {
+                "claim_text": "Top-down attention modulates sensory processing.",
+                "evidence_text": "This finding is consistent with established neuroscience literature.",
+                "requirement": "REQ-B1.2", "sub_requirement": "Sub-1.2.3",
+                "strength": 1, "rigor": 1, "relevance": 2, "directness": 1, "reproducibility": 1
             }
         ]
         
@@ -268,6 +292,12 @@ class GoldenDatasetPopulator:
                 "claim_text": "Synaptic plasticity shows expected STDP curves in our simulations.",
                 "evidence_text": "Figure 2 shows weight changes, though statistical analysis pending.",
                 "requirement": "REQ-B1.4", "sub_requirement": "Sub-1.4.2",
+                "strength": 3, "rigor": 2, "relevance": 4, "directness": 2, "reproducibility": 2
+            },
+            {
+                "claim_text": "Basal ganglia model shows action selection improvement in 70% of trials.",
+                "evidence_text": "Simulation results (n=10 runs) show improvement, but variance is high (SD=15%).",
+                "requirement": "REQ-B1.3", "sub_requirement": "Sub-1.3.2",
                 "strength": 3, "rigor": 2, "relevance": 4, "directness": 2, "reproducibility": 2
             }
         ]
@@ -309,6 +339,18 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Table 5: Error rate 12.3% vs 16.0% baseline (p<0.01, McNemar test). Attention maps visualized in Figure 8.",
                 "requirement": "REQ-A2.2", "sub_requirement": "Sub-2.2.3",
                 "strength": 4, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 4
+            },
+            {
+                "claim_text": "Hardware deployment on Loihi 2 achieves 15x energy efficiency over GPU with matching accuracy.",
+                "evidence_text": "Table 7: Loihi 2 at 0.8mJ/inference vs GPU at 12mJ/inference. Accuracy within 0.5% (93.6% vs 94.1%).",
+                "requirement": "REQ-A2.1", "sub_requirement": "Sub-2.1.3",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Adaptive event thresholding reduces bandwidth by 40% with <1% accuracy loss.",
+                "evidence_text": "Bandwidth analysis: 2.1MB/s baseline reduced to 1.26MB/s. Classification accuracy 93.1% vs 93.8%.",
+                "requirement": "REQ-A2.1", "sub_requirement": "Sub-2.1.4",
+                "strength": 5, "rigor": 4, "relevance": 5, "directness": 3, "reproducibility": 4
             }
         ]
         
@@ -342,6 +384,18 @@ class GoldenDatasetPopulator:
                 "evidence_text": "The network uses fewer spikes than fully connected alternatives.",
                 "requirement": "REQ-A2.4", "sub_requirement": "Sub-2.4.1",
                 "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
+            },
+            {
+                "claim_text": "Dynamic voltage scaling improves efficiency.",
+                "evidence_text": "We applied standard DVFS techniques to the neuromorphic processor.",
+                "requirement": "REQ-A2.4", "sub_requirement": "Sub-2.4.4",
+                "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
+            },
+            {
+                "claim_text": "The SNN controller responds appropriately to inputs.",
+                "evidence_text": "Manual testing confirmed correct behavior in tested scenarios.",
+                "requirement": "REQ-A2.3", "sub_requirement": "Sub-2.3.3",
+                "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
             }
         ]
         
@@ -357,6 +411,12 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Preliminary data shows recovery within 100 iterations, but n=2 networks tested.",
                 "requirement": "REQ-A2.2", "sub_requirement": "Sub-2.2.4",
                 "strength": 3, "rigor": 2, "relevance": 4, "directness": 2, "reproducibility": 2
+            },
+            {
+                "claim_text": "Energy-accuracy trade-off shows 2x efficiency improvement at 95% accuracy.",
+                "evidence_text": "Pareto analysis (Figure 5) with 5 operating points. Limited to single benchmark.",
+                "requirement": "REQ-A2.4", "sub_requirement": "Sub-2.4.3",
+                "strength": 3, "rigor": 3, "relevance": 4, "directness": 2, "reproducibility": 2
             }
         ]
         
@@ -385,6 +445,18 @@ class GoldenDatasetPopulator:
                 "evidence_text": "fMRI comparison of experts vs novices (n=20 each). BOLD signal analysis with FDR correction.",
                 "requirement": "REQ-B3.3", "sub_requirement": "Sub-3.3.3",
                 "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 4
+            },
+            {
+                "claim_text": "Dopaminergic reward signals strengthen skill consolidation with effect size d=1.2.",
+                "evidence_text": "Pharmacological study (n=40): L-DOPA group shows 35% better retention vs placebo (p<0.001).",
+                "requirement": "REQ-B3.2", "sub_requirement": "Sub-3.2.4",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 4
+            },
+            {
+                "claim_text": "Cerebellar error correction reduces movement variability by 55% over 100 trials.",
+                "evidence_text": "Kinematic analysis: CV decreased from 0.45 to 0.20 (n=25 subjects, p<0.001).",
+                "requirement": "REQ-B3.4", "sub_requirement": "Sub-3.4.3",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
             }
         ]
         
@@ -406,6 +478,12 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Initial observations suggest possible learning effects.",
                 "requirement": "REQ-B3.2", "sub_requirement": "Sub-3.2.1",
                 "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
+            },
+            {
+                "claim_text": "Practice improves performance.",
+                "evidence_text": "As expected, repeated practice led to better outcomes.",
+                "requirement": "REQ-B3.3", "sub_requirement": "Sub-3.3.2",
+                "strength": 1, "rigor": 1, "relevance": 2, "directness": 1, "reproducibility": 1
             }
         ]
         
@@ -414,6 +492,12 @@ class GoldenDatasetPopulator:
                 "claim_text": "Procedural consolidation shows expected time course in our paradigm.",
                 "evidence_text": "Learning curve analysis (n=8) shows improvement over 3 sessions, though variability high.",
                 "requirement": "REQ-B3.2", "sub_requirement": "Sub-3.2.1",
+                "strength": 3, "rigor": 3, "relevance": 4, "directness": 2, "reproducibility": 2
+            },
+            {
+                "claim_text": "Dual-task interference reduces by 35% after 5 days of training.",
+                "evidence_text": "Behavioral study (n=12) shows reduced interference. Single task paradigm tested.",
+                "requirement": "REQ-B3.3", "sub_requirement": "Sub-3.3.1",
                 "strength": 3, "rigor": 3, "relevance": 4, "directness": 2, "reproducibility": 2
             }
         ]
@@ -443,6 +527,30 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Transfer from pushing to lifting: 62% sample efficiency improvement vs learning from scratch (Figure 9).",
                 "requirement": "REQ-A4.5", "sub_requirement": "Sub-4.5.1",
                 "strength": 4, "rigor": 4, "relevance": 5, "directness": 3, "reproducibility": 4
+            },
+            {
+                "claim_text": "World model enables 5x sample efficiency improvement in exploration phase.",
+                "evidence_text": "Table 8: Model-based approach reaches threshold in 200K steps vs 1M for model-free (5 seeds).",
+                "requirement": "REQ-A4.1", "sub_requirement": "Sub-4.1.1",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Compiled policy inference cost reduced by 92% vs exploration-phase network.",
+                "evidence_text": "Profiling results: 0.8ms vs 10ms per decision. FLOPs reduced from 1.2G to 95M.",
+                "requirement": "REQ-A4.3", "sub_requirement": "Sub-4.3.1",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Compositional skill combination achieves 80% success on novel 3-skill sequences.",
+                "evidence_text": "Table 11: 80% ± 5% success on held-out combinations (n=50). Comparison to 65% random baseline.",
+                "requirement": "REQ-A4.5", "sub_requirement": "Sub-4.5.4",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 4
+            },
+            {
+                "claim_text": "Adaptive learning rate based on performance improves convergence by 40%.",
+                "evidence_text": "Training curves (10 seeds): Adaptive LR converges in 600K steps vs 1M baseline.",
+                "requirement": "REQ-A4.4", "sub_requirement": "Sub-4.4.4",
+                "strength": 5, "rigor": 4, "relevance": 5, "directness": 3, "reproducibility": 5
             }
         ]
         
@@ -464,6 +572,12 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Pre-training on related tasks appears beneficial.",
                 "requirement": "REQ-A4.5", "sub_requirement": "Sub-4.5.1",
                 "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
+            },
+            {
+                "claim_text": "The policy generalizes to new situations.",
+                "evidence_text": "Anecdotal evidence suggests reasonable generalization.",
+                "requirement": "REQ-A4.5", "sub_requirement": "Sub-4.5.2",
+                "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
             }
         ]
         
@@ -472,6 +586,12 @@ class GoldenDatasetPopulator:
                 "claim_text": "Model-free policy shows 85% success rate after 1M steps.",
                 "evidence_text": "Training curve in Figure 4 shows convergence. Single seed reported.",
                 "requirement": "REQ-A4.2", "sub_requirement": "Sub-4.2.1",
+                "strength": 3, "rigor": 2, "relevance": 4, "directness": 2, "reproducibility": 2
+            },
+            {
+                "claim_text": "Error signal backpropagation latency measured at 5ms in hardware.",
+                "evidence_text": "Timing analysis shows 5.2ms ± 0.8ms, but only 2 chips tested.",
+                "requirement": "REQ-A4.4", "sub_requirement": "Sub-4.4.1",
                 "strength": 3, "rigor": 2, "relevance": 4, "directness": 2, "reproducibility": 2
             }
         ]
@@ -501,6 +621,18 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Patient study (n=12 amygdala patients vs n=24 controls). Recognition memory for emotional items significantly impaired.",
                 "requirement": "REQ-B5.2", "sub_requirement": "Sub-5.2.2",
                 "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 4
+            },
+            {
+                "claim_text": "Theta-gamma coupling strength predicts memory encoding success (r=0.72).",
+                "evidence_text": "Intracranial EEG (n=15 epilepsy patients) during encoding. Coupling strength correlates with subsequent recall.",
+                "requirement": "REQ-B5.1", "sub_requirement": "Sub-5.1.4",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 4
+            },
+            {
+                "claim_text": "Place cell remapping occurs within 2 minutes of environmental change.",
+                "evidence_text": "Single-unit recordings (n=120 cells, 8 rats). 85% of cells show significant remapping by trial 3.",
+                "requirement": "REQ-B5.1", "sub_requirement": "Sub-5.1.3",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
             }
         ]
         
@@ -522,6 +654,12 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Classic lesion studies demonstrate hippocampal involvement in memory formation.",
                 "requirement": "REQ-B5.1", "sub_requirement": "Sub-5.1.1",
                 "strength": 1, "rigor": 1, "relevance": 2, "directness": 1, "reproducibility": 1
+            },
+            {
+                "claim_text": "Working memory capacity is limited.",
+                "evidence_text": "Miller's classic finding of 7±2 items is well known.",
+                "requirement": "REQ-B5.3", "sub_requirement": "Sub-5.3.1",
+                "strength": 1, "rigor": 1, "relevance": 2, "directness": 1, "reproducibility": 1
             }
         ]
         
@@ -531,6 +669,12 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Behavioral study (n=15) using change detection. Capacity estimate via Cowan K formula.",
                 "requirement": "REQ-B5.3", "sub_requirement": "Sub-5.3.1",
                 "strength": 3, "rigor": 3, "relevance": 4, "directness": 2, "reproducibility": 3
+            },
+            {
+                "claim_text": "Memory reconsolidation window shows 6-hour vulnerability period.",
+                "evidence_text": "Behavioral study (n=20) shows memory modification possible within 6 hours of reactivation.",
+                "requirement": "REQ-B5.2", "sub_requirement": "Sub-5.2.3",
+                "strength": 3, "rigor": 3, "relevance": 4, "directness": 2, "reproducibility": 2
             }
         ]
         
@@ -559,6 +703,18 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Benchmarking with LSH indexing: mean retrieval 0.42ms, 99th percentile 0.89ms (Figure 7).",
                 "requirement": "REQ-A6.4", "sub_requirement": "Sub-6.4.3",
                 "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Memory compression achieves 150:1 ratio while retaining 95% task performance.",
+                "evidence_text": "Table 9: Compressed memory uses 0.67% of original size. Performance: 94.8% vs 99.2% uncompressed.",
+                "requirement": "REQ-A6.1", "sub_requirement": "Sub-6.1.4",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Similarity-based generalization improves novel class accuracy by 28%.",
+                "evidence_text": "Zero-shot evaluation: 67% vs 52% baseline (p<0.001, n=1000 test cases).",
+                "requirement": "REQ-A6.2", "sub_requirement": "Sub-6.2.4",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
             }
         ]
         
@@ -574,6 +730,12 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Informal experiments suggest better retention than naive fine-tuning.",
                 "requirement": "REQ-A6.1", "sub_requirement": "Sub-6.1.1",
                 "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
+            },
+            {
+                "claim_text": "Memory capacity scales well with network size.",
+                "evidence_text": "Larger networks store more patterns, as expected.",
+                "requirement": "REQ-A6.4", "sub_requirement": "Sub-6.4.1",
+                "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
             }
         ]
         
@@ -582,6 +744,12 @@ class GoldenDatasetPopulator:
                 "claim_text": "Context-dependent retrieval shows 80% accuracy in our preliminary tests.",
                 "evidence_text": "Small-scale experiment (n=3 runs) shows context improves retrieval. Larger study planned.",
                 "requirement": "REQ-A6.1", "sub_requirement": "Sub-6.1.3",
+                "strength": 3, "rigor": 2, "relevance": 4, "directness": 2, "reproducibility": 2
+            },
+            {
+                "claim_text": "Working memory integration with SNN shows 75% task accuracy.",
+                "evidence_text": "Preliminary integration test (n=5 seeds) achieves 75% ± 8% on delayed match-to-sample.",
+                "requirement": "REQ-A6.3", "sub_requirement": "Sub-6.3.1",
                 "strength": 3, "rigor": 2, "relevance": 4, "directness": 2, "reproducibility": 2
             }
         ]
@@ -605,6 +773,42 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Ablation studies (Section 6.3): Performance drop ranges 12-25% depending on pillar removed.",
                 "requirement": "REQ-7.4", "sub_requirement": "Sub-7.4.4",
                 "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Spike-based communication protocol achieves 95% bandwidth efficiency vs baseline.",
+                "evidence_text": "Table 10: Average 2.1 spikes/neuron/timestep vs 20 bits baseline. Semantic information preserved.",
+                "requirement": "REQ-7.1", "sub_requirement": "Sub-7.1.1",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Multi-timescale integration framework enables 5 concurrent temporal processes.",
+                "evidence_text": "Timing analysis: processes at 1ms, 10ms, 100ms, 1s, and 10s successfully integrated.",
+                "requirement": "REQ-7.2", "sub_requirement": "Sub-7.2.2",
+                "strength": 5, "rigor": 4, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Hierarchical control reduces conflict resolution time by 67%.",
+                "evidence_text": "Response time: 45ms vs 135ms flat architecture (n=1000 conflicts, p<0.001).",
+                "requirement": "REQ-7.3", "sub_requirement": "Sub-7.3.1",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Staged pillar activation achieves 25% faster system maturation.",
+                "evidence_text": "Development time: 4.5 hours vs 6 hours simultaneous activation (10 runs each).",
+                "requirement": "REQ-7.5", "sub_requirement": "Sub-7.5.1",
+                "strength": 5, "rigor": 4, "relevance": 5, "directness": 3, "reproducibility": 5
+            },
+            {
+                "claim_text": "Curriculum learning sequence optimizes inter-pillar connectivity development.",
+                "evidence_text": "Final system performance 87% vs 78% random curriculum (p<0.01, n=15 systems).",
+                "requirement": "REQ-7.5", "sub_requirement": "Sub-7.5.2",
+                "strength": 5, "rigor": 4, "relevance": 5, "directness": 3, "reproducibility": 4
+            },
+            {
+                "claim_text": "Novel situation adaptation succeeds in 68% of unseen scenarios.",
+                "evidence_text": "Table 12: 68% ± 7% success on 100 novel scenarios not in training distribution.",
+                "requirement": "REQ-7.4", "sub_requirement": "Sub-7.4.3",
+                "strength": 5, "rigor": 5, "relevance": 5, "directness": 3, "reproducibility": 4
             }
         ]
         
@@ -620,6 +824,12 @@ class GoldenDatasetPopulator:
                 "evidence_text": "The system runs at interactive speeds.",
                 "requirement": "REQ-7.1", "sub_requirement": "Sub-7.1.2",
                 "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
+            },
+            {
+                "claim_text": "The system shows emergent behavior.",
+                "evidence_text": "Complex patterns emerge from component interactions.",
+                "requirement": "REQ-7.4", "sub_requirement": "Sub-7.4.1",
+                "strength": 1, "rigor": 1, "relevance": 3, "directness": 1, "reproducibility": 1
             }
         ]
         
@@ -629,6 +839,12 @@ class GoldenDatasetPopulator:
                 "evidence_text": "Coherence analysis shows mean 0.7 ± 0.15 (n=5 runs). Threshold for significance not yet established.",
                 "requirement": "REQ-7.2", "sub_requirement": "Sub-7.2.4",
                 "strength": 3, "rigor": 3, "relevance": 4, "directness": 2, "reproducibility": 3
+            },
+            {
+                "claim_text": "Resource allocation algorithm reduces contention by 50%.",
+                "evidence_text": "Simulation (n=10 runs) shows 50% ± 12% reduction in resource conflicts.",
+                "requirement": "REQ-7.3", "sub_requirement": "Sub-7.3.3",
+                "strength": 3, "rigor": 2, "relevance": 4, "directness": 2, "reproducibility": 2
             }
         ]
         
