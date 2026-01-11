@@ -18,11 +18,18 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 from datetime import datetime
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, asdict
 import urllib.request
 import re
 import sys
 
+
+# Constants for validation thresholds
+MIN_TOTAL_PAPERS = 80
+MIN_PAPERS_PER_DOMAIN = 10
+MIN_CLAIMS_PER_PAPER = 5
+MAX_ABSTRACT_LENGTH = 500
+MAX_DISPLAYED_ISSUES = 20
 
 # Valid open access licenses
 VALID_LICENSES = [
@@ -175,7 +182,7 @@ class PaperRegistry:
             url=url,
             pdf_path=pdf_filename,
             license=license,
-            abstract=abstract[:500] if abstract else "",  # Truncate abstract
+            abstract=abstract[:MAX_ABSTRACT_LENGTH] if abstract else "",
             doi=doi,
             claim_count_estimate=claim_count_estimate,
             annotation_status="not_started",
@@ -238,9 +245,12 @@ class PaperRegistry:
             print(f"Error downloading: {e}")
             return None
 
-    def validate(self) -> Tuple[bool, List[str]]:
+    def validate(self, silent: bool = False) -> Tuple[bool, List[str]]:
         """
         Validate the paper registry.
+        
+        Args:
+            silent: If True, suppress console output
         
         Returns:
             Tuple of (is_valid, list of issues)
@@ -252,17 +262,17 @@ class PaperRegistry:
         if self.data.get("version") != "1.0.0":
             issues.append(f"Invalid version: {self.data.get('version')}")
         
-        # Check total paper count (target: 80+)
-        if len(papers) < 80:
-            issues.append(f"Insufficient papers: {len(papers)}/80 minimum")
+        # Check total paper count
+        if len(papers) < MIN_TOTAL_PAPERS:
+            issues.append(f"Insufficient papers: {len(papers)}/{MIN_TOTAL_PAPERS} minimum")
         
-        # Check per-domain minimum (10 each)
+        # Check per-domain minimum
         domain_counts = {}
         for domain in self.DOMAINS:
             count = len([p for p in papers if p.get("domain") == domain])
             domain_counts[domain] = count
-            if count < 10:
-                issues.append(f"Domain '{domain}' has only {count}/10 papers")
+            if count < MIN_PAPERS_PER_DOMAIN:
+                issues.append(f"Domain '{domain}' has only {count}/{MIN_PAPERS_PER_DOMAIN} papers")
         
         # Validate each paper
         for paper in papers:
@@ -271,16 +281,16 @@ class PaperRegistry:
             # Check required fields
             required_fields = ["paper_id", "domain", "title", "authors", "year", 
                              "source_type", "source_id", "url", "pdf_path", "license"]
-            for field in required_fields:
+            for field_name in required_fields:
                 # Handle legacy field names
-                if field == "source_type" and field not in paper and "source" in paper:
+                if field_name == "source_type" and field_name not in paper and "source" in paper:
                     continue  # Legacy format
-                if field == "source_id" and field not in paper and "source" in paper:
+                if field_name == "source_id" and field_name not in paper and "source" in paper:
                     continue  # Legacy format
-                if field == "pdf_path" and field not in paper and "pdf_filename" in paper:
+                if field_name == "pdf_path" and field_name not in paper and "pdf_filename" in paper:
                     continue  # Legacy format
-                if field not in paper or not paper.get(field):
-                    issues.append(f"Paper {paper_id}: missing required field '{field}'")
+                if field_name not in paper or not paper.get(field_name):
+                    issues.append(f"Paper {paper_id}: missing required field '{field_name}'")
             
             # Check domain validity
             if paper.get("domain") not in self.DOMAINS:
@@ -291,10 +301,10 @@ class PaperRegistry:
             if not any(valid in license_val for valid in VALID_LICENSES):
                 issues.append(f"Paper {paper_id}: invalid/unknown license '{license_val}'")
             
-            # Check claim count estimate (should be >= 5)
+            # Check claim count estimate
             claim_est = paper.get("claim_count_estimate", 0)
-            if claim_est < 5:
-                issues.append(f"Paper {paper_id}: low claim estimate ({claim_est}<5)")
+            if claim_est < MIN_CLAIMS_PER_PAPER:
+                issues.append(f"Paper {paper_id}: low claim estimate ({claim_est}<{MIN_CLAIMS_PER_PAPER})")
             
             # Check PDF path exists (optional - only if PDF was downloaded)
             pdf_path = paper.get("pdf_path") or paper.get("pdf_filename", "")
@@ -303,14 +313,15 @@ class PaperRegistry:
         
         is_valid = len(issues) == 0
         
-        if is_valid:
-            print("✓ Registry validation passed!")
-        else:
-            print(f"✗ Registry validation failed with {len(issues)} issues:")
-            for issue in issues[:20]:  # Show first 20 issues
-                print(f"  - {issue}")
-            if len(issues) > 20:
-                print(f"  ... and {len(issues) - 20} more issues")
+        if not silent:
+            if is_valid:
+                print("✓ Registry validation passed!")
+            else:
+                print(f"✗ Registry validation failed with {len(issues)} issues:")
+                for issue in issues[:MAX_DISPLAYED_ISSUES]:
+                    print(f"  - {issue}")
+                if len(issues) > MAX_DISPLAYED_ISSUES:
+                    print(f"  ... and {len(issues) - MAX_DISPLAYED_ISSUES} more issues")
         
         return is_valid, issues
 
@@ -409,7 +420,7 @@ class PaperRegistry:
             "",
         ])
         
-        is_valid, issues = self.validate()
+        is_valid, issues = self.validate(silent=True)
         if is_valid:
             report_lines.append("✓ All validation checks passed!")
         else:
