@@ -2,8 +2,8 @@
 
 **Created:** December 31, 2025  
 **Source:** Third-Party Assessment & Internal Review  
-**Total Tasks:** 24 (8 Waves) *(updated: added Wave 0.5, Wave 1.5, and Wave 2.5)*  
-**Total Effort:** 194 hours base *(+26h for Wave 0.5, +32h for Wave 1.5, +24h for Wave 2.5, +4h for Wave 4 VI-*)*  
+**Total Tasks:** 25 (8 Waves) *(updated: added Wave 0.5, Wave 1.5, and Wave 2.5)*  
+**Total Effort:** 194 hours base *(+26h for Wave 0.5, +40h for Wave 1.5, +24h for Wave 2.5, +4h for Wave 4 VI-*)*  
 **Timeline:** 14-16 weeks
 
 ---
@@ -275,7 +275,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 
 ---
 
-## Wave 1.5: Golden Dataset Enhancement (Week 5-6) - 32 hours
+## Wave 1.5: Golden Dataset Enhancement (Week 5-6) - 40 hours
 
 > **Added for Cross-Domain Validation**
 > 
@@ -283,26 +283,40 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 > scientific domains. Real paper annotations provide authentic claim structures
 > and natural evidence quality distributions that complement synthetic data.
 
-### VM-W1.5-1: Open Access Paper Sourcing
+### VM-W1.5-1: Open Access Paper Sourcing (Infrastructure)
 - **File:** `VM_WAVE_1.5_1_PAPER_SOURCING.md`
-- **Effort:** 12 hours
+- **Effort:** 4 hours *(reduced: infrastructure only)*
 - **Priority:** HIGH
-- **Status:** Not Started
+- **Status:** ✅ Complete (PR #137 merged)
 - **Dependencies:** VM-W1-4
 - **Validation IDs:** QB-01, QB-02 (data quality expansion)
 - **Deliverables:**
-  - 80+ open access papers from 8 diverse domains
-  - Paper registry (`paper_registry.json`)
+  - Enhanced `source_papers.py` CLI (status, add, validate, report, download)
+  - Paper registry schema (`paper_registry.json`)
   - Domain sourcing guides (SOURCING.md per domain)
   - PDF download infrastructure
-  - Source verification documentation
+  - Test suite for paper sourcing
+
+### VM-W1.5-1B: Paper Population (80+ Papers)
+- **File:** `VM_WAVE_1.5_1B_PAPER_POPULATION.md`
+- **Effort:** 8 hours
+- **Priority:** HIGH
+- **Status:** Not Started
+- **Dependencies:** VM-W1.5-1
+- **Validation IDs:** QB-01, QB-02 (data population)
+- **Deliverables:**
+  - 80+ papers registered (10 per domain)
+  - All papers with open access license verified
+  - Each paper with ≥5 claim count estimate
+  - `source_papers.py validate` passes
+  - Sourcing report generated
 
 ### VM-W1.5-2: Paper Annotation for Golden Dataset
 - **File:** `VM_WAVE_1.5_2_PAPER_ANNOTATION.md`
 - **Effort:** 20 hours
 - **Priority:** HIGH
 - **Status:** Not Started
-- **Dependencies:** VM-W1-4, VM-W1.5-1
+- **Dependencies:** VM-W1-4, VM-W1.5-1, VM-W1.5-1B
 - **Validation IDs:** QB-01, QB-02, QB-03, QB-04, QB-05 (real data)
 - **Deliverables:**
   - 400-640 annotated claims from real papers
