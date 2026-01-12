@@ -3,17 +3,21 @@
 **Task ID:** VM-W1.5-2  
 **Wave:** 1.5 (Golden Dataset Enhancement)  
 **Priority:** HIGH  
-**Estimated Effort:** 20 hours  
+**Estimated Effort:** 28 hours (updated from 20h to include bi-directional validation)  
 **Status:** Not Started  
-**Dependencies:** VM-W1-4, VM-W1.5-1  
+**Dependencies:** VM-W1-4, VM-W1.5-0, VM-W1.5-1 (updated: added VM-W1.5-0)  
 **Blocks:** VM-W2-1, VM-W2-2, VM-W4-2  
-**Validation IDs:** QB-01, QB-02, QB-03, QB-04, QB-05 (real data)
+**Validation IDs:** QB-01, QB-02, QB-03, QB-04, QB-05, FP-01, GAP-NEG, ITER-01 (real data + negative cases)
 
 ---
 
 ## Objective
 
-Annotate claims, gaps, and recommendations from the 80+ open access papers sourced in VM-W1.5-1. This creates a high-quality golden dataset grounded in real academic literature, enabling rigorous cross-domain validation of the literature review system.
+Annotate claims, gaps, and recommendations from the 80+ open access papers sourced in VM-W1.5-1, using a **bi-directional validation approach** that tests both:
+1. **Finding correctly** - Extracting expected claims with accurate mapping
+2. **Not finding correctly** - Rejecting irrelevant content, ignoring decoy papers
+
+This creates a high-quality golden dataset grounded in real academic literature, enabling rigorous cross-domain validation of the literature review system.
 
 ## Background
 
@@ -23,24 +27,49 @@ Synthetic claims (VM-W1-4) bootstrap the golden dataset, but real annotations ar
 3. **Cross-domain generalization** - Validates system beyond training domain
 4. **Edge case discovery** - Real papers contain unexpected patterns
 5. **Benchmark credibility** - Industry-standard approach to validation
+6. **Negative case testing** - Validates false positive rejection (NEW)
+7. **Iterative gap validation** - Tests multi-pass gap closing (NEW)
 
-**Annotation Targets:**
-- 400-640 annotated claims (5-8 per paper × 80 papers)
-- 160+ known gaps (2+ per paper)
-- 80+ recommendation quality samples (1+ per paper)
+### Hybrid Annotation Strategy (NEW)
+
+This task uses a **hybrid approach** combining:
+- **Exhaustive annotation** for 5-10 anchor papers (true ground truth per VM-W1.5-0)
+- **Standard annotation** for 70+ additional papers (volume coverage)
+- **Gap scenario creation** with controlled database states and decoy papers
+
+**Annotation Targets (UPDATED):**
+- **Anchor Papers:** 5-10 papers with 15-30 exhaustively annotated claims each (75-300 claims)
+- **Standard Papers:** 70+ papers with 5-8 annotated claims each (350-560 claims)
+- **Total Claims:** 425-860 annotated claims
+- **Non-Extraction Items:** 50+ items that should NOT be extracted (false positive tests)
+- **Known Gaps:** 160+ gaps (2+ per paper)
+- **Gap Scenarios:** 3+ controlled scenarios with Pass 1/Pass 2 states
+- **Decoy Papers:** 5+ papers that should NOT contribute to gaps
+- **Recommendation Samples:** 80+ (1+ per paper)
 
 ---
 
 ## Success Criteria
 
+### Core Annotation Metrics
 - [ ] 400+ claims annotated from real papers
-- [ ] Each paper has 5-8 annotated claims
+- [ ] Each standard paper has 5-8 annotated claims
+- [ ] Each anchor paper has 15-30 exhaustively annotated claims
 - [ ] Mix: ~50% approved, ~30% rejected, ~20% borderline
 - [ ] 160+ known gaps identified
 - [ ] 80+ recommendation quality samples
 - [ ] All 8 domains represented equally (10+ papers each)
-- [ ] Inter-annotator agreement ≥80% (if multiple annotators)
+- [ ] Inter-annotator agreement ≥80% (κ ≥ 0.7 for anchor papers)
 - [ ] Annotations validate against golden dataset schema
+
+### Bi-Directional Validation Metrics (NEW)
+- [ ] 5-10 anchor papers with exhaustive claim inventories
+- [ ] 50+ non-extraction items documented (false positive tests)
+- [ ] All anchor claims classified by extractability (HIGH/MEDIUM/LOW/IRRELEVANT)
+- [ ] 3+ controlled gap scenarios designed and documented
+- [ ] 5+ decoy papers identified and annotated
+- [ ] Pass 1 and Pass 2 states defined for iterative scenarios
+- [ ] Expected severity changes documented for gap scenarios
 
 ---
 
@@ -138,6 +167,136 @@ For each gap, create quality recommendation:
 1. Self-review annotations for consistency
 2. Run schema validation
 3. Export to golden dataset format
+
+---
+
+## Bi-Directional Validation Enhancements (NEW)
+
+This section describes additional annotation workflows required for comprehensive validation.
+These enhancements address the structural gaps identified in the golden dataset strategy assessment.
+
+### Anchor Paper Exhaustive Annotation
+
+For the 5-10 designated anchor papers (selected per VM-W1.5-0 criteria), perform **exhaustive annotation**
+instead of standard 5-8 claim extraction.
+
+#### Exhaustive Annotation Workflow
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    ANCHOR PAPER ANNOTATION                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐               │
+│  │ Annotator A  │    │ Annotator B  │    │ Reconcile    │               │
+│  │ Full Scan    │    │ Full Scan    │    │ & Merge      │               │
+│  │ (Independent)│    │ (Independent)│    │              │               │
+│  └──────────────┘    └──────────────┘    └──────────────┘               │
+│         │                   │                   │                        │
+│         ▼                   ▼                   ▼                        │
+│  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐               │
+│  │ Claim List A │    │ Claim List B │    │ Unified      │               │
+│  │ (15-30 items)│    │ (15-30 items)│    │ Inventory    │               │
+│  └──────────────┘    └──────────────┘    └──────────────┘               │
+│                                                 │                        │
+│                                                 ▼                        │
+│                            ┌──────────────────────────────┐             │
+│                            │ Classify Each Claim:          │             │
+│                            │ • Extractability (H/M/L/I)    │             │
+│                            │ • Expected Verdict            │             │
+│                            │ • Non-Extraction Items        │             │
+│                            └──────────────────────────────┘             │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Extractability Classification
+
+For each claim in anchor papers, assign extractability level:
+
+| Level | Pipeline Expectation | Validation Impact |
+|-------|---------------------|-------------------|
+| **HIGH** | MUST be extracted | Missing = ERROR (recall failure) |
+| **MEDIUM** | SHOULD be extracted | Missing = WARNING |
+| **LOW** | BONUS if extracted | Missing = ACCEPTABLE |
+| **IRRELEVANT** | Must NOT be extracted | Found = ERROR (precision failure) |
+
+#### Non-Extraction Documentation
+
+For each anchor paper, identify 5-15 items that should NOT be extracted:
+
+```yaml
+non_extraction_item:
+  item_id: "AP-001-NE-01"
+  item_text: "Future work will explore temporal coding..."
+  location: {page: 10, paragraph: 4}
+  item_type: "future_work"  # future_work, background, opinion, off_topic
+  reason_not_relevant: "Future work statement, not current finding"
+  if_extracted_severity: "error"
+```
+
+### Gap Scenario Annotation
+
+Create 3+ controlled gap scenarios for testing iterative gap-closing behavior.
+
+#### Scenario Components
+
+1. **Pass 1 State:**
+   - Select subset of papers for initial database
+   - Document expected gaps (must be detected)
+   - Document expected non-gaps (must NOT be flagged)
+
+2. **Pass 2 Additions:**
+   - Identify gap-closing papers (should reduce gaps)
+   - Identify decoy papers (should NOT reduce gaps)
+   - Document expected coverage changes
+
+3. **Expected Outcomes:**
+   - Severity transitions (CRITICAL → MEDIUM)
+   - Recommendation priority changes
+   - Correct attribution of gap closure
+
+#### Gap Scenario Template
+
+```yaml
+scenario_id: "GAP-001"
+scenario_name: "STDP Learning Gap Closure"
+
+pass_1:
+  papers: ["NEURO-001", "NEURO-002"]
+  expected_gaps:
+    - requirement: "REQ-B1.4"
+      severity: "CRITICAL"
+      must_be_detected: true
+  expected_non_gaps:
+    - requirement: "REQ-B1.1"
+      reason: "45% coverage exceeds threshold"
+
+pass_2:
+  gap_closing_papers:
+    - paper: "NEURO-003"
+      closes: ["REQ-B1.4"]
+      expected_contribution: 60
+  decoy_papers:
+    - paper: "CLIMATE-001"
+      should_not_close: ["REQ-B1.4"]
+      reason: "Wrong domain"
+
+expected_outcome:
+  REQ-B1.4:
+    severity_after: "MEDIUM"
+    recommendation_priority: "decreased"
+```
+
+### Decoy Paper Annotation
+
+For 5+ papers, document why they should NOT contribute to specific gaps:
+
+| Paper | Looks Relevant Because | Actually Not Relevant Because | If Contributes |
+|-------|----------------------|------------------------------|----------------|
+| CLIMATE-001 | Contains "energy efficiency" | Climate context, not hardware | ERROR |
+| NEURO-004 | Neuromorphic domain | Addresses inference, not learning | ERROR |
+| QUANTUM-003 | Mentions spike timing | Quantum context | ERROR |
 
 ---
 
@@ -572,6 +731,8 @@ Each paper gets its own annotation file:
 | **High confidence** | 150+ | Verdict confidence = high |
 | **Low confidence** | 50+ | Uncertainty handling |
 | **Edge cases** | 40+ | Boundary condition testing |
+| **Non-extraction items** | 50+ (NEW) | False positive prevention |
+| **Decoy paper annotations** | 5+ papers (NEW) | Gap false positive testing |
 
 ---
 
@@ -579,17 +740,17 @@ Each paper gets its own annotation file:
 
 Each domain should have approximately equal representation:
 
-| Domain | Papers | Claims | Gaps | Recommendations |
-|--------|--------|--------|------|-----------------|
-| Neuromorphic | 10 | 50-80 | 20+ | 10+ |
-| Quantum | 10 | 50-80 | 20+ | 10+ |
-| Microbiology | 10 | 50-80 | 20+ | 10+ |
-| Fusion | 10 | 50-80 | 20+ | 10+ |
-| Nanoparticle Heat | 10 | 50-80 | 20+ | 10+ |
-| Climate | 10 | 50-80 | 20+ | 10+ |
-| Materials | 10 | 50-80 | 20+ | 10+ |
-| Biomedical Imaging | 10 | 50-80 | 20+ | 10+ |
-| **Total** | **80** | **400-640** | **160+** | **80+** |
+| Domain | Papers | Standard Claims | Anchor Claims | Gaps | Recommendations |
+|--------|--------|-----------------|---------------|------|-----------------|
+| Neuromorphic | 10 | 40-64 | 30-60 (2 anchors) | 20+ | 10+ |
+| Quantum | 10 | 45-72 | 15-30 (1 anchor) | 20+ | 10+ |
+| Microbiology | 10 | 45-72 | 15-30 (1 anchor) | 20+ | 10+ |
+| Fusion | 10 | 50-80 | 0 | 20+ | 10+ |
+| Nanoparticle Heat | 10 | 50-80 | 0 | 20+ | 10+ |
+| Climate | 10 | 45-72 | 15-30 (1 anchor) | 20+ | 10+ |
+| Materials | 10 | 50-80 | 0 | 20+ | 10+ |
+| Biomedical Imaging | 10 | 50-80 | 0 | 20+ | 10+ |
+| **Total** | **80** | **375-600** | **75-150** | **160+** | **80+** |
 
 ---
 
@@ -599,24 +760,41 @@ Each domain should have approximately equal representation:
 1. Create `annotate_paper.py` script
 2. Create ANNOTATION_GUIDELINES.md
 3. Set up annotations directory structure
+4. Import anchor paper schema from VM-W1.5-0
 
-### Phase 2: Pilot Annotation (4 hours)
-1. Annotate 5 papers (1 from each high-priority domain)
-2. Validate schema compatibility
-3. Refine guidelines based on experience
-4. Calculate initial inter-annotator agreement
+### Phase 2: Anchor Paper Exhaustive Annotation (6 hours) - NEW
+1. Select 5-10 anchor papers per VM-W1.5-0 criteria
+2. Perform exhaustive annotation with two annotators
+3. Reconcile and calculate inter-rater agreement (target: κ ≥ 0.7)
+4. Classify all claims by extractability (HIGH/MEDIUM/LOW/IRRELEVANT)
+5. Document non-extraction items (5-15 per anchor paper)
 
-### Phase 3: Full Annotation (12 hours)
-1. Annotate remaining 75 papers
+### Phase 3: Standard Paper Annotation (10 hours)
+1. Annotate remaining 70+ papers (5-8 claims each)
 2. Target 6 claims per paper average
 3. Ensure category balance (approved/rejected/borderline)
 4. Regular validation checkpoints
 
-### Phase 4: Merge & Validate (2 hours)
+### Phase 4: Gap Scenario Design (4 hours) - NEW
+1. Design 3+ controlled gap scenarios
+2. Define Pass 1 initial states with expected gaps/non-gaps
+3. Identify gap-closing papers for Pass 2
+4. Annotate 5+ decoy papers that should NOT close gaps
+5. Document expected outcomes for each scenario
+
+### Phase 5: Merge & Validate (4 hours)
 1. Run `annotate_paper.py merge`
-2. Validate merged dataset against schema
-3. Generate annotation quality report
-4. Update paper registry with annotation status
+2. Merge anchor papers with standard annotations
+3. Validate merged dataset against schema
+4. Validate gap scenarios are complete
+5. Generate annotation quality report
+6. Update paper registry with annotation status
+
+### Phase 6: Validation Coverage Verification (2 hours) - NEW
+1. Verify all validation IDs have ground truth coverage
+2. Confirm negative case coverage for precision tests
+3. Validate iterative scenarios are testable
+4. Document any remaining validation gaps
 
 ---
 
