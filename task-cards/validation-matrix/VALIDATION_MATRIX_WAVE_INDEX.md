@@ -2,8 +2,8 @@
 
 **Created:** December 31, 2025  
 **Source:** Third-Party Assessment & Internal Review  
-**Total Tasks:** 25 (8 Waves) *(updated: added Wave 0.5, Wave 1.5, and Wave 2.5)*  
-**Total Effort:** 214 hours base *(+26h for Wave 0.5, +40h for Wave 1.5 enhanced, +24h for Wave 2.5, +4h for Wave 4 VI-*)*  
+**Total Tasks:** 26 (8 Waves) *(updated: added Wave 0.5, Wave 1.5, and Wave 2.5)*  
+**Total Effort:** 214 hours base *(+26h for Wave 0.5, +46h for Wave 1.5 enhanced, +24h for Wave 2.5, +4h for Wave 4 VI-*)*  
 **Timeline:** 14-16 weeks
 
 ---
@@ -18,6 +18,7 @@
 | 2025-12-31 | Added Wave 0.5 (MT-*, DF-*, MC-*); modularization infrastructure | Third-party modularization assessment |
 | 2026-01-10 | Added Wave 1.5 (Paper Sourcing, Annotation); cross-domain validation | Golden dataset enhancement |
 | 2026-01-12 | Added VM-W1.5-0 (Ground Truth Design); bi-directional validation | Golden dataset strategy assessment |
+| 2026-01-13 | Added VM-W1.5-3 (Gap Scenario Execution); FP-02/FP-03/ITER-01 metrics | Third-party gap closure |
 
 ---
 
@@ -67,6 +68,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 │ VM-W1.5-1: Paper Sourcing         (✅ Complete)          │
 │ VM-W1.5-1B: Paper Population      (80+ papers)           │
 │ VM-W1.5-2: Paper Annotation       (Enhanced)             │
+│ VM-W1.5-3: Gap Scenario Execution (NEW - FP/ITER tests)  │
 └───────────────────────────────────────────────────────────┘
                     │ (Week 5-6)
                     ▼
@@ -355,7 +357,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 - **Priority:** HIGH
 - **Status:** Not Started
 - **Dependencies:** VM-W1-4, **VM-W1.5-0**, VM-W1.5-1, VM-W1.5-1B
-- **Validation IDs:** QB-01→05, **FP-01, GAP-NEG, ITER-01** (real data + negative cases)
+- **Validation IDs:** QB-01→05, **FP-01, GAP-NEG** (real data + negative cases)
 - **Deliverables:**
   - **5-10 anchor papers with exhaustive claim inventories (75-150 claims)**
   - 350-560 annotated claims from standard papers
@@ -367,6 +369,23 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
   - `annotate_paper.py` annotation workflow
   - `ANNOTATION_GUIDELINES.md` consistency guide
   - Merged golden dataset v2.0 with real + synthetic claims
+
+### VM-W1.5-3: Gap Scenario Execution Framework *(NEW)*
+- **File:** `VM_WAVE_1.5_3_GAP_SCENARIO_EXECUTION.md`
+- **Effort:** 6 hours
+- **Priority:** HIGH
+- **Status:** Not Started
+- **Dependencies:** VM-W1.5-0, VM-W1.5-2
+- **Validation IDs:** **FP-02, FP-03, GAP-NEG, ITER-01** (gap scenario execution)
+- **Deliverables:**
+  - `tests/validation/gap_scenarios/executor.py` - GapScenarioExecutor class
+  - `tests/validation/gap_scenarios/state_manager.py` - DatabaseStateManager
+  - `tests/validation/gap_scenarios/test_scenarios.py` - pytest test suite
+  - 3+ gap scenario JSON definitions (GAP-001, GAP-002, GAP-003)
+  - FP-02 metric: Gap detection false positive rate (0%)
+  - FP-03 metric: Decoy paper contribution rate (0%)
+  - GAP-NEG metric: Non-gap accuracy (100%)
+  - ITER-01 metric: Iterative gap closure accuracy (≥95%)
 
 ---
 
