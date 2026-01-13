@@ -47,6 +47,37 @@ This task uses a **hybrid approach** combining:
 - **Decoy Papers:** 5+ papers that should NOT contribute to gaps
 - **Recommendation Samples:** 80+ (1+ per paper)
 
+### Sampling-Based Dual Annotation for Standard Papers (NEW)
+
+> **Statistical Assurance Without 2x Effort**
+>
+> While anchor papers receive full two-annotator exhaustive annotation, standard papers
+> use single-annotator workflow for efficiency. To ensure single-annotator reliability,
+> we implement **sampling-based dual annotation**.
+
+**Protocol:**
+1. Randomly select **20% of standard papers** (14+ papers) for dual annotation
+2. Both annotators independently annotate the sampled papers
+3. Calculate Cohen's κ across sampled papers
+4. **Quality Gate:** If κ < 0.7, pause and retrain/recalibrate annotators
+5. If κ ≥ 0.7, proceed with confidence that single-annotator claims are reliable
+
+**Sampling Criteria:**
+- At least 2 papers per domain in sample
+- Mix of high/low claim density papers
+- Random selection within domain strata
+
+**Agreement Tracking:**
+
+| Metric | Target | Action if Failed |
+|--------|--------|------------------|
+| Verdict Agreement | κ ≥ 0.7 | Retrain on disagreement patterns |
+| Pillar Mapping Agreement | κ ≥ 0.6 | Clarify mapping guidelines |
+| Evidence Score Agreement | ICC ≥ 0.8 | Calibrate scoring rubric |
+
+This provides statistical assurance that single-annotator claims are reliable while
+avoiding the 2x effort of dual-annotating all 70+ standard papers.
+
 ---
 
 ## Success Criteria
@@ -70,6 +101,13 @@ This task uses a **hybrid approach** combining:
 - [ ] 5+ decoy papers identified and annotated
 - [ ] Pass 1 and Pass 2 states defined for iterative scenarios
 - [ ] Expected severity changes documented for gap scenarios
+
+### Sampling-Based Dual Annotation Metrics (NEW)
+- [ ] 20% of standard papers (14+) dual-annotated
+- [ ] At least 2 papers per domain in sample
+- [ ] Verdict agreement κ ≥ 0.7 across sample
+- [ ] Pillar mapping agreement κ ≥ 0.6 across sample
+- [ ] Quality gate passed before proceeding with single-annotator papers
 
 ---
 
