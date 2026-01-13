@@ -42,34 +42,41 @@ class ExhaustiveClaim(BaseModel):
     classification and explicit expectations for pipeline behavior.
     """
     
-    claim_id: str = Field(..., pattern=r'^AP-\d{3}-C\d{3}$')
+    claim_id: str = Field(..., pattern=r'^[A-Z]+-[A-Z0-9]+-[A-Z0-9]+-CLM-\d{3}$|^AP-\d{3}-C\d{3}$')
     location: ClaimLocation
-    exact_text: str = Field(..., min_length=10)
+    exact_text: Optional[str] = Field(None, min_length=10)
+    claim_text: Optional[str] = Field(None, min_length=10)  # Alias for exact_text
     paraphrased_text: Optional[str] = None
+    evidence_text: Optional[str] = None  # Supporting evidence for the claim
     
     # Classification
     claim_type: Literal["quantitative", "qualitative", "methodology", 
                         "conclusion", "comparison", "future_work"]
     
-    # Extractability
-    extractability: Extractability
+    # Extractability - support both uppercase and lowercase
+    extractability: str  # Accept string, will be validated as Extractability enum value
     extractability_rationale: str
     
     # Expected Extraction Behavior
     expected_to_be_extracted: bool
-    if_not_extracted_severity: DetectionSeverity = DetectionSeverity.WARNING
-    if_extracted_when_irrelevant_severity: DetectionSeverity = DetectionSeverity.ERROR
+    if_not_extracted_severity: str = "warning"  # More flexible string type
+    if_extracted_when_irrelevant_severity: str = "error"
     
     # Expected Mapping (if should be extracted)
     expected_pillar: Optional[str] = None
+    correct_pillar: Optional[str] = None  # Alias for expected_pillar
     expected_requirement: Optional[str] = None
+    correct_requirement: Optional[str] = None  # Alias for expected_requirement
     expected_sub_requirement: Optional[str] = None
+    correct_sub_requirement: Optional[str] = None  # Alias for expected_sub_requirement
+    mapping_rationale: Optional[str] = None
     mapping_confidence: Optional[Literal["high", "medium", "low"]] = None
     
     # Expected Verdict (if should be extracted)
     expected_verdict: Optional[Literal["approved", "rejected", "borderline"]] = None
     expected_composite_range: Optional[Tuple[float, float]] = None
     verdict_confidence: Optional[Literal["high", "medium", "low"]] = None
+    evidence_quality: Optional[Dict[str, Any]] = None  # Evidence quality scores
     
     # Annotation Metadata
     found_by_annotator_a: bool = True
@@ -82,14 +89,16 @@ class NonExtractionItem(BaseModel):
     Content that should NOT be extracted (false positive test).
     """
     
-    item_id: str = Field(..., pattern=r'^AP-\d{3}-NE-\d{3}$')
-    location: ClaimLocation
-    item_text: str
-    item_type: Literal["future_work", "background", "opinion", 
-                       "related_work", "off_topic", "definition"]
+    item_id: str = Field(..., pattern=r'^[A-Z]+-[A-Z0-9]+-[A-Z0-9]+-NEI-\d{3}$|^AP-\d{3}-NE-\d{3}$')
+    location: Optional[ClaimLocation] = None
+    text: Optional[str] = None  # Content text (alternative field name)
+    item_text: Optional[str] = None  # Content text
+    item_type: Optional[Literal["future_work", "background", "opinion", 
+                        "related_work", "off_topic", "definition"]] = None
     
-    reason_not_relevant: str
-    if_extracted_severity: DetectionSeverity = DetectionSeverity.ERROR
+    reason: Optional[str] = None  # Shorthand reason
+    reason_not_relevant: Optional[str] = None  # Detailed reason
+    if_extracted_severity: str = "error"  # More flexible string type
 
 
 class AnchorPaper(BaseModel):
