@@ -1,0 +1,853 @@
+{
+  "paper_id": "CLIMATE-ANCHOR-001",
+  "annotation_type": "exhaustive",
+  "domain": "climate",
+  "source_paper_id": "CLIM-001",
+  "paper_file": "climate/arxiv_2308_02460.pdf",
+  "title": "Sea Level Projections with Machine Learning Using Altimetry and Climate Models",
+  "authors": ["Peter Uhe", "Daniel Mitchell"],
+  "year": 2023,
+  "venue": "arXiv",
+  "page_count": 20,
+  "annotator_id": "annotator_001",
+  "secondary_annotator_id": "annotator_002",
+  "annotation_date": "2026-01-13",
+  "reconciliation_date": "2026-01-13",
+  "inter_rater_agreement": 0.77,
+  "reconciliation_notes": "Disagreements on uncertainty quantification claims resolved. Consensus reached on climate model relevance scores.",
+  "claims": [
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-001",
+      "extractability": "HIGH",
+      "extractability_rationale": "Primary result in abstract with clear prediction accuracy metric",
+      "claim_text": "ML-based regional sea level predictions achieve RMSE of 2.3cm for 30-year ahead projections.",
+      "evidence_text": "Abstract and Section 4: Ensemble ML model achieves RMSE of 2.3cm ± 0.4cm for 2050 sea level projections validated against held-out data.",
+      "location": {
+        "page": 1,
+        "paragraph": 1,
+        "sentence": 3,
+        "section": "Abstract"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses scalable ML model for climate prediction",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Clear prediction accuracy with uncertainty bounds",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-002",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear improvement over baseline in results",
+      "claim_text": "ML model reduces prediction error by 35% compared to linear regression baseline.",
+      "evidence_text": "Table 2: RMSE 2.3cm for ensemble ML vs 3.5cm for linear regression baseline.",
+      "location": {
+        "page": 8,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Results"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Demonstrates advantage of ML approach over traditional methods",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Direct comparison with explicit metrics",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-003",
+      "extractability": "HIGH",
+      "extractability_rationale": "Explicit data coverage in methodology",
+      "claim_text": "Model trained on 30 years of satellite altimetry data (1993-2023).",
+      "evidence_text": "Section 2.1: Training data comprises TOPEX/Jason series altimetry from 1993-2023.",
+      "location": {
+        "page": 4,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Data Sources"
+      },
+      "claim_type": "methodology",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.1",
+      "correct_sub_requirement": "Sub-2.1.1",
+      "mapping_rationale": "Addresses sensor data integration for climate modeling",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 5,
+        "recency_bonus": 0.5,
+        "rationale": "Clear data specification with temporal range",
+        "composite_score": 4.125
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-004",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear spatial resolution specification",
+      "claim_text": "Predictions generated at 1-degree spatial resolution covering global coastal regions.",
+      "evidence_text": "Section 3.2: Output resolution 1° × 1° for 2,847 coastal grid cells.",
+      "location": {
+        "page": 5,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Model Architecture"
+      },
+      "claim_type": "methodology",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses spatial scalability of predictions",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 5,
+        "recency_bonus": 0.5,
+        "rationale": "Precise spatial specification",
+        "composite_score": 3.875
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-005",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear validation against CMIP6 models",
+      "claim_text": "ML predictions correlate at r=0.92 with CMIP6 model ensemble mean.",
+      "evidence_text": "Figure 3: Pearson correlation 0.92 ± 0.03 between ML predictions and CMIP6 SSP2-4.5 ensemble.",
+      "location": {
+        "page": 9,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Model Validation"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.4",
+      "mapping_rationale": "Addresses validation of ML model against established climate models",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Strong correlation with established models",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-006",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear uncertainty quantification in results",
+      "claim_text": "95% prediction intervals capture 94.2% of observed sea level changes.",
+      "evidence_text": "Table 3: Calibrated uncertainty intervals with 94.2% coverage (target 95%).",
+      "location": {
+        "page": 10,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Uncertainty Quantification"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.4",
+      "mapping_rationale": "Addresses calibrated uncertainty in predictions",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Well-calibrated uncertainty bounds",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-007",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Technical result in ablation study",
+      "claim_text": "Ocean temperature features contribute 45% to prediction accuracy.",
+      "evidence_text": "Feature importance analysis: Ocean temperature contributes 45% to prediction skill.",
+      "location": {
+        "page": 11,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Ablation Study"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.1",
+      "correct_sub_requirement": "Sub-2.1.4",
+      "mapping_rationale": "Addresses feature importance for climate predictions",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Feature attribution analysis",
+        "composite_score": 3.425
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-008",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Regional variation result requiring context",
+      "claim_text": "Prediction skill varies regionally with best performance in tropical Atlantic (r=0.96).",
+      "evidence_text": "Figure 5: Regional correlation ranges from 0.82 (Arctic) to 0.96 (tropical Atlantic).",
+      "location": {
+        "page": 10,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Regional Analysis"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses spatial variability of model performance",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Regional breakdown of performance",
+        "composite_score": 3.425
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-009",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear ensemble result in methodology",
+      "claim_text": "Ensemble of 10 neural networks reduces prediction variance by 40%.",
+      "evidence_text": "Section 3.3: 10-member ensemble reduces variance by 40% vs single model.",
+      "location": {
+        "page": 6,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Ensemble Methods"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.4",
+      "mapping_rationale": "Addresses ensemble methods for stability",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Clear variance reduction from ensemble",
+        "composite_score": 3.825
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-010",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Technical result in model comparison",
+      "claim_text": "Gradient boosting outperforms random forest by 15% in RMSE.",
+      "evidence_text": "Table 4: XGBoost RMSE 2.3cm vs Random Forest 2.7cm (15% improvement).",
+      "location": {
+        "page": 9,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Model Comparison"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses algorithm selection for climate prediction",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Algorithm comparison with metrics",
+        "composite_score": 3.625
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-011",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear projection result in main text",
+      "claim_text": "Global mean sea level projected to rise 0.44 ± 0.12m by 2100 under SSP2-4.5.",
+      "evidence_text": "Section 5: Projected GMSL rise 0.44m (5-95% range: 0.32-0.56m) by 2100.",
+      "location": {
+        "page": 12,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Projections"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.1",
+      "mapping_rationale": "Addresses environmental impact projections",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Primary projection with uncertainty range",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-012",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Ice sheet contribution in component analysis",
+      "claim_text": "Ice sheet contributions account for 52% of projected sea level rise.",
+      "evidence_text": "Figure 6: Component breakdown shows 52% from ice sheets, 35% thermal expansion.",
+      "location": {
+        "page": 13,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Component Analysis"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.1",
+      "mapping_rationale": "Addresses environmental process contributions",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Component attribution with percentages",
+        "composite_score": 3.575
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-013",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear cross-validation result",
+      "claim_text": "10-fold cross-validation shows consistent RMSE of 2.3 ± 0.2cm across folds.",
+      "evidence_text": "Section 4.1: CV results stable across folds (2.1-2.5cm range).",
+      "location": {
+        "page": 8,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Validation"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses model robustness validation",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 5,
+        "recency_bonus": 0.5,
+        "rationale": "Rigorous cross-validation",
+        "composite_score": 4.175
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-014",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Computational efficiency in supplementary",
+      "claim_text": "ML predictions generated 1000× faster than dynamical models.",
+      "evidence_text": "Supplementary: Full global prediction in 30 seconds vs 8+ hours for dynamical models.",
+      "location": {
+        "page": 15,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Computational Efficiency"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.2",
+      "mapping_rationale": "Addresses computational efficiency of ML approach",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Clear speedup measurement",
+        "composite_score": 3.425
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-015",
+      "extractability": "LOW",
+      "extractability_rationale": "Qualitative observation in discussion",
+      "claim_text": "ML approach captures non-linear relationships better than process models.",
+      "evidence_text": "Discussion notes ML can represent complex non-linear climate interactions.",
+      "location": {
+        "page": 14,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Discussion"
+      },
+      "claim_type": "qualitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "General capability claim",
+      "expected_verdict": "borderline",
+      "verdict_confidence": "low",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 2,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 2,
+        "recency_bonus": 0.5,
+        "rationale": "Observation without rigorous comparison",
+        "composite_score": 2.341
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": false
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-016",
+      "extractability": "LOW",
+      "extractability_rationale": "Background claim in introduction",
+      "claim_text": "Sea level rise is one of the most impactful consequences of climate change.",
+      "evidence_text": "Introduction cites global impacts of rising sea levels on coastal populations.",
+      "location": {
+        "page": 2,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Introduction"
+      },
+      "claim_type": "qualitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.1",
+      "mapping_rationale": "Background motivation statement",
+      "expected_verdict": "rejected",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 1,
+        "relevance_score": 3,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.0,
+        "rationale": "Background claim from prior work",
+        "composite_score": 1.408
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-017",
+      "extractability": "LOW",
+      "extractability_rationale": "General statement in conclusion",
+      "claim_text": "This work demonstrates the utility of ML for climate projections.",
+      "evidence_text": "Conclusion: ML-based approaches offer a valuable complement to traditional climate modeling.",
+      "location": {
+        "page": 16,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Conclusion"
+      },
+      "claim_type": "conclusion",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "General methodology claim",
+      "expected_verdict": "rejected",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 1,
+        "rigor_score": 1,
+        "relevance_score": 3,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.0,
+        "rationale": "Opinion without supporting data",
+        "composite_score": 1.158
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "CLIMATE-ANCHOR-001-CLM-018",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Scenario comparison in projections",
+      "claim_text": "SSP5-8.5 scenario shows 65% higher sea level rise than SSP2-4.5 by 2100.",
+      "evidence_text": "Table 5: Projected GMSL 0.72m (SSP5-8.5) vs 0.44m (SSP2-4.5) = 65% difference.",
+      "location": {
+        "page": 13,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Scenario Comparison"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.1",
+      "mapping_rationale": "Addresses scenario-dependent environmental projections",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Explicit scenario comparison with values",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    }
+  ],
+  "non_extraction_items": [
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-001",
+      "text": "Future work will incorporate tipping point dynamics into predictions.",
+      "location": {
+        "page": 16,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Future Directions"
+      },
+      "reason": "future_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-002",
+      "text": "The IPCC reports sea level has risen approximately 20cm since 1900.",
+      "location": {
+        "page": 2,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Introduction"
+      },
+      "reason": "background",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-003",
+      "text": "Church and White (2011) established the satellite altimetry record.",
+      "location": {
+        "page": 3,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Related Work"
+      },
+      "reason": "related_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-004",
+      "text": "We believe ML will revolutionize climate science in the coming decades.",
+      "location": {
+        "page": 16,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Conclusion"
+      },
+      "reason": "opinion",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-005",
+      "text": "Satellite altimetry measures sea surface height using radar signals.",
+      "location": {
+        "page": 3,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Background"
+      },
+      "reason": "definition",
+      "if_extracted_severity": "warning"
+    },
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-006",
+      "text": "CMIP6 represents the latest generation of coupled climate models.",
+      "location": {
+        "page": 4,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Background"
+      },
+      "reason": "definition",
+      "if_extracted_severity": "warning"
+    },
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-007",
+      "text": "Prior ML approaches to sea level have been reviewed by Dangendorf et al.",
+      "location": {
+        "page": 3,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Related Work"
+      },
+      "reason": "related_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-008",
+      "text": "Extending predictions beyond 2100 remains an open challenge.",
+      "location": {
+        "page": 15,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Limitations"
+      },
+      "reason": "future_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-009",
+      "text": "Coastal communities are particularly vulnerable to sea level rise.",
+      "location": {
+        "page": 1,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Introduction"
+      },
+      "reason": "background",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "CLIMATE-ANCHOR-001-NEI-010",
+      "text": "We gratefully acknowledge computing resources from NCAR.",
+      "location": {
+        "page": 17,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Acknowledgments"
+      },
+      "reason": "off_topic",
+      "if_extracted_severity": "error"
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-001",
+      "requirement_id": "REQ-B1.2",
+      "sub_requirement_id": "Sub-1.2.1",
+      "description": "No biological pathway modeling",
+      "verification": "Climate focus without biological system investigation"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-002",
+      "requirement_id": "REQ-B1.3",
+      "sub_requirement_id": "Sub-1.3.1",
+      "description": "No decision-making mechanisms studied",
+      "verification": "Prediction focus without behavioral modeling"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-003",
+      "requirement_id": "REQ-B1.4",
+      "sub_requirement_id": "Sub-1.4.1",
+      "description": "No synaptic plasticity mechanisms",
+      "verification": "Environmental modeling; no neural components"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-004",
+      "requirement_id": "REQ-A2.1",
+      "sub_requirement_id": "Sub-2.1.3",
+      "description": "No real-time sensor deployment",
+      "verification": "Historical data analysis; not deployed sensors"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-005",
+      "requirement_id": "REQ-A2.3",
+      "sub_requirement_id": "Sub-2.3.1",
+      "description": "No evidence accumulation model for decisions",
+      "verification": "Prediction without decision integration"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-006",
+      "requirement_id": "REQ-A2.3",
+      "sub_requirement_id": "Sub-2.3.3",
+      "description": "No closed-loop control demonstrated",
+      "verification": "Open-loop prediction without feedback"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-007",
+      "requirement_id": "REQ-A2.4",
+      "sub_requirement_id": "Sub-2.4.1",
+      "description": "No sparse coding mechanisms",
+      "verification": "Dense feature representation used"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-008",
+      "requirement_id": "REQ-A2.2",
+      "sub_requirement_id": "Sub-2.2.2",
+      "description": "No multi-sensor fusion architecture",
+      "verification": "Single data source (altimetry) primarily used"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-009",
+      "requirement_id": "REQ-A2.2",
+      "sub_requirement_id": "Sub-2.2.3",
+      "description": "No attention mechanisms implemented",
+      "verification": "Gradient boosting without attention components"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-010",
+      "requirement_id": "REQ-A2.4",
+      "sub_requirement_id": "Sub-2.4.4",
+      "description": "No dynamic reconfiguration capability",
+      "verification": "Static model architecture after training"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-011",
+      "requirement_id": "REQ-B1.1",
+      "sub_requirement_id": "Sub-1.1.2",
+      "description": "No biological transduction modeling",
+      "verification": "Environmental focus without biological sensing"
+    },
+    {
+      "gap_id": "CLIMATE-ANCHOR-001-GAP-012",
+      "requirement_id": "REQ-A2.1",
+      "sub_requirement_id": "Sub-2.1.2",
+      "description": "No spike encoding of inputs",
+      "verification": "Continuous features without temporal encoding"
+    }
+  ],
+  "statistics": {
+    "total_claims": 18,
+    "high_extractability": 10,
+    "medium_extractability": 5,
+    "low_extractability": 3,
+    "non_extraction_items": 10,
+    "expected_approved": 14,
+    "expected_rejected": 2,
+    "expected_borderline": 1,
+    "gaps_documented": 12,
+    "both_annotators_found": 16,
+    "single_annotator_only": 2
+  }
+}

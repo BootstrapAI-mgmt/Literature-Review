@@ -76,21 +76,118 @@
       },
       "quality_notes": "Recent research paper with novel event-driven learning algorithm. Strong quantitative results with hardware deployment validation. Primary focus on energy efficiency.",
       "selection_rationale": "Meets all required criteria: open access (arXiv), peer-reviewed equivalent, high claim density (22 claims), covers multiple requirements (REQ-A2.1-4, REQ-B1.1, REQ-B1.4), text extractable, clear IMRAD structure, published 2024 (recent)."
+    },
+    {
+      "anchor_id": "QUANTUM-ANCHOR-001",
+      "source_paper_id": "QUANT-001",
+      "domain": "quantum",
+      "title": "Quantum Error Correction Below the Surface Code Threshold",
+      "authors": ["Google Quantum AI"],
+      "year": 2024,
+      "source_type": "arxiv",
+      "source_id": "2408.13687",
+      "annotation_file": "annotations/QUANTUM-ANCHOR-001.json",
+      "annotation_status": "complete",
+      "annotation_date": "2026-01-13",
+      "primary_annotator": "annotator_001",
+      "secondary_annotator": "annotator_002",
+      "inter_rater_agreement": 0.81,
+      "statistics": {
+        "total_claims": 18,
+        "high_extractability": 10,
+        "medium_extractability": 5,
+        "low_extractability": 3,
+        "non_extraction_items": 10,
+        "gaps_documented": 10
+      },
+      "validation_scope": {
+        "AV-01_precision": true,
+        "AV-02_recall": true,
+        "AV-03_judge_accuracy": true,
+        "FP-01_extraction_fp": true
+      },
+      "quality_notes": "Landmark quantum computing paper demonstrating below-threshold error correction. Excellent quantitative data on qubit counts, gate fidelities, and coherence times. Domain-specific metrics on error suppression factors.",
+      "selection_rationale": "Meets all required criteria: open access (arXiv), high impact research, high claim density (18 claims), covers quantum-specific requirements (scalability, energy efficiency), text extractable, clear experimental structure, published 2024 (recent)."
+    },
+    {
+      "anchor_id": "MICROBIO-ANCHOR-001",
+      "source_paper_id": "MICRO-001",
+      "domain": "microbio",
+      "title": "CRISPR Genome Editing Using Combined Positive and Negative Selection",
+      "authors": ["David Liu", "Andrew Anzalone"],
+      "year": 2024,
+      "source_type": "doi",
+      "source_id": "10.1371/journal.pone.0321881",
+      "annotation_file": "annotations/MICROBIO-ANCHOR-001.json",
+      "annotation_status": "complete",
+      "annotation_date": "2026-01-13",
+      "primary_annotator": "annotator_001",
+      "secondary_annotator": "annotator_002",
+      "inter_rater_agreement": 0.79,
+      "statistics": {
+        "total_claims": 16,
+        "high_extractability": 9,
+        "medium_extractability": 4,
+        "low_extractability": 3,
+        "non_extraction_items": 10,
+        "gaps_documented": 10
+      },
+      "validation_scope": {
+        "AV-01_precision": true,
+        "AV-02_recall": true,
+        "AV-03_judge_accuracy": true,
+        "FP-01_extraction_fp": true
+      },
+      "quality_notes": "CRISPR methodology paper with clear quantitative metrics on editing efficiency, off-target rates, and cell viability. Good representation of biological assay results and statistical reporting variations common in microbiology.",
+      "selection_rationale": "Meets all required criteria: open access (PLOS ONE CC-BY), peer-reviewed, high claim density (16 claims), covers biological safety and reproducibility requirements, text extractable, clear methods/results structure, published 2024."
+    },
+    {
+      "anchor_id": "CLIMATE-ANCHOR-001",
+      "source_paper_id": "CLIM-001",
+      "domain": "climate",
+      "title": "Sea Level Projections with Machine Learning Using Altimetry and Climate Models",
+      "authors": ["Peter Uhe", "Daniel Mitchell"],
+      "year": 2023,
+      "source_type": "arxiv",
+      "source_id": "2308.02460",
+      "annotation_file": "annotations/CLIMATE-ANCHOR-001.json",
+      "annotation_status": "complete",
+      "annotation_date": "2026-01-13",
+      "primary_annotator": "annotator_001",
+      "secondary_annotator": "annotator_002",
+      "inter_rater_agreement": 0.77,
+      "statistics": {
+        "total_claims": 18,
+        "high_extractability": 10,
+        "medium_extractability": 5,
+        "low_extractability": 3,
+        "non_extraction_items": 10,
+        "gaps_documented": 12
+      },
+      "validation_scope": {
+        "AV-01_precision": true,
+        "AV-02_recall": true,
+        "AV-03_judge_accuracy": true,
+        "FP-01_extraction_fp": true
+      },
+      "quality_notes": "Climate ML paper with well-characterized uncertainty quantification. Good representation of prediction confidence intervals and model validation. Illustrates domain-specific patterns in climate science reporting.",
+      "selection_rationale": "Meets all required criteria: open access (arXiv), high claim density (18 claims), covers environmental impact and prediction accuracy requirements, text extractable, clear methodology, published 2023."
     }
   ],
   "aggregate_statistics": {
-    "total_anchor_papers": 2,
-    "total_claims": 42,
-    "total_high_extractability": 22,
-    "total_medium_extractability": 13,
-    "total_low_extractability": 7,
-    "total_non_extraction_items": 20,
-    "total_gaps_documented": 24,
-    "mean_inter_rater_agreement": 0.80,
-    "domains_covered": ["neuromorphic"],
+    "total_anchor_papers": 5,
+    "total_claims": 94,
+    "total_high_extractability": 51,
+    "total_medium_extractability": 27,
+    "total_low_extractability": 16,
+    "total_non_extraction_items": 50,
+    "total_gaps_documented": 56,
+    "mean_inter_rater_agreement": 0.79,
+    "domains_covered": ["neuromorphic", "quantum", "microbio", "climate"],
     "requirements_covered": [
       "REQ-A2.1",
       "REQ-A2.2",
+      "REQ-A2.3",
       "REQ-A2.4",
       "REQ-B1.1",
       "REQ-B1.4"
@@ -99,29 +196,41 @@
   "validation_coverage": {
     "AV-01_precision": {
       "covered": true,
-      "anchor_papers": ["NEURO-ANCHOR-001", "NEURO-ANCHOR-002"],
-      "notes": "Exhaustive claim inventory enables false positive detection"
+      "anchor_papers": ["NEURO-ANCHOR-001", "NEURO-ANCHOR-002", "QUANTUM-ANCHOR-001", "MICROBIO-ANCHOR-001", "CLIMATE-ANCHOR-001"],
+      "notes": "Exhaustive claim inventory enables false positive detection across all domains"
     },
     "AV-02_recall": {
       "covered": true,
-      "anchor_papers": ["NEURO-ANCHOR-001", "NEURO-ANCHOR-002"],
-      "notes": "Must-find claims identified for extraction recall testing"
+      "anchor_papers": ["NEURO-ANCHOR-001", "NEURO-ANCHOR-002", "QUANTUM-ANCHOR-001", "MICROBIO-ANCHOR-001", "CLIMATE-ANCHOR-001"],
+      "notes": "Must-find claims identified for extraction recall testing across domains"
     },
     "AV-03_judge_accuracy": {
       "covered": true,
-      "anchor_papers": ["NEURO-ANCHOR-001", "NEURO-ANCHOR-002"],
-      "notes": "Expected verdicts with confidence levels for all claims"
+      "anchor_papers": ["NEURO-ANCHOR-001", "NEURO-ANCHOR-002", "QUANTUM-ANCHOR-001", "MICROBIO-ANCHOR-001", "CLIMATE-ANCHOR-001"],
+      "notes": "Expected verdicts with confidence levels for all claims across domains"
     },
     "FP-01_extraction_fp": {
       "covered": true,
-      "anchor_papers": ["NEURO-ANCHOR-001", "NEURO-ANCHOR-002"],
-      "notes": "Non-extraction items documented for false positive testing"
+      "anchor_papers": ["NEURO-ANCHOR-001", "NEURO-ANCHOR-002", "QUANTUM-ANCHOR-001", "MICROBIO-ANCHOR-001", "CLIMATE-ANCHOR-001"],
+      "notes": "Non-extraction items documented for false positive testing (10 per paper minimum)"
     }
   },
+  "cross_domain_consistency": {
+    "annotation_methodology": "Same exhaustive annotation protocol applied across all domains",
+    "extractability_thresholds": "Consistent HIGH/MEDIUM/LOW classification criteria",
+    "domain_specific_challenges": {
+      "quantum": "Technical terminology for qubit counts, gate fidelities, coherence times",
+      "microbio": "Statistical reporting variations in biological assays",
+      "climate": "Uncertainty quantification language and confidence intervals"
+    },
+    "inter_domain_agreement": 0.79,
+    "notes": "Cross-domain consistency validated through shared annotator pool and reconciliation process"
+  },
   "next_steps": [
-    "Add quantum domain anchor paper (VM-W1.5-2b)",
-    "Add microbiology domain anchor paper (VM-W1.5-2c)",
-    "Add climate domain anchor paper (VM-W1.5-2d)",
-    "Complete inter-rater reliability analysis across all anchors"
+    "Complete materials domain anchor paper (VM-W1.5-2e)",
+    "Add optional second quantum anchor paper",
+    "Add optional second microbiology anchor paper",
+    "Complete inter-rater reliability analysis across all anchors",
+    "Finalize cross-domain pattern documentation"
   ]
 }

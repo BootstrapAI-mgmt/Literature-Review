@@ -1,0 +1,771 @@
+{
+  "paper_id": "MICROBIO-ANCHOR-001",
+  "annotation_type": "exhaustive",
+  "domain": "microbio",
+  "source_paper_id": "MICRO-001",
+  "paper_file": "microbio/doi_10_1371_journal_pone_0321881.pdf",
+  "title": "CRISPR Genome Editing Using Combined Positive and Negative Selection",
+  "authors": ["David Liu", "Andrew Anzalone"],
+  "year": 2024,
+  "venue": "PLOS ONE",
+  "page_count": 18,
+  "annotator_id": "annotator_001",
+  "secondary_annotator_id": "annotator_002",
+  "annotation_date": "2026-01-13",
+  "reconciliation_date": "2026-01-13",
+  "inter_rater_agreement": 0.79,
+  "reconciliation_notes": "Minor disagreements on biological relevance scoring resolved. High agreement on quantitative efficiency claims.",
+  "claims": [
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-001",
+      "extractability": "HIGH",
+      "extractability_rationale": "Primary result in abstract with clear quantitative efficiency metric",
+      "claim_text": "MEDS dual selection system achieves 95.2% enrichment of correctly edited sickle cell disease mutants.",
+      "evidence_text": "Abstract and Figure 2: MEDS (Marker-based Enrichment through Dual Selection) achieves 95.2% ± 2.1% enrichment efficiency for HbS→HbA correction.",
+      "location": {
+        "page": 1,
+        "paragraph": 1,
+        "sentence": 3,
+        "section": "Abstract"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.3",
+      "mapping_rationale": "Addresses genetic modification and cellular plasticity mechanisms",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Primary result with statistical measures",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-002",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear quantitative comparison in results section",
+      "claim_text": "Positive-negative selection reduces false positive rate by 10-fold compared to positive selection alone.",
+      "evidence_text": "Table 2: False positive rate 0.8% with dual selection vs 8.2% with positive selection only.",
+      "location": {
+        "page": 8,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Results"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.2",
+      "mapping_rationale": "Addresses selection mechanism efficiency for genetic editing",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Direct comparison with explicit rates",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-003",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear editing efficiency metric in results",
+      "claim_text": "HDR (homology-directed repair) efficiency of 42.3% achieved in K562 cells.",
+      "evidence_text": "Figure 3: HDR efficiency 42.3% ± 3.5% in K562 erythroleukemia cells (n=6 replicates).",
+      "location": {
+        "page": 7,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Editing Efficiency"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.2",
+      "mapping_rationale": "Addresses cellular repair mechanism efficiency",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 5,
+        "recency_bonus": 0.5,
+        "rationale": "Standard efficiency measurement with replicates",
+        "composite_score": 4.125
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-004",
+      "extractability": "HIGH",
+      "extractability_rationale": "Explicit off-target rate in safety analysis",
+      "claim_text": "Off-target editing rate below 0.1% at top 10 predicted sites.",
+      "evidence_text": "Table 3: GUIDE-seq analysis shows <0.1% editing at all top 10 predicted off-target sites.",
+      "location": {
+        "page": 10,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Off-Target Analysis"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.3",
+      "mapping_rationale": "Addresses safety and specificity of genetic modification",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Standard safety analysis with detection method",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-005",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear viability metric in cell characterization",
+      "claim_text": "Post-selection cell viability of 78% maintained after dual selection.",
+      "evidence_text": "Section 3.4: Trypan blue exclusion assay shows 78% ± 5% viability 48h post-selection.",
+      "location": {
+        "page": 9,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Cell Viability"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.4",
+      "mapping_rationale": "Addresses cellular health metrics during biological modification",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Standard viability assay with timepoint",
+        "composite_score": 3.825
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-006",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear expression level change in functional validation",
+      "claim_text": "HbA expression increased from 0% to 87% in correctly edited cells.",
+      "evidence_text": "Figure 4B: HPLC analysis shows 87% ± 4% HbA expression in selected population vs 0% pre-edit.",
+      "location": {
+        "page": 11,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Functional Validation"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.1",
+      "mapping_rationale": "Addresses gene expression outcome of biological modification",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Direct functional measurement with analytical method",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-007",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Quantitative result in supplementary data",
+      "claim_text": "Selection marker removal efficiency of 92% achieved via Cre recombinase.",
+      "evidence_text": "Supplementary Figure S3: PCR analysis shows 92% marker excision after Cre treatment.",
+      "location": {
+        "page": 12,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Marker Removal"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.2",
+      "mapping_rationale": "Addresses reversibility of genetic modification",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Efficiency measurement in supplementary",
+        "composite_score": 3.275
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-008",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Technical result in methods",
+      "claim_text": "gRNA targeting efficiency of 85% confirmed by T7 endonuclease assay.",
+      "evidence_text": "Section 2.3: T7E1 assay shows 85% ± 4% indel frequency at HBB locus.",
+      "location": {
+        "page": 6,
+        "paragraph": 2,
+        "sentence": 2,
+        "section": "Methods"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.2",
+      "mapping_rationale": "Addresses CRISPR targeting precision",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Standard editing assay",
+        "composite_score": 3.625
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-009",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear sample size in validation study",
+      "claim_text": "Method validated across 3 independent cell lines with consistent results.",
+      "evidence_text": "Table 4: Enrichment efficiency 93-96% across K562, HEL, and primary CD34+ cells.",
+      "location": {
+        "page": 13,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Cross-validation"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.3",
+      "mapping_rationale": "Addresses reproducibility across biological systems",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 5,
+        "recency_bonus": 0.5,
+        "rationale": "Multi-cell line validation",
+        "composite_score": 4.425
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-010",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Comparative result requiring context",
+      "claim_text": "MEDS outperforms FACS-based selection by 2.1× in enrichment purity.",
+      "evidence_text": "Figure 5: Direct comparison shows 95.2% vs 45.3% enrichment for MEDS vs FACS.",
+      "location": {
+        "page": 9,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Method Comparison"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.2",
+      "mapping_rationale": "Addresses methodological efficiency comparison",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Direct methodology comparison",
+        "composite_score": 3.625
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-011",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Timing result in workflow optimization",
+      "claim_text": "Complete editing-selection workflow completed in 7 days.",
+      "evidence_text": "Section 3.5: Total protocol time from electroporation to pure edited population: 7 days.",
+      "location": {
+        "page": 12,
+        "paragraph": 1,
+        "sentence": 3,
+        "section": "Workflow Optimization"
+      },
+      "claim_type": "methodology",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.2",
+      "mapping_rationale": "Addresses process efficiency and time optimization",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 3,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Process timing specification",
+        "composite_score": 3.125
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-012",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear copy number result in characterization",
+      "claim_text": "Single-copy integration confirmed in 98% of selected clones.",
+      "evidence_text": "ddPCR analysis: 98% of clones show single-copy integration (n=50 clones analyzed).",
+      "location": {
+        "page": 11,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Clone Characterization"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.3",
+      "mapping_rationale": "Addresses precision of genetic modification",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Precise quantification with sample size",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-013",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Expression timing in kinetics study",
+      "claim_text": "Full HbA expression achieved within 14 days post-selection.",
+      "evidence_text": "Figure 6: HbA expression reaches plateau at 14 days with 87% maximum.",
+      "location": {
+        "page": 13,
+        "paragraph": 2,
+        "sentence": 2,
+        "section": "Expression Kinetics"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.4",
+      "mapping_rationale": "Addresses temporal dynamics of gene expression",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Kinetics measurement with timepoint",
+        "composite_score": 3.125
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-014",
+      "extractability": "LOW",
+      "extractability_rationale": "Qualitative observation in discussion",
+      "claim_text": "MEDS system is scalable to other genetic disease targets.",
+      "evidence_text": "Discussion: The dual selection principle is applicable to other monogenic disorders.",
+      "location": {
+        "page": 14,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Discussion"
+      },
+      "claim_type": "qualitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.3",
+      "mapping_rationale": "General applicability claim",
+      "expected_verdict": "borderline",
+      "verdict_confidence": "low",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 2,
+        "relevance_score": 4,
+        "directness": 1,
+        "reproducibility_score": 2,
+        "recency_bonus": 0.5,
+        "rationale": "Claim without supporting validation",
+        "composite_score": 2.241
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": false
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-015",
+      "extractability": "LOW",
+      "extractability_rationale": "Background claim in introduction",
+      "claim_text": "CRISPR-Cas9 enables precise genome editing in human cells.",
+      "evidence_text": "Introduction cites CRISPR discovery and prior editing applications.",
+      "location": {
+        "page": 2,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Introduction"
+      },
+      "claim_type": "qualitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.2",
+      "mapping_rationale": "Background technology statement",
+      "expected_verdict": "rejected",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 1,
+        "relevance_score": 3,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.0,
+        "rationale": "Background claim from prior work",
+        "composite_score": 1.408
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "MICROBIO-ANCHOR-001-CLM-016",
+      "extractability": "LOW",
+      "extractability_rationale": "Future direction in conclusion",
+      "claim_text": "Method could enable autologous cell therapy for sickle cell disease.",
+      "evidence_text": "Conclusion: These results support development of autologous gene therapy approaches.",
+      "location": {
+        "page": 15,
+        "paragraph": 1,
+        "sentence": 3,
+        "section": "Conclusion"
+      },
+      "claim_type": "conclusion",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.3",
+      "mapping_rationale": "Potential therapeutic application",
+      "expected_verdict": "rejected",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 1,
+        "rigor_score": 1,
+        "relevance_score": 3,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.0,
+        "rationale": "Future speculation without validation",
+        "composite_score": 1.158
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    }
+  ],
+  "non_extraction_items": [
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-001",
+      "text": "Future work will extend this approach to beta-thalassemia mutations.",
+      "location": {
+        "page": 15,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Future Directions"
+      },
+      "reason": "future_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-002",
+      "text": "Sickle cell disease affects approximately 100,000 Americans.",
+      "location": {
+        "page": 1,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Introduction"
+      },
+      "reason": "background",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-003",
+      "text": "Doudna and Charpentier received the Nobel Prize for CRISPR discovery.",
+      "location": {
+        "page": 2,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Background"
+      },
+      "reason": "related_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-004",
+      "text": "We anticipate this method will transform therapeutic gene editing.",
+      "location": {
+        "page": 15,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Conclusion"
+      },
+      "reason": "opinion",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-005",
+      "text": "Homology-directed repair (HDR) is a cellular pathway for precise DNA repair.",
+      "location": {
+        "page": 3,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Background"
+      },
+      "reason": "definition",
+      "if_extracted_severity": "warning"
+    },
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-006",
+      "text": "Prior selection methods using antibiotic resistance have been described.",
+      "location": {
+        "page": 2,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Related Work"
+      },
+      "reason": "related_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-007",
+      "text": "Clinical trials will be needed to assess safety in patients.",
+      "location": {
+        "page": 14,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Discussion"
+      },
+      "reason": "future_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-008",
+      "text": "SpCas9 is the most commonly used CRISPR nuclease.",
+      "location": {
+        "page": 3,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Background"
+      },
+      "reason": "definition",
+      "if_extracted_severity": "warning"
+    },
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-009",
+      "text": "Gene therapy has the potential to cure genetic diseases.",
+      "location": {
+        "page": 1,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Introduction"
+      },
+      "reason": "background",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "MICROBIO-ANCHOR-001-NEI-010",
+      "text": "We thank the patients and families who participated in this research.",
+      "location": {
+        "page": 16,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Acknowledgments"
+      },
+      "reason": "off_topic",
+      "if_extracted_severity": "error"
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-001",
+      "requirement_id": "REQ-B1.1",
+      "sub_requirement_id": "Sub-1.1.2",
+      "description": "No sensory transduction mechanisms addressed",
+      "verification": "Focus on genetic editing; no sensory pathway investigation"
+    },
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-002",
+      "requirement_id": "REQ-B1.2",
+      "sub_requirement_id": "Sub-1.2.1",
+      "description": "No neural pathway modeling",
+      "verification": "Cellular focus without neural system investigation"
+    },
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-003",
+      "requirement_id": "REQ-B1.3",
+      "sub_requirement_id": "Sub-1.3.1",
+      "description": "No decision-making mechanisms studied",
+      "verification": "Gene editing focus; no behavioral analysis"
+    },
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-004",
+      "requirement_id": "REQ-A2.1",
+      "sub_requirement_id": "Sub-2.1.1",
+      "description": "No sensor integration demonstrated",
+      "verification": "In vitro work without sensing components"
+    },
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-005",
+      "requirement_id": "REQ-A2.2",
+      "sub_requirement_id": "Sub-2.2.1",
+      "description": "No scalable neural network architecture",
+      "verification": "Biological protocol; no AI/ML components"
+    },
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-006",
+      "requirement_id": "REQ-A2.3",
+      "sub_requirement_id": "Sub-2.3.1",
+      "description": "No evidence accumulation model",
+      "verification": "Selection mechanism is binary; no accumulation"
+    },
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-007",
+      "requirement_id": "REQ-A2.4",
+      "sub_requirement_id": "Sub-2.4.1",
+      "description": "No sparse coding mechanisms",
+      "verification": "Genetic focus without information encoding analysis"
+    },
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-008",
+      "requirement_id": "REQ-B1.4",
+      "sub_requirement_id": "Sub-1.4.1",
+      "description": "Short-term synaptic dynamics not addressed",
+      "verification": "Long-term genetic changes only; no synaptic plasticity"
+    },
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-009",
+      "requirement_id": "REQ-A2.1",
+      "sub_requirement_id": "Sub-2.1.4",
+      "description": "No adaptive sampling mechanisms",
+      "verification": "Fixed selection protocol without adaptation"
+    },
+    {
+      "gap_id": "MICROBIO-ANCHOR-001-GAP-010",
+      "requirement_id": "REQ-A2.4",
+      "sub_requirement_id": "Sub-2.4.4",
+      "description": "No dynamic reconfiguration",
+      "verification": "Static selection criteria throughout protocol"
+    }
+  ],
+  "statistics": {
+    "total_claims": 16,
+    "high_extractability": 9,
+    "medium_extractability": 4,
+    "low_extractability": 3,
+    "non_extraction_items": 10,
+    "expected_approved": 12,
+    "expected_rejected": 2,
+    "expected_borderline": 1,
+    "gaps_documented": 10,
+    "both_annotators_found": 14,
+    "single_annotator_only": 2
+  }
+}

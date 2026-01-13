@@ -1,0 +1,840 @@
+{
+  "paper_id": "QUANTUM-ANCHOR-001",
+  "annotation_type": "exhaustive",
+  "domain": "quantum",
+  "source_paper_id": "QUANT-001",
+  "paper_file": "quantum/arxiv_2408_13687.pdf",
+  "title": "Quantum Error Correction Below the Surface Code Threshold",
+  "authors": ["Google Quantum AI"],
+  "year": 2024,
+  "venue": "arXiv",
+  "page_count": 22,
+  "annotator_id": "annotator_001",
+  "secondary_annotator_id": "annotator_002",
+  "annotation_date": "2026-01-13",
+  "reconciliation_date": "2026-01-13",
+  "inter_rater_agreement": 0.81,
+  "reconciliation_notes": "High agreement on quantitative claims. Minor disagreements on extractability for theoretical claims resolved through discussion.",
+  "claims": [
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-001",
+      "extractability": "HIGH",
+      "extractability_rationale": "Primary result prominently stated in abstract with clear quantitative metrics",
+      "claim_text": "Surface code memories operating below the error-correction threshold achieve exponential suppression of logical error rates.",
+      "evidence_text": "Abstract and Section 4: Logical error rate decreases exponentially with code distance, achieving λ = 2.14 ± 0.02 suppression factor per code distance.",
+      "location": {
+        "page": 1,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Abstract"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses scalable quantum computing architecture with quantitative error suppression metrics",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Primary experimental result with statistical uncertainty",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-002",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear quantitative result on qubit count in results section",
+      "claim_text": "Experiments conducted on 101-qubit superconducting processor with distance-7 surface codes.",
+      "evidence_text": "Section 3: Distance-7 surface codes implemented on 101 physical qubits with median T1 = 68μs and T2 = 82μs.",
+      "location": {
+        "page": 4,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Experimental Setup"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.1",
+      "correct_sub_requirement": "Sub-2.1.3",
+      "mapping_rationale": "Addresses hardware-specific deployment validation for quantum systems",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Hardware specifications with coherence measurements",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-003",
+      "extractability": "HIGH",
+      "extractability_rationale": "Key performance metric with explicit numerical value",
+      "claim_text": "Physical qubit error rate of 0.37% ± 0.02% achieved through gate calibration.",
+      "evidence_text": "Table 1: Two-qubit gate error rate 0.37% ± 0.02%, single-qubit gate error rate 0.12% ± 0.01%.",
+      "location": {
+        "page": 5,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Device Characterization"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.1",
+      "mapping_rationale": "Addresses precision and fidelity metrics for quantum operations",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 5,
+        "recency_bonus": 0.5,
+        "rationale": "Precise error characterization with uncertainty",
+        "composite_score": 4.425
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-004",
+      "extractability": "HIGH",
+      "extractability_rationale": "Comparative result showing improvement over baseline",
+      "claim_text": "Distance-7 code achieves 2.9× lower logical error rate than distance-5 code.",
+      "evidence_text": "Figure 3: Logical error rate 2.14 × 10^-3 for d=5 vs 7.4 × 10^-4 for d=7, demonstrating 2.9× improvement.",
+      "location": {
+        "page": 8,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Results"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Demonstrates scalability of error correction with code distance",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Direct comparison with explicit error rate values",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-005",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear benchmark result with standard metrics",
+      "claim_text": "Syndrome decoding achieves 99.2% accuracy using minimum weight perfect matching decoder.",
+      "evidence_text": "Section 5.2: MWPM decoder correctly identifies error chains in 99.2% of test cases with syndrome weight ≤ 3.",
+      "location": {
+        "page": 10,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Decoding Performance"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses accuracy of classical decoding in hybrid quantum-classical systems",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Standard decoder accuracy measurement",
+        "composite_score": 3.825
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-006",
+      "extractability": "HIGH",
+      "extractability_rationale": "Explicit timing measurement in methodology",
+      "claim_text": "Syndrome extraction cycle completed in 1.1μs with real-time feedback.",
+      "evidence_text": "Section 3.3: Full syndrome extraction and measurement cycle requires 1.1μs ± 0.05μs, enabling real-time decoding.",
+      "location": {
+        "page": 6,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Experimental Timing"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.2",
+      "mapping_rationale": "Addresses operational speed and efficiency of quantum error correction",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Direct timing measurement with uncertainty",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-007",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear threshold result in main text",
+      "claim_text": "Error suppression factor λ = 2.14 ± 0.02 exceeds threshold of λ > 1.",
+      "evidence_text": "Section 4: Measured λ = 2.14 ± 0.02 demonstrates operation below threshold, where λ > 1 indicates exponential error suppression.",
+      "location": {
+        "page": 9,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Threshold Analysis"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.4",
+      "mapping_rationale": "Addresses stability and reliability of quantum systems through error suppression",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Key theoretical threshold validated experimentally",
+        "composite_score": 4.375
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-008",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Quantitative result but in supplementary analysis",
+      "claim_text": "Correlated errors contribute 15% to total logical error rate.",
+      "evidence_text": "Supplementary Section S2: Error correlation analysis shows 15% ± 3% of logical errors arise from spatially correlated noise.",
+      "location": {
+        "page": 12,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Error Analysis"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.1",
+      "mapping_rationale": "Addresses error characterization for system reliability",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Error analysis with statistical uncertainty",
+        "composite_score": 3.425
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-009",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Technical result embedded in methods section",
+      "claim_text": "Readout fidelity of 98.5% achieved through optimized measurement pulses.",
+      "evidence_text": "Section 3.2: Single-shot qubit readout achieves 98.5% ± 0.3% assignment fidelity.",
+      "location": {
+        "page": 5,
+        "paragraph": 5,
+        "sentence": 1,
+        "section": "Measurement Characterization"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.1",
+      "correct_sub_requirement": "Sub-2.1.1",
+      "mapping_rationale": "Addresses sensor/measurement precision for quantum systems",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Standard fidelity measurement with uncertainty",
+        "composite_score": 3.625
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-010",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Comparative result requiring interpretation",
+      "claim_text": "Neural network decoder achieves 12% lower logical error rate than MWPM decoder.",
+      "evidence_text": "Section 5.3: ML-based decoder reduces logical error rate by 12% compared to MWPM baseline on experimental data.",
+      "location": {
+        "page": 11,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Alternative Decoders"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses AI/ML integration for improved quantum error correction",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Decoder comparison with relative improvement",
+        "composite_score": 3.125
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": false,
+      "reconciliation_notes": "Annotator B initially classified as LOW due to ML focus; upgraded after reviewing QEC relevance"
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-011",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear coherence time measurement in device characterization",
+      "claim_text": "Qubit coherence times T1 = 68μs and T2 = 82μs measured across all data qubits.",
+      "evidence_text": "Table 1: Median T1 = 68μs (IQR 52-84μs), median T2 = 82μs (IQR 61-103μs) for n=72 data qubits.",
+      "location": {
+        "page": 4,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Device Characterization"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.1",
+      "correct_sub_requirement": "Sub-2.1.3",
+      "mapping_rationale": "Addresses hardware characterization for quantum systems",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 5,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 5,
+        "recency_bonus": 0.5,
+        "rationale": "Standard coherence measurements with statistics",
+        "composite_score": 4.425
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-012",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Scalability projection in discussion section",
+      "claim_text": "Extrapolation suggests distance-11 codes would achieve logical error rate below 10^-6.",
+      "evidence_text": "Section 6: Based on measured λ = 2.14, distance-11 code projected to achieve pL < 10^-6.",
+      "location": {
+        "page": 14,
+        "paragraph": 2,
+        "sentence": 3,
+        "section": "Scaling Projections"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses scalability of quantum error correction approach",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 3,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Extrapolation based on measured parameters",
+        "composite_score": 3.175
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-013",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear experimental count in methodology",
+      "claim_text": "1 million error correction cycles executed per experimental run.",
+      "evidence_text": "Section 4.1: Each experimental run consists of 10^6 syndrome extraction cycles to accumulate statistics.",
+      "location": {
+        "page": 7,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Data Collection"
+      },
+      "claim_type": "methodology",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.1",
+      "mapping_rationale": "Addresses experimental methodology for statistical validation",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 5,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 5,
+        "recency_bonus": 0.5,
+        "rationale": "Clear experimental methodology",
+        "composite_score": 3.975
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-014",
+      "extractability": "LOW",
+      "extractability_rationale": "Qualitative observation in discussion without quantitative backing",
+      "claim_text": "Leakage errors pose the greatest challenge to further scaling.",
+      "evidence_text": "Discussion notes that qubit leakage to non-computational states requires additional mitigation strategies.",
+      "location": {
+        "page": 15,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Challenges"
+      },
+      "claim_type": "qualitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.4",
+      "mapping_rationale": "Related to system stability challenges",
+      "expected_verdict": "borderline",
+      "verdict_confidence": "low",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 2,
+        "relevance_score": 3,
+        "directness": 2,
+        "reproducibility_score": 2,
+        "recency_bonus": 0.5,
+        "rationale": "Observation without rigorous quantification",
+        "composite_score": 2.091
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": false
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-015",
+      "extractability": "LOW",
+      "extractability_rationale": "Background claim from introduction",
+      "claim_text": "Fault-tolerant quantum computing requires logical error rates below 10^-10.",
+      "evidence_text": "Introduction cites prior work establishing 10^-10 as target for useful quantum computation.",
+      "location": {
+        "page": 2,
+        "paragraph": 2,
+        "sentence": 3,
+        "section": "Introduction"
+      },
+      "claim_type": "qualitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Background requirement statement",
+      "expected_verdict": "rejected",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 1,
+        "relevance_score": 3,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.0,
+        "rationale": "Background statement from prior work",
+        "composite_score": 1.408
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-016",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Quantitative stability result in extended data",
+      "claim_text": "Logical error rate stable within 5% over 8-hour continuous operation.",
+      "evidence_text": "Extended Data Figure 2: Error rate drift <5% over 8-hour experimental sessions.",
+      "location": {
+        "page": 13,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Stability Analysis"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.1",
+      "mapping_rationale": "Addresses system stability over extended operation",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Stability measurement over time",
+        "composite_score": 3.125
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-017",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear improvement metric in abstract",
+      "claim_text": "Logical lifetime extended by factor of 2.4× compared to physical qubit lifetime.",
+      "evidence_text": "Abstract: Logical qubit lifetime 2.4× longer than best physical qubit in the array.",
+      "location": {
+        "page": 1,
+        "paragraph": 1,
+        "sentence": 4,
+        "section": "Abstract"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Key result demonstrating advantage of error correction",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Primary improvement metric",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "QUANTUM-ANCHOR-001-CLM-018",
+      "extractability": "LOW",
+      "extractability_rationale": "General observation in conclusion",
+      "claim_text": "Results demonstrate path to large-scale fault-tolerant quantum computing.",
+      "evidence_text": "Conclusion states these results represent a milestone toward practical quantum computing.",
+      "location": {
+        "page": 16,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Conclusion"
+      },
+      "claim_type": "conclusion",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "General scalability claim",
+      "expected_verdict": "rejected",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 1,
+        "rigor_score": 1,
+        "relevance_score": 3,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.0,
+        "rationale": "Opinion without supporting data",
+        "composite_score": 1.158
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    }
+  ],
+  "non_extraction_items": [
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-001",
+      "text": "Future work will focus on implementing logical gates between surface codes.",
+      "location": {
+        "page": 16,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Future Directions"
+      },
+      "reason": "future_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-002",
+      "text": "Quantum error correction was first proposed by Shor and Steane in 1995-1996.",
+      "location": {
+        "page": 2,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Introduction"
+      },
+      "reason": "background",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-003",
+      "text": "Surface codes, introduced by Kitaev, provide a local stabilizer structure.",
+      "location": {
+        "page": 2,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Background"
+      },
+      "reason": "related_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-004",
+      "text": "We believe this work represents the most significant advance in quantum error correction to date.",
+      "location": {
+        "page": 16,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Conclusion"
+      },
+      "reason": "opinion",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-005",
+      "text": "A logical qubit is defined as an encoded quantum state protected by error correction.",
+      "location": {
+        "page": 3,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Definitions"
+      },
+      "reason": "definition",
+      "if_extracted_severity": "warning"
+    },
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-006",
+      "text": "Prior experimental work by IBM and others has demonstrated error detection but not suppression.",
+      "location": {
+        "page": 2,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Related Work"
+      },
+      "reason": "related_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-007",
+      "text": "Exploring alternative codes such as color codes remains an active research direction.",
+      "location": {
+        "page": 15,
+        "paragraph": 4,
+        "sentence": 2,
+        "section": "Discussion"
+      },
+      "reason": "future_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-008",
+      "text": "The threshold theorem guarantees fault-tolerant computing is possible if physical error rates are sufficiently low.",
+      "location": {
+        "page": 3,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Background"
+      },
+      "reason": "definition",
+      "if_extracted_severity": "warning"
+    },
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-009",
+      "text": "Superconducting qubits have emerged as a leading platform for quantum computing.",
+      "location": {
+        "page": 1,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Introduction"
+      },
+      "reason": "background",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "QUANTUM-ANCHOR-001-NEI-010",
+      "text": "We gratefully acknowledge support from DARPA, DOE, and Google Research.",
+      "location": {
+        "page": 17,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Acknowledgments"
+      },
+      "reason": "off_topic",
+      "if_extracted_severity": "error"
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-001",
+      "requirement_id": "REQ-A2.2",
+      "sub_requirement_id": "Sub-2.2.2",
+      "description": "Multi-qubit logical operations not demonstrated",
+      "verification": "Paper focuses on memory operation; logical gates between codes not implemented"
+    },
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-002",
+      "requirement_id": "REQ-A2.3",
+      "sub_requirement_id": "Sub-2.3.1",
+      "description": "No quantum algorithm execution demonstrated",
+      "verification": "Results limited to error correction; no computational tasks performed"
+    },
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-003",
+      "requirement_id": "REQ-A2.3",
+      "sub_requirement_id": "Sub-2.3.3",
+      "description": "No quantum control feedback demonstrated",
+      "verification": "Syndrome decoding is classical; no quantum feedback loops"
+    },
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-004",
+      "requirement_id": "REQ-A2.4",
+      "sub_requirement_id": "Sub-2.4.3",
+      "description": "Energy consumption not characterized",
+      "verification": "No power or energy measurements reported"
+    },
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-005",
+      "requirement_id": "REQ-A2.4",
+      "sub_requirement_id": "Sub-2.4.4",
+      "description": "Dynamic reconfiguration not addressed",
+      "verification": "Fixed code distance; no adaptive code switching demonstrated"
+    },
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-006",
+      "requirement_id": "REQ-A2.1",
+      "sub_requirement_id": "Sub-2.1.2",
+      "description": "No real-world input processing demonstrated",
+      "verification": "Synthetic error injection; no external input handling"
+    },
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-007",
+      "requirement_id": "REQ-A2.2",
+      "sub_requirement_id": "Sub-2.2.3",
+      "description": "No attention or selection mechanisms implemented",
+      "verification": "Uniform treatment of all qubits in code"
+    },
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-008",
+      "requirement_id": "REQ-B1.1",
+      "sub_requirement_id": "Sub-1.1.1",
+      "description": "No biological relevance",
+      "verification": "Quantum computing focus; no biological parallels discussed"
+    },
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-009",
+      "requirement_id": "REQ-B1.2",
+      "sub_requirement_id": "Sub-1.2.1",
+      "description": "No pathway modeling",
+      "verification": "Hardware-focused; no pathway abstraction"
+    },
+    {
+      "gap_id": "QUANTUM-ANCHOR-001-GAP-010",
+      "requirement_id": "REQ-B1.4",
+      "sub_requirement_id": "Sub-1.4.2",
+      "description": "No learning or plasticity mechanisms",
+      "verification": "Fixed circuit design; no adaptive learning"
+    }
+  ],
+  "statistics": {
+    "total_claims": 18,
+    "high_extractability": 10,
+    "medium_extractability": 5,
+    "low_extractability": 3,
+    "non_extraction_items": 10,
+    "expected_approved": 13,
+    "expected_rejected": 2,
+    "expected_borderline": 1,
+    "gaps_documented": 10,
+    "both_annotators_found": 15,
+    "single_annotator_only": 3
+  }
+}
