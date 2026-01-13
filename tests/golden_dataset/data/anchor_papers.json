@@ -187,10 +187,14 @@
     "requirements_covered": [
       "REQ-A2.1",
       "REQ-A2.2",
-      "REQ-A2.3",
       "REQ-A2.4",
       "REQ-B1.1",
       "REQ-B1.4"
+    ],
+    "requirements_with_gaps": [
+      "REQ-A2.3",
+      "REQ-B1.2",
+      "REQ-B1.3"
     ]
   },
   "validation_coverage": {
