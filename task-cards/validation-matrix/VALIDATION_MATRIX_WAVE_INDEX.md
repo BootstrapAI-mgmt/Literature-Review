@@ -122,11 +122,10 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 | VM-W1-2 | FV-03, AV-01, AV-02 | Claim identification accuracy |
 | VM-W1-3 | FV-04, FV-05, FV-06, **FV-10** | Judge decisions + Version sync |
 | VM-W1-4 | QB-01→05 (impl) | Golden dataset creation |
-| **VM-W1.5-0** | **FP-01, FP-02, FP-03, GAP-NEG, ITER-01** | **Ground truth design validation** |
+| **VM-W1.5-0** | **FP-01, FP-02, FP-03, ITER-01** | **Ground truth design validation** |
 | **VM-W1.5-1** | QB-01, QB-02 | Open access paper sourcing (✅ Complete) |
 | **VM-W1.5-1B** | QB-01, QB-02 | Paper population (80+ papers) |
-| **VM-W1.5-2** | QB-01→05, **FP-01, GAP-NEG** | Paper annotation (enhanced) |
-| **VM-W1.5-3** | **FP-02, FP-03, GAP-NEG, ITER-01** | **Gap scenario execution framework** |
+| **VM-W1.5-2** | QB-01→05, **FP-01, FP-02, FP-03, ITER-01** | Paper annotation (enhanced) |
 | VM-W2-1 | AV-03, AV-05, AV-06, **FV-07** | Accuracy baseline + Gap detection |
 | VM-W2-2 | AV-04, AV-08 | Judge calibration analysis |
 | VM-W2-3 | EV-01, EV-02, EV-03, EV-07, **FV-08** | Efficiency + Incremental detection |
@@ -154,9 +153,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 > - **FP-01: Extraction False Positive Rate (<5%)** *(added 2026-01-12)*
 > - **FP-02: Gap Detection False Positive Rate (0%)** *(added 2026-01-12)*
 > - **FP-03: Decoy Paper Contribution Rate (0%)** *(added 2026-01-12)*
-> - **GAP-NEG: Non-Gap Accuracy (100%)** *(added 2026-01-13)*
-> - **ITER-01: Iterative Gap Closure Accuracy (≥95%)** *(added 2026-01-12)*
-> - **VM-W1.5-3: Gap Scenario Execution Framework** *(added 2026-01-13)*
+> - **ITER-01: Iterative Gap Closing Validation** *(added 2026-01-12)*
 
 ---
 
