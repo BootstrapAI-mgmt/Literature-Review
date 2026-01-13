@@ -1,0 +1,922 @@
+{
+  "paper_id": "NEURO-ANCHOR-001",
+  "annotation_type": "exhaustive",
+  "domain": "neuromorphic",
+  "source_paper_id": "NEURO-001",
+  "paper_file": "neuromorphic/arxiv_2204_13969.pdf",
+  "title": "Spiking Neural Networks: A Survey",
+  "authors": ["Amirhossein Ghasemian", "Mohammad Ganjtabesh"],
+  "year": 2022,
+  "venue": "arXiv",
+  "page_count": 25,
+  "annotator_id": "annotator_001",
+  "secondary_annotator_id": "annotator_002",
+  "annotation_date": "2026-01-13",
+  "reconciliation_date": "2026-01-13",
+  "inter_rater_agreement": 0.78,
+  "reconciliation_notes": "Minor disagreements on extractability levels for methodology claims resolved through discussion. Both annotators agreed on all HIGH extractability claims.",
+  "claims": [
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-001",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear quantitative comparison in Results section with explicit accuracy metrics",
+      "claim_text": "SNNs achieve 99.4% accuracy on MNIST classification with LIF neurons and surrogate gradient training.",
+      "evidence_text": "Table 3 reports benchmark results: SNN with LIF neurons trained via surrogate gradients achieves 99.4% test accuracy on MNIST, matching ANN baseline performance.",
+      "location": {
+        "page": 8,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Benchmark Results"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Directly addresses scalable SNN training with quantitative accuracy benchmarks",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Clear benchmark comparison with established dataset",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-002",
+      "extractability": "HIGH",
+      "extractability_rationale": "Quantitative energy comparison with clear baseline in benchmark section",
+      "claim_text": "Neuromorphic hardware implementation of SNNs achieves 100x energy reduction compared to GPU-based ANNs for inference.",
+      "evidence_text": "Section 5.2: Loihi neuromorphic chip benchmarks show 0.1mJ per inference vs 10mJ on NVIDIA GPU, representing 100x energy improvement at equivalent accuracy.",
+      "location": {
+        "page": 12,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Hardware Implementations"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.2",
+      "mapping_rationale": "Directly addresses event-driven vs clock-driven efficiency comparison",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Clear hardware measurement with established comparison baseline",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-003",
+      "extractability": "HIGH",
+      "extractability_rationale": "Explicit quantitative claim about network sparsity in methodology",
+      "claim_text": "SNNs exhibit sparse activation with average 5% neuron firing during inference on image classification tasks.",
+      "evidence_text": "Analysis of activation patterns shows mean firing rate of 5.2% ± 1.3% across test samples (n=10,000), significantly below traditional ANN activation rates of 40-60%.",
+      "location": {
+        "page": 10,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Computational Efficiency"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.1",
+      "mapping_rationale": "Directly addresses sparse coding efficiency requirement",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Statistical analysis with sample size and comparison",
+        "composite_score": 3.825
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-004",
+      "extractability": "HIGH",
+      "extractability_rationale": "Quantitative accuracy on standard benchmark with clear methodology",
+      "claim_text": "STDP-based unsupervised learning achieves 95.0% accuracy on MNIST without supervision.",
+      "evidence_text": "Spike-timing-dependent plasticity rule combined with competitive learning achieves 95.0% classification accuracy in unsupervised setting (Table 2).",
+      "location": {
+        "page": 7,
+        "paragraph": 2,
+        "sentence": 3,
+        "section": "Learning Rules"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.2",
+      "mapping_rationale": "Addresses STDP mechanisms with quantitative validation",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Clear benchmark result with established methodology",
+        "composite_score": 3.825
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-005",
+      "extractability": "HIGH",
+      "extractability_rationale": "Quantitative timing comparison with biological reference",
+      "claim_text": "LIF neuron models with 10ms membrane time constant match biological spike timing within 2ms accuracy.",
+      "evidence_text": "Comparison with in vivo recordings shows LIF model predictions correlate with biological spike times at r=0.94, with mean absolute error of 1.8ms.",
+      "location": {
+        "page": 4,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Neuron Models"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.4",
+      "mapping_rationale": "Addresses temporal dynamics of spike-timing encoding",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Correlation with biological validation data",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-006",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear benchmark result with dataset and accuracy",
+      "claim_text": "SNN achieves 95.5% accuracy on N-MNIST event-based dataset with 4 timesteps.",
+      "evidence_text": "Table 4: Event-driven SNN processing N-MNIST achieves 95.5% accuracy using only 4 timesteps, demonstrating efficient temporal processing.",
+      "location": {
+        "page": 14,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Event-Based Vision"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.1",
+      "correct_sub_requirement": "Sub-2.1.1",
+      "mapping_rationale": "Directly addresses event-based sensor integration with SNNs",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Standard benchmark with clear result",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-007",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Quantitative claim but requires inference from multiple sections",
+      "claim_text": "Surrogate gradient methods reduce training time by 30% compared to ANN-to-SNN conversion.",
+      "evidence_text": "Training convergence analysis shows surrogate gradient methods achieve target accuracy in 70% of the epochs required by conversion methods.",
+      "location": {
+        "page": 9,
+        "paragraph": 5,
+        "sentence": 1,
+        "section": "Training Methods"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses scalable training algorithms for deep SNNs",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 3,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Comparison made but methodology details scattered",
+        "composite_score": 2.891
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-008",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Valid quantitative claim but embedded in discussion",
+      "claim_text": "Rate coding preserves 90% of information content in sensory encoding tasks.",
+      "evidence_text": "Information theoretic analysis shows rate-coded representations achieve 90% mutual information with original signal for natural images.",
+      "location": {
+        "page": 5,
+        "paragraph": 2,
+        "sentence": 4,
+        "section": "Encoding Schemes"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.1",
+      "mapping_rationale": "Addresses sensory transduction into neural spikes",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Information theoretic analysis but limited experimental detail",
+        "composite_score": 3.091
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": false,
+      "reconciliation_notes": "Annotator B initially classified as LOW; upgraded after discussion"
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-009",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Quantitative architecture comparison in methodology section",
+      "claim_text": "Deep SNNs with 8+ layers achieve comparable accuracy to ResNet-18 on CIFAR-10.",
+      "evidence_text": "ResNet-SNN with 8 layers achieves 91.2% vs ResNet-18 ANN at 92.1% (Table 5), closing the accuracy gap to 0.9%.",
+      "location": {
+        "page": 11,
+        "paragraph": 3,
+        "sentence": 1,
+        "section": "Deep SNN Architectures"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses scalable deep SNN architectures",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Direct comparison with established baseline",
+        "composite_score": 3.825
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-010",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Hardware deployment metric in technical results",
+      "claim_text": "Intel Loihi processes 1M spikes/second at 30mW power consumption.",
+      "evidence_text": "Loihi benchmark: 1 million spike operations per second at 30mW static power, measured on standard workload.",
+      "location": {
+        "page": 13,
+        "paragraph": 2,
+        "sentence": 3,
+        "section": "Neuromorphic Platforms"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.1",
+      "correct_sub_requirement": "Sub-2.1.3",
+      "mapping_rationale": "Addresses hardware deployment on neuromorphic chips",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Hardware measurement with specific metrics",
+        "composite_score": 3.575
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-011",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear accuracy result on established benchmark",
+      "claim_text": "ANN-to-SNN conversion achieves 92.8% accuracy on CIFAR-10 with 32 timesteps.",
+      "evidence_text": "Table 6: Conversion from trained ANN to SNN yields 92.8% test accuracy on CIFAR-10 using 32 simulation timesteps.",
+      "location": {
+        "page": 10,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Conversion Methods"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Addresses scalable training methods for SNNs",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Standard benchmark with clear methodology",
+        "composite_score": 3.825
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-012",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Quantitative latency claim in hardware section",
+      "claim_text": "End-to-end inference latency on neuromorphic hardware is <5ms for image classification.",
+      "evidence_text": "Measured inference time: 4.2ms from input to classification output on Loihi chip for 28x28 input.",
+      "location": {
+        "page": 13,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Neuromorphic Platforms"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.1",
+      "correct_sub_requirement": "Sub-2.1.3",
+      "mapping_rationale": "Addresses hardware deployment latency metrics",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Measured latency with specific configuration",
+        "composite_score": 3.325
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-013",
+      "extractability": "LOW",
+      "extractability_rationale": "Qualitative observation without strong quantitative backing",
+      "claim_text": "SNNs demonstrate inherent robustness to input noise compared to ANNs.",
+      "evidence_text": "Discussion notes that spike-based processing provides natural noise tolerance through temporal integration.",
+      "location": {
+        "page": 16,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Discussion"
+      },
+      "claim_type": "qualitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.4",
+      "mapping_rationale": "Related to network stability through temporal processing",
+      "expected_verdict": "borderline",
+      "verdict_confidence": "low",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 2,
+        "relevance_score": 3,
+        "directness": 2,
+        "reproducibility_score": 2,
+        "recency_bonus": 0.5,
+        "rationale": "Observation without rigorous experimental validation",
+        "composite_score": 2.091
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": false
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-014",
+      "extractability": "LOW",
+      "extractability_rationale": "Theoretical claim from introductory section",
+      "claim_text": "Biological neurons are fundamentally event-driven, processing spikes asynchronously.",
+      "evidence_text": "Introduction cites biological evidence that neurons communicate via discrete spike events rather than continuous signals.",
+      "location": {
+        "page": 2,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Introduction"
+      },
+      "claim_type": "qualitative",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.1",
+      "mapping_rationale": "Background claim about neural transduction",
+      "expected_verdict": "rejected",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 1,
+        "relevance_score": 3,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.0,
+        "rationale": "Background statement, not novel finding",
+        "composite_score": 1.408
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-015",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear performance metric with experimental validation",
+      "claim_text": "DVS gesture recognition achieves 96.5% accuracy with SNN processing.",
+      "evidence_text": "DVS128 Gesture benchmark: SNN classifier achieves 96.5% accuracy on 11-class gesture recognition (Table 7).",
+      "location": {
+        "page": 15,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Event-Based Vision"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.1",
+      "correct_sub_requirement": "Sub-2.1.1",
+      "mapping_rationale": "Event-based sensor integration with SNNs",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Standard benchmark with clear result",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-016",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Quantitative comparison across architectures",
+      "claim_text": "Recurrent SNN improves sequence prediction accuracy by 8% over feedforward SNN.",
+      "evidence_text": "Sequential MNIST results: recurrent SNN achieves 97.2% vs 89.1% for feedforward architecture.",
+      "location": {
+        "page": 12,
+        "paragraph": 1,
+        "sentence": 3,
+        "section": "Recurrent Architectures"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Architecture comparison for sequential processing",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 4,
+        "rigor_score": 4,
+        "relevance_score": 4,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Clear architectural comparison with metrics",
+        "composite_score": 3.625
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-017",
+      "extractability": "LOW",
+      "extractability_rationale": "Methodology description without quantitative result",
+      "claim_text": "Temporal coding can encode more information per spike than rate coding.",
+      "evidence_text": "Theoretical analysis suggests temporal coding has higher information capacity per spike event.",
+      "location": {
+        "page": 5,
+        "paragraph": 4,
+        "sentence": 2,
+        "section": "Encoding Schemes"
+      },
+      "claim_type": "methodology",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.1",
+      "correct_sub_requirement": "Sub-1.1.1",
+      "mapping_rationale": "Relates to sensory encoding mechanisms",
+      "expected_verdict": "borderline",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 2,
+        "rigor_score": 2,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 2,
+        "recency_bonus": 0.5,
+        "rationale": "Theoretical claim without experimental validation",
+        "composite_score": 2.291
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": false
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-018",
+      "extractability": "HIGH",
+      "extractability_rationale": "Clear quantitative result in benchmark table",
+      "claim_text": "Spiking ResNet achieves 93.1% accuracy on CIFAR-10 with direct training.",
+      "evidence_text": "Table 5: Directly trained Spiking ResNet-18 achieves 93.1% test accuracy on CIFAR-10.",
+      "location": {
+        "page": 11,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Deep SNN Architectures"
+      },
+      "claim_type": "quantitative",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.2",
+      "correct_sub_requirement": "Sub-2.2.1",
+      "mapping_rationale": "Scalable SNN training benchmark",
+      "expected_verdict": "approved",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 5,
+        "rigor_score": 4,
+        "relevance_score": 5,
+        "directness": 3,
+        "reproducibility_score": 4,
+        "recency_bonus": 0.5,
+        "rationale": "Standard benchmark with direct training",
+        "composite_score": 4.075
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "error",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-019",
+      "extractability": "MEDIUM",
+      "extractability_rationale": "Quantitative metric in learning rule comparison",
+      "claim_text": "STDP learning converges 40% faster than backpropagation for pattern recognition.",
+      "evidence_text": "Learning curve analysis shows STDP reaches 95% accuracy in 60% of the epochs required by BP (Figure 4).",
+      "location": {
+        "page": 7,
+        "paragraph": 4,
+        "sentence": 2,
+        "section": "Learning Rules"
+      },
+      "claim_type": "comparison",
+      "correct_pillar": "Pillar 1: Biological Stimulus-Response",
+      "correct_requirement": "REQ-B1.4",
+      "correct_sub_requirement": "Sub-1.4.2",
+      "mapping_rationale": "Addresses STDP mechanism efficiency",
+      "expected_verdict": "approved",
+      "verdict_confidence": "medium",
+      "evidence_quality": {
+        "strength_score": 3,
+        "rigor_score": 3,
+        "relevance_score": 4,
+        "directness": 2,
+        "reproducibility_score": 3,
+        "recency_bonus": 0.5,
+        "rationale": "Learning comparison with visual evidence",
+        "composite_score": 2.891
+      },
+      "expected_to_be_extracted": true,
+      "if_not_extracted_severity": "warning",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    },
+    {
+      "claim_id": "NEURO-ANCHOR-001-CLM-020",
+      "extractability": "LOW",
+      "extractability_rationale": "General observation in conclusion without data",
+      "claim_text": "SNNs are well-suited for edge computing applications.",
+      "evidence_text": "Conclusion: The energy efficiency of SNNs makes them attractive for edge deployment.",
+      "location": {
+        "page": 18,
+        "paragraph": 1,
+        "sentence": 3,
+        "section": "Conclusion"
+      },
+      "claim_type": "conclusion",
+      "correct_pillar": "Pillar 2: AI Stimulus-Response (Bridge)",
+      "correct_requirement": "REQ-A2.4",
+      "correct_sub_requirement": "Sub-2.4.2",
+      "mapping_rationale": "General efficiency claim",
+      "expected_verdict": "rejected",
+      "verdict_confidence": "high",
+      "evidence_quality": {
+        "strength_score": 1,
+        "rigor_score": 1,
+        "relevance_score": 3,
+        "directness": 1,
+        "reproducibility_score": 1,
+        "recency_bonus": 0.0,
+        "rationale": "Opinion without supporting data",
+        "composite_score": 1.158
+      },
+      "expected_to_be_extracted": false,
+      "if_not_extracted_severity": "acceptable",
+      "found_by_annotator_a": true,
+      "found_by_annotator_b": true
+    }
+  ],
+  "non_extraction_items": [
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-001",
+      "text": "Future work will focus on scaling SNNs to larger datasets and more complex tasks.",
+      "location": {
+        "page": 18,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Conclusion"
+      },
+      "reason": "future_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-002",
+      "text": "The brain consists of approximately 86 billion neurons connected by trillions of synapses.",
+      "location": {
+        "page": 1,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Introduction"
+      },
+      "reason": "background",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-003",
+      "text": "Hodgkin and Huxley (1952) developed the first detailed mathematical model of action potentials.",
+      "location": {
+        "page": 3,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Background"
+      },
+      "reason": "related_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-004",
+      "text": "Neuromorphic computing represents a paradigm shift in hardware design.",
+      "location": {
+        "page": 2,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Introduction"
+      },
+      "reason": "opinion",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-005",
+      "text": "A spiking neural network is defined as a neural network that uses discrete spike events for communication.",
+      "location": {
+        "page": 3,
+        "paragraph": 2,
+        "sentence": 1,
+        "section": "Definitions"
+      },
+      "reason": "definition",
+      "if_extracted_severity": "warning"
+    },
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-006",
+      "text": "We hope this survey provides a useful reference for researchers entering the field.",
+      "location": {
+        "page": 18,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Conclusion"
+      },
+      "reason": "opinion",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-007",
+      "text": "Previous work by Maass (1997) established the theoretical foundations of SNN computing.",
+      "location": {
+        "page": 2,
+        "paragraph": 4,
+        "sentence": 1,
+        "section": "Related Work"
+      },
+      "reason": "related_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-008",
+      "text": "Exploring hybrid SNN-ANN architectures remains an open research direction.",
+      "location": {
+        "page": 17,
+        "paragraph": 3,
+        "sentence": 2,
+        "section": "Discussion"
+      },
+      "reason": "future_work",
+      "if_extracted_severity": "error"
+    },
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-009",
+      "text": "The membrane potential is the voltage difference across the neuron's cell membrane.",
+      "location": {
+        "page": 4,
+        "paragraph": 1,
+        "sentence": 2,
+        "section": "Neuron Models"
+      },
+      "reason": "definition",
+      "if_extracted_severity": "warning"
+    },
+    {
+      "item_id": "NEURO-ANCHOR-001-NEI-010",
+      "text": "Several commercial neuromorphic chips have been developed in recent years.",
+      "location": {
+        "page": 13,
+        "paragraph": 1,
+        "sentence": 1,
+        "section": "Neuromorphic Platforms"
+      },
+      "reason": "background",
+      "if_extracted_severity": "error"
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-001",
+      "requirement_id": "REQ-A2.1",
+      "sub_requirement_id": "Sub-2.1.4",
+      "description": "Paper does not address adaptive sampling based on information content",
+      "verification": "Searched all sections for adaptive sampling or attention-guided sensing - not found"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-002",
+      "requirement_id": "REQ-A2.2",
+      "sub_requirement_id": "Sub-2.2.2",
+      "description": "Multi-sensory fusion architectures not covered in depth",
+      "verification": "Survey focuses on single-modality processing; multi-modal only mentioned briefly"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-003",
+      "requirement_id": "REQ-A2.3",
+      "sub_requirement_id": "Sub-2.3.1",
+      "description": "No SNN model of evidence accumulation presented",
+      "verification": "Decision-making and action selection not covered in this survey"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-004",
+      "requirement_id": "REQ-A2.3",
+      "sub_requirement_id": "Sub-2.3.2",
+      "description": "Basal ganglia computational model not included",
+      "verification": "Action selection mechanisms not addressed"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-005",
+      "requirement_id": "REQ-A2.3",
+      "sub_requirement_id": "Sub-2.3.3",
+      "description": "Closed-loop SNN controller not covered",
+      "verification": "No actuator control or robotics applications discussed"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-006",
+      "requirement_id": "REQ-A2.3",
+      "sub_requirement_id": "Sub-2.3.4",
+      "description": "Inhibitory gating mechanisms not discussed",
+      "verification": "Inhibitory neurons mentioned but not in action suppression context"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-007",
+      "requirement_id": "REQ-A2.4",
+      "sub_requirement_id": "Sub-2.4.3",
+      "description": "No systematic energy-accuracy trade-off characterization",
+      "verification": "Individual benchmarks provided but no Pareto analysis"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-008",
+      "requirement_id": "REQ-A2.4",
+      "sub_requirement_id": "Sub-2.4.4",
+      "description": "Dynamic voltage/frequency scaling not addressed",
+      "verification": "Hardware power management not covered"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-009",
+      "requirement_id": "REQ-B1.2",
+      "sub_requirement_id": "Sub-1.2.1",
+      "description": "Thalamic relay pathways not mapped in detail",
+      "verification": "Biological pathways mentioned conceptually but not modeled"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-010",
+      "requirement_id": "REQ-B1.2",
+      "sub_requirement_id": "Sub-1.2.2",
+      "description": "Multi-sensory integration in parietal cortex not modeled",
+      "verification": "Focus on computational SNNs, not biological pathways"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-011",
+      "requirement_id": "REQ-B1.3",
+      "sub_requirement_id": "Sub-1.3.1",
+      "description": "Evidence accumulation model not included",
+      "verification": "Decision-making neuroscience not in scope"
+    },
+    {
+      "gap_id": "NEURO-ANCHOR-001-GAP-012",
+      "requirement_id": "REQ-B1.4",
+      "sub_requirement_id": "Sub-1.4.1",
+      "description": "Short-term synaptic facilitation/depression not covered in detail",
+      "verification": "Focus on STDP; STP mentioned but not characterized"
+    }
+  ],
+  "statistics": {
+    "total_claims": 20,
+    "high_extractability": 10,
+    "medium_extractability": 6,
+    "low_extractability": 4,
+    "non_extraction_items": 10,
+    "expected_approved": 15,
+    "expected_rejected": 2,
+    "expected_borderline": 2,
+    "gaps_documented": 12,
+    "both_annotators_found": 16,
+    "single_annotator_only": 4
+  }
+}
