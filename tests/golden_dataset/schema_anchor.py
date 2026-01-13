@@ -4,7 +4,7 @@ Anchor Paper Schema Extensions
 Extended Pydantic models for exhaustive anchor paper annotation.
 """
 
-from pydantic import BaseModel, Field, computed_field, model_validator
+from pydantic import BaseModel, Field, computed_field
 from typing import List, Optional, Literal, Dict, Any, Tuple
 from datetime import datetime
 from enum import Enum
@@ -40,24 +40,18 @@ class ExhaustiveClaim(BaseModel):
     
     Unlike standard claims, exhaustive claims include extractability
     classification and explicit expectations for pipeline behavior.
-    
-    Supports two field naming conventions:
-    - Original: exact_text, expected_pillar, expected_requirement
-    - Alternative: claim_text, correct_pillar, correct_requirement
     """
     
-    claim_id: str = Field(..., pattern=r'^[A-Z]+-[A-Z0-9]+-[A-Z0-9]+-CLM-\d{3}$|^AP-\d{3}-C\d{3}$')
+    claim_id: str = Field(..., pattern=r'^AP-\d{3}-C\d{3}$')
     location: ClaimLocation
-    exact_text: Optional[str] = Field(None, min_length=10)
-    claim_text: Optional[str] = Field(None, min_length=10)  # Alias for exact_text
+    exact_text: str = Field(..., min_length=10)
     paraphrased_text: Optional[str] = None
-    evidence_text: Optional[str] = None  # Supporting evidence for the claim
     
     # Classification
     claim_type: Literal["quantitative", "qualitative", "methodology", 
                         "conclusion", "comparison", "future_work"]
     
-    # Extractability - normalized to lowercase enum value
+    # Extractability
     extractability: Extractability
     extractability_rationale: str
     
@@ -68,77 +62,34 @@ class ExhaustiveClaim(BaseModel):
     
     # Expected Mapping (if should be extracted)
     expected_pillar: Optional[str] = None
-    correct_pillar: Optional[str] = None  # Alias for expected_pillar
     expected_requirement: Optional[str] = None
-    correct_requirement: Optional[str] = None  # Alias for expected_requirement
     expected_sub_requirement: Optional[str] = None
-    correct_sub_requirement: Optional[str] = None  # Alias for expected_sub_requirement
-    mapping_rationale: Optional[str] = None
     mapping_confidence: Optional[Literal["high", "medium", "low"]] = None
     
     # Expected Verdict (if should be extracted)
     expected_verdict: Optional[Literal["approved", "rejected", "borderline"]] = None
     expected_composite_range: Optional[Tuple[float, float]] = None
     verdict_confidence: Optional[Literal["high", "medium", "low"]] = None
-    evidence_quality: Optional[Dict[str, Any]] = None  # Evidence quality scores
     
     # Annotation Metadata
     found_by_annotator_a: bool = True
     found_by_annotator_b: bool = True
     reconciliation_notes: Optional[str] = None
-    
-    @model_validator(mode='before')
-    @classmethod
-    def normalize_fields(cls, values: dict) -> dict:
-        """Normalize field values to support multiple conventions."""
-        # Normalize extractability to lowercase enum value
-        if 'extractability' in values and isinstance(values['extractability'], str):
-            values['extractability'] = values['extractability'].lower()
-        
-        # Ensure at least one text field is provided
-        if not values.get('exact_text') and not values.get('claim_text'):
-            raise ValueError("At least one of 'exact_text' or 'claim_text' must be provided")
-        
-        # Use claim_text as exact_text if exact_text not provided
-        if not values.get('exact_text') and values.get('claim_text'):
-            values['exact_text'] = values['claim_text']
-        
-        return values
 
 
 class NonExtractionItem(BaseModel):
     """
     Content that should NOT be extracted (false positive test).
-    
-    Supports two field naming conventions:
-    - Original: item_text, reason_not_relevant
-    - Alternative: text, reason
     """
     
-    item_id: str = Field(..., pattern=r'^[A-Z]+-[A-Z0-9]+-[A-Z0-9]+-NEI-\d{3}$|^AP-\d{3}-NE-\d{3}$')
-    location: Optional[ClaimLocation] = None
-    text: Optional[str] = None  # Content text (alternative field name)
-    item_text: Optional[str] = None  # Content text
-    item_type: Optional[Literal["future_work", "background", "opinion", 
-                        "related_work", "off_topic", "definition"]] = None
+    item_id: str = Field(..., pattern=r'^AP-\d{3}-NE-\d{3}$')
+    location: ClaimLocation
+    item_text: str
+    item_type: Literal["future_work", "background", "opinion", 
+                       "related_work", "off_topic", "definition"]
     
-    reason: Optional[str] = None  # Shorthand reason
-    reason_not_relevant: Optional[str] = None  # Detailed reason
+    reason_not_relevant: str
     if_extracted_severity: DetectionSeverity = DetectionSeverity.ERROR
-    
-    @model_validator(mode='before')
-    @classmethod
-    def normalize_fields(cls, values: dict) -> dict:
-        """Normalize field values to support multiple conventions."""
-        # Ensure at least one text field is provided
-        if not values.get('text') and not values.get('item_text'):
-            raise ValueError("At least one of 'text' or 'item_text' must be provided")
-        
-        # Use text as item_text if item_text not provided
-        if not values.get('item_text') and values.get('text'):
-            values['item_text'] = values['text']
-        
-        return values
 
 
 class AnchorPaper(BaseModel):

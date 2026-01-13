@@ -39,14 +39,12 @@
       "license": "arXiv",
       "abstract": "Comprehensive survey of spiking neural networks covering fundamentals, learning algorithms, and applications.",
       "doi": null,
-      "claim_count_estimate": 20,
-      "annotation_status": "complete",
+      "claim_count_estimate": 8,
+      "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Benchmark comparisons across SNN architectures. ANCHOR PAPER: Exhaustive annotation complete.",
-      "expected_claims": 20,
-      "anchor_paper_id": "NEURO-ANCHOR-001",
-      "annotation_file": "annotations/NEURO-ANCHOR-001.json"
+      "notes": "Benchmark comparisons across SNN architectures",
+      "expected_claims": null
     },
     {
       "paper_id": "NEURO-002",
@@ -66,14 +64,12 @@
       "license": "arXiv",
       "abstract": "Novel event-driven learning algorithms for SNNs with 30x energy reduction on neuromorphic hardware.",
       "doi": null,
-      "claim_count_estimate": 22,
-      "annotation_status": "complete",
+      "claim_count_estimate": 7,
+      "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Reports accuracy improvements of 2.51-6.79%. ANCHOR PAPER: Exhaustive annotation complete.",
-      "expected_claims": 22,
-      "anchor_paper_id": "NEURO-ANCHOR-002",
-      "annotation_file": "annotations/NEURO-ANCHOR-002.json"
+      "notes": "Reports accuracy improvements of 2.51-6.79%",
+      "expected_claims": null
     },
     {
       "paper_id": "NEURO-003",
@@ -1888,8 +1884,8 @@
     "annotation_status": {
       "pending": 0,
       "in_progress": 0,
-      "complete": 2,
-      "not_started": 78
+      "complete": 0,
+      "not_started": 80
     }
   }
 }
