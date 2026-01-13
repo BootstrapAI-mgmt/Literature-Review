@@ -19,6 +19,7 @@
 | 2026-01-10 | Added Wave 1.5 (Paper Sourcing, Annotation); cross-domain validation | Golden dataset enhancement |
 | 2026-01-12 | Added VM-W1.5-0 (Ground Truth Design); bi-directional validation | Golden dataset strategy assessment |
 | 2026-01-13 | Added VM-W1.5-3 (Gap Scenario Execution); FP-02/FP-03/ITER-01 metrics | Third-party gap closure |
+| 2026-01-13 | Decomposed VM-W1.5-2 into 10 sub-tasks (2a-2j); parallel execution | Agent capacity assessment |
 
 ---
 
@@ -351,24 +352,40 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
   - `source_papers.py validate` passes
   - Sourcing report generated
 
-### VM-W1.5-2: Paper Annotation for Golden Dataset *(Enhanced)*
+### VM-W1.5-2: Paper Annotation for Golden Dataset *(Decomposed)*
 - **File:** `VM_WAVE_1.5_2_PAPER_ANNOTATION.md`
-- **Effort:** 28 hours *(increased from 20h)*
+- **Effort:** 28 hours total *(decomposed into 10 sub-tasks)*
 - **Priority:** HIGH
-- **Status:** Not Started
+- **Status:** Decomposed (2026-01-13)
 - **Dependencies:** VM-W1-4, **VM-W1.5-0**, VM-W1.5-1, VM-W1.5-1B
-- **Validation IDs:** QB-01→05, **FP-01, GAP-NEG** (real data + negative cases)
+- **Validation IDs:** QB-01→05, **FP-01, FP-02, FP-03, ITER-01** (real data + negative cases)
+- **Sub-Tasks:**
+
+| Sub-Task | Name | Effort | Papers | Parallelizable |
+|----------|------|--------|--------|----------------|
+| VM-W1.5-2a | Anchor Neuromorphic | 3h | 2-3 | No (first) |
+| VM-W1.5-2b | Anchor Cross-Domain | 4h | 3-5 | No (after 2a) |
+| VM-W1.5-2c | Standard Neuromorphic | 3h | 8 | Yes |
+| VM-W1.5-2d | Standard Quantum | 3h | 10 | Yes |
+| VM-W1.5-2e | Standard Microbiology | 3h | 10 | Yes |
+| VM-W1.5-2f | Standard Fusion/Nano | 4h | 20 | Yes |
+| VM-W1.5-2g | Standard Climate/Materials | 4h | 20 | Yes |
+| VM-W1.5-2h | Standard Biomedical | 3h | 10 | Yes |
+| VM-W1.5-2i | Gap Scenario Design | 3h | 5+ decoys | No (after 2c-2h) |
+| VM-W1.5-2j | Merge & Validation | 2h | - | No (final) |
+
+- **Execution Strategy:**
+  1. Sequential: 2a → 2b (anchor establishment)
+  2. Parallel: 2c-2h (standard annotation)
+  3. Sequential: 2i → 2j (scenarios and merge)
 - **Deliverables:**
-  - **5-10 anchor papers with exhaustive claim inventories (75-150 claims)**
-  - 350-560 annotated claims from standard papers
-  - **50+ non-extraction items (false positive tests)**
-  - **3+ controlled gap scenarios with Pass 1/Pass 2 states**
-  - **5+ decoy paper annotations**
+  - 75-150 anchor claims (exhaustive annotation)
+  - 350-560 standard claims (8 domains)
+  - 50+ non-extraction items (false positive tests)
+  - 3+ gap scenarios with Pass 1/Pass 2 states
+  - 5+ decoy paper annotations
   - 160+ known gaps
-  - 80+ recommendation quality samples
-  - `annotate_paper.py` annotation workflow
-  - `ANNOTATION_GUIDELINES.md` consistency guide
-  - Merged golden dataset v2.0 with real + synthetic claims
+  - Merged golden dataset v2.0
 
 ### VM-W1.5-3: Gap Scenario Execution Framework *(NEW)*
 - **File:** `VM_WAVE_1.5_3_GAP_SCENARIO_EXECUTION.md`
