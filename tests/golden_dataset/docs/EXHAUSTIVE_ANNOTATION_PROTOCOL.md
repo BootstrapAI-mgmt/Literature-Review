@@ -95,7 +95,7 @@ For each claim in the unified inventory:
 For each claim, document:
 
 ```yaml
-claim_id: "AP-001-C01"
+claim_id: "AP-001-C001"
 claim_text: "We achieved 95.2% accuracy..."
 location:
   page: 5
@@ -125,7 +125,7 @@ expected_verdict:
 For each IRRELEVANT item:
 
 ```yaml
-item_id: "AP-001-NE-01"
+item_id: "AP-001-NE-001"
 item_text: "Future work will explore..."
 location:
   page: 10

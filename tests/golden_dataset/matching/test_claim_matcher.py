@@ -98,7 +98,7 @@ class TestClaimMatcher:
         
         ground_truth = [
             ExhaustiveClaim(
-                claim_id="AP-001-C01",
+                claim_id="AP-001-C001",
                 location=ClaimLocation(page=1, paragraph=1),
                 exact_text="This is a test claim.",
                 claim_type="quantitative",
@@ -130,7 +130,7 @@ class TestClaimMatcher:
         
         ground_truth = [
             ExhaustiveClaim(
-                claim_id="AP-001-C01",
+                claim_id="AP-001-C001",
                 location=ClaimLocation(page=5, paragraph=2),
                 exact_text="We achieved 95.2% accuracy on the MNIST benchmark.",
                 claim_type="quantitative",
@@ -156,7 +156,7 @@ class TestClaimMatcher:
         
         ground_truth = [
             ExhaustiveClaim(
-                claim_id="AP-001-C01",
+                claim_id="AP-001-C001",
                 location=ClaimLocation(page=5, paragraph=2),
                 exact_text="We achieved 95.2% accuracy on the benchmark.",
                 claim_type="quantitative",
@@ -189,7 +189,7 @@ class TestClaimMatcher:
         
         ground_truth = [
             ExhaustiveClaim(
-                claim_id="AP-001-C01",
+                claim_id="AP-001-C001",
                 location=ClaimLocation(page=1, paragraph=1),
                 exact_text="High extractability claim.",
                 claim_type="quantitative",
@@ -198,7 +198,7 @@ class TestClaimMatcher:
                 expected_to_be_extracted=True,
             ),
             ExhaustiveClaim(
-                claim_id="AP-001-C02",
+                claim_id="AP-001-C002",
                 location=ClaimLocation(page=2, paragraph=1),
                 exact_text="Low extractability claim.",
                 claim_type="qualitative",
@@ -212,8 +212,8 @@ class TestClaimMatcher:
         extracted = [{"claim_text": "Completely different text."}]
         
         result = matcher.match(extracted, ground_truth)
-        assert "AP-001-C01" in result.false_negatives  # HIGH = false negative
-        assert "AP-001-C02" in result.acceptable_misses  # LOW = acceptable miss
+        assert "AP-001-C001" in result.false_negatives  # HIGH = false negative
+        assert "AP-001-C002" in result.acceptable_misses  # LOW = acceptable miss
 
 
 class TestClaimMatcherValidation:
@@ -227,7 +227,7 @@ class TestClaimMatcherValidation:
         from datetime import datetime
         
         claim = ExhaustiveClaim(
-            claim_id="AP-001-C01",
+            claim_id="AP-001-C001",
             location=ClaimLocation(page=5, paragraph=2),
             exact_text="We achieved 95.2% accuracy on the benchmark.",
             claim_type="quantitative",
@@ -273,7 +273,7 @@ class TestClaimMatcherValidation:
         from datetime import datetime
         
         non_ext = NonExtractionItem(
-            item_id="AP-001-NE-01",
+            item_id="AP-001-NE-001",
             location=ClaimLocation(page=10, paragraph=4),
             item_text="Future work will explore advanced methods.",
             item_type="future_work",

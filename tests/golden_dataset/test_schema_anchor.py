@@ -68,7 +68,7 @@ class TestExhaustiveClaim:
     def test_exhaustive_claim_creation(self):
         """Test creating an exhaustive claim."""
         claim = ExhaustiveClaim(
-            claim_id="AP-001-C01",
+            claim_id="AP-001-C001",
             location=ClaimLocation(page=5, paragraph=2),
             exact_text="We achieved 95.2% accuracy on the benchmark.",
             claim_type="quantitative",
@@ -80,7 +80,7 @@ class TestExhaustiveClaim:
             expected_verdict="approved",
             mapping_confidence="high",
         )
-        assert claim.claim_id == "AP-001-C01"
+        assert claim.claim_id == "AP-001-C001"
         assert claim.extractability == Extractability.HIGH
         assert claim.expected_to_be_extracted is True
     
@@ -88,7 +88,7 @@ class TestExhaustiveClaim:
         """Test claim ID pattern validation."""
         # Valid patterns
         ExhaustiveClaim(
-            claim_id="AP-001-C01",
+            claim_id="AP-001-C001",
             location=ClaimLocation(page=1, paragraph=1),
             exact_text="Test claim text here.",
             claim_type="quantitative",
@@ -125,13 +125,13 @@ class TestNonExtractionItem:
     def test_non_extraction_item_creation(self):
         """Test creating a non-extraction item."""
         item = NonExtractionItem(
-            item_id="AP-001-NE-01",
+            item_id="AP-001-NE-001",
             location=ClaimLocation(page=10, paragraph=4),
             item_text="Future work will explore...",
             item_type="future_work",
             reason_not_relevant="Future work statement, not a current finding",
         )
-        assert item.item_id == "AP-001-NE-01"
+        assert item.item_id == "AP-001-NE-001"
         assert item.item_type == "future_work"
         assert item.if_extracted_severity == DetectionSeverity.ERROR
 
@@ -142,7 +142,7 @@ class TestAnchorPaper:
     def test_anchor_paper_creation(self):
         """Test creating an anchor paper."""
         claim = ExhaustiveClaim(
-            claim_id="AP-001-C01",
+            claim_id="AP-001-C001",
             location=ClaimLocation(page=5, paragraph=2),
             exact_text="We achieved 95.2% accuracy on the benchmark.",
             claim_type="quantitative",
@@ -152,7 +152,7 @@ class TestAnchorPaper:
         )
         
         non_ext = NonExtractionItem(
-            item_id="AP-001-NE-01",
+            item_id="AP-001-NE-001",
             location=ClaimLocation(page=10, paragraph=4),
             item_text="Future work will explore...",
             item_type="future_work",
@@ -185,7 +185,7 @@ class TestAnchorPaper:
         """Test anchor paper statistics calculation."""
         claims = [
             ExhaustiveClaim(
-                claim_id="AP-001-C01",
+                claim_id="AP-001-C001",
                 location=ClaimLocation(page=1, paragraph=1),
                 exact_text="First claim text here.",
                 claim_type="quantitative",
@@ -195,7 +195,7 @@ class TestAnchorPaper:
                 expected_verdict="approved",
             ),
             ExhaustiveClaim(
-                claim_id="AP-001-C02",
+                claim_id="AP-001-C002",
                 location=ClaimLocation(page=2, paragraph=1),
                 exact_text="Second claim text here.",
                 claim_type="qualitative",
@@ -205,7 +205,7 @@ class TestAnchorPaper:
                 expected_verdict="rejected",
             ),
             ExhaustiveClaim(
-                claim_id="AP-001-C03",
+                claim_id="AP-001-C003",
                 location=ClaimLocation(page=3, paragraph=1),
                 exact_text="Third claim text here.",
                 claim_type="methodology",
@@ -248,7 +248,7 @@ class TestAnchorPaper:
         """Test filtering must-find claims."""
         claims = [
             ExhaustiveClaim(
-                claim_id="AP-001-C01",
+                claim_id="AP-001-C001",
                 location=ClaimLocation(page=1, paragraph=1),
                 exact_text="First claim text here.",
                 claim_type="quantitative",
@@ -257,7 +257,7 @@ class TestAnchorPaper:
                 expected_to_be_extracted=True,
             ),
             ExhaustiveClaim(
-                claim_id="AP-001-C02",
+                claim_id="AP-001-C002",
                 location=ClaimLocation(page=2, paragraph=1),
                 exact_text="Second claim text here.",
                 claim_type="qualitative",
@@ -286,7 +286,7 @@ class TestAnchorPaper:
         
         must_find = paper.get_must_find_claims()
         assert len(must_find) == 1
-        assert must_find[0].claim_id == "AP-001-C01"
+        assert must_find[0].claim_id == "AP-001-C001"
 
 
 class TestGapScenario:
@@ -342,10 +342,10 @@ class TestMatchResult:
     def test_match_result_metrics(self):
         """Test precision/recall calculation."""
         result = MatchResult(
-            true_positives=[({"claim_text": "a"}, "AP-001-C01"), ({"claim_text": "b"}, "AP-001-C02")],
+            true_positives=[({"claim_text": "a"}, "AP-001-C001"), ({"claim_text": "b"}, "AP-001-C002")],
             false_positives=[{"claim_text": "c"}],
-            false_negatives=["AP-001-C03"],
-            acceptable_misses=["AP-001-C04"],
+            false_negatives=["AP-001-C003"],
+            acceptable_misses=["AP-001-C004"],
         )
         
         # Precision: 2 / (2 + 1) = 0.667

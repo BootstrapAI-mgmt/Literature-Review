@@ -174,15 +174,22 @@ class GapScenarioExecutor:
                 pass_2_gaps = self._parse_gap_report(pass_2_output)
                 
                 # Check severity changes
+                # Support both unicode arrow (→) and ASCII arrow (->) for compatibility
                 for req_id, expected_change in pass_2_expected.items():
                     actual_severity = pass_2_gaps.get(req_id, {}).get('severity', 'NONE')
-                    expected_after = expected_change.split('→')[1].strip() if '→' in expected_change else expected_change
+                    # Parse expected change with either arrow style
+                    if '→' in expected_change:
+                        expected_after = expected_change.split('→')[1].strip()
+                    elif '->' in expected_change:
+                        expected_after = expected_change.split('->')[1].strip()
+                    else:
+                        expected_after = expected_change
                     if actual_severity != expected_after:
                         failure_reasons.append(
                             f"Pass 2: {req_id} severity is {actual_severity}, expected {expected_after}"
                         )
                     pass_1_severity = pass_1_gaps.get(req_id, {}).get('severity', 'NONE')
-                    pass_2_changes[req_id] = f"{pass_1_severity} → {actual_severity}"
+                    pass_2_changes[req_id] = f"{pass_1_severity} -> {actual_severity}"
                 
                 # Check decoy papers didn't contribute
                 contributions = self._parse_contributions(pass_2_output)

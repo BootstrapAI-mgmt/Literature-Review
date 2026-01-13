@@ -18,26 +18,28 @@ metrics:
   - id: FP-02
     name: Gap Detection False Positive Rate
     category: accuracy
-    threshold: 0.0
-    comparison: "=="
+    threshold: 0.001  # Using small tolerance instead of exact 0.0 for floating-point safety
+    comparison: "<="
     unit: ratio
     description: |
       Rate at which non-gaps are incorrectly flagged as gaps.
       Formula: (Non-gaps flagged) / (Total non-gaps in scenario)
       Source: Gap scenario expected_non_gaps
+      Note: Must be effectively zero (tolerance for floating-point)
     validation_source: gap_scenarios
     severity_if_failed: error
 
   - id: FP-03
     name: Decoy Paper Contribution Rate
     category: accuracy
-    threshold: 0.0
-    comparison: "=="
+    threshold: 0.001  # Using small tolerance instead of exact 0.0 for floating-point safety
+    comparison: "<="
     unit: ratio
     description: |
       Rate at which decoy papers incorrectly contribute to gap closing.
       Formula: (Decoy papers contributing) / (Total decoy papers)
       Source: Gap scenario decoy_papers
+      Note: Must be effectively zero (tolerance for floating-point)
     validation_source: gap_scenarios
     severity_if_failed: critical_error
 

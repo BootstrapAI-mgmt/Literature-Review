@@ -42,7 +42,7 @@ class ExhaustiveClaim(BaseModel):
     classification and explicit expectations for pipeline behavior.
     """
     
-    claim_id: str = Field(..., pattern=r'^AP-\d{3}-C\d{2,3}$')
+    claim_id: str = Field(..., pattern=r'^AP-\d{3}-C\d{3}$')
     location: ClaimLocation
     exact_text: str = Field(..., min_length=10)
     paraphrased_text: Optional[str] = None
@@ -82,7 +82,7 @@ class NonExtractionItem(BaseModel):
     Content that should NOT be extracted (false positive test).
     """
     
-    item_id: str = Field(..., pattern=r'^AP-\d{3}-NE-\d{2,3}$')
+    item_id: str = Field(..., pattern=r'^AP-\d{3}-NE-\d{3}$')
     location: ClaimLocation
     item_text: str
     item_type: Literal["future_work", "background", "opinion", 

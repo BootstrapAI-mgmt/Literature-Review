@@ -119,7 +119,16 @@ class ClaimMatcher:
                 matrix.append(row)
             return matrix
         
-        from sklearn.metrics.pairwise import cosine_similarity
+        try:
+            from sklearn.metrics.pairwise import cosine_similarity
+        except ImportError:
+            logger.warning("scikit-learn not available, falling back to sequence matching")
+            self._use_semantic = False
+            matrix = []
+            for t1 in texts1:
+                row = [self._calculate_sequence_similarity(t1, t2) for t2 in texts2]
+                matrix.append(row)
+            return matrix
         
         embeddings1 = model.encode(texts1)
         embeddings2 = model.encode(texts2)
