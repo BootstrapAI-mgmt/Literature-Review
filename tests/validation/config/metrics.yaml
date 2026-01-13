@@ -91,6 +91,55 @@ metrics:
     description: "Spearman correlation with human rankings"
 
   # ---------------------------------------------------------------------------
+  # False Positive / Negative Case Metrics (FP-*, GAP-NEG, ITER-*)
+  # Added for bi-directional validation per Golden Dataset Strategy Assessment
+  # ---------------------------------------------------------------------------
+  - id: FP-01
+    name: Extraction False Positive Rate
+    category: accuracy
+    threshold: 0.05
+    comparison: "<"
+    unit: ratio
+    description: "Rate of IRRELEVANT items incorrectly extracted from anchor papers"
+    enabled: true
+
+  - id: FP-02
+    name: Gap Detection False Positive Rate
+    category: accuracy
+    threshold: 0.0
+    comparison: "=="
+    unit: ratio
+    description: "Rate of non-gaps incorrectly flagged as gaps in scenarios"
+    enabled: true
+
+  - id: FP-03
+    name: Decoy Paper Contribution Rate
+    category: accuracy
+    threshold: 0.0
+    comparison: "=="
+    unit: ratio
+    description: "Rate of decoy papers incorrectly contributing to gap closure"
+    enabled: true
+
+  - id: GAP-NEG
+    name: Non-Gap Accuracy
+    category: accuracy
+    threshold: 1.0
+    comparison: "=="
+    unit: ratio
+    description: "Accuracy of NOT flagging covered requirements as gaps"
+    enabled: true
+
+  - id: ITER-01
+    name: Iterative Gap Closure Accuracy
+    category: accuracy
+    threshold: 0.95
+    comparison: ">="
+    unit: ratio
+    description: "Accuracy of gap severity transitions in multi-pass scenarios"
+    enabled: true
+
+  # ---------------------------------------------------------------------------
   # Efficiency Metrics (EV-*)
   # ---------------------------------------------------------------------------
   - id: EV-01
