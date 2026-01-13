@@ -1,0 +1,54 @@
+# Negative Case Metrics for Golden Dataset Validation
+# These metrics validate that the pipeline correctly REJECTS irrelevant content
+
+metrics:
+  - id: FP-01
+    name: Extraction False Positive Rate
+    category: accuracy
+    threshold: 0.05
+    comparison: "<"
+    unit: ratio
+    description: |
+      Rate at which IRRELEVANT items are incorrectly extracted.
+      Formula: (IRRELEVANT items extracted) / (Total IRRELEVANT items)
+      Source: Anchor paper non-extraction items
+    validation_source: anchor_papers
+    severity_if_failed: error
+
+  - id: FP-02
+    name: Gap Detection False Positive Rate
+    category: accuracy
+    threshold: 0.001  # Using small tolerance instead of exact 0.0 for floating-point safety
+    comparison: "<="
+    unit: ratio
+    description: |
+      Rate at which non-gaps are incorrectly flagged as gaps.
+      Formula: (Non-gaps flagged) / (Total non-gaps in scenario)
+      Source: Gap scenario expected_non_gaps
+      Note: Must be effectively zero (tolerance for floating-point)
+    validation_source: gap_scenarios
+    severity_if_failed: error
+
+  - id: FP-03
+    name: Decoy Paper Contribution Rate
+    category: accuracy
+    threshold: 0.001  # Using small tolerance instead of exact 0.0 for floating-point safety
+    comparison: "<="
+    unit: ratio
+    description: |
+      Rate at which decoy papers incorrectly contribute to gap closing.
+      Formula: (Decoy papers contributing) / (Total decoy papers)
+      Source: Gap scenario decoy_papers
+      Note: Must be effectively zero (tolerance for floating-point)
+    validation_source: gap_scenarios
+    severity_if_failed: critical_error
+
+# Aggregate Negative Case Summary
+aggregate:
+  - id: NEG-SUMMARY
+    name: Overall Negative Case Compliance
+    components: [FP-01, FP-02, FP-03]
+    passed_when: all_pass
+    description: |
+      All negative case validations must pass for the golden dataset
+      to be considered valid for bi-directional testing.

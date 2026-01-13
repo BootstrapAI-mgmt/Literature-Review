@@ -19,6 +19,21 @@ from .loader import (
     check_golden_dataset_available,
     requires_golden_dataset,
 )
+from .schema_anchor import (
+    Extractability,
+    DetectionSeverity,
+    ClaimLocation,
+    ExhaustiveClaim,
+    NonExtractionItem,
+    AnchorPaper,
+    GapScenarioPaper,
+    DecoyPaper,
+    ExpectedGap,
+    ExpectedNonGap,
+    GapScenario,
+    MatchResult,
+    ScenarioResult,
+)
 
 __all__ = [
     # Schema exports
@@ -34,4 +49,18 @@ __all__ = [
     "GoldenDatasetLoader",
     "check_golden_dataset_available",
     "requires_golden_dataset",
+    # Anchor paper schema exports
+    "Extractability",
+    "DetectionSeverity",
+    "ClaimLocation",
+    "ExhaustiveClaim",
+    "NonExtractionItem",
+    "AnchorPaper",
+    "GapScenarioPaper",
+    "DecoyPaper",
+    "ExpectedGap",
+    "ExpectedNonGap",
+    "GapScenario",
+    "MatchResult",
+    "ScenarioResult",
 ]
