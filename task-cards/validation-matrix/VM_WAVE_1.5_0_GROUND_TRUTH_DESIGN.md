@@ -1195,6 +1195,11 @@ aggregate:
 ```
 
 ### 8. Pilot Annotation Checklist
+=======
+```
+
+### 5. Pilot Annotation Checklist
+>>>>>>> origin/main
 
 **File:** `tests/golden_dataset/docs/PILOT_ANNOTATION_CHECKLIST.md`
 
