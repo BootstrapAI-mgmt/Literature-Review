@@ -63,8 +63,9 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
                     ▼
         WAVE 1.5: Ground Truth Infrastructure (ENHANCED)
 ┌───────────────────────────────────────────────────────────┐
-│ VM-W1.5-0: Ground Truth Design    (NEW - PREREQUISITE)   │
-│ VM-W1.5-1: Paper Sourcing                                │
+│ VM-W1.5-0: Ground Truth Design    (PREREQUISITE)         │
+│ VM-W1.5-1: Paper Sourcing         (✅ Complete)          │
+│ VM-W1.5-1B: Paper Population      (80+ papers)           │
 │ VM-W1.5-2: Paper Annotation       (Enhanced)             │
 └───────────────────────────────────────────────────────────┘
                     │ (Week 5-6)
@@ -119,9 +120,10 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 | VM-W1-2 | FV-03, AV-01, AV-02 | Claim identification accuracy |
 | VM-W1-3 | FV-04, FV-05, FV-06, **FV-10** | Judge decisions + Version sync |
 | VM-W1-4 | QB-01→05 (impl) | Golden dataset creation |
-| **VM-W1.5-0** | **FP-01, GAP-NEG, ITER-01** | **Ground truth design validation (NEW)** |
-| **VM-W1.5-1** | QB-01, QB-02 | Open access paper sourcing |
-| **VM-W1.5-2** | QB-01→05, **FP-01, GAP-NEG, ITER-01** | Paper annotation (enhanced) |
+| **VM-W1.5-0** | **FP-01, FP-02, FP-03, ITER-01** | **Ground truth design validation** |
+| **VM-W1.5-1** | QB-01, QB-02 | Open access paper sourcing (✅ Complete) |
+| **VM-W1.5-1B** | QB-01, QB-02 | Paper population (80+ papers) |
+| **VM-W1.5-2** | QB-01→05, **FP-01, FP-02, FP-03, ITER-01** | Paper annotation (enhanced) |
 | VM-W2-1 | AV-03, AV-05, AV-06, **FV-07** | Accuracy baseline + Gap detection |
 | VM-W2-2 | AV-04, AV-08 | Judge calibration analysis |
 | VM-W2-3 | EV-01, EV-02, EV-03, EV-07, **FV-08** | Efficiency + Incremental detection |
@@ -146,8 +148,9 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 > - MT-01→02: Metrics configuration validation
 > - DF-01→02: Domain fixture validation
 > - MC-01→03: Model comparison benchmarks
-> - **FP-01: False Positive Prevention (extraction precision)** *(added 2026-01-12)*
-> - **GAP-NEG: Gap Negative Case Validation (non-gap handling)** *(added 2026-01-12)*
+> - **FP-01: Extraction False Positive Rate (<5%)** *(added 2026-01-12)*
+> - **FP-02: Gap Detection False Positive Rate (0%)** *(added 2026-01-12)*
+> - **FP-03: Decoy Paper Contribution Rate (0%)** *(added 2026-01-12)*
 > - **ITER-01: Iterative Gap Closing Validation** *(added 2026-01-12)*
 
 ---

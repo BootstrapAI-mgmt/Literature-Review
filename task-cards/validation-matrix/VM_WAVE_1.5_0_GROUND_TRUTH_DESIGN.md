@@ -51,6 +51,32 @@ This task card establishes the methodology to create **true ground truth** that 
 - [ ] Pilot annotation of 3-5 anchor papers complete
 - [ ] Inter-rater agreement measured (target: Cohen's κ ≥ 0.7)
 - [ ] Annotation time estimates validated
+- [ ] Extraction matching algorithm specified *(added)*
+- [ ] Gap scenario execution protocol documented *(added)*
+- [ ] Validation scope by paper type clarified *(added)*
+
+---
+
+## Validation Scope by Paper Type
+
+> **Critical Clarification:** Different paper types enable different validations.
+> This table prevents over-claiming validation coverage.
+
+| Validation ID | Anchor Papers (5-10) | Standard Papers (70+) | Notes |
+|---------------|---------------------|----------------------|-------|
+| **AV-01** (Precision) | ✅ Full (false positive tests) | ❌ Not validated | Requires exhaustive inventory |
+| **AV-02** (Recall) | ✅ Full (must-find claims) | ❌ Not validated | Requires exhaustive inventory |
+| **AV-03** (Judge Accuracy) | ✅ Full | ✅ Full | Forward-designed claims sufficient |
+| **AV-04** (Calibration) | ✅ Full | ✅ Full | Forward-designed claims sufficient |
+| **QB-02** (Pillar Mapping) | ✅ Full | ✅ Full | Forward-designed claims sufficient |
+| **FV-07** (Gap Detection) | ✅ Via scenarios | ✅ Via scenarios | Uses controlled gap scenarios |
+| **RA-01** (Recommendations) | ✅ Via scenarios | ✅ Via scenarios | Uses controlled gap scenarios |
+| **FP-01** (Extraction FP) | ✅ Full | ❌ Not validated | Requires non-extraction items |
+| **FP-02** (Gap FP) | ✅ Via scenarios | ✅ Via scenarios | Uses expected_non_gaps |
+| **FP-03** (Decoy Contrib) | ✅ Via scenarios | ✅ Via scenarios | Uses decoy papers |
+
+**Implication:** Extraction validation (AV-01, AV-02, FP-01) is **only possible with exhaustive annotation**.
+Standard papers validate downstream processing (verdicts, mapping, gaps) but NOT extraction capability.
 
 ---
 
@@ -655,9 +681,525 @@ class GapScenario(BaseModel):
     design_date: datetime
     validated: bool = False
     validation_notes: Optional[str] = None
+
+
+class MatchResult(BaseModel):
+    """Result of matching extracted claims to ground truth."""
+    true_positives: List[tuple] = Field(default_factory=list)  # (extracted, ground_truth) pairs
+    false_positives: List[Dict] = Field(default_factory=list)  # Extracted with no match
+    false_negatives: List[ExhaustiveClaim] = Field(default_factory=list)  # HIGH extractability not matched
+    acceptable_misses: List[ExhaustiveClaim] = Field(default_factory=list)  # LOW extractability not matched
+    
+    @property
+    def precision(self) -> float:
+        """Extraction precision: TP / (TP + FP)."""
+        tp = len(self.true_positives)
+        fp = len(self.false_positives)
+        return tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    
+    @property
+    def recall(self) -> float:
+        """Extraction recall: TP / (TP + FN)."""
+        tp = len(self.true_positives)
+        fn = len(self.false_negatives)
+        return tp / (tp + fn) if (tp + fn) > 0 else 0.0
+
+
+class ScenarioResult(BaseModel):
+    """Result of executing a gap scenario."""
+    scenario_id: str
+    pass_1_gaps_detected: List[str] = Field(default_factory=list)
+    pass_1_false_gaps: List[str] = Field(default_factory=list)  # Non-gaps flagged as gaps
+    pass_1_missed_gaps: List[str] = Field(default_factory=list)  # Expected gaps not detected
+    pass_2_severity_changes: Dict[str, str] = Field(default_factory=dict)
+    pass_2_decoy_contributions: List[str] = Field(default_factory=list)  # Should be empty
+    passed: bool = False
+    failure_reasons: List[str] = Field(default_factory=list)
+```
+
+### 5. Extraction Matching Algorithm
+
+**File:** `tests/golden_dataset/matching/claim_matcher.py`
+
+> **Critical Addition:** This algorithm defines how we match pipeline-extracted claims
+> to ground truth claims for calculating AV-01 (precision) and AV-02 (recall).
+
+```python
+"""
+Claim Matching Algorithm for Ground Truth Validation
+
+Matches extracted claims to exhaustive ground truth inventories
+using semantic similarity and location-based validation.
+"""
+
+from dataclasses import dataclass
+from typing import List, Dict, Tuple, Optional
+import numpy as np
+
+
+@dataclass
+class MatchResult:
+    """Result of matching extracted claims to ground truth."""
+    true_positives: List[Tuple[Dict, 'ExhaustiveClaim']]
+    false_positives: List[Dict]
+    false_negatives: List['ExhaustiveClaim']
+    acceptable_misses: List['ExhaustiveClaim']
+    
+    @property
+    def precision(self) -> float:
+        tp = len(self.true_positives)
+        fp = len(self.false_positives)
+        return tp / (tp + fp) if (tp + fp) > 0 else 0.0
+    
+    @property
+    def recall(self) -> float:
+        tp = len(self.true_positives)
+        fn = len(self.false_negatives)
+        return tp / (tp + fn) if (tp + fn) > 0 else 0.0
+    
+    @property
+    def f1(self) -> float:
+        p, r = self.precision, self.recall
+        return 2 * p * r / (p + r) if (p + r) > 0 else 0.0
+
+
+class ClaimMatcher:
+    """
+    Match extracted claims to ground truth for validation.
+    
+    Uses semantic similarity with location-based validation
+    to prevent matching semantically similar but wrong claims.
+    """
+    
+    def __init__(
+        self,
+        similarity_threshold: float = 0.8,
+        location_tolerance: int = 1,  # Page tolerance
+        model_name: str = 'all-MiniLM-L6-v2'
+    ):
+        from sentence_transformers import SentenceTransformer
+        self.model = SentenceTransformer(model_name)
+        self.threshold = similarity_threshold
+        self.location_tolerance = location_tolerance
+    
+    def match(
+        self,
+        extracted: List[Dict],
+        ground_truth: List['ExhaustiveClaim']
+    ) -> MatchResult:
+        """
+        Match extracted claims to ground truth.
+        
+        Args:
+            extracted: List of extracted claims with 'claim_text' and 'source_page'
+            ground_truth: List of ExhaustiveClaim from anchor paper
+        
+        Returns:
+            MatchResult with precision/recall components
+        """
+        if not extracted or not ground_truth:
+            return MatchResult(
+                true_positives=[],
+                false_positives=extracted if extracted else [],
+                false_negatives=[g for g in ground_truth 
+                                if g.extractability.value == 'high'],
+                acceptable_misses=[g for g in ground_truth 
+                                  if g.extractability.value == 'low']
+            )
+        
+        # Embed all claims
+        ext_texts = [e.get('claim_text', '') for e in extracted]
+        gt_texts = [g.exact_text for g in ground_truth]
+        
+        ext_embeddings = self.model.encode(ext_texts)
+        gt_embeddings = self.model.encode(gt_texts)
+        
+        # Calculate similarity matrix
+        from sklearn.metrics.pairwise import cosine_similarity
+        similarities = cosine_similarity(ext_embeddings, gt_embeddings)
+        
+        # Apply location-based filtering
+        for i, ext in enumerate(extracted):
+            ext_page = ext.get('source_page', 0)
+            for j, gt in enumerate(ground_truth):
+                gt_page = gt.location.page if gt.location else 0
+                if abs(ext_page - gt_page) > self.location_tolerance:
+                    similarities[i, j] = 0  # Disqualify distant matches
+        
+        # Greedy matching (highest similarity first)
+        matches = []
+        used_ext = set()
+        used_gt = set()
+        
+        # Sort by similarity descending
+        flat_indices = np.argsort(-similarities.flatten())
+        for idx in flat_indices:
+            i, j = divmod(idx, len(ground_truth))
+            if i in used_ext or j in used_gt:
+                continue
+            if similarities[i, j] >= self.threshold:
+                matches.append((extracted[i], ground_truth[j]))
+                used_ext.add(i)
+                used_gt.add(j)
+        
+        # Classify unmatched
+        false_positives = [
+            extracted[i] for i in range(len(extracted)) 
+            if i not in used_ext
+        ]
+        
+        false_negatives = [
+            ground_truth[j] for j in range(len(ground_truth))
+            if j not in used_gt 
+            and ground_truth[j].extractability.value == 'high'
+        ]
+        
+        acceptable_misses = [
+            ground_truth[j] for j in range(len(ground_truth))
+            if j not in used_gt 
+            and ground_truth[j].extractability.value == 'low'
+        ]
+        
+        return MatchResult(
+            true_positives=matches,
+            false_positives=false_positives,
+            false_negatives=false_negatives,
+            acceptable_misses=acceptable_misses
+        )
+    
+    def validate_anchor_paper(
+        self,
+        extracted: List[Dict],
+        anchor_paper: 'AnchorPaper'
+    ) -> Dict:
+        """
+        Full validation of extraction against an anchor paper.
+        
+        Returns:
+            Dict with precision, recall, and detailed breakdown
+        """
+        result = self.match(extracted, anchor_paper.claim_inventory)
+        
+        # Check non-extraction items (false positive test)
+        non_extraction_violations = []
+        for ne_item in anchor_paper.non_extraction_items:
+            for ext in extracted:
+                ext_embed = self.model.encode([ext.get('claim_text', '')])
+                ne_embed = self.model.encode([ne_item.item_text])
+                sim = cosine_similarity(ext_embed, ne_embed)[0][0]
+                if sim >= self.threshold:
+                    non_extraction_violations.append({
+                        'extracted': ext,
+                        'should_not_extract': ne_item,
+                        'similarity': float(sim)
+                    })
+        
+        return {
+            'precision': result.precision,
+            'recall': result.recall,
+            'f1': result.f1,
+            'true_positives': len(result.true_positives),
+            'false_positives': len(result.false_positives),
+            'false_negatives': len(result.false_negatives),
+            'acceptable_misses': len(result.acceptable_misses),
+            'non_extraction_violations': non_extraction_violations,
+            'passed': (
+                result.recall >= 0.85 and  # AV-02 threshold
+                result.precision >= 0.85 and  # AV-01 threshold
+                len(non_extraction_violations) == 0  # FP-01
+            )
+        }
+```
+
+### 6. Gap Scenario Execution Protocol
+
+**File:** `tests/golden_dataset/scenarios/executor.py`
+
+> **Critical Addition:** This framework defines how to execute controlled gap scenarios
+> for validating multi-pass gap detection behavior.
+
+```python
+"""
+Gap Scenario Execution Framework
+
+Executes controlled gap scenarios to validate:
+1. Correct gap detection (finding gaps that exist)
+2. Correct non-gap handling (not flagging covered requirements)
+3. Iterative gap closing (Pass 2 paper attribution)
+4. Decoy paper rejection (irrelevant paper handling)
+"""
+
+from dataclasses import dataclass
+from typing import List, Dict, Optional
+from pathlib import Path
+import json
+import shutil
+
+
+@dataclass
+class ScenarioResult:
+    """Result of executing a gap scenario."""
+    scenario_id: str
+    passed: bool
+    
+    # Pass 1 results
+    pass_1_gaps_detected: List[str]
+    pass_1_false_gaps: List[str]  # Non-gaps incorrectly flagged
+    pass_1_missed_gaps: List[str]  # Expected gaps not detected
+    
+    # Pass 2 results (if iterative scenario)
+    pass_2_severity_changes: Dict[str, str]
+    pass_2_expected_changes: Dict[str, str]
+    pass_2_decoy_contributions: List[str]  # Should be empty
+    
+    failure_reasons: List[str]
+
+
+class GapScenarioExecutor:
+    """Execute controlled gap scenarios for validation."""
+    
+    def __init__(
+        self,
+        pipeline_runner,  # Callable that runs the pipeline
+        database_manager,  # Manages database state
+        output_dir: Path
+    ):
+        self.pipeline = pipeline_runner
+        self.db = database_manager
+        self.output_dir = output_dir
+    
+    def execute_scenario(self, scenario: 'GapScenario') -> ScenarioResult:
+        """
+        Execute a gap scenario and validate results.
+        
+        Steps:
+        1. Initialize database with Pass 1 papers only
+        2. Run gap detection pipeline
+        3. Validate detected gaps against expected_gaps
+        4. Validate non-detected against expected_non_gaps
+        5. Add Pass 2 papers (gap-closing + decoys)
+        6. Re-run gap detection
+        7. Validate severity changes
+        8. Validate decoy papers didn't contribute
+        """
+        failure_reasons = []
+        
+        # === PRE-EXECUTION ===
+        # Create isolated database state
+        snapshot_id = self.db.create_snapshot()
+        
+        try:
+            # === PASS 1: INITIAL STATE ===
+            # Load only Pass 1 papers
+            self.db.clear()
+            for paper in scenario.initial_papers:
+                self.db.add_paper(paper.paper_id)
+            
+            # Run pipeline
+            pass_1_output = self.pipeline.run(mode='full')
+            pass_1_gaps = self._parse_gap_report(pass_1_output)
+            
+            # Validate Pass 1 - expected gaps detected
+            pass_1_missed = []
+            for expected in scenario.expected_gaps:
+                if expected.must_be_detected:
+                    if expected.requirement_id not in pass_1_gaps:
+                        pass_1_missed.append(expected.requirement_id)
+                        failure_reasons.append(
+                            f"Pass 1: Expected gap {expected.requirement_id} not detected"
+                        )
+            
+            # Validate Pass 1 - non-gaps not flagged
+            pass_1_false = []
+            for non_gap in scenario.expected_non_gaps:
+                if non_gap.requirement_id in pass_1_gaps:
+                    pass_1_false.append(non_gap.requirement_id)
+                    failure_reasons.append(
+                        f"Pass 1: Non-gap {non_gap.requirement_id} incorrectly flagged"
+                    )
+            
+            # === PASS 2: GAP CLOSING (if iterative) ===
+            pass_2_changes = {}
+            pass_2_expected = scenario.expected_severity_changes
+            pass_2_decoys = []
+            
+            if scenario.scenario_type == 'iterative':
+                # Add gap-closing papers
+                for paper in scenario.gap_closing_papers:
+                    self.db.add_paper(paper.paper_id)
+                
+                # Add decoy papers
+                for decoy in scenario.decoy_papers:
+                    self.db.add_paper(decoy.paper_id)
+                
+                # Run pipeline in incremental mode
+                pass_2_output = self.pipeline.run(mode='incremental')
+                pass_2_gaps = self._parse_gap_report(pass_2_output)
+                
+                # Check severity changes
+                for req_id, expected_change in pass_2_expected.items():
+                    actual_severity = pass_2_gaps.get(req_id, {}).get('severity', 'NONE')
+                    expected_after = expected_change.split('→')[1].strip() if '→' in expected_change else expected_change
+                    if actual_severity != expected_after:
+                        failure_reasons.append(
+                            f"Pass 2: {req_id} severity is {actual_severity}, expected {expected_after}"
+                        )
+                    pass_2_changes[req_id] = f"{pass_1_gaps.get(req_id, {}).get('severity', 'NONE')} → {actual_severity}"
+                
+                # Check decoy papers didn't contribute
+                contributions = self._parse_contributions(pass_2_output)
+                for decoy in scenario.decoy_papers:
+                    for req_id in decoy.should_not_close:
+                        if self._paper_contributed(contributions, decoy.paper_id, req_id):
+                            pass_2_decoys.append(f"{decoy.paper_id} → {req_id}")
+                            failure_reasons.append(
+                                f"Pass 2: Decoy {decoy.paper_id} incorrectly contributed to {req_id}"
+                            )
+            
+            passed = len(failure_reasons) == 0
+            
+            return ScenarioResult(
+                scenario_id=scenario.scenario_id,
+                passed=passed,
+                pass_1_gaps_detected=list(pass_1_gaps.keys()),
+                pass_1_false_gaps=pass_1_false,
+                pass_1_missed_gaps=pass_1_missed,
+                pass_2_severity_changes=pass_2_changes,
+                pass_2_expected_changes=pass_2_expected,
+                pass_2_decoy_contributions=pass_2_decoys,
+                failure_reasons=failure_reasons
+            )
+            
+        finally:
+            # Restore database state
+            self.db.restore_snapshot(snapshot_id)
+    
+    def _parse_gap_report(self, output: Dict) -> Dict[str, Dict]:
+        """Parse gap_analysis_report.json output."""
+        gaps = {}
+        for gap in output.get('gaps', []):
+            gaps[gap['requirement_id']] = {
+                'severity': gap.get('severity'),
+                'completeness': gap.get('completeness')
+            }
+        return gaps
+    
+    def _parse_contributions(self, output: Dict) -> List[Dict]:
+        """Parse paper contributions from output."""
+        return output.get('contributions', [])
+    
+    def _paper_contributed(
+        self, contributions: List[Dict], paper_id: str, req_id: str
+    ) -> bool:
+        """Check if a paper contributed to a specific requirement."""
+        for contrib in contributions:
+            if contrib.get('paper_id') == paper_id:
+                if req_id in contrib.get('requirements', []):
+                    return True
+        return False
+
+
+# === EXECUTION PROTOCOL ===
+
+"""
+Gap Scenario Execution Protocol
+================================
+
+Pre-Execution:
+1. Create isolated database state (snapshot/restore)
+2. Load only Pass 1 papers
+3. Clear any cached analysis results
+
+Pass 1 Execution:
+1. Run full pipeline on Pass 1 database
+2. Capture gap_analysis_report.json
+3. Compare detected gaps to expected_gaps
+4. Compare non-flagged requirements to expected_non_gaps
+5. Record Pass 1 validation results
+
+Pass 2 Execution (for iterative scenarios):
+1. Add gap-closing papers to database
+2. Add decoy papers to database
+3. Run pipeline in incremental mode
+4. Capture updated gap_analysis_report.json
+5. Compare severity changes to expected
+6. Verify decoy papers have zero contribution
+
+Validation Criteria:
+- Pass 1: 100% of must_be_detected gaps found
+- Pass 1: 100% of must_not_be_flagged requirements clean
+- Pass 2: All expected severity changes occurred
+- Pass 2: Zero contribution from decoy papers
+"""
+```
+
+### 7. Negative Case Metrics
+
+**File:** `tests/validation/config/negative_case_metrics.yaml`
+
+> **Critical Addition:** Metrics for validating false positive prevention.
+
+```yaml
+# Negative Case Metrics for Golden Dataset Validation
+# These metrics validate that the pipeline correctly REJECTS irrelevant content
+
+metrics:
+  - id: FP-01
+    name: Extraction False Positive Rate
+    category: accuracy
+    threshold: 0.05
+    comparison: "<"
+    unit: ratio
+    description: |
+      Rate at which IRRELEVANT items are incorrectly extracted.
+      Formula: (IRRELEVANT items extracted) / (Total IRRELEVANT items)
+      Source: Anchor paper non-extraction items
+    validation_source: anchor_papers
+    severity_if_failed: error
+
+  - id: FP-02
+    name: Gap Detection False Positive Rate
+    category: accuracy
+    threshold: 0.0
+    comparison: "=="
+    unit: ratio
+    description: |
+      Rate at which non-gaps are incorrectly flagged as gaps.
+      Formula: (Non-gaps flagged) / (Total non-gaps in scenario)
+      Source: Gap scenario expected_non_gaps
+    validation_source: gap_scenarios
+    severity_if_failed: error
+
+  - id: FP-03
+    name: Decoy Paper Contribution Rate
+    category: accuracy
+    threshold: 0.0
+    comparison: "=="
+    unit: ratio
+    description: |
+      Rate at which decoy papers incorrectly contribute to gap closing.
+      Formula: (Decoy papers contributing) / (Total decoy papers)
+      Source: Gap scenario decoy_papers
+    validation_source: gap_scenarios
+    severity_if_failed: critical_error
+
+# Aggregate Negative Case Summary
+aggregate:
+  - id: NEG-SUMMARY
+    name: Overall Negative Case Compliance
+    components: [FP-01, FP-02, FP-03]
+    passed_when: all_pass
+    description: |
+      All negative case validations must pass for the golden dataset
+      to be considered valid for bi-directional testing.
+```
+
+### 8. Pilot Annotation Checklist
+=======
 ```
 
 ### 5. Pilot Annotation Checklist
+>>>>>>> origin/main
 
 **File:** `tests/golden_dataset/docs/PILOT_ANNOTATION_CHECKLIST.md`
 
