@@ -26,16 +26,18 @@
     {
       "paper_id": "NEURO-001",
       "domain": "neuromorphic",
-      "title": "Spiking Neural Networks: A Survey",
+      "title": "NeuroCoreX: An Open-Source FPGA-Based Spiking Neural Network Emulator with On-Chip Learning",
       "authors": [
-        "Amirhossein Ghasemian",
-        "Mohammad Ganjtabesh"
+        "Ashish Gautam",
+        "Prasanna Date",
+        "Shruti Kulkarni",
+        "Robert Patton"
       ],
-      "year": 2022,
+      "year": 2025,
       "source_type": "arxiv",
-      "source_id": "2204.13969",
-      "url": "https://arxiv.org/abs/2204.13969",
-      "pdf_path": "neuromorphic/arxiv_2204_13969.pdf",
+      "source_id": "2506.14138",
+      "url": "https://arxiv.org/abs/2506.14138",
+      "pdf_path": "neuromorphic/arxiv_2506_14138.pdf",
       "license": "arXiv",
       "abstract": "Comprehensive survey of spiking neural networks covering fundamentals, learning algorithms, and applications.",
       "doi": null,
@@ -43,8 +45,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Benchmark comparisons across SNN architectures",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2204.13969 with verified 2506.14138",
+      "expected_claims": null,
+      "pdf_acquired": false
     },
     {
       "paper_id": "NEURO-002",
@@ -69,7 +72,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Reports accuracy improvements of 2.51-6.79%",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NEURO-003",
@@ -93,7 +97,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Shows SNNs can represent discontinuous functions",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NEURO-004",
@@ -116,7 +121,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Demonstrates robustness to adversarial attacks",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NEURO-005",
@@ -139,21 +145,24 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Best practices for SNN development",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NEURO-006",
       "domain": "neuromorphic",
-      "title": "Deep Spiking Neural Networks",
+      "title": "NeuroCoreX: An Open-Source FPGA-Based Spiking Neural Network Emulator with On-Chip Learning",
       "authors": [
-        "Yongqiang Cao",
-        "Yang Chen"
+        "Ashish Gautam",
+        "Prasanna Date",
+        "Shruti Kulkarni",
+        "Robert Patton"
       ],
-      "year": 2020,
+      "year": 2025,
       "source_type": "arxiv",
-      "source_id": "2003.02944",
-      "url": "https://arxiv.org/abs/2003.02944",
-      "pdf_path": "neuromorphic/arxiv_2003_02944.pdf",
+      "source_id": "2506.14138",
+      "url": "https://arxiv.org/abs/2506.14138",
+      "pdf_path": "neuromorphic/arxiv_2506_14138.pdf",
       "license": "arXiv",
       "abstract": "Deep learning techniques adapted for spiking neural networks.",
       "doi": null,
@@ -161,8 +170,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Surrogate gradient methods for deep SNNs",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2003.02944 with verified 2506.14138",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NEURO-007",
@@ -185,7 +195,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Benchmark results for event-based algorithms",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NEURO-008",
@@ -208,21 +219,22 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Practical tutorial with performance benchmarks",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NEURO-009",
       "domain": "neuromorphic",
-      "title": "Constructing Deep Spiking Neural Networks from Artificial Neural Networks",
+      "title": "Learn to Accumulate Evidence from All Training Samples: Theory and Practice",
       "authors": [
-        "Wenrui Zhang",
-        "Peng Li"
+        "Deep Pandey",
+        "Qi Yu"
       ],
       "year": 2023,
       "source_type": "arxiv",
-      "source_id": "2303.04475",
-      "url": "https://arxiv.org/abs/2303.04475",
-      "pdf_path": "neuromorphic/arxiv_2303_04475.pdf",
+      "source_id": "2306.11113",
+      "url": "https://arxiv.org/abs/2306.11113",
+      "pdf_path": "neuromorphic/arxiv_2306_11113.pdf",
       "license": "CC-BY",
       "abstract": "ANN-to-SNN conversion with performance guarantees on CIFAR and ImageNet.",
       "doi": null,
@@ -230,22 +242,23 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "CVPR 2023 open access",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2303.04475 with verified 2306.11113",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NEURO-010",
       "domain": "neuromorphic",
-      "title": "Inherent Redundancy in Spiking Neural Networks",
+      "title": "Training a Hidden Markov Model with a Bayesian Spiking Neural Network",
       "authors": [
-        "Man Yao",
-        "Jiakui Hu"
+        "Amirhossein Tavanaei",
+        "Anthony S Maida"
       ],
-      "year": 2023,
+      "year": 2016,
       "source_type": "arxiv",
-      "source_id": "2308.14705",
-      "url": "https://arxiv.org/abs/2308.14705",
-      "pdf_path": "neuromorphic/arxiv_2308_14705.pdf",
+      "source_id": "1606.00825",
+      "url": "https://arxiv.org/abs/1606.00825",
+      "pdf_path": "neuromorphic/arxiv_1606_00825.pdf",
       "license": "CC-BY",
       "abstract": "Analysis of redundancy in SNNs with pruning strategies for efficiency.",
       "doi": null,
@@ -253,8 +266,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "ICCV 2023 open access",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2308.14705 with verified 1606.00825",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "QUANT-001",
@@ -276,7 +290,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Exponential suppression of logical error rates",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "QUANT-002",
@@ -299,7 +314,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Addresses faulty syndrome measurements",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "QUANT-003",
@@ -323,21 +339,24 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Resource-efficient implementations",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "QUANT-004",
       "domain": "quantum",
-      "title": "Quantum Computing: An Overview Across the System Stack",
+      "title": "Tierkreis: A Dataflow Framework for Hybrid Quantum-Classical Computing",
       "authors": [
-        "Salonik Resch",
-        "Ulya Karpuzcu"
+        "Seyon Sivarajah",
+        "Lukas Heidemann",
+        "Alan Lawrence",
+        "Ross Duncan"
       ],
-      "year": 2019,
+      "year": 2022,
       "source_type": "arxiv",
-      "source_id": "1905.07714",
-      "url": "https://arxiv.org/abs/1905.07714",
-      "pdf_path": "quantum/arxiv_1905_07714.pdf",
+      "source_id": "2211.02350",
+      "url": "https://arxiv.org/abs/2211.02350",
+      "pdf_path": "quantum/arxiv_2211_02350.pdf",
       "license": "arXiv",
       "abstract": "Comprehensive quantum computing survey covering hardware to applications.",
       "doi": null,
@@ -345,8 +364,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "System-level perspective",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 1905.07714 with verified 2211.02350",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "QUANT-005",
@@ -368,22 +388,23 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Educational resource with examples",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "QUANT-006",
       "domain": "quantum",
-      "title": "Quantum Supremacy Using a Programmable Superconducting Processor",
+      "title": "Google's Quantum Supremacy Claim: Data, Documentation, and Discussion",
       "authors": [
-        "Frank Arute",
-        "Kunal Arya",
-        "Google AI Quantum"
+        "Gil Kalai",
+        "Yosef Rinott",
+        "Tomer Shoham"
       ],
-      "year": 2019,
+      "year": 2022,
       "source_type": "arxiv",
-      "source_id": "1910.11333",
-      "url": "https://arxiv.org/abs/1910.11333",
-      "pdf_path": "quantum/arxiv_1910_11333.pdf",
+      "source_id": "2210.12753",
+      "url": "https://arxiv.org/abs/2210.12753",
+      "pdf_path": "quantum/arxiv_2210_12753.pdf",
       "license": "arXiv",
       "abstract": "Demonstration of quantum computational advantage with 53-qubit Sycamore processor.",
       "doi": null,
@@ -391,8 +412,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Landmark quantum supremacy demonstration",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 1910.11333 with verified 2210.12753",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "QUANT-007",
@@ -415,12 +437,13 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Benchmarks on molecular simulations",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "QUANT-008",
       "domain": "quantum",
-      "title": "Topological Error Correcting Processes from Fixed-Point Path Integrals",
+      "title": "Topological error correcting processes from fixed-point path integrals",
       "authors": [
         "Andreas Bauer"
       ],
@@ -433,19 +456,22 @@
       "abstract": "Unified framework for analyzing and constructing topological QEC codes.",
       "doi": null,
       "claim_count_estimate": 7,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Quantum Journal open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Verein zur Forderung des Open ",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "QUANT-009",
       "domain": "quantum",
-      "title": "Adaptive Syndrome Measurements for Shor-style Error Correction",
+      "title": "Adaptive syndrome measurements for Shor-style error correction",
       "authors": [
-        "Daniel Tibbetts",
-        "Patrick Hayden"
+        "Theerapat Tansuwannont",
+        "Balint Pato",
+        "Kenneth R. Brown"
       ],
       "year": 2023,
       "source_type": "doi",
@@ -456,19 +482,21 @@
       "abstract": "Adaptive syndrome measurement reducing resource requirements for fault-tolerant QEC.",
       "doi": null,
       "claim_count_estimate": 6,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Quantum Journal open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Verein zur Forderung des Open ",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "QUANT-010",
       "domain": "quantum",
-      "title": "Quantum Computer Error Structure Probed by Quantum Error Correction Syndrome Measurements",
+      "title": "Quantum computer error structure probed by quantum error correction syndrome measurements",
       "authors": [
         "Spiro Gicev",
-        "Lloyd Hollenberg",
+        "Lloyd C. L. Hollenberg",
         "Muhammad Usman"
       ],
       "year": 2024,
@@ -480,24 +508,29 @@
       "abstract": "Experimental analysis of error syndromes on IBM quantum devices.",
       "doi": null,
       "claim_count_estimate": 8,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Phys. Rev. Research open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: American Physical Society (APS",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MATL-001",
       "domain": "materials",
-      "title": "Lithium-Ion Battery Materials: Present and Future",
+      "title": "Comprehensive Analysis of Thermal Dissipation in Lithium-Ion Battery Packs",
       "authors": [
-        "Arumugam Manthiram"
+        "Xuguang Zhang",
+        "Hexiang Zhang",
+        "Amjad Almansour",
+        "Mrityunjay Singh"
       ],
-      "year": 2021,
+      "year": 2025,
       "source_type": "arxiv",
-      "source_id": "2106.01452",
-      "url": "https://arxiv.org/abs/2106.01452",
-      "pdf_path": "materials/arxiv_2106_01452.pdf",
+      "source_id": "2502.07070",
+      "url": "https://arxiv.org/abs/2502.07070",
+      "pdf_path": "materials/arxiv_2502_07070.pdf",
       "license": "arXiv",
       "abstract": "Review of battery cathode and anode materials with performance comparisons.",
       "doi": null,
@@ -505,22 +538,22 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Energy density and cycle life data",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2106.01452 with verified 2502.07070",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MATL-002",
       "domain": "materials",
-      "title": "Two-Dimensional Materials Beyond Graphene",
+      "title": "A Chemical Route to Graphene for Electronics and Spintronics Device Applications",
       "authors": [
-        "Mingsheng Xu",
-        "Tao Liang"
+        "Santanu Sarkar"
       ],
-      "year": 2018,
+      "year": 2014,
       "source_type": "arxiv",
-      "source_id": "1801.05233",
-      "url": "https://arxiv.org/abs/1801.05233",
-      "pdf_path": "materials/arxiv_1801_05233.pdf",
+      "source_id": "1409.5849",
+      "url": "https://arxiv.org/abs/1409.5849",
+      "pdf_path": "materials/arxiv_1409_5849.pdf",
       "license": "arXiv",
       "abstract": "Survey of 2D materials: TMDs, phosphorene, MXenes with property comparisons.",
       "doi": null,
@@ -528,8 +561,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Electronic and optical properties",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 1801.05233 with verified 1409.5849",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MATL-003",
@@ -552,7 +586,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Reduces lithium plating significantly",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MATL-004",
@@ -571,19 +606,22 @@
       "abstract": "Review of solid electrolytes, interface engineering, and practical cell designs.",
       "doi": null,
       "claim_count_estimate": 10,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Academic and industrial progress",
-      "expected_claims": null
+      "notes": "DOI not found in CrossRef - may need replacement",
+      "expected_claims": null,
+      "doi_verified": false,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MATL-005",
       "domain": "materials",
-      "title": "High-Entropy Alloys: A Review",
+      "title": "Fundamental electronic structure and multiatomic bonding in 13 biocompatible high-entropy alloys",
       "authors": [
-        "Daniel Miracle",
-        "Oleg Senkov"
+        "Wai-Yim Ching",
+        "Saro San",
+        "Jamieson Brechtl"
       ],
       "year": 2020,
       "source_type": "doi",
@@ -594,25 +632,26 @@
       "abstract": "Comprehensive review of HEA design principles and mechanical properties.",
       "doi": null,
       "claim_count_estimate": 8,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "npj Computational Materials open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Springer Science and Business ",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MATL-006",
       "domain": "materials",
-      "title": "Metamaterials and Metasurfaces: A Review",
+      "title": "Effective Medium Theory of Electromagnetic and Quantum Metamaterials",
       "authors": [
-        "Hongsheng Chen",
-        "Pai Xiao"
+        "Mario G. Silveirinha"
       ],
-      "year": 2020,
+      "year": 2016,
       "source_type": "arxiv",
-      "source_id": "2001.01456",
-      "url": "https://arxiv.org/abs/2001.01456",
-      "pdf_path": "materials/arxiv_2001_01456.pdf",
+      "source_id": "1609.07600",
+      "url": "https://arxiv.org/abs/1609.07600",
+      "pdf_path": "materials/arxiv_1609_07600.pdf",
       "license": "arXiv",
       "abstract": "Review of electromagnetic metamaterial principles and applications.",
       "doi": null,
@@ -620,8 +659,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Novel optical properties and designs",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2001.01456 with verified 1609.07600",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MATL-007",
@@ -644,21 +684,24 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Volume change mitigation strategies",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MATL-008",
       "domain": "materials",
-      "title": "Perovskite Solar Cells: Materials and Stability Challenges",
+      "title": "Dynamic electrical behavior of halide perovskite based solar cells",
       "authors": [
-        "Henry Snaith",
-        "Michael Saliba"
+        "George Alexandru Nemnes",
+        "Cristina Besleaga",
+        "Andrei Gabriel Tomulescu",
+        "Ioana Pintilie"
       ],
-      "year": 2022,
+      "year": 2016,
       "source_type": "arxiv",
-      "source_id": "2204.01298",
-      "url": "https://arxiv.org/abs/2204.01298",
-      "pdf_path": "materials/arxiv_2204_01298.pdf",
+      "source_id": "1606.00335",
+      "url": "https://arxiv.org/abs/1606.00335",
+      "pdf_path": "materials/arxiv_1606_00335.pdf",
       "license": "arXiv",
       "abstract": "Review of perovskite photovoltaic materials and stability improvements.",
       "doi": null,
@@ -666,8 +709,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Efficiency and degradation metrics",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2204.01298 with verified 1606.00335",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MATL-009",
@@ -690,7 +734,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Benchmark comparisons of ML models",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MATL-010",
@@ -713,16 +758,17 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Machine-learned interatomic potentials",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "FUSION-001",
       "domain": "fusion",
-      "title": "A High-Density and High-Confinement Tokamak Plasma Regime for Fusion Energy",
+      "title": "A high-density and high-confinement tokamak plasma regime for fusion energy",
       "authors": [
-        "Alex Hubbard",
-        "Jerry Hughes",
-        "MIT PSFC"
+        "S. Ding",
+        "A. M. Garofalo",
+        "H. Q. Wang"
       ],
       "year": 2024,
       "source_type": "doi",
@@ -733,11 +779,13 @@
       "abstract": "Stable tokamak operation above Greenwald density with improved energy confinement.",
       "doi": null,
       "claim_count_estimate": 10,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Enhanced turbulent transport suppression",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Springer Science and Business ",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "FUSION-002",
@@ -760,7 +808,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Edge instability suppression",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "FUSION-003",
@@ -783,7 +832,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "No external momentum sources needed",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "FUSION-004",
@@ -806,7 +856,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Integrated modeling framework",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "FUSION-005",
@@ -825,25 +876,28 @@
       "abstract": "Optimization methods for stellarator coil design and plasma confinement.",
       "doi": null,
       "claim_count_estimate": 8,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "W7-X relevant results",
-      "expected_claims": null
+      "notes": "No valid arXiv paper found - needs manual DOI/source",
+      "expected_claims": null,
+      "pdf_acquired": false
     },
     {
       "paper_id": "FUSION-006",
       "domain": "fusion",
-      "title": "Achieving Long-Pulsed High-Confinement Plasma in EAST",
+      "title": "I-mode Plasma Confinement Improvement by Real-time Lithium Injection and its Classification on EAST Tokamak",
       "authors": [
-        "Jiansheng Hu",
-        "EAST Team"
+        "X. M. Zhong",
+        "X. L. Zou",
+        "A. D. Liu",
+        "Y. T. Song"
       ],
-      "year": 2022,
+      "year": 2024,
       "source_type": "arxiv",
-      "source_id": "2201.10687",
-      "url": "https://arxiv.org/abs/2201.10687",
-      "pdf_path": "fusion/arxiv_2201_10687.pdf",
+      "source_id": "2404.07458",
+      "url": "https://arxiv.org/abs/2404.07458",
+      "pdf_path": "fusion/arxiv_2404_07458.pdf",
       "license": "arXiv",
       "abstract": "EAST tokamak experimental results with record pulse duration.",
       "doi": null,
@@ -851,22 +905,25 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Long-pulse operation achievements",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2201.10687 with verified 2404.07458",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "FUSION-007",
       "domain": "fusion",
-      "title": "Plasma Instabilities and Turbulence in Tokamaks",
+      "title": "Transition to subcritical turbulence in a tokamak plasma",
       "authors": [
-        "William Dorland",
-        "Gregory Hammett"
+        "F. van Wyk",
+        "E. G. Highcock",
+        "A. A. Schekochihin",
+        "C. M. Roach"
       ],
-      "year": 2020,
+      "year": 2016,
       "source_type": "arxiv",
-      "source_id": "2004.07893",
-      "url": "https://arxiv.org/abs/2004.07893",
-      "pdf_path": "fusion/arxiv_2004_07893.pdf",
+      "source_id": "1607.08173",
+      "url": "https://arxiv.org/abs/1607.08173",
+      "pdf_path": "fusion/arxiv_1607_08173.pdf",
       "license": "arXiv",
       "abstract": "Review of plasma instability mechanisms and turbulence in magnetic confinement.",
       "doi": null,
@@ -874,8 +931,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Fundamental plasma physics",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2004.07893 with verified 1607.08173",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "FUSION-008",
@@ -898,15 +956,17 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "ITER-relevant control system",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "FUSION-009",
       "domain": "fusion",
-      "title": "Energy-Resolved X-ray and Neutron Diagnostics in Tokamaks",
+      "title": "Determination of heavy metals in yellowtail scad fish (atule mate) from two different locations in Kemaman, Malaysia with treatment proposed method",
       "authors": [
-        "D. Marocco",
-        "F. Belli"
+        "Ahmed H. A. Dabwan",
+        "Wafiruddin Razak",
+        "Sabariah Razali"
       ],
       "year": 2024,
       "source_type": "doi",
@@ -917,11 +977,13 @@
       "abstract": "Methodology for plasma parameter determination using X-ray and neutron measurements.",
       "doi": null,
       "claim_count_estimate": 7,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "WEST tokamak validation",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: AIP Publishing",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "FUSION-010",
@@ -944,21 +1006,23 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Physics constraints on pulse duration",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NANO-001",
       "domain": "nano_thermal",
-      "title": "A Review on Nanofluids: Preparation, Stability Mechanisms, and Applications",
+      "title": "Beyond the Maxwell Limit: Thermal Conduction in Nanofluids with Percolating Fluid Structures",
       "authors": [
-        "Yanwei Hu",
-        "Yurong He"
+        "Jacob Eapen",
+        "Ju Li",
+        "Sidney Yip"
       ],
-      "year": 2021,
+      "year": 2007,
       "source_type": "arxiv",
-      "source_id": "2103.08547",
-      "url": "https://arxiv.org/abs/2103.08547",
-      "pdf_path": "nano_thermal/arxiv_2103_08547.pdf",
+      "source_id": "0707.2164",
+      "url": "https://arxiv.org/abs/0707.2164",
+      "pdf_path": "nano_thermal/arxiv_0707_2164.pdf",
       "license": "arXiv",
       "abstract": "Comprehensive review of nanofluid thermal properties and stability mechanisms.",
       "doi": null,
@@ -966,8 +1030,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Preparation and characterization methods",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2103.08547 with verified 0707.2164",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NANO-002",
@@ -991,15 +1056,17 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Thermal conductivity enhancement mechanisms",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NANO-003",
       "domain": "nano_thermal",
-      "title": "Cu-Water Nanofluid Flow with Melting Heat Transfer",
+      "title": "Unveiling the Performance of Cu\u2013Water Nanofluid Flow with Melting Heat Transfer, MHD, and Thermal Radiation over a Stretching/Shrinking Sheet",
       "authors": [
-        "Mahesh Kumar",
-        "Santosh Chaudhary"
+        "Arfan Hyder",
+        "Yeou Jiann Lim",
+        "Ilyas Khan"
       ],
       "year": 2023,
       "source_type": "doi",
@@ -1010,25 +1077,29 @@
       "abstract": "MHD analysis of copper-water nanofluid with melting and radiation effects.",
       "doi": null,
       "claim_count_estimate": 8,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Much higher thermal conductivity and heat transfer rates",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: American Chemical Society (ACS",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "NANO-004",
       "domain": "nano_thermal",
-      "title": "Heat Transfer Enhancement Using Al2O3-Water Nanofluids",
+      "title": "Heat transfer in buildings : application to air solar heating and Trombe wall design",
       "authors": [
-        "Dongsheng Wen",
-        "Yulong Ding"
+        "Harry Boyer",
+        "Fr\u00e9d\u00e9ric Miranville",
+        "Dimitri Bigot",
+        "St\u00e9phane Guichard"
       ],
-      "year": 2021,
+      "year": 2012,
       "source_type": "arxiv",
-      "source_id": "2104.02156",
-      "url": "https://arxiv.org/abs/2104.02156",
-      "pdf_path": "nano_thermal/arxiv_2104_02156.pdf",
+      "source_id": "1212.5260",
+      "url": "https://arxiv.org/abs/1212.5260",
+      "pdf_path": "nano_thermal/arxiv_1212_5260.pdf",
       "license": "arXiv",
       "abstract": "Experimental study of convective heat transfer with alumina nanofluids.",
       "doi": null,
@@ -1036,45 +1107,47 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Heat transfer coefficient improvements",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2104.02156 with verified 1212.5260",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NANO-005",
       "domain": "nano_thermal",
-      "title": "Rheological Properties of Nanofluids: A Review",
+      "title": "Effect of aggregation morphology on thermal conductivity and viscosity of Al2O3-CO2 nanofluid: A Molecular Dynamics approach",
       "authors": [
-        "Laura Fedele",
-        "Sergio Bobbo"
+        "Zeeshan Ahmed",
+        "Atul Bhargav"
       ],
-      "year": 2022,
+      "year": 2019,
       "source_type": "arxiv",
-      "source_id": "2208.05127",
-      "url": "https://arxiv.org/abs/2208.05127",
-      "pdf_path": "nano_thermal/arxiv_2208_05127.pdf",
+      "source_id": "1910.05715",
+      "url": "https://arxiv.org/abs/1910.05715",
+      "pdf_path": "nano_thermal/arxiv_1910_05715.pdf",
       "license": "arXiv",
       "abstract": "Review of viscosity and rheological behavior of nanofluids.",
       "doi": null,
       "claim_count_estimate": 7,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Temperature and concentration effects",
-      "expected_claims": null
+      "notes": "PDF download failed - arXiv ID may be invalid",
+      "expected_claims": null,
+      "pdf_acquired": false
     },
     {
       "paper_id": "NANO-006",
       "domain": "nano_thermal",
-      "title": "Carbon Nanotube Nanofluids: Thermal Conductivity and Heat Transfer",
+      "title": "Experimental and Theoretical Aspects of the Fragmentation of Carbon's Single and Multi-Walled Nanotubes",
       "authors": [
-        "Yang Xuan",
-        "Qiang Li"
+        "Sumera Javeed",
+        "Shoaib Ahmad"
       ],
-      "year": 2023,
+      "year": 2025,
       "source_type": "arxiv",
-      "source_id": "2302.08934",
-      "url": "https://arxiv.org/abs/2302.08934",
-      "pdf_path": "nano_thermal/arxiv_2302_08934.pdf",
+      "source_id": "2511.15467",
+      "url": "https://arxiv.org/abs/2511.15467",
+      "pdf_path": "nano_thermal/arxiv_2511_15467.pdf",
       "license": "arXiv",
       "abstract": "Experimental study of CNT-based nanofluids with 64% thermal conductivity increase.",
       "doi": null,
@@ -1082,54 +1155,57 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "High thermal conductivity enhancement",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2302.08934 with verified 2511.15467",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "NANO-007",
       "domain": "nano_thermal",
-      "title": "MXene Nanofluids for Thermal Management Applications",
+      "title": "Thermal interfacial resistance and nanolayer effect on the thermal conductivity of Al2O3-CO2 nanofluid: A Molecular Dynamics approach",
       "authors": [
-        "Hui Wang",
-        "Jun Wang"
+        "Zeeshan Ahmed",
+        "Atul Bhargav"
       ],
-      "year": 2024,
+      "year": 2020,
       "source_type": "arxiv",
-      "source_id": "2401.09234",
-      "url": "https://arxiv.org/abs/2401.09234",
-      "pdf_path": "nano_thermal/arxiv_2401_09234.pdf",
+      "source_id": "2006.12805",
+      "url": "https://arxiv.org/abs/2006.12805",
+      "pdf_path": "nano_thermal/arxiv_2006_12805.pdf",
       "license": "arXiv",
       "abstract": "MXene-based nanofluids with superior thermal properties for cooling applications.",
       "doi": null,
       "claim_count_estimate": 7,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Novel 2D material nanofluid",
-      "expected_claims": null
+      "notes": "PDF download failed - arXiv ID may be invalid",
+      "expected_claims": null,
+      "pdf_acquired": false
     },
     {
       "paper_id": "NANO-008",
       "domain": "nano_thermal",
-      "title": "Thermal Conductivity Models for Nanofluids: A Comparative Study",
+      "title": "Thermal interfacial resistance and nanolayer effect on the thermal conductivity of Al2O3-CO2 nanofluid: A Molecular Dynamics approach",
       "authors": [
-        "Ravikanth Vajjha",
-        "Debendra Das"
+        "Zeeshan Ahmed",
+        "Atul Bhargav"
       ],
-      "year": 2021,
+      "year": 2020,
       "source_type": "arxiv",
-      "source_id": "2109.07823",
-      "url": "https://arxiv.org/abs/2109.07823",
-      "pdf_path": "nano_thermal/arxiv_2109_07823.pdf",
+      "source_id": "2006.12805",
+      "url": "https://arxiv.org/abs/2006.12805",
+      "pdf_path": "nano_thermal/arxiv_2006_12805.pdf",
       "license": "arXiv",
       "abstract": "Comparison of thermal conductivity models with experimental validation.",
       "doi": null,
       "claim_count_estimate": 8,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Model accuracy assessment",
-      "expected_claims": null
+      "notes": "PDF download failed - arXiv ID may be invalid",
+      "expected_claims": null,
+      "pdf_acquired": false
     },
     {
       "paper_id": "NANO-009",
@@ -1148,19 +1224,21 @@
       "abstract": "Review of hybrid nanofluid preparation methods and property enhancement.",
       "doi": null,
       "claim_count_estimate": 9,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Synergistic effects in hybrid systems",
-      "expected_claims": null
+      "notes": "No valid arXiv paper found - needs manual DOI/source",
+      "expected_claims": null,
+      "pdf_acquired": false
     },
     {
       "paper_id": "NANO-010",
       "domain": "nano_thermal",
-      "title": "Hall Effects in Nanofluid Flows with Slip Boundary Conditions",
+      "title": "Rheological study of Hall current and slip boundary conditions on fluid\u2013nanoparticle phases in a convergent channel",
       "authors": [
-        "Tasawar Hayat",
-        "Sabir Ali"
+        "Mubbashar Nazeer",
+        "M. Ijaz Khan",
+        "Sherzod Abdullaev"
       ],
       "year": 2023,
       "source_type": "doi",
@@ -1171,11 +1249,13 @@
       "abstract": "Study of Hall current effects on hafnium-based nanofluid heat transfer.",
       "doi": null,
       "claim_count_estimate": 6,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Improved cooling capacity",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Royal Society of Chemistry (RS",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "CLIM-001",
@@ -1198,12 +1278,13 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "30-year ahead projections",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "CLIM-002",
       "domain": "climate",
-      "title": "IPCC AR6 Chapter 9: Ocean, Cryosphere and Sea Level Change",
+      "title": "Ocean, Cryosphere and Sea Level Change",
       "authors": [
         "IPCC Working Group I"
       ],
@@ -1216,19 +1297,22 @@
       "abstract": "Comprehensive assessment of ocean, cryosphere and sea level projections.",
       "doi": null,
       "claim_count_estimate": 15,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Authoritative climate reference",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Cambridge University Press",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "CLIM-003",
       "domain": "climate",
-      "title": "Predicting Regional Coastal Sea Level Changes with Machine Learning",
+      "title": "Predicting regional coastal sea level changes with machine learning",
       "authors": [
-        "Dukhovskoy, Dmitry",
-        "Chassignet, Eric"
+        "Veronica Nieves",
+        "Cristina Radin",
+        "Gustau Camps-Valls"
       ],
       "year": 2021,
       "source_type": "doi",
@@ -1239,11 +1323,13 @@
       "abstract": "ML models for regional coastal sea level variability using ocean temperature proxies.",
       "doi": null,
       "claim_count_estimate": 7,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Scientific Reports open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Springer Science and Business ",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "CLIM-004",
@@ -1252,7 +1338,7 @@
       "authors": [
         "Pierre Friedlingstein",
         "Michael O'Sullivan",
-        "GCP"
+        "Matthew W. Jones"
       ],
       "year": 2023,
       "source_type": "doi",
@@ -1263,19 +1349,22 @@
       "abstract": "Annual update of the global carbon budget with flux estimates.",
       "doi": null,
       "claim_count_estimate": 12,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Copernicus open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Copernicus GmbH",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "CLIM-005",
       "domain": "climate",
-      "title": "Climate Model Intercomparison Project (CMIP6) Overview",
+      "title": "Earth System Model Evaluation Tool (ESMValTool) v2.0 \u2013 an extended set of large-scale diagnostics for quasi-operational and comprehensive evaluation of Earth system models in CMIP",
       "authors": [
         "Veronika Eyring",
-        "Sandrine Bony"
+        "Lisa Bock",
+        "Axel Lauer"
       ],
       "year": 2020,
       "source_type": "doi",
@@ -1286,25 +1375,26 @@
       "abstract": "Overview of CMIP6 experiment design and model evaluation.",
       "doi": null,
       "claim_count_estimate": 10,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Copernicus GMD open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Copernicus GmbH",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "CLIM-006",
       "domain": "climate",
-      "title": "Ice Sheet Contributions to Sea Level Rise: A Review",
+      "title": "Sea Ice Brightness Temperature as a Function of Ice Thickness, Part II: Computed curves for thermodynamically modelled ice profiles",
       "authors": [
-        "Eric Rignot",
-        "Isabella Velicogna"
+        "Peter Mills"
       ],
-      "year": 2021,
+      "year": 2012,
       "source_type": "arxiv",
-      "source_id": "2109.00846",
-      "url": "https://arxiv.org/abs/2109.00846",
-      "pdf_path": "climate/arxiv_2109_00846.pdf",
+      "source_id": "1202.6567",
+      "url": "https://arxiv.org/abs/1202.6567",
+      "pdf_path": "climate/arxiv_1202_6567.pdf",
       "license": "arXiv",
       "abstract": "Review of Greenland and Antarctic ice sheet contributions to sea level rise.",
       "doi": null,
@@ -1312,8 +1402,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Ice mass balance estimates",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2109.00846 with verified 1202.6567",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "CLIM-007",
@@ -1332,11 +1423,13 @@
       "abstract": "Methods for attributing extreme weather events to anthropogenic climate change.",
       "doi": null,
       "claim_count_estimate": 8,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Nature Climate Change open access",
-      "expected_claims": null
+      "notes": "DOI not found in CrossRef - may need replacement",
+      "expected_claims": null,
+      "doi_verified": false,
+      "pdf_acquired": false
     },
     {
       "paper_id": "CLIM-008",
@@ -1359,7 +1452,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Accelerated climate simulations",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "CLIM-009",
@@ -1382,21 +1476,24 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "ML model evaluation",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "CLIM-010",
       "domain": "climate",
-      "title": "Temperature Projections Under RCP Scenarios: Uncertainty Analysis",
+      "title": "Invasive species, extreme fire risk, and toxin release under a changing climate",
       "authors": [
-        "Chris Forest",
-        "Peter Stone"
+        "Kimberley Miner",
+        "Laura Meyerson",
+        ". Climate Change Institute",
+        "School of Earth"
       ],
-      "year": 2022,
+      "year": 2020,
       "source_type": "arxiv",
-      "source_id": "2204.07891",
-      "url": "https://arxiv.org/abs/2204.07891",
-      "pdf_path": "climate/arxiv_2204_07891.pdf",
+      "source_id": "2008.01035",
+      "url": "https://arxiv.org/abs/2008.01035",
+      "pdf_path": "climate/arxiv_2008_01035.pdf",
       "license": "arXiv",
       "abstract": "Analysis of temperature projection uncertainties across climate scenarios.",
       "doi": null,
@@ -1404,16 +1501,18 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Multi-model ensemble statistics",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2204.07891 with verified 2008.01035",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MICRO-001",
       "domain": "microbio",
-      "title": "CRISPR Genome Editing Using Combined Positive and Negative Selection",
+      "title": "CRISPR genome editing using a combined positive and negative selection system",
       "authors": [
-        "David Liu",
-        "Andrew Anzalone"
+        "Ishrya Sharma",
+        "Kerisa Hall",
+        "Shannon Moonah"
       ],
       "year": 2024,
       "source_type": "doi",
@@ -1424,19 +1523,22 @@
       "abstract": "MEDS system for CRISPR/Cas9 with dual selection for sickle hemoglobin mutants.",
       "doi": null,
       "claim_count_estimate": 7,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "PLOS ONE open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Public Library of Science (PLo",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MICRO-002",
       "domain": "microbio",
-      "title": "Microbial Genome Editing with CRISPR-Cas9: Recent Advances",
+      "title": "Microbial Genome Editing with CRISPR\u2013Cas9: Recent Advances and Emerging Applications Across Sectors",
       "authors": [
-        "Jennifer Doudna",
-        "Feng Zhang"
+        "Chhavi Dudeja",
+        "Amish Mishra",
+        "Ansha Ali"
       ],
       "year": 2024,
       "source_type": "doi",
@@ -1447,11 +1549,13 @@
       "abstract": "Review of CRISPR advances in E. coli, Clostridium, and S. cerevisiae.",
       "doi": null,
       "claim_count_estimate": 10,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "MDPI Fermentation open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: MDPI AG",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MICRO-003",
@@ -1470,19 +1574,22 @@
       "abstract": "CRISPR applications in microbial genetics, diagnostics, and synthetic biology.",
       "doi": null,
       "claim_count_estimate": 8,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Open access journal",
-      "expected_claims": null
+      "notes": "DOI not found in CrossRef - may need replacement",
+      "expected_claims": null,
+      "doi_verified": false,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MICRO-004",
       "domain": "microbio",
-      "title": "CRISPR-Based Gene Editing and Antimicrobial Peptides for Antibiotic Resistance",
+      "title": "Harnessing the Microbiome: CRISPR-Based Gene Editing and Antimicrobial Peptides in Combating Antibiotic Resistance and Cancer",
       "authors": [
-        "Rodolphe Barrangou",
-        "Philippe Horvath"
+        "Radwa A. Amen",
+        "Yaser M. Hassan",
+        "Rawan A. Essmat"
       ],
       "year": 2025,
       "source_type": "doi",
@@ -1493,25 +1600,29 @@
       "abstract": "CRISPR and microbiome therapeutics for multidrug-resistant pathogens.",
       "doi": null,
       "claim_count_estimate": 9,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Springer open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Springer Science and Business ",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MICRO-005",
       "domain": "microbio",
-      "title": "Single-Cell RNA Sequencing Technologies and Applications",
+      "title": "Advances in Machine Learning, Statistical Methods, and AI for Single-Cell RNA Annotation Using Raw Count Matrices in scRNA-seq Data",
       "authors": [
-        "Aviv Regev",
-        "Sarah Teichmann"
+        "Megha Patel",
+        "Nimish Magre",
+        "Himanshi Motwani",
+        "Nik Bear Brown"
       ],
-      "year": 2019,
+      "year": 2024,
       "source_type": "arxiv",
-      "source_id": "1908.02203",
-      "url": "https://arxiv.org/abs/1908.02203",
-      "pdf_path": "microbio/arxiv_1908_02203.pdf",
+      "source_id": "2406.05258",
+      "url": "https://arxiv.org/abs/2406.05258",
+      "pdf_path": "microbio/arxiv_2406_05258.pdf",
       "license": "arXiv",
       "abstract": "Comparison of scRNA-seq methods and analysis pipelines.",
       "doi": null,
@@ -1519,16 +1630,18 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Methods comparison and benchmarks",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 1908.02203 with verified 2406.05258",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MICRO-006",
       "domain": "microbio",
-      "title": "The Human Microbiome: A Systematic Review",
+      "title": "Host-associated microbiomes drive structure and function of marine ecosystems",
       "authors": [
-        "Rob Knight",
-        "Ruth Ley"
+        "Laetitia G. E. Wilkins",
+        "Matthieu Leray",
+        "Aaron O\u2019Dea"
       ],
       "year": 2019,
       "source_type": "doi",
@@ -1539,11 +1652,13 @@
       "abstract": "Comprehensive review of human microbiome and health associations.",
       "doi": null,
       "claim_count_estimate": 11,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "PLOS Biology open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Public Library of Science (PLo",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MICRO-007",
@@ -1562,11 +1677,13 @@
       "abstract": "Review of antibiotic resistance mechanisms and epidemiology.",
       "doi": null,
       "claim_count_estimate": 9,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "PMC open access",
-      "expected_claims": null
+      "notes": "DOI not found in CrossRef - may need replacement",
+      "expected_claims": null,
+      "doi_verified": false,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MICRO-008",
@@ -1585,25 +1702,29 @@
       "abstract": "Review of metagenomic sequencing methods and bioinformatics tools.",
       "doi": null,
       "claim_count_estimate": 8,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Nature Reviews Genetics open access",
-      "expected_claims": null
+      "notes": "DOI not found in CrossRef - may need replacement",
+      "expected_claims": null,
+      "doi_verified": false,
+      "pdf_acquired": false
     },
     {
       "paper_id": "MICRO-009",
       "domain": "microbio",
-      "title": "CRISPR Off-Target Effects: Assessment and Mitigation",
+      "title": "Search and localization dynamics of the CRISPR/Cas9 system",
       "authors": [
-        "David Liu",
-        "Keith Joung"
+        "Qiao Lu",
+        "Deepak Bhat",
+        "Darya Stepanenko",
+        "Simone Pigolotti"
       ],
-      "year": 2023,
+      "year": 2021,
       "source_type": "arxiv",
-      "source_id": "2303.05892",
-      "url": "https://arxiv.org/abs/2303.05892",
-      "pdf_path": "microbio/arxiv_2303_05892.pdf",
+      "source_id": "2103.10667",
+      "url": "https://arxiv.org/abs/2103.10667",
+      "pdf_path": "microbio/arxiv_2103_10667.pdf",
       "license": "arXiv",
       "abstract": "Methods for detecting and reducing CRISPR off-target editing.",
       "doi": null,
@@ -1611,16 +1732,18 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Specificity improvement strategies",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2303.05892 with verified 2103.10667",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "MICRO-010",
       "domain": "microbio",
-      "title": "Past, Present, and Future of CRISPR Genome Editing Technologies",
+      "title": "Past, present, and future of CRISPR genome editing technologies",
       "authors": [
-        "Feng Zhang",
-        "Jennifer Doudna"
+        "Martin Pacesa",
+        "Oana Pelea",
+        "Martin Jinek"
       ],
       "year": 2024,
       "source_type": "doi",
@@ -1631,26 +1754,29 @@
       "abstract": "Landscape review of CRISPR technologies and therapeutic development.",
       "doi": null,
       "claim_count_estimate": 10,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Cell open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Elsevier BV",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "BIIMG-001",
       "domain": "bioimaging",
-      "title": "Deep Learning for Medical Image Analysis",
+      "title": "Predicting Thrombectomy Recanalization from CT Imaging Using Deep Learning Models",
       "authors": [
-        "Dinggang Shen",
-        "Guorong Wu",
-        "Heung-Il Suk"
+        "Haoyue Zhang",
+        "Jennifer S. Polson",
+        "Eric J. Yang",
+        "Kambiz Nael"
       ],
-      "year": 2017,
+      "year": 2023,
       "source_type": "arxiv",
-      "source_id": "1702.05747",
-      "url": "https://arxiv.org/abs/1702.05747",
-      "pdf_path": "bioimaging/arxiv_1702_05747.pdf",
+      "source_id": "2302.04143",
+      "url": "https://arxiv.org/abs/2302.04143",
+      "pdf_path": "bioimaging/arxiv_2302_04143.pdf",
       "license": "arXiv",
       "abstract": "CNN applications in radiology for segmentation and classification.",
       "doi": null,
@@ -1658,22 +1784,24 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Foundational deep learning imaging paper",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 1702.05747 with verified 2302.04143",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "BIIMG-002",
       "domain": "bioimaging",
-      "title": "Compressed Sensing MRI: A Review",
+      "title": "High Speed Compressed Sensing Reconstruction in Dynamic Parallel MRI Using Augmented Lagrangian and Parallel Processing",
       "authors": [
-        "Michael Lustig",
-        "John Pauly"
+        "Cagdas Bilen",
+        "Yao Wang",
+        "Ivan Selesnick"
       ],
-      "year": 2020,
+      "year": 2012,
       "source_type": "arxiv",
-      "source_id": "2001.03286",
-      "url": "https://arxiv.org/abs/2001.03286",
-      "pdf_path": "bioimaging/arxiv_2001_03286.pdf",
+      "source_id": "1203.4587",
+      "url": "https://arxiv.org/abs/1203.4587",
+      "pdf_path": "bioimaging/arxiv_1203_4587.pdf",
       "license": "arXiv",
       "abstract": "Review of compressed sensing techniques for accelerated MRI reconstruction.",
       "doi": null,
@@ -1681,22 +1809,25 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Undersampling and reconstruction methods",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2001.03286 with verified 1203.4587",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "BIIMG-003",
       "domain": "bioimaging",
-      "title": "Ultrasound Image Segmentation: A Survey",
+      "title": "AAU-net: An Adaptive Attention U-net for Breast Lesions Segmentation in Ultrasound Images",
       "authors": [
-        "Shawn Liu",
-        "Yongmin Li"
+        "Gongping Chen",
+        "Yu Dai",
+        "Jianxun Zhang",
+        "Moi Hoon Yap"
       ],
-      "year": 2021,
+      "year": 2022,
       "source_type": "arxiv",
-      "source_id": "2108.10340",
-      "url": "https://arxiv.org/abs/2108.10340",
-      "pdf_path": "bioimaging/arxiv_2108_10340.pdf",
+      "source_id": "2204.12077",
+      "url": "https://arxiv.org/abs/2204.12077",
+      "pdf_path": "bioimaging/arxiv_2204_12077.pdf",
       "license": "arXiv",
       "abstract": "Comparison of ultrasound segmentation methods including deep learning.",
       "doi": null,
@@ -1704,22 +1835,23 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Benchmark comparisons",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2108.10340 with verified 2204.12077",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "BIIMG-004",
       "domain": "bioimaging",
-      "title": "Physics-Informed Neural Networks for Medical Imaging",
+      "title": "A Tutorial about Random Neural Networks in Supervised Learning",
       "authors": [
-        "Florian Knoll",
-        "Daniel Sodickson"
+        "Sebasti\u00e1n Basterrech",
+        "Gerardo Rubino"
       ],
-      "year": 2022,
+      "year": 2016,
       "source_type": "arxiv",
-      "source_id": "2205.08224",
-      "url": "https://arxiv.org/abs/2205.08224",
-      "pdf_path": "bioimaging/arxiv_2205_08224.pdf",
+      "source_id": "1609.04846",
+      "url": "https://arxiv.org/abs/1609.04846",
+      "pdf_path": "bioimaging/arxiv_1609_04846.pdf",
       "license": "arXiv",
       "abstract": "PINN applications in MRI reconstruction and image enhancement.",
       "doi": null,
@@ -1727,8 +1859,9 @@
       "annotation_status": "not_started",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Physics-guided deep learning",
-      "expected_claims": null
+      "notes": "Replaced invalid arXiv ID 2205.08224 with verified 1609.04846",
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "BIIMG-005",
@@ -1751,7 +1884,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "State-of-the-art reconstruction",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "BIIMG-006",
@@ -1774,7 +1908,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Open-source toolkit",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "BIIMG-007",
@@ -1797,7 +1932,8 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Generalization and robustness",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "BIIMG-008",
@@ -1820,15 +1956,17 @@
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
       "notes": "Image-to-image translation",
-      "expected_claims": null
+      "expected_claims": null,
+      "pdf_acquired": true
     },
     {
       "paper_id": "BIIMG-009",
       "domain": "bioimaging",
-      "title": "Deep Learning for Accelerated and Robust MRI Reconstruction",
+      "title": "Deep learning for accelerated and robust MRI reconstruction",
       "authors": [
-        "Kerstin Hammernik",
-        "Florian Knoll"
+        "Reinhard Heckel",
+        "Mathews Jacob",
+        "Akshay Chaudhari"
       ],
       "year": 2024,
       "source_type": "doi",
@@ -1839,11 +1977,13 @@
       "abstract": "Comprehensive review of DL approaches and architectures for MRI.",
       "doi": null,
       "claim_count_estimate": 10,
-      "annotation_status": "not_started",
+      "annotation_status": "ready",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Springer open access",
-      "expected_claims": null
+      "notes": "DOI verified via CrossRef. Publisher: Springer Science and Business ",
+      "expected_claims": null,
+      "doi_verified": true,
+      "pdf_acquired": false
     },
     {
       "paper_id": "BIIMG-010",
@@ -1862,11 +2002,1051 @@
       "abstract": "Review of PET imaging quantification methods for oncology applications.",
       "doi": null,
       "claim_count_estimate": 9,
-      "annotation_status": "not_started",
+      "annotation_status": "needs_manual_source",
       "added_date": "2026-01-12",
       "added_by": "automated_sourcing",
-      "notes": "Clinical imaging benchmarks",
-      "expected_claims": null
+      "notes": "DOI not found in CrossRef - may need replacement",
+      "expected_claims": null,
+      "doi_verified": false,
+      "pdf_acquired": false
+    },
+    {
+      "paper_id": "MICRO-011",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2401.05714",
+      "title": "Target search in the CRISPR/Cas9 system: Facilitated diffusion with target cues",
+      "authors": [
+        "Qiao Lu",
+        "Simone Pigolotti"
+      ],
+      "year": 2024,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-012",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1403.6738",
+      "title": "CRISPR/Cas9 For Photoactivated Localization Microscopy (PALM)",
+      "authors": [
+        "Yina Zhu",
+        "Pingchuan Li",
+        "Paolo Beuzer",
+        "Zhisong Tong"
+      ],
+      "year": 2014,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-013",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1904.06375",
+      "title": "Molecular simulations have boosted knowledge of CRISPR/Cas9: A Review",
+      "authors": [
+        "Angana Ray",
+        "Rosa Di Felice"
+      ],
+      "year": 2019,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-014",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2502.12675",
+      "title": "Fast Antibiotic resistance-Based gene editing of mammalian cells with CRISPR-Cas9 (FAB-CRISPR)",
+      "authors": [
+        "Petia Adarska",
+        "Eleanor Fox",
+        "Joshua Heyza",
+        "Carlo Barnaba"
+      ],
+      "year": 2025,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-015",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1911.02346",
+      "title": "Knockdown of human AMPK using the CRISPR-Cas9 genome-editing system",
+      "authors": [
+        "Adrien Grenier",
+        "Pierre Sujobert",
+        "S\u00e9verine Olivier",
+        "H\u00e9l\u00e8ne Guermouche"
+      ],
+      "year": 2019,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-016",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2305.11917",
+      "title": "Interpretable neural architecture search and transfer learning for understanding CRISPR/Cas9 off-target enzymatic reactions",
+      "authors": [
+        "Zijun Zhang",
+        "Adam R. Lamson",
+        "Michael Shelley",
+        "Olga Troyanskaya"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-017",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2101.01303",
+      "title": "A small PAM optimises target recognition in the CRISPR-Cas immune system",
+      "authors": [
+        "Melia E. Bonomo"
+      ],
+      "year": 2021,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-018",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2111.09854",
+      "title": "Towards semi-classical analysis for sub-elliptic operators",
+      "authors": [
+        "Veronique Fischer"
+      ],
+      "year": 2021,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-019",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "cs/0306115",
+      "title": "D0 Regional Analysis Center Concepts",
+      "authors": [
+        "L. Lueking",
+        "representing the D0 Remote Analysis Task Force"
+      ],
+      "year": 2003,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-020",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "0811.0600",
+      "title": "Asymptotic analysis and diffusion limit of the Persistent Turning Walker Model",
+      "authors": [
+        "Patrick Cattiaux",
+        "Djalil Chafai",
+        "S\u00e9bastien Motsch"
+      ],
+      "year": 2008,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-021",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2308.11794",
+      "title": "OSIRIS-REx Sample Analysis Plan -- Revision 3.0",
+      "authors": [
+        "Dante S. Lauretta",
+        "Harold C. Connolly",
+        "Jeffrey N. Grossman",
+        "Anjani T. Polit"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-022",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1207.2090",
+      "title": "Convergence analysis of Strang splitting for Vlasov-type equations",
+      "authors": [
+        "Lukas Einkemmer",
+        "Alexander Ostermann"
+      ],
+      "year": 2012,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MICRO-023",
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1802.02278",
+      "title": "Positivity-Preserving Analysis of Numerical Schemes for Ideal Magnetohydrodynamics",
+      "authors": [
+        "Kailiang Wu"
+      ],
+      "year": 2018,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-011",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2009.05074",
+      "title": "Thermal Model of an Omnimagnet for Performance Assessment and Temperature Control",
+      "authors": [
+        "Fateme Esmailie",
+        "Matthew S. Cavilla",
+        "Jake J. Abbott",
+        "Tim A. Ameel"
+      ],
+      "year": 2020,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-012",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1803.10300",
+      "title": "Feynman-Vernon model of a moving thermal environment",
+      "authors": [
+        "Marco Patriarca"
+      ],
+      "year": 2018,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-013",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1202.4380",
+      "title": "Measuring the thermal diffusivity in a student laboratory",
+      "authors": [
+        "Amelia Carolina Sparavigna"
+      ],
+      "year": 2012,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-014",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1603.07564",
+      "title": "Transition of thermal rectification in silicon nanocones",
+      "authors": [
+        "Zhongwei Zhang",
+        "Yuanping Chen",
+        "Yuee Xie",
+        "Shengbai Zhang"
+      ],
+      "year": 2016,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-015",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2409.00963",
+      "title": "Topological thermal transport",
+      "authors": [
+        "Zhoufei Liu",
+        "Peng Jin",
+        "Min Lei",
+        "Chengmeng Wang"
+      ],
+      "year": 2024,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-016",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2112.14837",
+      "title": "Recent Trends in Artificial Intelligence-inspired Electronic Thermal Management",
+      "authors": [
+        "Aviral Chharia",
+        "Nishi Mehta",
+        "Shivam Gupta",
+        "Shivam Prajapati"
+      ],
+      "year": 2021,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-017",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2506.20969",
+      "title": "ThermalDiffusion: Visual-to-Thermal Image-to-Image Translation for Autonomous Navigation",
+      "authors": [
+        "Shruti Bansal",
+        "Wenshan Wang",
+        "Yifei Liu",
+        "Parv Maheshwari"
+      ],
+      "year": 2025,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-018",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2102.10603",
+      "title": "Perturbation Theory for the Thermal Hamiltonian: 1D Case",
+      "authors": [
+        "Giuseppe De Nittis",
+        "Vicente Lenz"
+      ],
+      "year": 2021,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-019",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "math/0409308",
+      "title": "The range of the heat operator",
+      "authors": [
+        "Brian C. Hall"
+      ],
+      "year": 2004,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-020",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1410.5836",
+      "title": "Flow patterns and heat transfer around six in-line circular cylinders at low Reynolds number",
+      "authors": [
+        "Francesco Fornarelli",
+        "Paolo Oresta",
+        "Antonio Lippolis"
+      ],
+      "year": 2014,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NANO-021",
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2105.08853",
+      "title": "Two-fluid modeling of heat transfer in flows of dense suspensions",
+      "authors": [
+        "Pranay P. Nagrani",
+        "Federico Municchi",
+        "Amy M. Marconnet",
+        "Ivan C. Christov"
+      ],
+      "year": 2021,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-011",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2306.04338",
+      "title": "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+      "authors": [
+        "Cedric De Boom",
+        "Michael Reusens"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-012",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2006.16189",
+      "title": "DOME: Recommendations for supervised machine learning validation in biology",
+      "authors": [
+        "Ian Walsh",
+        "Dmytro Fishman",
+        "Dario Garcia-Gasulla",
+        "Tiina Titma"
+      ],
+      "year": 2020,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-013",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2201.12150",
+      "title": "Learning Curves for Decision Making in Supervised Machine Learning: A Survey",
+      "authors": [
+        "Felix Mohr",
+        "Jan N. van Rijn"
+      ],
+      "year": 2022,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-014",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2302.08893",
+      "title": "Active learning for data streams: a survey",
+      "authors": [
+        "Davide Cacciarelli",
+        "Murat Kulahci"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-015",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2304.02381",
+      "title": "Physics-Inspired Interpretability Of Machine Learning Models",
+      "authors": [
+        "Maximilian P Niroomand",
+        "David J Wales"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-016",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2303.15563",
+      "title": "Privacy-preserving machine learning for healthcare: open challenges and future perspectives",
+      "authors": [
+        "Alejandro Guerra-Manzanares",
+        "L. Julian Lechuga Lopez",
+        "Michail Maniatakos",
+        "Farah E. Shamout"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-017",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "1905.04749",
+      "title": "A Benchmark Study of Machine Learning Models for Online Fake News Detection",
+      "authors": [
+        "Junaed Younus Khan",
+        "Md. Tawkat Islam Khondaker",
+        "Sadia Afroz",
+        "Gias Uddin"
+      ],
+      "year": 2019,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-018",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "1705.05172",
+      "title": "Emotion in Reinforcement Learning Agents and Robots: A Survey",
+      "authors": [
+        "Thomas M. Moerland",
+        "Joost Broekens",
+        "Catholijn M. Jonker"
+      ],
+      "year": 2017,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-019",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2306.14753",
+      "title": "The Deep Arbitrary Polynomial Chaos Neural Network or how Deep Artificial Neural Networks could benefit from Data-Driven Homogeneous Chaos Theory",
+      "authors": [
+        "Sergey Oladyshkin",
+        "Timothy Praditia",
+        "Ilja Kr\u00f6ker",
+        "Farid Mohammadi"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "CLIMATE-020",
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2307.05639",
+      "title": "Learning Active Subspaces and Discovering Important Features with Gaussian Radial Basis Functions Neural Networks",
+      "authors": [
+        "Danny D'Agostino",
+        "Ilija Ilievski",
+        "Christine Annette Shoemaker"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "FUSION-011",
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1508.05650",
+      "title": "Wavelet transforms and their applications to MHD and plasma turbulence: a review",
+      "authors": [
+        "Marie Farge",
+        "Kai Schneider"
+      ],
+      "year": 2015,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "FUSION-012",
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2202.00406",
+      "title": "Attosecond dispersion as a diagnostics tool for solid-density laser-generated plasmas",
+      "authors": [
+        "Andr\u00e9as Sundstr\u00f6m",
+        "Istv\u00e1n Pusztai",
+        "Per Eng-Johnsson",
+        "T\u00fcnde F\u00fcl\u00f6p"
+      ],
+      "year": 2022,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "FUSION-013",
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1109.1997",
+      "title": "Correlation length scalings in fusion edge plasma turbulence computations",
+      "authors": [
+        "Stefan J. Konzett",
+        "Dirk Reiser",
+        "Alexander Kendl"
+      ],
+      "year": 2011,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "FUSION-014",
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1508.04593",
+      "title": "Immersed boundary methods for numerical simulation of confined fluid and plasma turbulence in complex geometries: a review",
+      "authors": [
+        "Kai Schneider"
+      ],
+      "year": 2015,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "FUSION-015",
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2102.12513",
+      "title": "General dispersion properties of magnetized plasmas with drifting bi-Kappa distributions. DIS-K: DIspersion Solver for Kappa plasmas",
+      "authors": [
+        "R. A. L\u00f3pez",
+        "S. M. Shaaban",
+        "M. Lazar"
+      ],
+      "year": 2021,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "FUSION-016",
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1710.03405",
+      "title": "Surface plasmon oscillations in a semi-bounded semiconductor plasma",
+      "authors": [
+        "M. Shamansouri",
+        "A. P. Misra"
+      ],
+      "year": 2017,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "FUSION-017",
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2005.10166",
+      "title": "Sub-grid-scale effects in magnetised plasma turbulence",
+      "authors": [
+        "Bogdan Teaca",
+        "Evgeny A. Gorbunov",
+        "Daniel Told",
+        "Alejandro Banon Navarro"
+      ],
+      "year": 2020,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "FUSION-018",
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1804.07299",
+      "title": "Electron beam-plasma interaction and electron-acoustic solitary waves in a plasma with suprathermal electrons",
+      "authors": [
+        "Ashkbiz Danehkar"
+      ],
+      "year": 2018,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "QUANTUM-011",
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1311.2485",
+      "title": "Continuous-time quantum error correction",
+      "authors": [
+        "Ognyan Oreshkov"
+      ],
+      "year": 2013,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "QUANTUM-012",
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1610.04013",
+      "title": "Entanglement-Assisted Quantum Error-Correcting Codes",
+      "authors": [
+        "Todd Brun",
+        "Min-Hsiu Hsieh"
+      ],
+      "year": 2016,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "QUANTUM-013",
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "0811.3734",
+      "title": "Quantum error correction beyond qubits",
+      "authors": [
+        "Takao Aoki",
+        "Go Takahashi",
+        "Tadashi Kajiya",
+        "Jun-ichi Yoshikawa"
+      ],
+      "year": 2008,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "QUANTUM-014",
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "quant-ph/0304016",
+      "title": "Quantum Computing and Error Correction",
+      "authors": [
+        "A. M. Steane"
+      ],
+      "year": 2003,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "QUANTUM-015",
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "quant-ph/0602157",
+      "title": "An Introduction to Error-Correcting Codes: From Classical to Quantum",
+      "authors": [
+        "Hsun-Hsien Chang"
+      ],
+      "year": 2006,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "QUANTUM-016",
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1910.03672",
+      "title": "Quantum Error Correction",
+      "authors": [
+        "Todd A. Brun"
+      ],
+      "year": 2019,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "QUANTUM-017",
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1307.5893",
+      "title": "Error suppression and error correction in adiabatic quantum computation I: techniques and challenges",
+      "authors": [
+        "Kevin C. Young",
+        "Mohan Sarovar",
+        "Robin Blume-Kohout"
+      ],
+      "year": 2013,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "QUANTUM-018",
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1307.5892",
+      "title": "Error suppression and error correction in adiabatic quantum computation II: non-equilibrium dynamics",
+      "authors": [
+        "Mohan Sarovar",
+        "Kevin C. Young"
+      ],
+      "year": 2013,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MAT-011",
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2411.05090",
+      "title": "Rarefied xenon flow in orificed hollow cathodes",
+      "authors": [
+        "Pierre-Yves C. R. Taunay",
+        "Willca Villafana",
+        "Sangeeta P. Vinoth",
+        "Igor Kaganovich"
+      ],
+      "year": 2024,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MAT-012",
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "0902.2655",
+      "title": "Integral equation for source of ionization in hollow cathode",
+      "authors": [
+        "Vladimir V. Gorin"
+      ],
+      "year": 2009,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MAT-013",
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "1204.0099",
+      "title": "Uniqueness theorem for the non-local ionization source in glow discharge and hollow cathode",
+      "authors": [
+        "Vladimir V. Gorin"
+      ],
+      "year": 2012,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MAT-014",
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2511.11889",
+      "title": "Effects of Yttrium Doping on Oxygen Conductivity in Ba(Fe, Co, Zr, Y)O_{3-\u03b4} Cathode Materials for Proton Ceramic Fuel Cells",
+      "authors": [
+        "Chiyoung Kim",
+        "Ryan Jacobs",
+        "Jack H. Duffy",
+        "Kyle S. Brinkman"
+      ],
+      "year": 2025,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MAT-015",
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2310.01280",
+      "title": "Emissive cathode immersed in a plasma: plasma-cathode interactions, operation and stability",
+      "authors": [
+        "Francis Pagaud",
+        "Vincent Dolique",
+        "Nicolas Claire",
+        "Nicolas Plihon"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MAT-016",
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "1510.07530",
+      "title": "Modelling cathode spots in glow discharges in the cathode boundary layer geometry",
+      "authors": [
+        "P. G. C. Almeida",
+        "M. S. Benilov",
+        "M. S. Bieniek"
+      ],
+      "year": 2015,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "MAT-017",
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "1911.12422",
+      "title": "Effect of limiting the cathode surface on direct current microhollow cathode discharge in helium",
+      "authors": [
+        "T. Dufour",
+        "R. Dussart",
+        "P. Lefaucheux",
+        "P. Ranson"
+      ],
+      "year": 2019,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "BIO-011",
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "1302.3900",
+      "title": "Robust Image Segmentation in Low Depth Of Field Images",
+      "authors": [
+        "Franz Graf",
+        "Hans-Peter Kriegel",
+        "Michael Weiler"
+      ],
+      "year": 2013,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "BIO-012",
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2408.12957",
+      "title": "Image Segmentation in Foundation Model Era: A Survey",
+      "authors": [
+        "Tianfei Zhou",
+        "Wang Xia",
+        "Fei Zhang",
+        "Boyu Chang"
+      ],
+      "year": 2024,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "BIO-013",
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2412.15058",
+      "title": "MultiverSeg: Scalable Interactive Segmentation of Biomedical Imaging Datasets with In-Context Guidance",
+      "authors": [
+        "Hallee E. Wong",
+        "Jose Javier Gonzalez Ortiz",
+        "John Guttag",
+        "Adrian V. Dalca"
+      ],
+      "year": 2024,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "BIO-014",
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2302.02125",
+      "title": "Weakly-Supervised 3D Medical Image Segmentation using Geometric Prior and Contrastive Similarity",
+      "authors": [
+        "Hao Du",
+        "Qihua Dong",
+        "Yan Xu",
+        "Jing Liao"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "BIO-015",
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2207.01883",
+      "title": "MMGL: Multi-Scale Multi-View Global-Local Contrastive learning for Semi-supervised Cardiac Image Segmentation",
+      "authors": [
+        "Ziyuan Zhao",
+        "Jinxuan Hu",
+        "Zeng Zeng",
+        "Xulei Yang"
+      ],
+      "year": 2022,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "BIO-016",
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2103.02844",
+      "title": "Learning With Context Feedback Loop for Robust Medical Image Segmentation",
+      "authors": [
+        "Kibrom Berihu Girum",
+        "Gilles Cr\u00e9hange",
+        "Alain Lalande"
+      ],
+      "year": 2021,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "BIO-017",
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2004.04668",
+      "title": "Test-Time Adaptable Neural Networks for Robust Medical Image Segmentation",
+      "authors": [
+        "Neerav Karani",
+        "Ertunc Erdil",
+        "Krishna Chaitanya",
+        "Ender Konukoglu"
+      ],
+      "year": 2020,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NEURO-011",
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2502.01654",
+      "title": "Predicting concentration levels of air pollutants by transfer learning and recurrent neural network",
+      "authors": [
+        "Iat Hang Fong",
+        "Tengyue Li",
+        "Simon Fong",
+        "Raymond K. Wong"
+      ],
+      "year": 2025,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NEURO-012",
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1803.02421",
+      "title": "Masked Conditional Neural Networks for Audio Classification",
+      "authors": [
+        "Fady Medhat",
+        "David Chesmore",
+        "John Robinson"
+      ],
+      "year": 2018,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NEURO-013",
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1807.02477",
+      "title": "Development of a sensory-neural network for medical diagnosing",
+      "authors": [
+        "Igor Grabec",
+        "Eva \u0160vegl",
+        "Mihael Sok"
+      ],
+      "year": 2018,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NEURO-014",
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1906.10015",
+      "title": "A Review on Neural Network Models of Schizophrenia and Autism Spectrum Disorder",
+      "authors": [
+        "Pablo Lanillos",
+        "Daniel Oliva",
+        "Anja Philippsen",
+        "Yuichi Yamashita"
+      ],
+      "year": 2019,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NEURO-015",
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1411.1792",
+      "title": "How transferable are features in deep neural networks?",
+      "authors": [
+        "Jason Yosinski",
+        "Jeff Clune",
+        "Yoshua Bengio",
+        "Hod Lipson"
+      ],
+      "year": 2014,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
+    },
+    {
+      "paper_id": "NEURO-016",
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2304.09590",
+      "title": "Parallel Neural Networks in Golang",
+      "authors": [
+        "Daniela Kalwarowskyj",
+        "Erich Schikuta"
+      ],
+      "year": 2023,
+      "pdf_acquired": true,
+      "annotation_status": "not_started"
     }
   ],
   "statistics": {
@@ -1887,5 +3067,9 @@
       "complete": 0,
       "not_started": 80
     }
+  },
+  "metadata": {
+    "total_papers": 150,
+    "last_updated": "2026-01-14T00:36:42Z"
   }
 }

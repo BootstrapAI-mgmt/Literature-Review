@@ -1,0 +1,1956 @@
+{
+  "version": "2.0",
+  "last_updated": "2026-01-14T00:37:09Z",
+  "papers": {
+    "NEURO-001": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2506.14138",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-002": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2403.00270",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-003": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2308.08218",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-004": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2406.19230",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-005": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2303.10780",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-006": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2506.14138",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-007": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1904.08405",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-008": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2109.12894",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-009": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2306.11113",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-010": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1606.00825",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-001": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "2408.13687",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-002": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "2301.11930",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-003": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "2404.11663",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-004": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "2211.02350",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-005": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1907.11157",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-006": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "2210.12753",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-007": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "2111.05176",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-008": {
+      "domain": "quantum",
+      "source_type": "doi",
+      "source_id": "10.22331/q-2024-03-20-1288",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-009": {
+      "domain": "quantum",
+      "source_type": "doi",
+      "source_id": "10.22331/q-2023-08-08-1075",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANT-010": {
+      "domain": "quantum",
+      "source_type": "doi",
+      "source_id": "10.1103/PhysRevResearch.6.043249",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-001": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2502.07070",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-002": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "1409.5849",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-003": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2407.21071",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-004": {
+      "domain": "materials",
+      "source_type": "doi",
+      "source_id": "10.1016/j.pmatsci.2023.101147",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-005": {
+      "domain": "materials",
+      "source_type": "doi",
+      "source_id": "10.1038/s41524-020-0321-x",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-006": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "1609.07600",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-007": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2305.11006",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-008": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "1606.00335",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-009": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2106.03459",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MATL-010": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2511.15402",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-001": {
+      "domain": "fusion",
+      "source_type": "doi",
+      "source_id": "10.1038/s41586-024-07313-3",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-002": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2405.05452",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-003": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2410.10555",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-004": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2305.09683",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-005": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2204.00833",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-006": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2404.07458",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-007": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1607.08173",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-008": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2502.04338",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-009": {
+      "domain": "fusion",
+      "source_type": "doi",
+      "source_id": "10.1063/5.0205129",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-010": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2507.05456",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-001": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "0707.2164",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-002": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2010.03547",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-003": {
+      "domain": "nano_thermal",
+      "source_type": "doi",
+      "source_id": "10.1021/acsomega.3c02949",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-004": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1212.5260",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-005": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1910.05715",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-006": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2511.15467",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-007": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2006.12805",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-008": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2006.12805",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-009": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2205.02134",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-010": {
+      "domain": "nano_thermal",
+      "source_type": "doi",
+      "source_id": "10.1039/D3NA00616F",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-001": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2308.02460",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-002": {
+      "domain": "climate",
+      "source_type": "doi",
+      "source_id": "10.1017/9781009157896.011",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-003": {
+      "domain": "climate",
+      "source_type": "doi",
+      "source_id": "10.1038/s41598-021-87460-z",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-004": {
+      "domain": "climate",
+      "source_type": "doi",
+      "source_id": "10.5194/essd-15-5301-2023",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-005": {
+      "domain": "climate",
+      "source_type": "doi",
+      "source_id": "10.5194/gmd-13-3383-2020",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-006": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "1202.6567",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-007": {
+      "domain": "climate",
+      "source_type": "doi",
+      "source_id": "10.1038/s41558-022-01365-1",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-008": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2306.08891",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-009": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2510.02415",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIM-010": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2008.01035",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-001": {
+      "domain": "microbio",
+      "source_type": "doi",
+      "source_id": "10.1371/journal.pone.0321881",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-002": {
+      "domain": "microbio",
+      "source_type": "doi",
+      "source_id": "10.3390/fermentation11070410",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-003": {
+      "domain": "microbio",
+      "source_type": "doi",
+      "source_id": "10.4172/2329-8871.1000387",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-004": {
+      "domain": "microbio",
+      "source_type": "doi",
+      "source_id": "10.1007/s12602-025-10573-8",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-005": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2406.05258",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-006": {
+      "domain": "microbio",
+      "source_type": "doi",
+      "source_id": "10.1371/journal.pbio.3000533",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-007": {
+      "domain": "microbio",
+      "source_type": "doi",
+      "source_id": "10.1128/MMBR.00091-20",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-008": {
+      "domain": "microbio",
+      "source_type": "doi",
+      "source_id": "10.1038/s41576-022-00488-1",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-009": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2103.10667",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-010": {
+      "domain": "microbio",
+      "source_type": "doi",
+      "source_id": "10.1016/j.cell.2024.01.042",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-001": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2302.04143",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-002": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "1203.4587",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-003": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2204.12077",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-004": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "1609.04846",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-005": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2410.04482",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-006": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2307.15208",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-007": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2312.10271",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-008": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2410.17664",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-009": {
+      "domain": "bioimaging",
+      "source_type": "doi",
+      "source_id": "10.1007/s10334-024-01173-8",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIIMG-010": {
+      "domain": "bioimaging",
+      "source_type": "doi",
+      "source_id": "10.1007/s00259-021-05419-y",
+      "pdf_status": "pending_pdf",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-011": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2401.05714",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-012": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1403.6738",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-013": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1904.06375",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-014": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2502.12675",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-015": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1911.02346",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-016": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2305.11917",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-017": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2101.01303",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-018": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2111.09854",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-019": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "cs/0306115",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-020": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "0811.0600",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-021": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "2308.11794",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-022": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1207.2090",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MICRO-023": {
+      "domain": "microbio",
+      "source_type": "arxiv",
+      "source_id": "1802.02278",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-011": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2009.05074",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-012": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1803.10300",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-013": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1202.4380",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-014": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1603.07564",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-015": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2409.00963",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-016": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2112.14837",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-017": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2506.20969",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-018": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2102.10603",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-019": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "math/0409308",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-020": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "1410.5836",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NANO-021": {
+      "domain": "nano_thermal",
+      "source_type": "arxiv",
+      "source_id": "2105.08853",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-011": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2306.04338",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-012": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2006.16189",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-013": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2201.12150",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-014": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2302.08893",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-015": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2304.02381",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-016": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2303.15563",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-017": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "1905.04749",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-018": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "1705.05172",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-019": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2306.14753",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "CLIMATE-020": {
+      "domain": "climate",
+      "source_type": "arxiv",
+      "source_id": "2307.05639",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-011": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1508.05650",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-012": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2202.00406",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-013": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1109.1997",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-014": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1508.04593",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-015": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2102.12513",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-016": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1710.03405",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-017": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "2005.10166",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "FUSION-018": {
+      "domain": "fusion",
+      "source_type": "arxiv",
+      "source_id": "1804.07299",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANTUM-011": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1311.2485",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANTUM-012": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1610.04013",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANTUM-013": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "0811.3734",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANTUM-014": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "quant-ph/0304016",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANTUM-015": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "quant-ph/0602157",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANTUM-016": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1910.03672",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANTUM-017": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1307.5893",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "QUANTUM-018": {
+      "domain": "quantum",
+      "source_type": "arxiv",
+      "source_id": "1307.5892",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MAT-011": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2411.05090",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MAT-012": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "0902.2655",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MAT-013": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "1204.0099",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MAT-014": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2511.11889",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MAT-015": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "2310.01280",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MAT-016": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "1510.07530",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "MAT-017": {
+      "domain": "materials",
+      "source_type": "arxiv",
+      "source_id": "1911.12422",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIO-011": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "1302.3900",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIO-012": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2408.12957",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIO-013": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2412.15058",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIO-014": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2302.02125",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIO-015": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2207.01883",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIO-016": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2103.02844",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "BIO-017": {
+      "domain": "bioimaging",
+      "source_type": "arxiv",
+      "source_id": "2004.04668",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-011": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2502.01654",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-012": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1803.02421",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-013": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1807.02477",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-014": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1906.10015",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-015": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "1411.1792",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    },
+    "NEURO-016": {
+      "domain": "neuromorphic",
+      "source_type": "arxiv",
+      "source_id": "2304.09590",
+      "pdf_status": "ready",
+      "checkboxes": {
+        "human_annotation": false,
+        "agent_annotation": false,
+        "parity_check": false,
+        "golden_finalized": false
+      },
+      "notes": ""
+    }
+  }
+}
