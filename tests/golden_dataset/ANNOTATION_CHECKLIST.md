@@ -1,6 +1,6 @@
 # Golden Dataset Annotation Checklist
 
-**Generated:** 2026-01-14 13:24:12 UTC  
+**Generated:** 2026-01-14 14:54:14 UTC  
 **Total Papers:** 120 ready for annotation
 
 ---
@@ -11,7 +11,7 @@
 |-------|----------|-----------|----------|
 | PDF Acquired | 120 | 0 | ████████████████████ 100% |
 | Human Annotation | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
-| Agent Annotation | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
+| Agent Annotation | 1 | 119 | ░░░░░░░░░░░░░░░░░░░░ 0% |
 | Parity Check | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
 | Golden Finalized | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
 
@@ -32,12 +32,12 @@ Run `python scripts/update_checklist.py` to auto-detect completions and regenera
 
 | Status | Human | Agent | Parity | Golden |
 |--------|-------|-------|--------|--------|
-| Done | 0 | 0 | 0 | 0 |
-| Remaining | 15 | 15 | 15 | 15 |
+| Done | 0 | 1 | 0 | 0 |
+| Remaining | 15 | 14 | 15 | 15 |
 
 | Paper ID | Title | Human | Agent | Parity | Golden |
 |----------|-------|:-----:|:-----:|:------:|:------:|
-| BIIMG-001 | Predicting Thrombectomy Recanalization from C... | ⬜ | ⬜ | ⬜ | ⬜ |
+| BIIMG-001 | Predicting Thrombectomy Recanalization from C... | ⬜ | ✅ | ⬜ | ⬜ |
 | BIIMG-002 | High Speed Compressed Sensing Reconstruction ... | ⬜ | ⬜ | ⬜ | ⬜ |
 | BIIMG-003 | AAU-net: An Adaptive Attention U-net for Brea... | ⬜ | ⬜ | ⬜ | ⬜ |
 | BIIMG-004 | A Tutorial about Random Neural Networks in Su... | ⬜ | ⬜ | ⬜ | ⬜ |
