@@ -2,9 +2,9 @@
 
 **Created:** December 31, 2025  
 **Source:** Third-Party Assessment & Internal Review  
-**Total Tasks:** 22 (7 Waves) *(updated: added Wave 0.5 and Wave 2.5)*  
-**Total Effort:** 194 hours base *(+26h for Wave 0.5, +24h for Wave 2.5, +4h for Wave 4 VI-*)*  
-**Timeline:** 12-14 weeks
+**Total Tasks:** 26 (8 Waves) *(updated: added Wave 0.5, Wave 1.5, and Wave 2.5)*  
+**Total Effort:** 214 hours base *(+26h for Wave 0.5, +46h for Wave 1.5 enhanced, +24h for Wave 2.5, +4h for Wave 4 VI-*)*  
+**Timeline:** 14-16 weeks
 
 ---
 
@@ -16,6 +16,10 @@
 | 2025-12-31 | Added FV-07→10, AV-07; expanded Wave 5 | Third-party review feedback |
 | 2025-12-31 | Added Wave 2.5 (OQ-*, RA-*, VI-*); output validation | Third-party output gap analysis |
 | 2025-12-31 | Added Wave 0.5 (MT-*, DF-*, MC-*); modularization infrastructure | Third-party modularization assessment |
+| 2026-01-10 | Added Wave 1.5 (Paper Sourcing, Annotation); cross-domain validation | Golden dataset enhancement |
+| 2026-01-12 | Added VM-W1.5-0 (Ground Truth Design); bi-directional validation | Golden dataset strategy assessment |
+| 2026-01-13 | Added VM-W1.5-3 (Gap Scenario Execution); FP-02/FP-03/ITER-01 metrics | Third-party gap closure |
+| 2026-01-13 | Decomposed VM-W1.5-2 into 10 sub-tasks (2a-2j); parallel execution | Agent capacity assessment |
 
 ---
 
@@ -28,7 +32,9 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 3. **Efficiency Validation** - Performance meets cost/time targets
 4. **Benchmark Suite** - Reproducible performance measurements
 5. **Golden Dataset** - Ground truth for accuracy testing
-6. **Output Quality Validation** - User-facing deliverables are accurate and complete *(added)*
+6. **Cross-Domain Validation** - System works across diverse scientific domains *(added)*
+7. **Output Quality Validation** - User-facing deliverables are accurate and complete *(added)*
+8. **Bi-Directional Validation** - Tests both finding AND not-finding correctly *(added 2026-01-12)*
 
 ## Wave Architecture
 
@@ -40,7 +46,7 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
                     └───────────────┬─────────────────────┘
                                     │ (Week 1-2)
                                     ▼
-                    WAVE 0.5: Modularization Infrastructure (NEW)
+                    WAVE 0.5: Modularization Infrastructure
                     ┌─────────────────────────────────────┐
                     │  VM-W0.5-1: Metrics Configuration   │
                     │  VM-W0.5-2: Domain Test Fixtures    │
@@ -56,6 +62,16 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 │ VM-W1-3: Judge Decisions      │ └───────────────────────────────┘
 └───────────────────────────────┘   (Week 4-5)
                     │
+                    ▼
+        WAVE 1.5: Ground Truth Infrastructure (ENHANCED)
+┌───────────────────────────────────────────────────────────┐
+│ VM-W1.5-0: Ground Truth Design    (PREREQUISITE)         │
+│ VM-W1.5-1: Paper Sourcing         (✅ Complete)          │
+│ VM-W1.5-1B: Paper Population      (80+ papers)           │
+│ VM-W1.5-2: Paper Annotation       (Enhanced)             │
+│ VM-W1.5-3: Gap Scenario Execution (NEW - FP/ITER tests)  │
+└───────────────────────────────────────────────────────────┘
+                    │ (Week 5-6)
                     ▼
               WAVE 2: Accuracy & Efficiency
 ┌───────────────────────────────────────────────────────────┐
@@ -107,6 +123,10 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 | VM-W1-2 | FV-03, AV-01, AV-02 | Claim identification accuracy |
 | VM-W1-3 | FV-04, FV-05, FV-06, **FV-10** | Judge decisions + Version sync |
 | VM-W1-4 | QB-01→05 (impl) | Golden dataset creation |
+| **VM-W1.5-0** | **FP-01, FP-02, FP-03, ITER-01** | **Ground truth design validation** |
+| **VM-W1.5-1** | QB-01, QB-02 | Open access paper sourcing (✅ Complete) |
+| **VM-W1.5-1B** | QB-01, QB-02 | Paper population (80+ papers) |
+| **VM-W1.5-2** | QB-01→05, **FP-01, FP-02, FP-03, ITER-01** | Paper annotation (enhanced) |
 | VM-W2-1 | AV-03, AV-05, AV-06, **FV-07** | Accuracy baseline + Gap detection |
 | VM-W2-2 | AV-04, AV-08 | Judge calibration analysis |
 | VM-W2-3 | EV-01, EV-02, EV-03, EV-07, **FV-08** | Efficiency + Incremental detection |
@@ -131,6 +151,10 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
 > - MT-01→02: Metrics configuration validation
 > - DF-01→02: Domain fixture validation
 > - MC-01→03: Model comparison benchmarks
+> - **FP-01: Extraction False Positive Rate (<5%)** *(added 2026-01-12)*
+> - **FP-02: Gap Detection False Positive Rate (0%)** *(added 2026-01-12)*
+> - **FP-03: Decoy Paper Contribution Rate (0%)** *(added 2026-01-12)*
+> - **ITER-01: Iterative Gap Closing Validation** *(added 2026-01-12)*
 
 ---
 
@@ -270,6 +294,115 @@ This wave implements a comprehensive validation matrix and benchmarking framewor
   - 30 weak-evidence claims for false-positive testing (QB-04)
   - 10 gaps with known solutions for recommendations (QB-05)
   - Golden dataset loader utility
+
+---
+
+## Wave 1.5: Ground Truth Infrastructure (Week 5-6) - 40 hours *(Enhanced 2026-01-12)*
+
+> **Enhanced with Bi-Directional Validation**
+> 
+> This wave creates a comprehensive ground truth dataset using a hybrid approach:
+> - **Exhaustive annotation** for 5-10 anchor papers (true ground truth)
+> - **Standard annotation** for 70+ additional papers (volume coverage)
+> - **Controlled gap scenarios** for iterative validation
+> - **Bi-directional validation** testing both finding AND not-finding correctly
+
+### VM-W1.5-0: Ground Truth Design Validation *(NEW - PREREQUISITE)*
+- **File:** `VM_WAVE_1.5_0_GROUND_TRUTH_DESIGN.md`
+- **Effort:** 12 hours
+- **Priority:** CRITICAL (Prerequisite for VM-W1.5-2)
+- **Status:** Not Started
+- **Dependencies:** VM-W1-4
+- **Validation IDs:** FP-01, GAP-NEG, ITER-01 (enables all bi-directional validation)
+- **Deliverables:**
+  - Anchor paper selection criteria document
+  - Exhaustive annotation protocol with two-annotator reconciliation
+  - Gap scenario design template with Pass 1/Pass 2 structure
+  - Extractability classification scheme (HIGH/MEDIUM/LOW/IRRELEVANT)
+  - Pilot annotation of 3-5 anchor papers
+  - Inter-rater agreement validation (target: κ ≥ 0.7)
+  - Anchor paper and gap scenario schema extensions
+
+### VM-W1.5-1: Open Access Paper Sourcing (Infrastructure)
+- **File:** `VM_WAVE_1.5_1_PAPER_SOURCING.md`
+- **Effort:** 4 hours *(reduced: infrastructure only)*
+- **Priority:** HIGH
+- **Status:** ✅ Complete (PR #137 merged)
+- **Dependencies:** VM-W1-4
+- **Validation IDs:** QB-01, QB-02 (data quality expansion)
+- **Deliverables:**
+  - Enhanced `source_papers.py` CLI (status, add, validate, report, download)
+  - Paper registry schema (`paper_registry.json`)
+  - Domain sourcing guides (SOURCING.md per domain)
+  - PDF download infrastructure
+  - Source verification documentation
+  - **5+ decoy papers identified for false positive testing** *(added)*
+
+### VM-W1.5-1B: Paper Population (80+ Papers)
+- **File:** `VM_WAVE_1.5_1B_PAPER_POPULATION.md`
+- **Effort:** 8 hours
+- **Priority:** HIGH
+- **Status:** Not Started
+- **Dependencies:** VM-W1.5-1
+- **Validation IDs:** QB-01, QB-02 (data population)
+- **Deliverables:**
+  - 80+ papers registered (10 per domain)
+  - All papers with open access license verified
+  - Each paper with ≥5 claim count estimate
+  - `source_papers.py validate` passes
+  - Sourcing report generated
+
+### VM-W1.5-2: Paper Annotation for Golden Dataset *(Decomposed)*
+- **File:** `VM_WAVE_1.5_2_PAPER_ANNOTATION.md`
+- **Effort:** 28 hours total *(decomposed into 10 sub-tasks)*
+- **Priority:** HIGH
+- **Status:** Decomposed (2026-01-13)
+- **Dependencies:** VM-W1-4, **VM-W1.5-0**, VM-W1.5-1, VM-W1.5-1B
+- **Validation IDs:** QB-01→05, **FP-01, FP-02, FP-03, ITER-01** (real data + negative cases)
+- **Sub-Tasks:**
+
+| Sub-Task | Name | Effort | Papers | Parallelizable |
+|----------|------|--------|--------|----------------|
+| VM-W1.5-2a | Anchor Neuromorphic | 3h | 2-3 | No (first) |
+| VM-W1.5-2b | Anchor Cross-Domain | 4h | 3-5 | No (after 2a) |
+| VM-W1.5-2c | Standard Neuromorphic | 3h | 8 | Yes |
+| VM-W1.5-2d | Standard Quantum | 3h | 10 | Yes |
+| VM-W1.5-2e | Standard Microbiology | 3h | 10 | Yes |
+| VM-W1.5-2f | Standard Fusion/Nano | 4h | 20 | Yes |
+| VM-W1.5-2g | Standard Climate/Materials | 4h | 20 | Yes |
+| VM-W1.5-2h | Standard Biomedical | 3h | 10 | Yes |
+| VM-W1.5-2i | Gap Scenario Design | 3h | 5+ decoys | No (after 2c-2h) |
+| VM-W1.5-2j | Merge & Validation | 2h | - | No (final) |
+
+- **Execution Strategy:**
+  1. Sequential: 2a → 2b (anchor establishment)
+  2. Parallel: 2c-2h (standard annotation)
+  3. Sequential: 2i → 2j (scenarios and merge)
+- **Deliverables:**
+  - 75-150 anchor claims (exhaustive annotation)
+  - 350-560 standard claims (8 domains)
+  - 50+ non-extraction items (false positive tests)
+  - 3+ gap scenarios with Pass 1/Pass 2 states
+  - 5+ decoy paper annotations
+  - 160+ known gaps
+  - Merged golden dataset v2.0
+
+### VM-W1.5-3: Gap Scenario Execution Framework *(NEW)*
+- **File:** `VM_WAVE_1.5_3_GAP_SCENARIO_EXECUTION.md`
+- **Effort:** 6 hours
+- **Priority:** HIGH
+- **Status:** Not Started
+- **Dependencies:** VM-W1.5-0, VM-W1.5-2
+- **Validation IDs:** **FP-02, FP-03, GAP-NEG, ITER-01** (gap scenario execution)
+- **Deliverables:**
+  - `tests/validation/gap_scenarios/executor.py` - GapScenarioExecutor class
+  - `tests/validation/gap_scenarios/state_manager.py` - DatabaseStateManager
+  - `tests/validation/gap_scenarios/test_scenarios.py` - pytest test suite
+  - 3+ gap scenario JSON definitions (GAP-001, GAP-002, GAP-003)
+  - FP-02 metric: Gap detection false positive rate (0%)
+  - FP-03 metric: Decoy paper contribution rate (0%)
+  - GAP-NEG metric: Non-gap accuracy (100%)
+  - ITER-01 metric: Iterative gap closure accuracy (≥95%)
 
 ---
 
