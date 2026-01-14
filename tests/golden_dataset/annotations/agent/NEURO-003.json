@@ -1,0 +1,129 @@
+{
+  "paper_id": "NEURO-003",
+  "annotator": "agent",
+  "timestamp": "2026-01-14T14:05:00Z",
+  "source": {
+    "title": "Expressivity of Spiking Neural Networks",
+    "authors": ["Manjot Singh", "Adalbert Fono", "Gitta Kutyniok"],
+    "venue": "JMLR",
+    "year": 2023,
+    "pages": 39
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Spiking neural networks with Spike Response Model realize piecewise linear mappings",
+      "type": "theoretical",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["theory", "expressivity"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C2",
+      "text": "SNNs can realize both continuous and discontinuous functions, unlike ReLU networks",
+      "type": "theoretical",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["theory", "expressivity", "novelty"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C3",
+      "text": "Provide complexity bounds on SNN size to emulate multi-layer ReLU networks",
+      "type": "theoretical",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["theory", "complexity"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C4",
+      "text": "Establish complexity bounds in reverse direction for one-layer SNNs in continuous setting",
+      "type": "theoretical",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["theory", "complexity"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C5",
+      "text": "The firing mapping of an LSNN (Linear SNN) is piecewise linear (Theorem 9)",
+      "type": "theoretical",
+      "evidence_location": {"page": 15, "section": "Theorem 9"},
+      "confidence": 0.95,
+      "pillar_mapping": ["theory"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C6",
+      "text": "For LSNN with only positive weights, the firing time function is increasing and concave (Proposition 10)",
+      "type": "theoretical",
+      "evidence_location": {"page": 16, "section": "Proposition 10"},
+      "confidence": 0.95,
+      "pillar_mapping": ["theory"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C7",
+      "text": "SNNs use temporal coding where precise timing of spikes matters",
+      "type": "background",
+      "evidence_location": {"page": 1, "section": "Introduction"},
+      "confidence": 0.90,
+      "pillar_mapping": ["methodology"],
+      "verifiable": true
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Theoretical analysis limited to linear response function SNNs",
+      "severity": "medium",
+      "acknowledged_by_authors": true
+    },
+    {
+      "gap_id": "G2",
+      "description": "No empirical validation of theoretical bounds",
+      "severity": "high",
+      "acknowledged_by_authors": false
+    },
+    {
+      "gap_id": "G3",
+      "description": "Temporal coding focus - rate coding not analyzed",
+      "severity": "low",
+      "acknowledged_by_authors": true
+    },
+    {
+      "gap_id": "G4",
+      "description": "Complexity bounds may not be tight",
+      "severity": "medium",
+      "acknowledged_by_authors": false
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "experimental_results",
+      "reason": "Purely theoretical paper - no experimental validation"
+    },
+    {
+      "item_id": "NE2",
+      "type": "benchmark_performance",
+      "reason": "No benchmark experiments conducted"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Formal theoretical analysis of SNN expressivity compared to ReLU networks",
+    "key_finding": "SNNs can express both continuous and discontinuous functions with quantifiable complexity bounds",
+    "domain": "Theoretical machine learning / Neural network expressivity",
+    "methodology": "Mathematical proofs using Spike Response Model",
+    "limitations": "Purely theoretical, limited to linear response functions"
+  },
+  "quality_assessment": {
+    "claim_density": "medium",
+    "evidence_quality": "high",
+    "reproducibility": "high",
+    "novelty": "high",
+    "overall_score": 8
+  }
+}

@@ -1,6 +1,6 @@
 {
   "version": "2.0",
-  "last_updated": "2026-01-14T14:54:14Z",
+  "last_updated": "2026-01-14T15:02:52Z",
   "papers": {
     "NEURO-001": {
       "domain": "neuromorphic",
@@ -22,7 +22,7 @@
       "pdf_status": "ready",
       "checkboxes": {
         "human_annotation": false,
-        "agent_annotation": false,
+        "agent_annotation": true,
         "parity_check": false,
         "golden_finalized": false
       },
@@ -35,7 +35,7 @@
       "pdf_status": "ready",
       "checkboxes": {
         "human_annotation": false,
-        "agent_annotation": false,
+        "agent_annotation": true,
         "parity_check": false,
         "golden_finalized": false
       },
@@ -48,7 +48,7 @@
       "pdf_status": "ready",
       "checkboxes": {
         "human_annotation": false,
-        "agent_annotation": false,
+        "agent_annotation": true,
         "parity_check": false,
         "golden_finalized": false
       },
@@ -61,7 +61,7 @@
       "pdf_status": "ready",
       "checkboxes": {
         "human_annotation": false,
-        "agent_annotation": false,
+        "agent_annotation": true,
         "parity_check": false,
         "golden_finalized": false
       },

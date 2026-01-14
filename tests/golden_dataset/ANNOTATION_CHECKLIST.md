@@ -1,6 +1,6 @@
 # Golden Dataset Annotation Checklist
 
-**Generated:** 2026-01-14 14:54:14 UTC  
+**Generated:** 2026-01-14 15:02:52 UTC  
 **Total Papers:** 120 ready for annotation
 
 ---
@@ -11,7 +11,7 @@
 |-------|----------|-----------|----------|
 | PDF Acquired | 120 | 0 | ████████████████████ 100% |
 | Human Annotation | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
-| Agent Annotation | 1 | 119 | ░░░░░░░░░░░░░░░░░░░░ 0% |
+| Agent Annotation | 5 | 115 | ░░░░░░░░░░░░░░░░░░░░ 4% |
 | Parity Check | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
 | Golden Finalized | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
 
@@ -194,15 +194,15 @@ Run `python scripts/update_checklist.py` to auto-detect completions and regenera
 
 | Status | Human | Agent | Parity | Golden |
 |--------|-------|-------|--------|--------|
-| Done | 0 | 0 | 0 | 0 |
-| Remaining | 15 | 15 | 15 | 15 |
+| Done | 0 | 4 | 0 | 0 |
+| Remaining | 15 | 11 | 15 | 15 |
 
 | Paper ID | Title | Human | Agent | Parity | Golden |
 |----------|-------|:-----:|:-----:|:------:|:------:|
-| NEURO-002 | Event-Driven Learning for Spiking Neural Netw... | ⬜ | ⬜ | ⬜ | ⬜ |
-| NEURO-003 | Expressivity of Spiking Neural Networks | ⬜ | ⬜ | ⬜ | ⬜ |
-| NEURO-004 | Spiking Convolutional Neural Networks for Tex... | ⬜ | ⬜ | ⬜ | ⬜ |
-| NEURO-005 | Comprehensive Review of Spiking Neural Networ... | ⬜ | ⬜ | ⬜ | ⬜ |
+| NEURO-002 | Event-Driven Learning for Spiking Neural Netw... | ⬜ | ✅ | ⬜ | ⬜ |
+| NEURO-003 | Expressivity of Spiking Neural Networks | ⬜ | ✅ | ⬜ | ⬜ |
+| NEURO-004 | Spiking Convolutional Neural Networks for Tex... | ⬜ | ✅ | ⬜ | ⬜ |
+| NEURO-005 | Comprehensive Review of Spiking Neural Networ... | ⬜ | ✅ | ⬜ | ⬜ |
 | NEURO-006 | NeuroCoreX: An Open-Source FPGA-Based Spiking... | ⬜ | ⬜ | ⬜ | ⬜ |
 | NEURO-007 | Event-based Vision: A Survey | ⬜ | ⬜ | ⬜ | ⬜ |
 | NEURO-008 | Training Spiking Neural Networks Using Lesson... | ⬜ | ⬜ | ⬜ | ⬜ |

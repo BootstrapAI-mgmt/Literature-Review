@@ -1,0 +1,149 @@
+{
+  "paper_id": "NEURO-002",
+  "annotator": "agent",
+  "timestamp": "2026-01-14T14:00:00Z",
+  "source": {
+    "title": "Event-Driven Learning for Spiking Neural Networks",
+    "authors": ["Wenjie Wei", "Malu Zhang", "Jilin Zhang", "Ammar Belatreche", "Jibin Wu", "Zijing Xu", "Xuerui Qiu", "Hong Chen", "Yang Yang", "Haizhou Li"],
+    "venue": "IEEE Transactions",
+    "year": 2024,
+    "pages": 15
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "STD-ED outperforms existing event-driven methods by up to 2.51% on CIFAR-100",
+      "type": "quantitative",
+      "metric": "accuracy_improvement",
+      "value": 2.51,
+      "unit": "percentage_points",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["accuracy", "performance"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C2",
+      "text": "MPD-ED outperforms existing event-driven methods by up to 6.79% on CIFAR-100",
+      "type": "quantitative",
+      "metric": "accuracy_improvement",
+      "value": 6.79,
+      "unit": "percentage_points",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["accuracy", "performance"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C3",
+      "text": "On-chip learning achieved 30-fold reduction in energy consumption compared to time-step-based surrogate gradient methods",
+      "type": "quantitative",
+      "metric": "energy_reduction",
+      "value": 30,
+      "unit": "fold",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["efficiency", "hardware"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C4",
+      "text": "Achieved 94.92% accuracy on CIFAR-10 with STD-ED",
+      "type": "quantitative",
+      "metric": "accuracy",
+      "value": 94.92,
+      "evidence_location": {"page": 8, "section": "Results"},
+      "confidence": 0.90,
+      "pillar_mapping": ["accuracy"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C5",
+      "text": "Achieved 77.29% accuracy on CIFAR-100 with MPD-ED",
+      "type": "quantitative",
+      "metric": "accuracy",
+      "value": 77.29,
+      "evidence_location": {"page": 8, "section": "Results"},
+      "confidence": 0.90,
+      "pillar_mapping": ["accuracy"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C6",
+      "text": "STD-ED leverages precise neuronal spike timing for effective learning",
+      "type": "methodological",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["methodology", "novelty"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C7",
+      "text": "MPD-ED leverages membrane potential for effective learning",
+      "type": "methodological",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["methodology", "novelty"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C8",
+      "text": "Methods validated on both static (CIFAR) and neuromorphic datasets",
+      "type": "methodological",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["reproducibility", "methodology"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C9",
+      "text": "Energy efficiency validated experimentally on neuromorphic hardware",
+      "type": "methodological",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.90,
+      "pillar_mapping": ["efficiency", "hardware"],
+      "verifiable": true
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Limited comparison with other recent event-driven methods beyond cited baselines",
+      "severity": "medium",
+      "acknowledged_by_authors": false
+    },
+    {
+      "gap_id": "G2",
+      "description": "Hardware experiments limited to specific neuromorphic platform",
+      "severity": "medium",
+      "acknowledged_by_authors": false
+    },
+    {
+      "gap_id": "G3",
+      "description": "No evaluation on larger-scale datasets beyond CIFAR",
+      "severity": "medium",
+      "acknowledged_by_authors": false
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "hardware_specs",
+      "reason": "Specific neuromorphic hardware configuration not fully detailed"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Two novel event-driven learning algorithms (STD-ED and MPD-ED) for SNNs that leverage spike timing and membrane potential",
+    "key_finding": "30x energy reduction with competitive accuracy on CIFAR benchmarks",
+    "domain": "Neuromorphic computing / Spiking neural networks",
+    "methodology": "Event-driven backpropagation with spike timing and membrane potential",
+    "limitations": "Limited to CIFAR-scale experiments"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "high",
+    "reproducibility": "medium",
+    "novelty": "high",
+    "overall_score": 8
+  }
+}

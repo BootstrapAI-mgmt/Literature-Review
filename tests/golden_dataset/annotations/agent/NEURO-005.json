@@ -1,0 +1,132 @@
+{
+  "paper_id": "NEURO-005",
+  "annotator": "agent",
+  "timestamp": "2026-01-14T14:15:00Z",
+  "source": {
+    "title": "A Comprehensive Review of Spiking Neural Networks: Interpretation, Optimization, Efficiency, and Best Practices",
+    "authors": ["Kai Malcolm", "Josue Casco-Rodriguez"],
+    "venue": "Rice University Technical Report",
+    "year": 2023,
+    "pages": 16
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Human brain consumes only 20W while performing perception, recognition, reasoning, control, and movement",
+      "type": "background",
+      "value": 20,
+      "unit": "watts",
+      "evidence_location": {"page": 1, "section": "Introduction"},
+      "confidence": 0.90,
+      "pillar_mapping": ["efficiency"],
+      "verifiable": false,
+      "note": "Well-known biological fact"
+    },
+    {
+      "claim_id": "C2",
+      "text": "Top-performing language models can require over 300 kWh of power",
+      "type": "background",
+      "citation": "Patterson et al., 2021",
+      "evidence_location": {"page": 1, "section": "Introduction"},
+      "confidence": 0.85,
+      "pillar_mapping": ["efficiency"],
+      "verifiable": false,
+      "note": "Cited claim"
+    },
+    {
+      "claim_id": "C3",
+      "text": "Human brain consists of nearly 100 billion neurons, each with up to 15,000 synapses",
+      "type": "background",
+      "evidence_location": {"page": 1, "section": "Introduction"},
+      "confidence": 0.90,
+      "pillar_mapping": ["scale"],
+      "verifiable": false,
+      "note": "Well-known biological fact"
+    },
+    {
+      "claim_id": "C4",
+      "text": "SNN field lacks clear benchmarks and tool sets",
+      "type": "gap_identification",
+      "citation": "Skatchkovsky et al., 2021",
+      "evidence_location": {"page": 1, "section": "Introduction"},
+      "confidence": 0.90,
+      "pillar_mapping": ["reproducibility"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C5",
+      "text": "Surrogate gradients are used as alternative to derivative of Heaviside step function during backpropagation",
+      "type": "methodological",
+      "citation": "Neftci et al., 2019",
+      "evidence_location": {"page": 5, "section": "Optimization"},
+      "confidence": 0.95,
+      "pillar_mapping": ["methodology"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C6",
+      "text": "STDP is unsupervised and originates from experimental observations of neural plasticity",
+      "type": "background",
+      "evidence_location": {"page": 7, "section": "STDP"},
+      "confidence": 0.95,
+      "pillar_mapping": ["methodology"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C7",
+      "text": "Review identifies and compares cutting-edge methods in SNN optimization, energy-efficiency, and evaluation",
+      "type": "contribution",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["survey"],
+      "verifiable": true
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Review paper - no novel algorithmic contributions",
+      "severity": "low",
+      "acknowledged_by_authors": true,
+      "note": "Expected for a review paper"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Limited empirical comparison of reviewed methods",
+      "severity": "medium",
+      "acknowledged_by_authors": false
+    },
+    {
+      "gap_id": "G3",
+      "description": "Some recent advances may be missing due to publication date",
+      "severity": "low",
+      "acknowledged_by_authors": false
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "benchmark_results",
+      "reason": "Review paper - reports results from other papers"
+    },
+    {
+      "item_id": "NE2",
+      "type": "original_experiments",
+      "reason": "No original experiments conducted"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Comprehensive literature review of SNN interpretation, optimization, and efficiency methods",
+    "key_finding": "Identifies key challenges: lack of benchmarks, optimization of non-differentiable spikes, and encoding mechanisms",
+    "domain": "Neuromorphic computing / Survey",
+    "methodology": "Literature review and synthesis",
+    "limitations": "Review paper without novel contributions or experiments"
+  },
+  "quality_assessment": {
+    "claim_density": "medium",
+    "evidence_quality": "high",
+    "reproducibility": "high",
+    "novelty": "low",
+    "overall_score": 7
+  }
+}

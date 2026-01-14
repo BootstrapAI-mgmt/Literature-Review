@@ -1,0 +1,166 @@
+{
+  "paper_id": "NEURO-004",
+  "annotator": "agent",
+  "timestamp": "2026-01-14T14:10:00Z",
+  "source": {
+    "title": "Spiking Convolutional Neural Networks for Text Classification",
+    "authors": ["Changze Lv", "Jianhan Xu", "Xiaoqing Zheng"],
+    "venue": "ICLR 2023",
+    "year": 2023,
+    "pages": 17
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Converted SNNs achieve comparable results to DNN counterparts with much less energy consumption",
+      "type": "comparative",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["accuracy", "efficiency"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C2",
+      "text": "SNNs are more robust to adversarial attacks than DNNs",
+      "type": "comparative",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["robustness", "security"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C3",
+      "text": "Achieved 77.41% accuracy on text classification benchmark",
+      "type": "quantitative",
+      "metric": "accuracy",
+      "value": 77.41,
+      "evidence_location": {"page": 6, "section": "Results"},
+      "confidence": 0.90,
+      "pillar_mapping": ["accuracy"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C4",
+      "text": "Achieved 83.25% accuracy on SST-2 sentiment classification",
+      "type": "quantitative",
+      "metric": "accuracy",
+      "value": 83.25,
+      "evidence_location": {"page": 6, "section": "Results"},
+      "confidence": 0.90,
+      "pillar_mapping": ["accuracy"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C5",
+      "text": "Achieved 94.00% accuracy on Subj dataset",
+      "type": "quantitative",
+      "metric": "accuracy",
+      "value": 94.00,
+      "evidence_location": {"page": 6, "section": "Results"},
+      "confidence": 0.90,
+      "pillar_mapping": ["accuracy"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C6",
+      "text": "Achieved 86.74% accuracy on Chinese sentiment dataset",
+      "type": "quantitative",
+      "metric": "accuracy",
+      "value": 86.74,
+      "evidence_location": {"page": 6, "section": "Results"},
+      "confidence": 0.90,
+      "pillar_mapping": ["accuracy"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C7",
+      "text": "Propose conversion + fine-tuning two-step training method for SNNs",
+      "type": "methodological",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["methodology", "novelty"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C8",
+      "text": "Novel method to encode pre-trained word embeddings as spike trains",
+      "type": "methodological",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["methodology", "novelty"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C9",
+      "text": "Method works for both English and Chinese text",
+      "type": "qualitative",
+      "evidence_location": {"page": 1, "section": "Abstract"},
+      "confidence": 0.95,
+      "pillar_mapping": ["generalization"],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C10",
+      "text": "GPT-3 consumes roughly 190,000 kWh to train while human brain uses only 20W",
+      "type": "background",
+      "citation": "Dhar 2020, Anthony et al. 2020, Cox & Dean 2014",
+      "evidence_location": {"page": 1, "section": "Introduction"},
+      "confidence": 0.85,
+      "pillar_mapping": ["efficiency"],
+      "verifiable": false,
+      "note": "Cited claim, not original contribution"
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Energy consumption not directly measured, only implied from SNN properties",
+      "severity": "medium",
+      "acknowledged_by_authors": false
+    },
+    {
+      "gap_id": "G2",
+      "description": "Limited to text classification - not tested on other NLP tasks",
+      "severity": "medium",
+      "acknowledged_by_authors": true
+    },
+    {
+      "gap_id": "G3",
+      "description": "No comparison with other SNN-based NLP methods",
+      "severity": "low",
+      "acknowledged_by_authors": false
+    },
+    {
+      "gap_id": "G4",
+      "description": "Requires external projection layer for word embeddings",
+      "severity": "low",
+      "acknowledged_by_authors": true
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "energy_measurements",
+      "reason": "Actual energy consumption numbers not provided"
+    },
+    {
+      "item_id": "NE2",
+      "type": "adversarial_attack_details",
+      "reason": "Specific attack methods and robustness metrics not fully detailed"
+    }
+  ],
+  "summary": {
+    "main_contribution": "First effective method to train SNNs for text classification using conversion + fine-tuning",
+    "key_finding": "SNNs can match DNN accuracy on text classification while being more robust to adversarial attacks",
+    "domain": "NLP / Spiking neural networks",
+    "methodology": "DNN-to-SNN conversion with surrogate gradient fine-tuning",
+    "limitations": "Limited to classification tasks, energy savings implied rather than measured"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "high",
+    "overall_score": 8
+  }
+}
