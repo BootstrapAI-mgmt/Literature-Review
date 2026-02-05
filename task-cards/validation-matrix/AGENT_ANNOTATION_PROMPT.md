@@ -1,8 +1,13 @@
 # Agent Annotation Prompt Template
 
-**Version:** 1.0  
-**Purpose:** Standardized prompt for agent-based paper annotation  
+**Version:** 2.0  
+**Purpose:** Standardized schema for paper annotation (Golden Dataset format)  
+**Status:** ✅ CANONICAL - This schema is now used by `journal_reviewer.py`
 **Usage:** Replace `{{PLACEHOLDER}}` values for each paper
+
+> **Note:** As of 2026-02-05, this schema is the official standard for the literature review pipeline.
+> The `journal_reviewer.py` prompt has been updated to output this exact format.
+> Use `scripts/convert_review_to_markdown.py` to generate human-readable reports.
 
 ---
 

@@ -154,18 +154,64 @@ class QualityIndicators:
     sufficient_length: bool
     extraction_quality: float
 
-# --- NEW: Dataclass for Requirement Claims ---
+# --- GOLDEN DATASET: Dataclass for Claims ---
 @dataclass
-class RequirementClaim:
-    claim_id: str  # Hash(filename + sub_req + evidence)
-    pillar: str
-    sub_requirement: str
-    evidence_chunk: str
-    claim_summary: str # "why the reviewer thinks this requirement is covered"
-    status: str      # 'pending_judge_review'
+class GoldenDatasetClaim:
+    """Structured claim following AGENT_ANNOTATION_PROMPT.md schema"""
+    claim_id: str           # Format: "{paper_id}-C001"
+    claim_type: str         # "quantitative" or "qualitative"
+    pillar: str             # Exact pillar name from definitions
+    sub_requirement: str    # Exact sub-requirement string
+    claim_text: str         # Summary of what this claim shows
+    verbatim_quote: str     # Exact text from paper (≤100 words)
+    page: int               # Page number where quote appears
+    section: str            # Section name (e.g., "Results")
+    confidence: str         # "high", "medium", or "low"
+    verification_notes: str # How to verify this claim
+    status: str             # "pending_judge_review"
 
     def to_dict(self):
-        return asdict(self)
+        return {
+            "claim_id": self.claim_id,
+            "claim_type": self.claim_type,
+            "pillar": self.pillar,
+            "sub_requirement": self.sub_requirement,
+            "claim_text": self.claim_text,
+            "verbatim_quote": self.verbatim_quote,
+            "location": {
+                "page": self.page,
+                "section": self.section
+            },
+            "confidence": self.confidence,
+            "verification_notes": self.verification_notes,
+            "status": self.status
+        }
+
+@dataclass
+class GoldenDatasetGap:
+    """Structured gap following AGENT_ANNOTATION_PROMPT.md schema"""
+    gap_id: str             # Format: "{paper_id}-G001"
+    gap_type: str           # "limitation", "future_work", or "open_question"
+    gap_text: str           # Description of the gap
+    verbatim_quote: str     # Direct quote if available (or None)
+    page: int               # Page number (or None)
+    section: str            # Section name
+    implied_vs_explicit: str # "explicit" or "implied"
+    research_direction: str  # What future work could address this
+
+    def to_dict(self):
+        return {
+            "gap_id": self.gap_id,
+            "gap_type": self.gap_type,
+            "gap_text": self.gap_text,
+            "verbatim_quote": self.verbatim_quote,
+            "location": {
+                "page": self.page,
+                "section": self.section
+            },
+            "implied_vs_explicit": self.implied_vs_explicit,
+            "research_direction": self.research_direction
+        }
 
 def collect_papers_to_process(folder_path, reviewed_files):
     """Collect all papers that need processing"""
@@ -677,23 +723,37 @@ class PaperAnalyzer:
     """Enhanced paper analysis with 'map-reduce' and requirement cross-referencing."""
 
     # --- MODIFIED: This is now the master column order ---
+    # --- GOLDEN DATASET SCHEMA (v2.0) ---
+    # Updated to align with AGENT_ANNOTATION_PROMPT.md standards
     DATABASE_COLUMN_ORDER = [
-        "ANALYSIS_GAPS", "APA_REFERENCE", "APPLICABILITY_NOTES", "BIOLOGICAL_FIDELITY",
-        "BRAIN_REGIONS", "COMPUTATIONAL_COMPLEXITY", "CORE_CONCEPTS", "CORE_DOMAIN",
-        "CORE_DOMAIN_RELEVANCE_SCORE", "CROSS_REFERENCES_COUNT", "DATASET_USED",
-        "ENERGY_EFFICIENCY", "EXTRACTION_METHOD", "EXTRACTION_QUALITY", "FILENAME",
-        "FULL_TEXT_LINK", "IMPLEMENTATION_DETAILS", "IMPROVEMENT_SUGGESTIONS",
-        "INTERDISCIPLINARY_BRIDGES", "KEYWORDS", "MAJOR_FINDINGS", "MATURITY_LEVEL",
-        "MENTIONED_PAPERS", "NETWORK_ARCHITECTURE", "PUBLICATION_YEAR",
-        "REPRODUCIBILITY_SCORE", "REVIEW_TIMESTAMP", "RISKS", "Requirement(s)",
-        "SCALABILITY_NOTES", "SIMILAR_PAPERS", "SOURCE",
-        "SUBDOMAIN_RELEVANCE_TO_RESEARCH_SCORE", "SUB_DOMAIN",
-        "SUMMARIZED_FROM_CHUNKS", "TITLE", "VALIDATION_METHOD"
+        "paper_id", "annotation_date", "annotation_version",
+        # Paper metadata
+        "TITLE", "AUTHORS", "PUBLICATION_YEAR", "SOURCE", "CORE_DOMAIN", "SUB_DOMAIN",
+        "ABSTRACT_SUMMARY", "FULL_TEXT_LINK", "FILENAME", "PAGE_COUNT",
+        # Scores
+        "CORE_DOMAIN_RELEVANCE_SCORE", "SUBDOMAIN_RELEVANCE_TO_RESEARCH_SCORE",
+        "BIOLOGICAL_FIDELITY", "REPRODUCIBILITY_SCORE", "MATURITY_LEVEL",
+        # Content analysis
+        "MAJOR_FINDINGS", "KEYWORDS", "CORE_CONCEPTS", "NETWORK_ARCHITECTURE",
+        "BRAIN_REGIONS", "DATASET_USED", "INTERDISCIPLINARY_BRIDGES",
+        # Analysis text fields
+        "APPLICABILITY_NOTES", "IMPROVEMENT_SUGGESTIONS", "RISKS",
+        "ENERGY_EFFICIENCY", "IMPLEMENTATION_DETAILS", "VALIDATION_METHOD",
+        "SCALABILITY_NOTES", "COMPUTATIONAL_COMPLEXITY", "APA_REFERENCE",
+        # Structured claims and gaps (Golden Dataset format)
+        "claims", "gaps", "methodology_summary", "quality_metadata",
+        # System fields
+        "EXTRACTION_METHOD", "EXTRACTION_QUALITY", "REVIEW_TIMESTAMP",
+        "SUMMARIZED_FROM_CHUNKS", "SIMILAR_PAPERS", "MENTIONED_PAPERS", "CROSS_REFERENCES_COUNT"
     ]
-    # --- END MODIFICATION ---
+    # --- END GOLDEN DATASET SCHEMA ---
     
-    # Required JSON keys for validation (same as DATABASE_COLUMN_ORDER for journal papers)
-    REQUIRED_JSON_KEYS = DATABASE_COLUMN_ORDER
+    # Required JSON keys for validation
+    REQUIRED_JSON_KEYS = [
+        "TITLE", "CORE_DOMAIN", "SUB_DOMAIN", "CORE_DOMAIN_RELEVANCE_SCORE",
+        "SUBDOMAIN_RELEVANCE_TO_RESEARCH_SCORE", "MAJOR_FINDINGS", "BIOLOGICAL_FIDELITY",
+        "REPRODUCIBILITY_SCORE", "claims", "gaps"
+    ]
 
     NON_JOURNAL_JSON_KEYS = [
         "FILENAME", "DOCUMENT_TYPE", "DETECTED_TOPICS", "KEY_CONCEPTS",
@@ -782,73 +842,132 @@ Do not include introductory or concluding phrases.
         # Get research context from configuration
         research_topic = get_research_topic_safe()
         
+        # Generate paper_id from filename
+        paper_id = metadata.filename.replace('.pdf', '').replace('.html', '').replace('.txt', '')
+        
         return f"""
-You are an expert research assistant with deep knowledge in Machine Learning, Computational Neuroscience, and Cognitive Science.
-Your task is to analyze an academic paper {'(provided as a compilation of chunk summaries)' if is_summarized else ''} and structure its key information for a master research database.
+You are an expert research assistant annotating papers for a Golden Dataset used to validate automated literature review systems.
+Your annotations must be **accurate, verifiable, and traceable** to specific page locations in the paper.
 
 --- CORE RESEARCH TOPIC ---
 "{research_topic}"
 
---- FULL PILLAR DEFINITIONS (FOR CROSS-REFERENCE) ---
-You *MUST* use this list to identify 'Requirement(s)' claims.
+--- PILLAR DEFINITIONS (FOR CLAIM MAPPING) ---
 {pillar_definitions_str}
 --- END PILLAR DEFINITIONS ---
 
-Analyze the provided text below and return a single, clean JSON object.
+Analyze the provided text and return a single, clean JSON object following the Golden Dataset schema.
 Do not include any text, notes, or apologies before or after the JSON object.
 Ensure all string values in the JSON are properly escaped.
 
-The JSON object must contain these exact keys (use "N/A" or appropriate defaults like 0 or [] if information is not found):
-- "TITLE": (String) The full title of the paper. Infer if necessary.
-- "CORE_DOMAIN": (String) Primary field (e.g., "Machine Learning", "Neuroscience", "Neuromorphic Engineering").
-- "SUB_DOMAIN": (String) Specific sub-field (e.g., "Reinforcement Learning", "Spiking Neural Networks").
-- "CORE_DOMAIN_RELEVANCE_SCORE": (Integer 0-100) Paper's depth/quality within its core domain.
-- "SUBDOMAIN_RELEVANCE_TO_RESEARCH_SCORE": (Integer 0-100) Relevance of the SUB_DOMAIN to *our* core research topic.
-- "MAJOR_FINDINGS": (List of Strings) 2-4 bullet points summarizing key results/conclusions.
-- "APPLICABILITY_NOTES": (String) How findings could apply to our research.
-- "ANALYSIS_GAPS": (String) Gaps or limitations noted in the paper.
-- "IMPROVEMENT_SUGGESTIONS": (String) Suggestions for extending the study.
-- "SOURCE": (String) Journal, conference, or website.
-- "PUBLICATION_YEAR": (Integer or "N/A") Year of publication.
-- "APA_REFERENCE": (String) Best attempt at APA 7th edition reference.
-- "FULL_TEXT_LINK": (String) DOI or URL found in text, otherwise "N/A".
-- "FILENAME": "{metadata.filename}" (String)
-- "KEYWORDS": (List of Strings) 5-10 *author-provided* keywords.
-- "CORE_CONCEPTS": (List of Strings) 5-10 *AI-generated* fundamental concepts (e.g., "Hebbian Learning", "STDP").
-- "RISKS": (String) Potential challenges or risks highlighted.
-- "MATURITY_LEVEL": (String) Estimate maturity (e.g., "Theoretical", "Experimental", "Applied").
-- "REPRODUCIBILITY_SCORE": (Integer 0-100) Estimate based on methods detail.
-- "INTERDISCIPLINARY_BRIDGES": (List of Strings) Specific concepts linking AI/Neuroscience.
-- "IMPLEMENTATION_DETAILS": (String) Note presence of code, algorithms, hardware specs.
-- "VALIDATION_METHOD": (String) How findings were validated (e.g., "Simulation", "Benchmark Dataset").
-- "SCALABILITY_NOTES": (String) Mention of scalability issues or potential.
-- "ENERGY_EFFICIENCY": (String) Mention of power consumption.
-- "BIOLOGICAL_FIDELITY": (Integer 0-100) How closely the model mimics biology.
-- "NETWORK_ARCHITECTURE": (List of Strings) Specific architectures (e.g., "CNN", "SNN").
-- "BRAIN_REGIONS": (List of Strings) Specific brain regions (e.g., "Hippocampus").
-- "COMPUTATIONAL_COMPLEXITY": (String) Mention of complexity analysis.
-- "DATASET_USED": (List of Strings) Datasets used (e.g., "MNIST").
+**CRITICAL REQUIREMENTS:**
+1. ALL claims MUST include page numbers where the evidence appears
+2. ALL verbatim quotes MUST be exact text from the paper (≤100 words each)
+3. Distinguish between "quantitative" claims (numeric results) and "qualitative" claims (methods, conclusions)
+4. Mark confidence honestly: "high" (directly stated), "medium" (inferred), "low" (uncertain)
 
-- "Requirement(s)": (List of Objects)
-  - This is the most critical new field.
-  - Scan the paper for any text that *directly provides evidence* for any sub-requirement listed in the "FULL PILLAR DEFINITIONS".
-  - For *each* piece of evidence found, create one object in this list.
-  - If no evidence is found for any requirement, return an empty list [].
-  - Each object in the list *must* have this structure:
-    {{
-      "claim_id": "will_be_generated_later",
-      "pillar": "(String) The **EXACT, VERBATIM** pillar name from the definitions (e.g., 'Pillar 1: Foundational Concepts').",
-      "sub_requirement": "(String) The **EXACT, VERBATIM** sub-requirement string from the definitions (e.g., 'SR1.1: Define and model core components...').",
-      "evidence_chunk": "(String) The *exact* 1-3 sentences from the paper text that support the claim.",
-      "claim_summary": "(String) Your 1-sentence explanation of *why* this chunk covers the requirement.",
-      "status": "pending_judge_review"
-    }}
+The JSON object must contain these exact keys:
+
+--- METADATA FIELDS ---
+- "paper_id": "{paper_id}"
+- "annotation_date": "{datetime.now().strftime('%Y-%m-%d')}"
+- "annotation_version": "2.0"
+- "TITLE": (String) Full title of the paper
+- "AUTHORS": (List of Strings) Author names as they appear, or ["Unknown"] if not found
+- "PUBLICATION_YEAR": (Integer or "N/A") Year of publication
+- "SOURCE": (String) Journal, conference, or venue name
+- "CORE_DOMAIN": (String) Primary field (e.g., "Machine Learning", "Neuroscience")
+- "SUB_DOMAIN": (String) Specific sub-field (e.g., "Spiking Neural Networks")
+- "ABSTRACT_SUMMARY": (String) 2-3 sentence summary of the paper
+- "FULL_TEXT_LINK": (String) DOI or URL, otherwise "N/A"
+- "FILENAME": "{metadata.filename}"
+- "PAGE_COUNT": (Integer or null) Total pages if determinable
+
+--- SCORE FIELDS (Integer 0-100) ---
+- "CORE_DOMAIN_RELEVANCE_SCORE": Paper's depth/quality within its core domain
+- "SUBDOMAIN_RELEVANCE_TO_RESEARCH_SCORE": Relevance to our core research topic
+- "BIOLOGICAL_FIDELITY": How closely the model mimics biological systems
+- "REPRODUCIBILITY_SCORE": Based on methods detail and data availability
+- "MATURITY_LEVEL": (String) "Theoretical", "Experimental", or "Applied"
+
+--- CONTENT LISTS ---
+- "MAJOR_FINDINGS": (List of Strings) 2-4 key results/conclusions
+- "KEYWORDS": (List of Strings) 5-10 author-provided keywords
+- "CORE_CONCEPTS": (List of Strings) 5-10 fundamental concepts (e.g., "STDP", "Attention")
+- "NETWORK_ARCHITECTURE": (List of Strings) Specific architectures (e.g., "SNN", "Transformer")
+- "BRAIN_REGIONS": (List of Strings) Brain regions mentioned, or []
+- "DATASET_USED": (List of Strings) Datasets used, or []
+- "INTERDISCIPLINARY_BRIDGES": (List of Strings) Concepts linking domains
+
+--- TEXT ANALYSIS FIELDS ---
+- "APPLICABILITY_NOTES": How findings apply to our research
+- "IMPROVEMENT_SUGGESTIONS": Suggestions for extending the study
+- "RISKS": Potential challenges or risks highlighted
+- "ENERGY_EFFICIENCY": Mention of power consumption or efficiency
+- "IMPLEMENTATION_DETAILS": Note presence of code, algorithms, hardware specs
+- "VALIDATION_METHOD": How findings were validated
+- "SCALABILITY_NOTES": Scalability issues or potential
+- "COMPUTATIONAL_COMPLEXITY": Complexity analysis mentions
+- "APA_REFERENCE": Best attempt at APA 7th edition reference
+
+--- CLAIMS (Golden Dataset Format) ---
+- "claims": (List of Objects) Evidence for pillar sub-requirements
+  Each claim object MUST have this structure:
+  {{
+    "claim_id": "{paper_id}-C001" (increment number for each claim),
+    "claim_type": "quantitative" or "qualitative",
+    "pillar": "(String) EXACT pillar name from definitions (e.g., 'Pillar 2: AI Stimulus-Response (Bridge)')",
+    "sub_requirement": "(String) EXACT sub-requirement from definitions",
+    "claim_text": "(String) Your summary of what this claim shows",
+    "verbatim_quote": "(String) EXACT text from paper (≤100 words)",
+    "location": {{
+      "page": (Integer) Page number where quote appears,
+      "section": "(String) Section name (e.g., 'Results', 'Methods')"
+    }},
+    "confidence": "high", "medium", or "low",
+    "verification_notes": "(String) How to verify this claim in the paper",
+    "status": "pending_judge_review"
+  }}
+
+--- GAPS (Golden Dataset Format) ---
+- "gaps": (List of Objects) Limitations, future work, open questions
+  Each gap object MUST have this structure:
+  {{
+    "gap_id": "{paper_id}-G001" (increment number for each gap),
+    "gap_type": "limitation", "future_work", or "open_question",
+    "gap_text": "(String) Description of the gap",
+    "verbatim_quote": "(String or null) Direct quote if available",
+    "location": {{
+      "page": (Integer or null) Page number if identifiable,
+      "section": "(String) Section name"
+    }},
+    "implied_vs_explicit": "explicit" (stated by authors) or "implied" (inferred by you),
+    "research_direction": "(String) What future work could address this"
+  }}
+
+--- METHODOLOGY SUMMARY ---
+- "methodology_summary": {{
+    "approach": "(String) Brief description of methodology",
+    "datasets_used": (List of Strings),
+    "key_techniques": (List of Strings),
+    "evaluation_metrics": (List of Strings)
+  }}
+
+--- QUALITY METADATA ---
+- "quality_metadata": {{
+    "total_claims": (Integer) Count of claims,
+    "quantitative_claims": (Integer) Count of quantitative claims,
+    "qualitative_claims": (Integer) Count of qualitative claims,
+    "total_gaps": (Integer) Count of gaps,
+    "annotation_confidence": "high", "medium", or "low",
+    "notes": "(String) Any issues encountered during annotation"
+  }}
 
 {'--- START OF TEXT ---' if not is_summarized else '--- START OF COMPILED SUMMARIES ---'}
 {paper_text}
 {'--- END OF TEXT ---' if not is_summarized else '--- END OF COMPILED SUMMARIES ---'}
 """
-    # --- END MODIFICATION ---
+    # --- END GOLDEN DATASET PROMPT ---
 
     @staticmethod
     def get_non_journal_analysis_prompt(paper_text: str, metadata: PaperMetadata) -> str:
@@ -876,12 +995,14 @@ The JSON object must contain these exact keys:
 {'--- END OF TEXT ---' if not is_summarized else '--- END OF COMPILED SUMMARIES ---'}
 """
 
-    # --- MODIFIED: validate_response ---
+    # --- GOLDEN DATASET VALIDATION ---
     @staticmethod
     def validate_response(response: Dict, required_fields: List[str]) -> Tuple[bool, List[str]]:
-        """Validate AI response, sanitize common type mismatches (str -> list)"""
+        """Validate AI response against Golden Dataset schema with sanitization."""
         missing_fields = []
         type_errors = []
+        warnings = []
+        
         if not isinstance(response, dict):
             return False, ["Response is not a valid JSON object"]
 
@@ -891,38 +1012,39 @@ The JSON object must contain these exact keys:
                 continue
 
             value = response[field]
-            expected_type = None
-
-            # Check types based on which set of keys we are using
-            if field in PaperAnalyzer.DATABASE_COLUMN_ORDER:  # Use master list
-                if field.endswith("_SCORE") or field == "BIOLOGICAL_FIDELITY":
-                    expected_type = int
-                elif field == "PUBLICATION_YEAR":
-                    expected_type = "Int_or_NA"
-                elif field in ["MAJOR_FINDINGS", "KEYWORDS", "CORE_CONCEPTS", "INTERDISCIPLINARY_BRIDGES",
-                               "NETWORK_ARCHITECTURE", "BRAIN_REGIONS", "DATASET_USED",
-                               "SIMILAR_PAPERS", "MENTIONED_PAPERS"]:  # Added missing list fields
-                    expected_type = "list_of_str"
-                elif field == "Requirement(s)":
-                    expected_type = "list_of_obj"
-                else:
-                    expected_type = "str"
-
-            elif field in PaperAnalyzer.NON_JOURNAL_JSON_KEYS:
-                # (identical logic for non-journal keys)
-                if field in ["DETECTED_TOPICS", "KEY_CONCEPTS", "POTENTIAL_SEARCH_KEYWORDS"]:
-                    expected_type = "list_of_str"
-                else:
-                    expected_type = "str"
+            
+            # --- Type definitions for Golden Dataset schema ---
+            score_fields = ["CORE_DOMAIN_RELEVANCE_SCORE", "SUBDOMAIN_RELEVANCE_TO_RESEARCH_SCORE",
+                           "BIOLOGICAL_FIDELITY", "REPRODUCIBILITY_SCORE", "PAGE_COUNT", "CROSS_REFERENCES_COUNT"]
+            list_of_str_fields = ["MAJOR_FINDINGS", "KEYWORDS", "CORE_CONCEPTS", "INTERDISCIPLINARY_BRIDGES",
+                                  "NETWORK_ARCHITECTURE", "BRAIN_REGIONS", "DATASET_USED",
+                                  "SIMILAR_PAPERS", "MENTIONED_PAPERS", "AUTHORS"]
+            structured_obj_fields = ["claims", "gaps", "methodology_summary", "quality_metadata"]
+            
+            # Determine expected type
+            if field in score_fields:
+                expected_type = "int_or_null"
+            elif field == "PUBLICATION_YEAR":
+                expected_type = "Int_or_NA"
+            elif field in list_of_str_fields:
+                expected_type = "list_of_str"
+            elif field in structured_obj_fields:
+                expected_type = "structured"
+            else:
+                expected_type = "str"
 
             # --- Sanitization and Type Checking ---
             if expected_type == "list_of_str" and isinstance(value, str):
-                logger.warning(f"Sanitizing field '{field}': converting string '{value}' to list.")
+                logger.warning(f"Sanitizing field '{field}': converting string to list.")
                 response[field] = [value]
                 value = response[field]
 
-            if expected_type == int and not isinstance(value, int):
-                type_errors.append(f"Field '{field}' expected Integer, got {type(value)}")
+            if expected_type == "int_or_null":
+                if value is not None and not isinstance(value, int):
+                    try:
+                        response[field] = int(value) if value not in ["N/A", "null", None, ""] else None
+                    except (ValueError, TypeError):
+                        type_errors.append(f"Field '{field}' expected Integer or null, got {type(value)}")
             elif expected_type == "Int_or_NA" and not (isinstance(value, int) or value == "N/A"):
                 type_errors.append(f"Field '{field}' expected Integer or 'N/A', got {type(value)}")
             elif expected_type == "list_of_str" and not isinstance(value, list):
@@ -932,31 +1054,80 @@ The JSON object must contain these exact keys:
                     response[field] = [str(item) for item in value]
                     logger.warning(f"Sanitizing field '{field}': converting list items to string.")
                 except Exception:
-                    type_errors.append(f"Field '{field}' expected List of Strings, but items are not all strings.")
+                    type_errors.append(f"Field '{field}' expected List of Strings")
             elif expected_type == "str" and not isinstance(value, str):
-                type_errors.append(f"Field '{field}' expected String, got {type(value)}")
+                # Try to sanitize non-strings to strings
+                try:
+                    if value is not None:
+                        response[field] = str(value)
+                except Exception:
+                    type_errors.append(f"Field '{field}' expected String, got {type(value)}")
 
-            # --- NEW: Validate list_of_obj for "Requirement(s)" ---
-            elif expected_type == "list_of_obj":
-                if not isinstance(value, list):
-                    type_errors.append(f"Field '{field}' expected List of Objects, got {type(value)}")
-                elif value: # If list is not empty, check first item
-                    first_item = value[0]
-                    if not (isinstance(first_item, dict) and
-                            'pillar' in first_item and
-                            'sub_requirement' in first_item and
-                            'evidence_chunk' in first_item and
-                            'claim_summary' in first_item):
-                        type_errors.append(f"Field '{field}' items have incorrect structure.")
+            # --- Validate structured fields (claims, gaps, methodology_summary, quality_metadata) ---
+            elif expected_type == "structured":
+                if field == "claims":
+                    if not isinstance(value, list):
+                        type_errors.append(f"Field 'claims' expected List of Objects, got {type(value)}")
+                    elif value:  # If list is not empty, validate structure
+                        first_claim = value[0]
+                        required_claim_fields = ['claim_id', 'claim_type', 'pillar', 'sub_requirement', 
+                                                 'verbatim_quote', 'location', 'confidence', 'status']
+                        if not isinstance(first_claim, dict):
+                            type_errors.append("Claims must be objects")
+                        else:
+                            missing_claim_fields = [f for f in required_claim_fields if f not in first_claim]
+                            if missing_claim_fields:
+                                warnings.append(f"Claim missing fields: {missing_claim_fields}")
+                            # Check for page numbers
+                            if 'location' in first_claim:
+                                loc = first_claim['location']
+                                if not isinstance(loc, dict) or 'page' not in loc:
+                                    warnings.append("Claim location should include 'page' number")
+                
+                elif field == "gaps":
+                    if not isinstance(value, list):
+                        type_errors.append(f"Field 'gaps' expected List of Objects, got {type(value)}")
+                    elif value:  # If list is not empty, validate structure
+                        first_gap = value[0]
+                        required_gap_fields = ['gap_id', 'gap_type', 'gap_text']
+                        if not isinstance(first_gap, dict):
+                            type_errors.append("Gaps must be objects")
+                        else:
+                            missing_gap_fields = [f for f in required_gap_fields if f not in first_gap]
+                            if missing_gap_fields:
+                                warnings.append(f"Gap missing fields: {missing_gap_fields}")
+                
+                elif field == "methodology_summary":
+                    if not isinstance(value, dict):
+                        # Try to create empty structure
+                        response[field] = {"approach": "N/A", "datasets_used": [], 
+                                          "key_techniques": [], "evaluation_metrics": []}
+                
+                elif field == "quality_metadata":
+                    if not isinstance(value, dict):
+                        # Try to create from response data
+                        claims = response.get("claims", [])
+                        gaps = response.get("gaps", [])
+                        response[field] = {
+                            "total_claims": len(claims),
+                            "quantitative_claims": len([c for c in claims if c.get("claim_type") == "quantitative"]),
+                            "qualitative_claims": len([c for c in claims if c.get("claim_type") == "qualitative"]),
+                            "total_gaps": len(gaps),
+                            "annotation_confidence": "medium",
+                            "notes": "Auto-generated quality metadata"
+                        }
 
+        # Log warnings but don't fail on them
+        if warnings:
+            logger.warning(f"Validation warnings: {warnings}")
+            
         errors = missing_fields + type_errors
         is_valid = len(errors) == 0
         if not is_valid:
             logger.error(f"Validation failed: Missing fields: {missing_fields}, Type errors: {type_errors}")
 
         return is_valid, errors
-
-    # --- END MODIFICATION ---
+    # --- END GOLDEN DATASET VALIDATION ---
 
     # --- MODIFIED: consensus_evaluation (passes definitions string) ---
     @staticmethod
@@ -1014,15 +1185,15 @@ The JSON object must contain these exact keys:
             logger.error("All analysis evaluations failed.")
             return None
 
-        # --- Aggregation logic (unchanged, but now includes "Requirement(s)") ---
+        # --- Aggregation logic (updated for Golden Dataset schema) ---
         if len(evaluations) > 1:
             logger.info("Aggregating results from multiple evaluations...")
             aggregated = evaluations[0].copy()
             numeric_fields = ['CORE_DOMAIN_RELEVANCE_SCORE', 'SUBDOMAIN_RELEVANCE_TO_RESEARCH_SCORE',
                               'REPRODUCIBILITY_SCORE', 'BIOLOGICAL_FIDELITY']
             list_fields = ["MAJOR_FINDINGS", "KEYWORDS", "CORE_CONCEPTS", "INTERDISCIPLINARY_BRIDGES",
-                           "NETWORK_ARCHITECTURE", "BRAIN_REGIONS", "DATASET_USED",
-                           "Requirement(s)"] # <-- Added new field
+                           "NETWORK_ARCHITECTURE", "BRAIN_REGIONS", "DATASET_USED", "AUTHORS",
+                           "claims", "gaps"]  # Updated to Golden Dataset fields
             string_fields = [f for f in required_fields if f not in numeric_fields and f not in list_fields]
 
             for field in numeric_fields:
@@ -1034,22 +1205,26 @@ The JSON object must contain these exact keys:
                 for e in evaluations:
                     items = e.get(field, [])
                     if isinstance(items, list):
-                        # Simple extension for lists of strings/objects
                         combined_list.extend(items)
 
-                # De-duplicate. For "Requirement(s)", we need a smarter way
-                if field == "Requirement(s)":
+                # De-duplicate claims/gaps by verbatim_quote
+                if field == "claims":
                     unique_claims = {}
                     for claim in combined_list:
-                        if isinstance(claim, dict) and 'evidence_chunk' in claim:
-                            # Use evidence_chunk as a simple de-dupe key
-                            unique_claims[claim['evidence_chunk']] = claim
+                        if isinstance(claim, dict) and 'verbatim_quote' in claim:
+                            unique_claims[claim['verbatim_quote']] = claim
                     aggregated[field] = list(unique_claims.values())
+                elif field == "gaps":
+                    unique_gaps = {}
+                    for gap in combined_list:
+                        if isinstance(gap, dict) and 'gap_text' in gap:
+                            unique_gaps[gap['gap_text']] = gap
+                    aggregated[field] = list(unique_gaps.values())
                 else:
                     # De-duplicate list of strings
                     try:
                         aggregated[field] = sorted(list(set(combined_list)))
-                    except TypeError: # Fails if list contains dicts, but we handled that
+                    except TypeError:
                          aggregated[field] = combined_list
 
             for field in string_fields:
@@ -1061,16 +1236,22 @@ The JSON object must contain these exact keys:
             final_result = evaluations[0]
         # --- End Aggregation ---
 
-        # --- NEW: Post-process Requirement(s) to add claim_id ---
-        if "Requirement(s)" in final_result:
-            for claim in final_result["Requirement(s)"]:
-                if isinstance(claim, dict) and claim.get("claim_id") == "will_be_generated_later":
-                    try:
-                        claim_hash = hashlib.md5(f"{metadata.filename}{claim['sub_requirement']}{claim['evidence_chunk']}".encode('utf-8')).hexdigest()
-                        claim['claim_id'] = claim_hash
-                    except Exception as e:
-                        logger.warning(f"Could not generate claim_id: {e}")
-                        claim['claim_id'] = "generation_failed"
+        # --- Post-process claims to ensure proper claim_id format ---
+        if "claims" in final_result:
+            paper_id = metadata.filename.replace('.pdf', '').replace('.html', '').replace('.txt', '')
+            for idx, claim in enumerate(final_result["claims"]):
+                if isinstance(claim, dict):
+                    # Ensure claim_id follows Golden Dataset format
+                    if not claim.get("claim_id") or "will_be_generated" in str(claim.get("claim_id", "")):
+                        claim['claim_id'] = f"{paper_id}-C{idx+1:03d}"
+        
+        # Post-process gaps similarly
+        if "gaps" in final_result:
+            paper_id = metadata.filename.replace('.pdf', '').replace('.html', '').replace('.txt', '')
+            for idx, gap in enumerate(final_result["gaps"]):
+                if isinstance(gap, dict):
+                    if not gap.get("gap_id") or "will_be_generated" in str(gap.get("gap_id", "")):
+                        gap['gap_id'] = f"{paper_id}-G{idx+1:03d}"
 
         final_result['EXTRACTION_METHOD'] = metadata.extraction_method
         final_result['EXTRACTION_QUALITY'] = metadata.extraction_quality
