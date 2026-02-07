@@ -206,8 +206,9 @@ class GlobalRateLimiter:
                 logger.warning(f"[VALIDATION] Suspiciously short prompt for JSON response: {len(prompt)} chars")
         
         # Check for common malformed prompts
-        if prompt.count("{") != prompt.count("}"):
-            return False, "Malformed prompt: mismatched braces"
+        # (Disabled: Extracted text may contain unbalanced braces which is valid for LLM)
+        # if prompt.count("{") != prompt.count("}"):
+        #     return False, "Malformed prompt: mismatched braces"
         
         # Check if we've seen this exact error pattern recently
         if len(self.last_errors) >= 3:

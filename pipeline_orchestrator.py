@@ -464,6 +464,82 @@ class PipelineOrchestrator:
             with open(self.log_file, "a") as f:
                 f.write(log_message + "\n")
 
+    def _get_review_log_count(self) -> int:
+        """Get current count of entries in review_log.json for progress detection."""
+        try:
+            review_log_path = self.config.get('review_log_path', 'review_log.json')
+            if os.path.exists(review_log_path):
+                with open(review_log_path, 'r', encoding='utf-8') as f:
+                    data = json.load(f)
+                    return len(data) if isinstance(data, list) else 0
+        except Exception:
+            pass
+        return 0
+
+    def _run_with_progress_timeout(self, cmd: list, timeout: int = 3600, check_interval: int = 60):
+        """
+        Run subprocess with progress-based timeout.
+        
+        Instead of a fixed timeout, this monitors review_log.json and resets
+        the timeout counter whenever progress is detected (file count increases).
+        
+        Args:
+            cmd: Command to execute
+            timeout: Max seconds without progress before timeout
+            check_interval: Seconds between progress checks
+            
+        Returns:
+            CompletedProcess-like object with returncode, stdout, stderr
+        """
+        from dataclasses import dataclass
+        
+        @dataclass
+        class ProcessResult:
+            returncode: int
+            stdout: str
+            stderr: str
+        
+        process = subprocess.Popen(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding='utf-8',
+            errors='replace'
+        )
+        
+        last_progress_time = time.time()
+        last_count = self._get_review_log_count()
+        
+        self.log(f"Starting progress-monitored execution (timeout={timeout}s, check_interval={check_interval}s)", "INFO")
+        
+        while True:
+            # Check if process completed
+            try:
+                stdout, stderr = process.communicate(timeout=check_interval)
+                return ProcessResult(process.returncode, stdout, stderr)
+            except subprocess.TimeoutExpired:
+                # Process still running - check for progress
+                current_count = self._get_review_log_count()
+                
+                if current_count > last_count:
+                    # Progress detected - reset timeout
+                    papers_processed = current_count - last_count
+                    self.log(f"📈 Progress detected: +{papers_processed} papers (total: {current_count})", "INFO")
+                    last_progress_time = time.time()
+                    last_count = current_count
+                
+                # Check if timeout exceeded without progress
+                elapsed_without_progress = time.time() - last_progress_time
+                if elapsed_without_progress >= timeout:
+                    self.log(f"⏱️ No progress for {timeout}s - terminating", "WARNING")
+                    process.terminate()
+                    try:
+                        process.wait(timeout=10)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                    raise subprocess.TimeoutExpired(cmd, timeout)
+
     def run_stage(
         self, stage_name: str, script: str, description: str, required: bool = True, use_module: bool = False
     ) -> bool:
@@ -584,11 +660,10 @@ class PipelineOrchestrator:
                 else:
                     cmd = [sys.executable, script]
                 
-                result = subprocess.run(
+                result = self._run_with_progress_timeout(
                     cmd,
-                    capture_output=True,
-                    text=True,
                     timeout=self.config.get("stage_timeout", 3600),
+                    check_interval=60,  # Check progress every 60 seconds
                 )
 
                 duration = (datetime.now() - stage_start).total_seconds()

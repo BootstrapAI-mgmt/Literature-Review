@@ -504,18 +504,18 @@ def generate_scorecard(gap_analysis_file: str, version_history_file: str,
     """Generate proof scorecard and save outputs."""
     
     # Load data
-    with open(gap_analysis_file, 'r') as f:
+    with open(gap_analysis_file, 'r', encoding='utf-8') as f:
         gap_report = json.load(f)
     
     # Handle version history (may not exist, use empty dict as fallback)
     version_history = {}
     if os.path.exists(version_history_file):
-        with open(version_history_file, 'r') as f:
+        with open(version_history_file, 'r', encoding='utf-8') as f:
             version_history = json.load(f)
     else:
         logger.warning(f"Version history file not found: {version_history_file}, using empty dict")
     
-    with open(pillar_definitions_file, 'r') as f:
+    with open(pillar_definitions_file, 'r', encoding='utf-8') as f:
         pillar_definitions = json.load(f)
     
     # Analyze
@@ -525,7 +525,7 @@ def generate_scorecard(gap_analysis_file: str, version_history_file: str,
     # Save JSON
     os.makedirs(output_dir, exist_ok=True)
     json_output = os.path.join(output_dir, 'proof_scorecard.json')
-    with open(json_output, 'w') as f:
+    with open(json_output, 'w', encoding='utf-8') as f:
         json.dump(scorecard, f, indent=2)
     
     logger.info(f"Saved scorecard to {json_output}")

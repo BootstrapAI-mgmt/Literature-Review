@@ -10,6 +10,7 @@ import sys
 import json
 import csv
 import re
+import difflib
 import pypdf
 import pdfplumber
 import time
@@ -214,40 +215,73 @@ class GoldenDatasetGap:
         }
 
 def collect_papers_to_process(folder_path, reviewed_files):
-    """Collect all papers that need processing"""
+    """Collect all papers that need processing.
+
+    Uses filename as the review key. When duplicate filenames are found in
+    different subdirectories, only the first occurrence is kept and subsequent
+    duplicates are logged and skipped to prevent version history collisions.
+    """
     files_to_process = []
     skipped_files = []
+    # Track filenames we've already queued to detect cross-directory duplicates
+    seen_filenames = {}  # filename -> filepath (first occurrence)
+    duplicate_warnings = []
     logger.info("\n=== COLLECTING PAPERS TO PROCESS ===")
     safe_print("\n=== COLLECTING PAPERS TO PROCESS ===")
-    
-    # The folder_path is now 'data/raw', which contains 'Research-Papers'
-    search_path = os.path.join(folder_path, 'Research-Papers')
-    if not os.path.isdir(search_path):
-        search_path = folder_path # Fallback to the base data/raw folder
 
-    for root, dirs, files in os.walk(search_path):
-        for filename in files:
-            filepath = os.path.join(root, filename)
-            if not filename.lower().endswith(SUPPORTED_EXTENSIONS):
-                continue
-            if filename in reviewed_files and DUPLICATE_MODE == 'skip':
-                skipped_files.append(filename)
-                logger.debug(f"Skipping already reviewed: {filename}")
-                continue
-            elif DUPLICATE_MODE == 'ask' and filename in reviewed_files:
-                response = input(f"❓'{filename}' has been reviewed. Overwrite? (y/n): ").lower()
-                if response != 'y':
-                    skipped_files.append(filename)
+    # The folder_path is now 'data/raw', which contains 'Research-Papers'
+    # We need to search BOTH the top-level data/raw folder AND the Research-Papers subfolder
+    search_paths = [folder_path]  # Start with the base data/raw folder
+
+    research_papers_path = os.path.join(folder_path, 'Research-Papers')
+    if os.path.isdir(research_papers_path):
+        search_paths.append(research_papers_path)
+
+    for search_path in search_paths:
+        for root, dirs, files in os.walk(search_path):
+            # If we're in the base folder, don't recurse into Research-Papers (it's handled separately)
+            if search_path == folder_path:
+                dirs[:] = [d for d in dirs if d != 'Research-Papers']
+
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                if not filename.lower().endswith(SUPPORTED_EXTENSIONS):
                     continue
-            files_to_process.append((filepath, filename))
-            logger.debug(f"Added to process queue: {filename}")
-            
+
+                # --- FIX: Detect duplicate filenames across subdirectories ---
+                if filename in seen_filenames:
+                    first_path = seen_filenames[filename]
+                    msg = (f"DUPLICATE FILENAME DETECTED: '{filename}' found in both "
+                           f"'{os.path.dirname(first_path)}' and '{root}'. "
+                           f"Skipping duplicate to prevent version history collision.")
+                    logger.warning(msg)
+                    safe_print(f"   WARNING: Duplicate '{filename}' skipped (already found in {os.path.dirname(first_path)})")
+                    duplicate_warnings.append(msg)
+                    continue
+
+                if filename in reviewed_files and DUPLICATE_MODE == 'skip':
+                    skipped_files.append(filename)
+                    logger.debug(f"Skipping already reviewed: {filename}")
+                    continue
+                elif DUPLICATE_MODE == 'ask' and filename in reviewed_files:
+                    response = input(f"❓'{filename}' has been reviewed. Overwrite? (y/n): ").lower()
+                    if response != 'y':
+                        skipped_files.append(filename)
+                        continue
+
+                seen_filenames[filename] = filepath
+                files_to_process.append((filepath, filename))
+                logger.debug(f"Added to process queue: {filename}")
+
     logger.info(f"\n📊 Summary:")
     safe_print(f"\n📊 Summary:")
-    logger.info(f"   Total supported files found: {len(files_to_process) + len(skipped_files)}")
-    safe_print(f"   Total supported files found: {len(files_to_process) + len(skipped_files)}")
+    logger.info(f"   Total supported files found: {len(files_to_process) + len(skipped_files) + len(duplicate_warnings)}")
+    safe_print(f"   Total supported files found: {len(files_to_process) + len(skipped_files) + len(duplicate_warnings)}")
     logger.info(f"   Already reviewed (skipped/kept): {len(skipped_files)}")
     safe_print(f"   Already reviewed (skipped/kept): {len(skipped_files)}")
+    if duplicate_warnings:
+        logger.warning(f"   Duplicate filenames skipped: {len(duplicate_warnings)}")
+        safe_print(f"   Duplicate filenames skipped: {len(duplicate_warnings)}")
     logger.info(f"   To be processed/reprocessed: {len(files_to_process)}")
     safe_print(f"   📋 To be processed/reprocessed: {len(files_to_process)}")
     return files_to_process
@@ -718,6 +752,129 @@ def add_provenance_to_claim(
     return claim
 
 
+# --- 3a. Post-Review Validation Utilities ---
+
+def extract_title_from_text(text: str) -> Optional[str]:
+    """Extract the paper title from the first ~500 characters of extracted text.
+
+    Looks for the first non-trivial line that is likely a title. Skips common
+    header noise like 'RESEARCH ARTICLE', 'LETTER', page numbers, etc.
+    """
+    skip_patterns = re.compile(
+        r'^(RESEARCH\s+ARTICLE|LETTER|REVIEW|ORIGINAL\s+(ARTICLE|RESEARCH)|'
+        r'Communicated\s+by|SHORT\s+COMMUNICATION|BRIEF\s+REPORT|'
+        r'PLOS\s+\w+|Nature\s+\w+|Science\s+\w+|'
+        r'\d+$|\s*$)', re.IGNORECASE
+    )
+
+    lines = text[:1500].split('\n')
+    candidate_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or len(stripped) < 10:
+            continue
+        if skip_patterns.match(stripped):
+            continue
+        # Skip lines that are mostly numbers/special chars (page headers, DOIs)
+        alpha_ratio = sum(c.isalpha() for c in stripped) / max(len(stripped), 1)
+        if alpha_ratio < 0.5:
+            continue
+        candidate_lines.append(stripped)
+        if len(candidate_lines) >= 3:
+            break
+
+    if candidate_lines:
+        # Title is typically the longest of the first few candidate lines
+        title = max(candidate_lines[:3], key=len)
+        # Truncate if absurdly long (probably not a title)
+        if len(title) > 300:
+            title = title[:300]
+        return title
+    return None
+
+
+def validate_review_quotes(paper_text: str, review_result: Dict, min_match_ratio: float = 0.6) -> Dict:
+    """Validate that verbatim quotes from a review actually exist in the source text.
+
+    Uses fuzzy matching (difflib) to find quotes in the paper text.
+    Returns a validation report with per-quote results and an overall score.
+
+    Args:
+        paper_text: The full extracted text of the paper.
+        review_result: The review JSON returned by the API.
+        min_match_ratio: Minimum SequenceMatcher ratio to count as a match.
+
+    Returns:
+        Dict with 'total_quotes', 'verified_count', 'verification_rate',
+        'is_valid' (True if rate >= 0.5), and 'details' list.
+    """
+    claims = review_result.get('claims', [])
+    gaps = review_result.get('gaps', [])
+
+    quotes_to_check = []
+    for claim in claims:
+        q = claim.get('verbatim_quote')
+        if q and q.strip():
+            quotes_to_check.append(('claim', claim.get('claim_id', '?'), q.strip()))
+    for gap in gaps:
+        q = gap.get('verbatim_quote')
+        if q and q.strip():
+            quotes_to_check.append(('gap', gap.get('gap_id', '?'), q.strip()))
+
+    if not quotes_to_check:
+        return {'total_quotes': 0, 'verified_count': 0, 'verification_rate': 1.0,
+                'is_valid': True, 'details': []}
+
+    # Normalize paper text for matching
+    paper_normalized = ' '.join(paper_text.lower().split())
+
+    verified_count = 0
+    details = []
+    for item_type, item_id, quote in quotes_to_check:
+        quote_normalized = ' '.join(quote.lower().split())
+        # Try exact substring first
+        if quote_normalized in paper_normalized:
+            verified_count += 1
+            details.append({'id': item_id, 'type': item_type, 'status': 'exact_match'})
+            continue
+
+        # Try fuzzy matching on a sliding window
+        quote_len = len(quote_normalized)
+        best_ratio = 0.0
+        # Use shorter quote segments for efficiency on long texts
+        search_text = quote_normalized[:200] if len(quote_normalized) > 200 else quote_normalized
+        search_len = len(search_text)
+
+        # Slide through paper text in steps
+        step = max(search_len // 4, 20)
+        for start in range(0, len(paper_normalized) - search_len + 1, step):
+            window = paper_normalized[start:start + search_len + 50]
+            ratio = difflib.SequenceMatcher(None, search_text, window).ratio()
+            if ratio > best_ratio:
+                best_ratio = ratio
+            if ratio >= min_match_ratio:
+                break
+
+        if best_ratio >= min_match_ratio:
+            verified_count += 1
+            details.append({'id': item_id, 'type': item_type, 'status': 'fuzzy_match',
+                            'match_ratio': round(best_ratio, 3)})
+        else:
+            details.append({'id': item_id, 'type': item_type, 'status': 'not_found',
+                            'best_ratio': round(best_ratio, 3)})
+
+    verification_rate = verified_count / len(quotes_to_check)
+    is_valid = verification_rate >= 0.5  # At least half the quotes must be verifiable
+
+    return {
+        'total_quotes': len(quotes_to_check),
+        'verified_count': verified_count,
+        'verification_rate': round(verification_rate, 3),
+        'is_valid': is_valid,
+        'details': details
+    }
+
+
 # --- 3. Enhanced Analysis (MODIFIED) ---
 class PaperAnalyzer:
     """Enhanced paper analysis with 'map-reduce' and requirement cross-referencing."""
@@ -763,33 +920,36 @@ class PaperAnalyzer:
     # --- MODIFIED: Chunk prompt now needs to be aware of requirements ---
     @staticmethod
     def get_chunk_summary_prompt(chunk_text: str, chunk_num: int, total_chunks: int, pillar_definitions_str: str) -> str:
-        """Creates a prompt to summarize a single chunk of a large document."""
-        # Get research context from configuration
-        short_desc = get_short_description_safe()
-        research_topic = get_research_topic_safe()
-        
+        """Creates a prompt to summarize a single chunk of a large document.
+
+        NOTE: This prompt intentionally avoids priming with domain-specific context
+        to prevent hallucination when summarizing off-topic papers. The domain
+        relevance assessment happens downstream in the full analysis prompt.
+        """
+        # Escape braces
+        chunk_text_escaped = chunk_text.replace("{", "{{").replace("}", "}}")
+
         return f"""
 You are a research summarization agent.
-Your task is to read a chunk of a larger academic paper and extract its most critical information relevant to {short_desc}.
+Your task is to read a chunk of a larger academic paper and produce an OBJECTIVE summary of its actual content.
 This is CHUNK {chunk_num} of {total_chunks}.
 
-Our core research interest is: "{research_topic}"
-
---- KEY RESEARCH PILLARS (for context) ---
-We are categorizing research into these pillars. Use these to guide your summary:
-{pillar_definitions_str}
---- END PILLARS ---
+CRITICAL INSTRUCTIONS:
+- Summarize ONLY what is actually stated in the text below. Do NOT infer, extrapolate, or add information that is not present.
+- If the text discusses a specific topic, summarize that topic faithfully — do NOT reframe it into a different research domain.
+- Preserve the paper's actual terminology, methods, and findings.
 
 Based ONLY on the text chunk provided below, extract and summarize:
-1.  **Key Points:** Findings, methods, or conclusions relevant to our core research interest.
-2.  **Potential Requirement Matches:** Any text that seems to *directly* address one of the sub-requirements listed in the pillar context.
+1.  **Key Points:** The main findings, methods, or conclusions actually stated in this chunk.
+2.  **Paper Topic:** What specific subject area or research question does this chunk address?
 
 Return your output as a concise, well-structured summary using bullet points.
 Start immediately with the summary points.
 Do not include introductory or concluding phrases.
+Do not add domain framing or categorization that is not present in the text.
 
 --- TEXT CHUNK ---
-{chunk_text}
+{chunk_text_escaped}
 --- END CHUNK ---
 """
     # --- END MODIFICATION ---
@@ -844,6 +1004,9 @@ Do not include introductory or concluding phrases.
         
         # Generate paper_id from filename
         paper_id = metadata.filename.replace('.pdf', '').replace('.html', '').replace('.txt', '')
+        
+        # Escape braces
+        paper_text_escaped = paper_text.replace("{", "{{").replace("}", "}}")
         
         return f"""
 You are an expert research assistant annotating papers for a Golden Dataset used to validate automated literature review systems.
@@ -964,7 +1127,7 @@ The JSON object must contain these exact keys:
   }}
 
 {'--- START OF TEXT ---' if not is_summarized else '--- START OF COMPILED SUMMARIES ---'}
-{paper_text}
+{paper_text_escaped}
 {'--- END OF TEXT ---' if not is_summarized else '--- END OF COMPILED SUMMARIES ---'}
 """
     # --- END GOLDEN DATASET PROMPT ---
@@ -975,6 +1138,9 @@ The JSON object must contain these exact keys:
         is_summarized = "[[[ This document was summarized" in paper_text[:500]
         # Get research context from configuration
         research_topic = get_research_topic_safe()
+        
+        # Escape braces to prevent f-string errors
+        paper_text_escaped = paper_text.replace("{", "{{").replace("}", "}}")
         
         return f"""
 You are a research assistant.
@@ -991,7 +1157,7 @@ The JSON object must contain these exact keys:
 - "POTENTIAL_SEARCH_KEYWORDS": (List of Strings) 5-10 keywords or phrases that would be good to use in a search engine (like Google Scholar) to find formal papers on these topics.
 - "SUMMARY_NOTES": (String) A 1-2 sentence summary of what this document is about and its relevance to our core research.
 {'--- START OF TEXT ---' if not is_summarized else '--- START OF COMPILED SUMMARIES ---'}
-{paper_text}
+{paper_text_escaped}
 {'--- END OF TEXT ---' if not is_summarized else '--- END OF COMPILED SUMMARIES ---'}
 """
 
@@ -1134,9 +1300,22 @@ The JSON object must contain these exact keys:
     def consensus_evaluation(paper_text: str, metadata: PaperMetadata,
                              api_manager: APIManager, pillar_definitions_str: str,
                              num_evaluations: int = 1) -> Optional[Dict]:
-        """Handles large docs, performs analysis, validates."""
+        """Handles large docs, performs analysis, validates.
+
+        Includes post-analysis validation:
+        - Title relevance gate: compares extracted source title against review title
+        - Quote verification: checks verbatim quotes exist in source text
+        """
         final_text_to_analyze = ""
         is_summarized = False
+
+        # --- FIX: Extract title from source text BEFORE summarization ---
+        # This gives us a ground-truth title to compare against the review output,
+        # catching cases where chunk summarization causes the model to hallucinate
+        # about a completely different paper.
+        source_title = extract_title_from_text(paper_text)
+        if source_title:
+            logger.info(f"Extracted source title: '{source_title[:80]}...'")
 
         if len(paper_text) > REVIEW_CONFIG['CHUNK_SIZE']:
             logger.info(f"Document is large ({len(paper_text)} chars). Applying map-reduce summarization...")
@@ -1257,6 +1436,66 @@ The JSON object must contain these exact keys:
         final_result['EXTRACTION_QUALITY'] = metadata.extraction_quality
         final_result['REVIEW_TIMESTAMP'] = metadata.timestamp
         final_result['SUMMARIZED_FROM_CHUNKS'] = is_summarized
+
+        # --- FIX: Post-analysis validation gates ---
+        # Gate 1: Title relevance check (catches hallucinated reviews of wrong paper)
+        if source_title and is_summarized:
+            review_title = final_result.get('TITLE', '')
+            if review_title and source_title:
+                # Compare source-extracted title against the review's TITLE field
+                source_words = set(source_title.lower().split())
+                review_words = set(review_title.lower().split())
+                # Remove common stopwords for comparison
+                stopwords = {'the', 'a', 'an', 'of', 'in', 'for', 'and', 'to', 'on', 'with', 'by', 'from', 'is', 'are', 'at', 'as'}
+                source_keywords = source_words - stopwords
+                review_keywords = review_words - stopwords
+                if source_keywords and review_keywords:
+                    overlap = len(source_keywords & review_keywords)
+                    max_possible = min(len(source_keywords), len(review_keywords))
+                    title_similarity = overlap / max_possible if max_possible > 0 else 0
+                    if title_similarity < 0.15:
+                        logger.warning(
+                            f"TITLE MISMATCH for {metadata.filename}: "
+                            f"source='{source_title[:60]}' vs review='{review_title[:60]}' "
+                            f"(similarity={title_similarity:.2f}). Review may be hallucinated."
+                        )
+                        safe_print(
+                            f"⚠️ TITLE MISMATCH detected for {metadata.filename} - "
+                            f"review title does not match source document. Flagging for review."
+                        )
+                        final_result['_title_mismatch_warning'] = {
+                            'source_title': source_title[:200],
+                            'review_title': review_title[:200],
+                            'similarity': round(title_similarity, 3)
+                        }
+
+        # Gate 2: Quote verification (catches fabricated verbatim quotes)
+        quote_validation = validate_review_quotes(paper_text, final_result)
+        final_result['_quote_validation'] = {
+            'total_quotes': quote_validation['total_quotes'],
+            'verified_count': quote_validation['verified_count'],
+            'verification_rate': quote_validation['verification_rate'],
+            'is_valid': quote_validation['is_valid']
+        }
+        if not quote_validation['is_valid']:
+            logger.warning(
+                f"QUOTE VALIDATION FAILED for {metadata.filename}: "
+                f"only {quote_validation['verified_count']}/{quote_validation['total_quotes']} "
+                f"quotes verified (rate={quote_validation['verification_rate']:.1%}). "
+                f"Review may contain fabricated content."
+            )
+            safe_print(
+                f"⚠️ QUOTE VALIDATION FAILED for {metadata.filename} - "
+                f"{quote_validation['verification_rate']:.0%} quotes verified. "
+                f"Review may contain fabricated content."
+            )
+        else:
+            logger.info(
+                f"Quote validation passed for {metadata.filename}: "
+                f"{quote_validation['verified_count']}/{quote_validation['total_quotes']} "
+                f"quotes verified ({quote_validation['verification_rate']:.0%})"
+            )
+        # --- END validation gates ---
 
         return final_result
     # --- END MODIFICATION ---
@@ -1679,7 +1918,23 @@ def process_batch(batch_files: List[Tuple[str, str]], api_manager: APIManager,
                     logger.error(f"Journal analysis failed for {filename} after all attempts.")
                     safe_print(f"❌ Journal analysis failed for {filename}")
                     continue
-                # --- End Modification ---
+
+                # --- FIX: Reject reviews that fail both validation gates ---
+                # If both title mismatch AND quote validation fail, the review is
+                # almost certainly hallucinated (wrong paper reviewed). Skip saving.
+                has_title_mismatch = '_title_mismatch_warning' in result
+                quote_valid = result.get('_quote_validation', {}).get('is_valid', True)
+                if has_title_mismatch and not quote_valid:
+                    logger.error(
+                        f"REJECTING review for {filename}: both title mismatch and quote "
+                        f"validation failed. This review is likely hallucinated."
+                    )
+                    safe_print(
+                        f"🚫 REJECTING review for {filename} - title mismatch + "
+                        f"quote verification failure indicates hallucinated review. Skipping."
+                    )
+                    continue
+                # --- End rejection gate ---
 
                 try:
                     similar = network_analyzer.find_similar_papers(result, existing_reviews + batch_journal_results)
@@ -1821,12 +2076,9 @@ def main():
     safe_print(f"\n🚀 Ready to process {len(files_to_process)} papers")
 
     if len(files_to_process) > 10:
-        response = input(
-            f"This will process {len(files_to_process)} papers. This may take time and cost money. Continue? (y/n): ").lower()
-        if response != 'y':
-            logger.info("Processing cancelled by user")
-            safe_print("❌ Processing cancelled by user")
-            return
+        logger.info(f"Processing {len(files_to_process)} papers in batch mode.")
+        safe_print(f"🚀 Batch mode: Processing {len(files_to_process)} papers without manual confirmation.")
+
 
     batch_size = REVIEW_CONFIG['BATCH_SIZE']
     total_batches = (len(files_to_process) + batch_size - 1) // batch_size
