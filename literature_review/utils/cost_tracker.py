@@ -18,13 +18,18 @@ class CostTracker:
     # Gemini API Pricing (as of Nov 2025)
     # https://ai.google.dev/pricing
     GEMINI_PRICING = {
+        'gemini-flash-latest': {
+            'input': 0.0,           # Free tier (Gemini 3 Flash Preview)
+            'output': 0.0,          # Free tier
+            'cached_input': 0.0     # Free tier
+        },
         'gemini-2.0-flash-thinking-exp': {
             'input': 0.0,           # Free tier
             'output': 0.0,          # Free tier
             'cached_input': 0.0     # Free tier
         },
         'gemini-2.5-flash': {
-            'input': 0.0,           # Free tier
+            'input': 0.0,           # Free tier (legacy)
             'output': 0.0,          # Free tier
             'cached_input': 0.0     # Free tier
         },

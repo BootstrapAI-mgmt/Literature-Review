@@ -10,7 +10,7 @@ Provides a unified interface for configuring and switching between LLM providers
 Usage:
     from literature_review.config.model_config import get_model_config, set_model
     
-    # Use default (gemini-2.5-flash)
+    # Use default (gemini-flash-latest)
     config = get_model_config()
     
     # Switch to a different model
@@ -131,12 +131,12 @@ class Models:
     
     @staticmethod
     def gemini_flash() -> ModelConfig:
-        """Gemini 2.5 Flash - Default, fast and free."""
+        """Gemini 3 Flash (Latest) - Default, fast and free."""
         return ModelConfig(
             provider=ModelProvider.GEMINI,
-            model_name="gemini-2.5-flash",
+            model_name="gemini-flash-latest",
             api_key_env="GEMINI_API_KEY",
-            display_name="Gemini 2.5 Flash",
+            display_name="Gemini 3 Flash (Latest)",
             temperature=0.2,
             max_tokens=16384,
             input_cost_per_1k=0.0,  # Free tier
@@ -283,8 +283,9 @@ class Models:
 
 MODEL_REGISTRY: Dict[str, Callable[[], ModelConfig]] = {
     # Gemini models
-    "gemini-2.5-flash": Models.gemini_flash,
+    "gemini-flash-latest": Models.gemini_flash,
     "gemini-flash": Models.gemini_flash,  # Alias
+    "gemini-2.5-flash": Models.gemini_flash,  # Legacy alias
     "gemini-1.5-pro": Models.gemini_pro,
     "gemini-pro": Models.gemini_pro,  # Alias
     
@@ -349,7 +350,7 @@ def get_model_config() -> ModelConfig:
     Resolution order:
     1. Explicitly set model (via set_model)
     2. MODEL_NAME environment variable
-    3. Default (gemini-2.5-flash)
+    3. Default (gemini-flash-latest)
     """
     global _current_model
     
