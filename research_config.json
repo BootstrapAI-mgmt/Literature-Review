@@ -49,8 +49,8 @@
   },
   
   "file_naming": {
-    "database": "{domain_id}-research_database.csv",
-    "non_journal": "{domain_id}-non_journal_database.csv",
+    "database": "neuromorphic-research_database.csv",
+    "non_journal": "non-journal_database.csv",
     "gap_report": "{domain_id}-gap_analysis_report.json",
     "deep_coverage": "{domain_id}-deep_coverage.json",
     "version_history": "review_version_history.json"

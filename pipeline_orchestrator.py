@@ -979,7 +979,7 @@ class PipelineOrchestrator:
         )
 
         try:
-            with open(version_history_path, "r") as f:
+            with open(version_history_path, "r", encoding="utf-8") as f:
                 history = json.load(f)
 
             for filename, versions in history.items():
