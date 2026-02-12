@@ -14,6 +14,7 @@ import difflib
 import pypdf
 import pdfplumber
 import time
+import concurrent.futures
 import hashlib
 import numpy as np
 from datetime import datetime
@@ -335,8 +336,26 @@ class APIManager:
         """Implement rate limiting using global limiter"""
         global_limiter.wait_for_quota()
 
+    # Timeout for API requests (10 minutes = 600 seconds)
+    API_REQUEST_TIMEOUT = 600
+
+    def _make_api_request(self, prompt: str, is_json: bool) -> str:
+        """Internal method to make API request (used with timeout wrapper)."""
+        model_name = get_model_config().model_name
+        current_config_object = self.json_generation_config if is_json else self.text_generation_config
+        response = self.client.models.generate_content(
+            model=model_name,
+            contents=prompt,
+            config=current_config_object
+        )
+        return response.text
+
     def cached_api_call(self, prompt: str, use_cache: bool = True, is_json: bool = True) -> Optional[Any]:
-        """Make API call with caching, validation, and retry logic"""
+        """Make API call with caching, validation, timeout, and retry logic.
+        
+        Includes a 10-minute timeout per request with one retry on timeout.
+        If both attempts timeout, returns None (skip file).
+        """
         prompt_hash = hashlib.md5(prompt.encode('utf-8')).hexdigest()
         if use_cache and prompt_hash in self.cache:
             logger.debug(f"Cache hit for hash: {prompt_hash}")
@@ -359,15 +378,45 @@ class APIManager:
         self.rate_limit()
         response_text = ""
         model_name = get_model_config().model_name
+        
+        # Track timeout retries separately (max 2 timeout attempts)
+        timeout_attempts = 0
+        max_timeout_retries = 2
+        
         for attempt in range(REVIEW_CONFIG['RETRY_ATTEMPTS']):
             try:
-                current_config_object = self.json_generation_config if is_json else self.text_generation_config
-                response = self.client.models.generate_content(
-                    model=model_name,
-                    contents=prompt,
-                    config=current_config_object
-                )
-                response_text = response.text
+                # Use ThreadPoolExecutor for timeout-protected API call
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
+                    future = executor.submit(self._make_api_request, prompt, is_json)
+                    try:
+                        response_text = future.result(timeout=self.API_REQUEST_TIMEOUT)
+                    except concurrent.futures.TimeoutError:
+                        timeout_attempts += 1
+                        logger.error(
+                            f"⏱️ API request TIMEOUT after {self.API_REQUEST_TIMEOUT}s "
+                            f"(timeout attempt {timeout_attempts}/{max_timeout_retries})"
+                        )
+                        safe_print(
+                            f"⏱️ API timeout after {self.API_REQUEST_TIMEOUT // 60}min "
+                            f"(attempt {timeout_attempts}/{max_timeout_retries})"
+                        )
+                        global_limiter.record_request(success=False)
+                        
+                        if timeout_attempts >= max_timeout_retries:
+                            logger.error(
+                                f"🚫 Skipping file: {max_timeout_retries} consecutive timeouts. "
+                                f"API may be unresponsive for this request."
+                            )
+                            safe_print(f"🚫 Skipping file after {max_timeout_retries} timeouts")
+                            return None
+                        
+                        # Wait before retry on timeout
+                        time.sleep(30)
+                        continue
+                
+                # Reset timeout counter on successful response
+                timeout_attempts = 0
+                
                 if is_json:
                     result = json.loads(response_text)
                 else:
@@ -376,6 +425,7 @@ class APIManager:
                 # Record successful request
                 global_limiter.record_request(success=True)
                 return result
+                
             except json.JSONDecodeError as e:
                 logger.error(
                     f"JSON decode error on attempt {attempt + 1}: {e}. Response text: '{response_text[:500]}...'")
