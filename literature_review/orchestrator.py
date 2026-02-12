@@ -100,7 +100,7 @@ os.makedirs(CACHE_FOLDER, exist_ok=True)
 ANALYSIS_CONFIG = {
     'MIN_PAPERS_FOR_ANALYSIS': 3,
     'QUALITY_WEIGHT_THRESHOLD': 0.7,
-    'ENABLE_TREND_ANALYSIS': True,
+    'ENABLE_TREND_ANALYSIS': False,
     'ENABLE_NETWORK_ANALYSIS': True,
     'ENABLE_SEMANTIC_SEARCH': False,  # Disable for testing (CPU bottleneck on sentence transformer)
     'CACHE_RESULTS': True,
@@ -639,7 +639,7 @@ class PillarAnalyzer:
         version_file = self.config.get('version_history_path', VERSION_HISTORY_FILE)
         if os.path.exists(version_file):
             try:
-                with open(version_file, 'r') as f:
+                with open(version_file, 'r', encoding='utf-8') as f:
                     return json.load(f)
             except Exception as e:
                 logger.warning(f"Could not load version history from {version_file}: {e}")

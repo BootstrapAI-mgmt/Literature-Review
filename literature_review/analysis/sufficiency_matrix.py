@@ -4,10 +4,16 @@ Analyze quality vs. quantity tradeoffs in evidence collection.
 """
 
 import json
+import sys
+import io
 from typing import Dict, List, Tuple
 from collections import defaultdict
 import logging
 import os
+
+# Fix Windows cp1252 console encoding for emoji output
+if sys.stdout and hasattr(sys.stdout, 'encoding') and sys.stdout.encoding and sys.stdout.encoding.lower() != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8', errors='replace')
 
 logger = logging.getLogger(__name__)
 

@@ -233,7 +233,7 @@ def generate_html(scorecard: Dict, output_file: str):
 </html>
 """
     
-    with open(output_file, 'w') as f:
+    with open(output_file, 'w', encoding='utf-8') as f:
         f.write(html)
 
 
