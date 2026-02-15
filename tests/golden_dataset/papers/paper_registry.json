@@ -2022,7 +2022,8 @@
       ],
       "year": 2024,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-012",
@@ -2038,7 +2039,8 @@
       ],
       "year": 2014,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-013",
@@ -2052,7 +2054,8 @@
       ],
       "year": 2019,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-014",
@@ -2068,7 +2071,8 @@
       ],
       "year": 2025,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-015",
@@ -2084,7 +2088,8 @@
       ],
       "year": 2019,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-016",
@@ -2100,7 +2105,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-017",
@@ -2113,7 +2119,8 @@
       ],
       "year": 2021,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-018",
@@ -2126,7 +2133,8 @@
       ],
       "year": 2021,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-019",
@@ -2140,7 +2148,8 @@
       ],
       "year": 2003,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-020",
@@ -2155,7 +2164,8 @@
       ],
       "year": 2008,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-021",
@@ -2171,7 +2181,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-022",
@@ -2185,7 +2196,8 @@
       ],
       "year": 2012,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MICRO-023",
@@ -2198,7 +2210,8 @@
       ],
       "year": 2018,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-011",
@@ -2214,7 +2227,8 @@
       ],
       "year": 2020,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-012",
@@ -2227,7 +2241,8 @@
       ],
       "year": 2018,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-013",
@@ -2240,7 +2255,8 @@
       ],
       "year": 2012,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-014",
@@ -2256,7 +2272,8 @@
       ],
       "year": 2016,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-015",
@@ -2272,7 +2289,8 @@
       ],
       "year": 2024,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-016",
@@ -2288,7 +2306,8 @@
       ],
       "year": 2021,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-017",
@@ -2304,7 +2323,8 @@
       ],
       "year": 2025,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-018",
@@ -2318,7 +2338,8 @@
       ],
       "year": 2021,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-019",
@@ -2331,7 +2352,8 @@
       ],
       "year": 2004,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-020",
@@ -2346,7 +2368,8 @@
       ],
       "year": 2014,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NANO-021",
@@ -2362,7 +2385,8 @@
       ],
       "year": 2021,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-011",
@@ -2376,7 +2400,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-012",
@@ -2392,7 +2417,8 @@
       ],
       "year": 2020,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-013",
@@ -2406,7 +2432,8 @@
       ],
       "year": 2022,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-014",
@@ -2420,7 +2447,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-015",
@@ -2434,7 +2462,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-016",
@@ -2450,7 +2479,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-017",
@@ -2466,7 +2496,8 @@
       ],
       "year": 2019,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-018",
@@ -2481,7 +2512,8 @@
       ],
       "year": 2017,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-019",
@@ -2497,7 +2529,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "CLIMATE-020",
@@ -2512,7 +2545,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "FUSION-011",
@@ -2526,7 +2560,8 @@
       ],
       "year": 2015,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "FUSION-012",
@@ -2542,7 +2577,8 @@
       ],
       "year": 2022,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "FUSION-013",
@@ -2557,7 +2593,8 @@
       ],
       "year": 2011,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "FUSION-014",
@@ -2570,7 +2607,8 @@
       ],
       "year": 2015,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "FUSION-015",
@@ -2585,7 +2623,8 @@
       ],
       "year": 2021,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "FUSION-016",
@@ -2599,7 +2638,8 @@
       ],
       "year": 2017,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "FUSION-017",
@@ -2615,7 +2655,8 @@
       ],
       "year": 2020,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "FUSION-018",
@@ -2628,7 +2669,8 @@
       ],
       "year": 2018,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "QUANTUM-011",
@@ -2641,7 +2683,8 @@
       ],
       "year": 2013,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "QUANTUM-012",
@@ -2655,7 +2698,8 @@
       ],
       "year": 2016,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "QUANTUM-013",
@@ -2671,7 +2715,8 @@
       ],
       "year": 2008,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "QUANTUM-014",
@@ -2684,7 +2729,8 @@
       ],
       "year": 2003,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "QUANTUM-015",
@@ -2697,7 +2743,8 @@
       ],
       "year": 2006,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "QUANTUM-016",
@@ -2710,7 +2757,8 @@
       ],
       "year": 2019,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "QUANTUM-017",
@@ -2725,7 +2773,8 @@
       ],
       "year": 2013,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "QUANTUM-018",
@@ -2739,7 +2788,8 @@
       ],
       "year": 2013,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MAT-011",
@@ -2755,7 +2805,8 @@
       ],
       "year": 2024,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MAT-012",
@@ -2768,7 +2819,8 @@
       ],
       "year": 2009,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MAT-013",
@@ -2781,7 +2833,8 @@
       ],
       "year": 2012,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MAT-014",
@@ -2797,7 +2850,8 @@
       ],
       "year": 2025,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MAT-015",
@@ -2813,7 +2867,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MAT-016",
@@ -2828,7 +2883,8 @@
       ],
       "year": 2015,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "MAT-017",
@@ -2844,7 +2900,8 @@
       ],
       "year": 2019,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "BIO-011",
@@ -2859,7 +2916,8 @@
       ],
       "year": 2013,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "BIO-012",
@@ -2875,7 +2933,8 @@
       ],
       "year": 2024,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "BIO-013",
@@ -2891,7 +2950,8 @@
       ],
       "year": 2024,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "BIO-014",
@@ -2907,7 +2967,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "BIO-015",
@@ -2923,7 +2984,8 @@
       ],
       "year": 2022,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "BIO-016",
@@ -2938,7 +3000,8 @@
       ],
       "year": 2021,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "BIO-017",
@@ -2954,7 +3017,8 @@
       ],
       "year": 2020,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NEURO-011",
@@ -2970,7 +3034,8 @@
       ],
       "year": 2025,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NEURO-012",
@@ -2985,7 +3050,8 @@
       ],
       "year": 2018,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NEURO-013",
@@ -3000,7 +3066,8 @@
       ],
       "year": 2018,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NEURO-014",
@@ -3016,7 +3083,8 @@
       ],
       "year": 2019,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NEURO-015",
@@ -3032,7 +3100,8 @@
       ],
       "year": 2014,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     },
     {
       "paper_id": "NEURO-016",
@@ -3046,7 +3115,8 @@
       ],
       "year": 2023,
       "pdf_acquired": true,
-      "annotation_status": "not_started"
+      "annotation_status": "not_started",
+      "license": "arXiv"
     }
   ],
   "statistics": {
