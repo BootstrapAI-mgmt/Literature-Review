@@ -13,6 +13,8 @@ from typing import Dict
 import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
 
+from datetime import datetime as _dt
+
 from literature_review.orchestrator import (
     analyze_evidence_evolution,
     classify_maturity
@@ -30,13 +32,17 @@ class TestTemporalAnalysisIntegration:
     def test_temporal_analysis_generation(self, temp_workspace):
         """Test temporal analysis generation with realistic data."""
         
+        # Use dynamic years so test doesn't break as calendar advances.
+        # "recent" = papers with PUBLICATION_YEAR >= current_year - 3.
+        _current_year = _dt.now().year
+
         # Create test database with temporal data
         db_data = {
             "FILENAME": [f"paper{i}.pdf" for i in range(15)],
             "Requirement(s)": ["Sub-1.1.1"] * 5 + ["Sub-2.2.3"] * 7 + ["Sub-3.1.1"] * 3,
-            "PUBLICATION_YEAR": [2018, 2020, 2021, 2023, 2024] + 
-                                [2015, 2016, 2018, 2019, 2020, 2022, 2024] +
-                                [2022, 2023, 2024],
+            "PUBLICATION_YEAR": [2018, 2020, 2021, _current_year - 1, _current_year] + 
+                                [2015, 2016, 2018, 2019, 2020, 2022, _current_year] +
+                                [_current_year - 2, _current_year - 1, _current_year],
             "EVIDENCE_COMPOSITE_SCORE": [2.5, 2.8, 3.0, 3.5, 4.0] +
                                          [2.0, 2.5, 2.8, 3.0, 3.2, 3.5, 3.8] +
                                          [3.0, 3.2, 3.5]
@@ -68,8 +74,8 @@ class TestTemporalAnalysisIntegration:
         # Assert: Verify analysis for Sub-1.1.1
         assert "Sub-1.1.1" in temporal
         assert temporal["Sub-1.1.1"]["earliest_evidence"] == 2018
-        assert temporal["Sub-1.1.1"]["latest_evidence"] == 2024
-        assert temporal["Sub-1.1.1"]["evidence_span_years"] == 6
+        assert temporal["Sub-1.1.1"]["latest_evidence"] == _current_year
+        assert temporal["Sub-1.1.1"]["evidence_span_years"] == _current_year - 2018
         assert temporal["Sub-1.1.1"]["total_papers"] == 5
         assert temporal["Sub-1.1.1"]["quality_trend"] == "improving"
         assert temporal["Sub-1.1.1"]["maturity_level"] in ["growing", "established"]
@@ -77,12 +83,13 @@ class TestTemporalAnalysisIntegration:
         # Assert: Verify analysis for Sub-2.2.3
         assert "Sub-2.2.3" in temporal
         assert temporal["Sub-2.2.3"]["earliest_evidence"] == 2015
-        assert temporal["Sub-2.2.3"]["latest_evidence"] == 2024
-        assert temporal["Sub-2.2.3"]["evidence_span_years"] == 9
+        assert temporal["Sub-2.2.3"]["latest_evidence"] == _current_year
+        assert temporal["Sub-2.2.3"]["evidence_span_years"] == _current_year - 2015
         assert temporal["Sub-2.2.3"]["total_papers"] == 7
         assert temporal["Sub-2.2.3"]["maturity_level"] in ["established", "growing"]
         
         # Assert: Verify analysis for Sub-3.1.1
+        # All 3 papers are within the recent window (current_year - 2 .. current_year)
         assert "Sub-3.1.1" in temporal
         assert temporal["Sub-3.1.1"]["recent_activity"] is True
         assert temporal["Sub-3.1.1"]["recent_papers"] == 3

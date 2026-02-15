@@ -36,16 +36,18 @@ else:
 class TestCheckpointIntegration:
     """Integration tests for checkpoint/resume functionality."""
 
-    @patch("subprocess.run")
-    def test_checkpoint_file_created_during_run(self, mock_subprocess, tmp_path):
+    @patch("literature_review.orchestrator.main", return_value=None)
+    @patch.object(PipelineOrchestrator, '_run_with_progress_timeout')
+    def test_checkpoint_file_created_during_run(self, mock_run_timeout, mock_orch_main, tmp_path):
         """Test that checkpoint file is created during pipeline run."""
         checkpoint_path = tmp_path / "integration_checkpoint.json"
 
-        # Mock successful subprocess runs
+        # Mock successful subprocess runs (pipeline uses subprocess.Popen via _run_with_progress_timeout)
         mock_result = Mock()
         mock_result.returncode = 0
         mock_result.stderr = ""
-        mock_subprocess.return_value = mock_result
+        mock_result.stdout = ""
+        mock_run_timeout.return_value = mock_result
 
         # Mock check_for_rejections to skip DRA
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=False):
@@ -68,8 +70,9 @@ class TestCheckpointIntegration:
         assert "sync" in checkpoint["stages"]
         assert "orchestrator" in checkpoint["stages"]
 
-    @patch("subprocess.run")
-    def test_resume_after_failure(self, mock_subprocess, tmp_path):
+    @patch("literature_review.orchestrator.main", return_value=None)
+    @patch.object(PipelineOrchestrator, '_run_with_progress_timeout')
+    def test_resume_after_failure(self, mock_run_timeout, mock_orch_main, tmp_path):
         """Test that pipeline can resume after failure."""
         checkpoint_path = tmp_path / "resume_checkpoint.json"
 
@@ -84,14 +87,16 @@ class TestCheckpointIntegration:
             if call_count["count"] <= 2:
                 mock_result.returncode = 0
                 mock_result.stderr = ""
+                mock_result.stdout = ""
             else:
                 # Third call fails (sync)
                 mock_result.returncode = 1
                 mock_result.stderr = "Connection timeout"
+                mock_result.stdout = ""
 
             return mock_result
 
-        mock_subprocess.side_effect = mock_run_side_effect
+        mock_run_timeout.side_effect = mock_run_side_effect
 
         # Mock check_for_rejections to skip DRA
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=False):
@@ -118,9 +123,10 @@ class TestCheckpointIntegration:
             mock_result = Mock()
             mock_result.returncode = 0
             mock_result.stderr = ""
+            mock_result.stdout = ""
             return mock_result
 
-        mock_subprocess.side_effect = mock_run_all_success
+        mock_run_timeout.side_effect = mock_run_all_success
 
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=False):
             # Enable batch mode for non-interactive execution
@@ -139,8 +145,9 @@ class TestCheckpointIntegration:
         # Verify journal_reviewer and judge were NOT called again
         # (only sync and orchestrator should have been called)
 
-    @patch("subprocess.run")
-    def test_resume_from_specific_stage(self, mock_subprocess, tmp_path):
+    @patch("literature_review.orchestrator.main", return_value=None)
+    @patch.object(PipelineOrchestrator, '_run_with_progress_timeout')
+    def test_resume_from_specific_stage(self, mock_run_timeout, mock_orch_main, tmp_path):
         """Test resuming from a specific stage."""
         checkpoint_path = tmp_path / "resume_from_checkpoint.json"
 
@@ -173,11 +180,12 @@ class TestCheckpointIntegration:
         with open(checkpoint_path, "w") as f:
             json.dump(checkpoint_data, f)
 
-        # Mock successful subprocess runs
+        # Mock successful subprocess runs (pipeline uses subprocess.Popen via _run_with_progress_timeout)
         mock_result = Mock()
         mock_result.returncode = 0
         mock_result.stderr = ""
-        mock_subprocess.return_value = mock_result
+        mock_result.stdout = ""
+        mock_run_timeout.return_value = mock_result
 
         # Resume from sync stage
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=False):
@@ -200,16 +208,18 @@ class TestCheckpointIntegration:
 
         assert checkpoint["status"] == "completed"
 
-    @patch("subprocess.run")
-    def test_dra_stage_handling_in_checkpoint(self, mock_subprocess, tmp_path):
+    @patch("literature_review.orchestrator.main", return_value=None)
+    @patch.object(PipelineOrchestrator, '_run_with_progress_timeout')
+    def test_dra_stage_handling_in_checkpoint(self, mock_run_timeout, mock_orch_main, tmp_path):
         """Test that DRA stage is properly handled in checkpoint."""
         checkpoint_path = tmp_path / "dra_checkpoint.json"
 
-        # Mock successful subprocess runs
+        # Mock successful subprocess runs (pipeline uses subprocess.Popen via _run_with_progress_timeout)
         mock_result = Mock()
         mock_result.returncode = 0
         mock_result.stderr = ""
-        mock_subprocess.return_value = mock_result
+        mock_result.stdout = ""
+        mock_run_timeout.return_value = mock_result
 
         # Test 1: With rejections (DRA runs)
         with patch.object(PipelineOrchestrator, "check_for_rejections", return_value=True):
