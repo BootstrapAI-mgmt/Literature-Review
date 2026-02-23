@@ -12,6 +12,9 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# Must match SUPPORTED_EXTENSIONS in journal_reviewer.py and deep_reviewer.py
+SUPPORTED_EXTENSIONS = ('.pdf', '.html', '.txt', '.json')
+
 
 class IncrementalAnalyzer:
     """Manage incremental analysis state."""
@@ -51,6 +54,18 @@ class IncrementalAnalyzer:
         
         return hasher.hexdigest()
     
+    def _find_papers(self, paper_dir: str) -> Dict[str, str]:
+        """Find all supported paper files recursively and compute hashes."""
+        papers = {}
+        if os.path.exists(paper_dir):
+            for root, dirs, files in os.walk(paper_dir):
+                for filename in files:
+                    if filename.lower().endswith(SUPPORTED_EXTENSIONS):
+                        filepath = os.path.join(root, filename)
+                        rel_path = os.path.relpath(filepath, paper_dir)
+                        papers[rel_path] = self._calculate_file_hash(filepath)
+        return papers
+    
     def _calculate_pillar_hash(self, pillar_file: str = 'pillar_definitions.json') -> str:
         """Calculate hash of pillar definitions."""
         if not os.path.exists(pillar_file):
@@ -88,33 +103,78 @@ class IncrementalAnalyzer:
         if force:
             logger.warning("⚠️ Force flag set - re-analyzing all papers")
         
-        # Find all current papers
-        current_papers = {}
-        if os.path.exists(paper_dir):
-            for filename in os.listdir(paper_dir):
-                if filename.endswith('.json'):
-                    filepath = os.path.join(paper_dir, filename)
-                    file_hash = self._calculate_file_hash(filepath)
-                    current_papers[filename] = file_hash
+        # Find all current papers (recursive, all supported extensions)
+        current_papers = self._find_papers(paper_dir)
         
         # Compare with previous state
         previous_papers = self.state.get('paper_fingerprints', {})
+        
+        # Load review_log to identify already-analyzed papers
+        # This handles migration from .json-only detection to PDF detection
+        reviewed_filenames = set()
+        review_log_path = os.path.join(os.path.dirname(paper_dir) if paper_dir != '.' else '.', 'review_log.json')
+        if not os.path.exists(review_log_path):
+            review_log_path = 'review_log.json'
+        if os.path.exists(review_log_path):
+            try:
+                with open(review_log_path, 'r', encoding='utf-8') as f:
+                    review_log = json.load(f)
+                if isinstance(review_log, list):
+                    reviewed_filenames = set(review_log)
+                elif isinstance(review_log, dict):
+                    reviewed_filenames = set(review_log.keys())
+                logger.info(f"Loaded review log with {len(reviewed_filenames)} entries")
+            except Exception as e:
+                logger.warning(f"Could not load review log: {e}")
+        
+        # Also check the database CSV for FILENAME column (catches papers
+        # that were analyzed but not recorded in review_log)
+        import csv
+        import glob
+        for csv_path in glob.glob('*database*.csv'):
+            try:
+                with open(csv_path, 'r', encoding='utf-8') as f:
+                    reader = csv.DictReader(f)
+                    if 'FILENAME' in (reader.fieldnames or []):
+                        for row in reader:
+                            fn = row.get('FILENAME', '').strip()
+                            if fn:
+                                reviewed_filenames.add(fn)
+                logger.info(f"After loading {csv_path}: {len(reviewed_filenames)} total reviewed filenames")
+            except Exception as e:
+                logger.warning(f"Could not load database CSV {csv_path}: {e}")
         
         new_papers = []
         modified_papers = []
         unchanged_papers = []
         removed_papers = []
+        seeded_fingerprints = 0
         
         # Check each current paper
-        for filename, current_hash in current_papers.items():
-            if filename not in previous_papers:
-                new_papers.append(filename)
-            elif current_hash != previous_papers[filename]:
-                modified_papers.append(filename)
-            elif pillar_changed or force:
-                modified_papers.append(filename)  # Treat as modified
+        for rel_path, current_hash in current_papers.items():
+            basename = os.path.basename(rel_path)
+            if rel_path in previous_papers:
+                # Known file — check if modified
+                if current_hash != previous_papers[rel_path]:
+                    modified_papers.append(rel_path)
+                elif pillar_changed or force:
+                    modified_papers.append(rel_path)
+                else:
+                    unchanged_papers.append(rel_path)
+            elif basename in reviewed_filenames:
+                # Already reviewed but not yet fingerprinted (migration)
+                unchanged_papers.append(rel_path)
+                # Seed the fingerprint for future runs
+                previous_papers[rel_path] = current_hash
+                seeded_fingerprints += 1
             else:
-                unchanged_papers.append(filename)
+                new_papers.append(rel_path)
+        
+        # Persist any seeded fingerprints
+        if seeded_fingerprints > 0:
+            self.state['paper_fingerprints'] = previous_papers
+            self._save_state()
+            logger.info(f"Seeded {seeded_fingerprints} fingerprints from review log (migration)")
         
         # Find removed papers
         for filename in previous_papers:
@@ -182,13 +242,8 @@ class IncrementalAnalyzer:
         # Update pillar hash
         self.state['pillar_hash'] = self._calculate_pillar_hash(pillar_file)
         
-        # Update paper fingerprints
-        new_fingerprints = {}
-        if os.path.exists(paper_dir):
-            for filename in os.listdir(paper_dir):
-                if filename.endswith('.json'):
-                    filepath = os.path.join(paper_dir, filename)
-                    new_fingerprints[filename] = self._calculate_file_hash(filepath)
+        # Update paper fingerprints (recursive, all supported extensions)
+        new_fingerprints = self._find_papers(paper_dir)
         
         self.state['paper_fingerprints'] = new_fingerprints
         self.state['last_run'] = datetime.now().isoformat()

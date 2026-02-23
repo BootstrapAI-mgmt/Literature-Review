@@ -473,6 +473,12 @@ def get_all_claims_from_history(version_history: Dict) -> List[Dict]:
         latest_version = versions[-1]
         review = latest_version.get('review', {})
         requirements = review.get('Requirement(s)', [])
+        # Handle case where Requirement(s) was stored as a JSON string (e.g., from CSV rebuild)
+        if isinstance(requirements, str):
+            try:
+                requirements = json.loads(requirements)
+            except (json.JSONDecodeError, ValueError):
+                requirements = []
         
         for req in requirements:
             # Add filename to claim for context
@@ -837,9 +843,15 @@ def add_claim_to_version_history(
     
     latest_version = version_history[filename][-1]
     
-    # Ensure Requirement(s) field exists
+    # Ensure Requirement(s) field exists and is a list
     if "Requirement(s)" not in latest_version["review"]:
         latest_version["review"]["Requirement(s)"] = []
+    # Handle case where Requirement(s) was stored as a JSON string (e.g., from CSV rebuild)
+    elif isinstance(latest_version["review"]["Requirement(s)"], str):
+        try:
+            latest_version["review"]["Requirement(s)"] = json.loads(latest_version["review"]["Requirement(s)"])
+        except (json.JSONDecodeError, ValueError):
+            latest_version["review"]["Requirement(s)"] = []
     
     # Add the claim
     latest_version["review"]["Requirement(s)"].append(claim)
@@ -1018,6 +1030,12 @@ def run_operationalization_extraction(
         # Get latest version
         latest_version = versions[-1]
         requirements = latest_version.get('review', {}).get('Requirement(s)', [])
+        # Handle case where Requirement(s) was stored as a JSON string (e.g., from CSV rebuild)
+        if isinstance(requirements, str):
+            try:
+                requirements = json.loads(requirements)
+            except (json.JSONDecodeError, ValueError):
+                requirements = []
         
         # Filter to approved claims without operationalization
         approved_claims = [

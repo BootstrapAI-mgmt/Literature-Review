@@ -229,19 +229,20 @@ class APIManager:
                 action = global_limiter.get_action_for_error(category)
                 global_limiter.record_request(success=False, error=e, response_text=str(e))
                 logger.error(f"API error on attempt {attempt + 1}: {type(e).__name__} - {e}")
-            
-            if action == ErrorAction.ABORT_PIPELINE:
-                logger.critical(f"Aborting due to {category.name}")
-                return None
-            elif action == ErrorAction.SKIP_DOCUMENT:
-                logger.error(f"Skipping request due to {category.name}")
-                return None
-            elif "429" in str(e): 
-                time.sleep(retry_delay * (attempt + 2))
-            elif attempt < retry_attempts - 1: 
-                # Use delay from action's value tuple
-                _, delay = action.value
-                time.sleep(delay if delay > 0 else retry_delay)
+                
+                if action == ErrorAction.ABORT_PIPELINE:
+                    logger.critical(f"Aborting due to {category.name}")
+                    return None
+                elif action == ErrorAction.SKIP_DOCUMENT:
+                    logger.error(f"Skipping request due to {category.name}")
+                    return None
+                elif "429" in str(e) or category.name == "RATE_LIMIT":
+                    # Exponential backoff for rate limits
+                    wait = retry_delay * (attempt + 2)
+                    logger.info(f"Rate limited. Waiting {wait}s before retry...")
+                    time.sleep(wait)
+                elif attempt < retry_attempts - 1:
+                    time.sleep(retry_delay)
         
         logger.error(f"API call failed after {retry_attempts} attempts.")
         return None

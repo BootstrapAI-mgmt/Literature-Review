@@ -75,7 +75,7 @@ class GlobalRateLimiter:
         if self._initialized:
             return
             
-        self.global_rpm_limit = 10  # Conservative global limit
+        self.global_rpm_limit = 60  # Raised from 10; Google provides ~1000 RPM
         self.available_rpm = 1000  # What Google provides
         self.calls_this_minute = 0
         self.minute_start = time.time()
