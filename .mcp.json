@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "zotero": {
+      "command": "C:\\Users\\jpcol\\AppData\\Roaming\\uv\\tools\\zotero-mcp-server\\Scripts\\python.exe",
+      "args": ["-m", "zotero_mcp"],
+      "env": {
+        "ZOTERO_LOCAL": "true",
+        "PYTHONIOENCODING": "utf-8"
+      }
+    }
+  }
+}
