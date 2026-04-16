@@ -98,7 +98,7 @@ The Literature Review system automates systematic literature reviews end-to-end:
 
 **Completed:** N/A
 
-**Evidence:** N/A
+**Evidence:** PR #147 (governance bootstrap)
 
 ---
 
