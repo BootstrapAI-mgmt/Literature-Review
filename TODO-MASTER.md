@@ -14,8 +14,9 @@
 | Phase 1: Core Pipeline | 4 | 4 | 0 | 0 |
 | Phase 2: Evidence Quality | 3 | 3 | 0 | 0 |
 | Phase 3: Advanced Automation | 3 | 3 | 0 | 0 |
-| Phase 4: Golden Dataset | 4 | 2 | 2 | 0 |
+| Phase 4: Golden Dataset | 4 | 2 | 2 | 1 |
 | Phase 5: Governance | 5 | 0 | 5 | 0 |
+| **Total** | **19** | **12** | **7** | **1** |
 
 ## Phase 1: Core Pipeline
 
