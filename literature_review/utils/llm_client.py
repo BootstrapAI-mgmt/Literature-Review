@@ -304,22 +304,86 @@ class ClaudeCodeClient(LLMClient):
         )
 
     def _build_options(self, system_prompt: Optional[str], json_mode: bool):
-        """Construct the ClaudeAgentOptions for a one-shot query."""
+        """Construct the ClaudeAgentOptions for a one-shot query.
+
+        Per the session-call policy (Rule 0 — default deny delegation, see
+        ../memory/feedback_session_call_policy.md), the spawned Claude
+        session must itself NOT delegate to further subagents. The
+        reviewer is a leaf-node call: text in, JSON out, no fan-out.
+
+        Defenses in depth (any one of these would block subagent dispatch;
+        we apply all three):
+
+          1. ``allowed_tools=[]`` — empty allowlist; no tools available.
+          2. ``disallowed_tools=[...]`` — explicit deny on the tools that
+             would enable delegation or sandbox escape, even if a future
+             SDK version reinterprets the empty allowlist as "default".
+          3. ``max_turns=1`` — the agent is cut off after a single turn,
+             so even a successful tool call couldn't be followed up on.
+
+        We also disable ``setting_sources`` so this session does not pick
+        up the user's interactive Claude Code config (slash commands,
+        hooks, custom subagents, MCP servers) — those are irrelevant to
+        batch inference and could surprise the spawned session.
+        """
         from claude_agent_sdk import ClaudeAgentOptions  # local import
 
-        # Disable all tools for pipeline use — paper content is arbitrary
-        # text and we don't want the agent reading/writing files or
-        # running bash. Pure text-in / text-out only.
+        # Tools that must NEVER be available in a spawned reviewer session.
+        # "Task" and "Agent" cover the standard delegation surface; the
+        # rest cover sandbox/filesystem/web egress that the reviewer has
+        # no legitimate reason to touch.
+        DELEGATION_AND_EGRESS_TOOLS = [
+            "Task", "Agent",                # subagent dispatch (Rule 0)
+            "Bash", "PowerShell",           # shell execution
+            "Read", "Write", "Edit",        # filesystem
+            "NotebookEdit",
+            "Glob", "Grep",                 # filesystem search
+            "WebFetch", "WebSearch",        # network egress
+        ]
+
         kwargs = {
             "allowed_tools": [],
+            "disallowed_tools": DELEGATION_AND_EGRESS_TOOLS,
             "permission_mode": "bypassPermissions",
             "max_turns": 1,
             "model": self.config.model_name,
+            # Don't inherit user-level Claude Code settings (slash commands,
+            # MCP servers, hooks, custom subagents). The spawned session
+            # should be a clean room.
+            "setting_sources": [],
         }
         if system_prompt:
             # `system_prompt` accepts either a string (treated as additive
             # instructions) or a SystemPromptPreset. We use the string form.
             kwargs["system_prompt"] = system_prompt
+
+        # Filter kwargs to what the installed SDK actually accepts. Older
+        # SDK versions may lack `disallowed_tools` or `setting_sources`;
+        # we still apply the core defense (`allowed_tools=[]` +
+        # `max_turns=1`) but warn so the operator knows the spawned
+        # session is operating with weaker isolation than the policy
+        # specifies. Never silently degrade safety.
+        import dataclasses as _dc
+        try:
+            supported = {f.name for f in _dc.fields(ClaudeAgentOptions)}
+        except TypeError:
+            # ClaudeAgentOptions isn't a dataclass on this SDK version.
+            # Fall through and let the construction raise if any kwarg
+            # is rejected — at least we'll get a clear TypeError.
+            supported = set(kwargs)
+        dropped = set(kwargs) - supported
+        if dropped:
+            critical_drops = dropped & {"disallowed_tools", "setting_sources"}
+            if critical_drops:
+                logger.warning(
+                    "ClaudeAgentOptions on installed claude-agent-sdk lacks "
+                    "kwargs %s. Spawned session will still have allowed_tools=[] "
+                    "and max_turns=1, so subagent dispatch is blocked, but "
+                    "consider upgrading: pip install -U claude-agent-sdk",
+                    sorted(critical_drops),
+                )
+            kwargs = {k: v for k, v in kwargs.items() if k in supported}
+
         # JSON-mode coaxing happens at the prompt layer (see ``generate``).
         return ClaudeAgentOptions(**kwargs)
 
