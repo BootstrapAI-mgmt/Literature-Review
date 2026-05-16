@@ -38,6 +38,11 @@ class ModelProvider(Enum):
     GEMINI = "gemini"
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
+    # CLAUDE_CODE routes calls through the `claude-agent-sdk` package using
+    # the user's Claude Code / Max-plan credentials. Unlike ANTHROPIC, this
+    # path does NOT bill per token against an API key — it consumes the
+    # subscription's hourly Code quota instead.
+    CLAUDE_CODE = "claude_code"
     LOCAL = "local"  # Ollama, llama.cpp, etc.
 
 
@@ -81,6 +86,7 @@ class ModelConfig:
     
     # Rate limiting configuration
     requests_per_minute: int = 60
+    requests_per_hour: int = 0  # 0 disables the sliding-window hourly limiter
     tokens_per_minute: int = 100000
     retry_delay_seconds: float = 1.0
     max_retries: int = 3
@@ -265,6 +271,55 @@ class Models:
             fallback_model="gemini-flash-latest",
         )
 
+    # ------------------------------------------------------------------
+    # Claude Code (subscription-backed) path
+    # ------------------------------------------------------------------
+    # These entries route through `claude-agent-sdk` using the user's
+    # local Claude Code credentials (Max / Pro subscription), NOT a
+    # per-token Anthropic API key. The api_key_env is left as the SDK's
+    # own auth marker and is informational only — the SDK reads its
+    # credentials from the user's Claude Code config.
+    #
+    # Default hourly cap is 18 requests; override at runtime with the
+    # CLAUDE_CODE_RPH environment variable. The sliding-window limiter
+    # in `literature_review.utils.hourly_rate_limiter` enforces it.
+
+    @staticmethod
+    def claude_code_opus_4_7() -> ModelConfig:
+        """Claude 4.7 Opus via Claude Code (subscription-backed)."""
+        return ModelConfig(
+            provider=ModelProvider.CLAUDE_CODE,
+            model_name="claude-opus-4-7",  # SDK-facing model name
+            api_key_env="CLAUDE_CODE_AUTH",  # informational; SDK uses its own creds
+            display_name="Claude 4.7 Opus (via Claude Code)",
+            temperature=0.2,
+            max_tokens=16384,
+            input_cost_per_1k=0.0,  # subscription, not per-token
+            output_cost_per_1k=0.0,
+            supports_json_mode=False,  # prompt-instructed JSON
+            max_context_length=1_000_000,
+            requests_per_hour=18,
+            fallback_model="claude-opus-4-7",  # fall back to API path if needed
+        )
+
+    @staticmethod
+    def claude_code_sonnet_4_6() -> ModelConfig:
+        """Claude 4.6 Sonnet via Claude Code (subscription-backed)."""
+        return ModelConfig(
+            provider=ModelProvider.CLAUDE_CODE,
+            model_name="claude-sonnet-4-6",
+            api_key_env="CLAUDE_CODE_AUTH",
+            display_name="Claude 4.6 Sonnet (via Claude Code)",
+            temperature=0.2,
+            max_tokens=16384,
+            input_cost_per_1k=0.0,
+            output_cost_per_1k=0.0,
+            supports_json_mode=False,
+            max_context_length=1_000_000,
+            requests_per_hour=24,
+            fallback_model="claude-sonnet-4-6",
+        )
+
     # Legacy aliases (kept for backwards compatibility)
     @staticmethod
     def claude_opus() -> ModelConfig:
@@ -322,6 +377,12 @@ MODEL_REGISTRY: Dict[str, Callable[[], ModelConfig]] = {
     "claude-sonnet-4.6": Models.claude_sonnet_4_6,
     "claude-haiku-4-5-20251001": Models.claude_haiku_4_5,
     "claude-haiku-4-5": Models.claude_haiku_4_5,
+
+    # Claude Code (subscription-backed) routes — opt-in via MODEL_NAME
+    "claude-code-opus-4-7": Models.claude_code_opus_4_7,
+    "claude-code-opus": Models.claude_code_opus_4_7,
+    "claude-code-sonnet-4-6": Models.claude_code_sonnet_4_6,
+    "claude-code-sonnet": Models.claude_code_sonnet_4_6,
 
     # Anthropic legacy aliases (map to current generation)
     "claude-3-opus": Models.claude_opus,

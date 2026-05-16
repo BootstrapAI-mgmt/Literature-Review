@@ -213,6 +213,133 @@ class AnthropicClient(LLMClient):
         return self._last_usage
 
 
+class ClaudeCodeClient(LLMClient):
+    """Client for Claude routed through Claude Code (subscription-backed).
+
+    Uses the official ``claude-agent-sdk`` Python package. Instead of
+    billing per token against an Anthropic API key, calls consume the
+    user's Claude Code / Max-plan hourly quota.
+
+    Auth: the SDK reads credentials from the same location as the local
+    ``claude`` CLI (typically ``~/.claude/credentials.json``). No API
+    key is passed; ``ANTHROPIC_API_KEY`` is *not* used by this path.
+
+    Rate limits: an ``HourlyRateLimiter`` enforces the configured
+    ``requests_per_hour`` cap (set per ModelConfig, overridable via the
+    ``CLAUDE_CODE_RPH`` env var). The limiter uses a continuous
+    sliding-window strategy so the pipeline interleaves cleanly with
+    any interactive Claude Code use on the same account.
+
+    Concurrency: the SDK is async. The synchronous ``generate`` wraps
+    each query in ``anyio.run`` so callers don't have to refactor.
+    Concurrent calls from multiple threads serialize on the rate
+    limiter; this matches the pipeline's existing sequential batch
+    semantics.
+    """
+
+    def __init__(self, config: ModelConfig):
+        try:
+            from claude_agent_sdk import (  # noqa: F401 — lazy presence check
+                query, ClaudeAgentOptions,
+            )
+        except ImportError as e:
+            raise ImportError(
+                "claude-agent-sdk is required for the CLAUDE_CODE provider. "
+                "Install with: pip install 'claude-agent-sdk>=0.1.0'. "
+                f"Original error: {e}"
+            )
+        # Defer the rate limiter import to avoid a circular dependency
+        from literature_review.utils.hourly_rate_limiter import HourlyRateLimiter
+
+        self.config = config
+        self._last_usage = {"input": 0, "output": 0}
+        # Per-model RPH override falls through to env var, then default
+        rph = config.requests_per_hour or None
+        self._rate_limiter = HourlyRateLimiter(limit_per_hour=rph, name=config.model_name)
+        logger.info(
+            "ClaudeCodeClient ready: model=%s rph_cap=%d remaining=%d",
+            config.model_name, self._rate_limiter.limit, self._rate_limiter.remaining(),
+        )
+
+    def _build_options(self, system_prompt: Optional[str], json_mode: bool):
+        """Construct the ClaudeAgentOptions for a one-shot query."""
+        from claude_agent_sdk import ClaudeAgentOptions  # local import
+
+        # Disable all tools for pipeline use — paper content is arbitrary
+        # text and we don't want the agent reading/writing files or
+        # running bash. Pure text-in / text-out only.
+        kwargs = {
+            "allowed_tools": [],
+            "permission_mode": "bypassPermissions",
+            "max_turns": 1,
+            "model": self.config.model_name,
+        }
+        if system_prompt:
+            # `system_prompt` accepts either a string (treated as additive
+            # instructions) or a SystemPromptPreset. We use the string form.
+            kwargs["system_prompt"] = system_prompt
+        # JSON-mode coaxing happens at the prompt layer (see ``generate``).
+        return ClaudeAgentOptions(**kwargs)
+
+    async def _run_query(self, prompt: str, system_prompt: Optional[str], json_mode: bool) -> str:
+        from claude_agent_sdk import query  # local import
+
+        options = self._build_options(system_prompt, json_mode)
+        text_buf = []
+        async for message in query(prompt=prompt, options=options):
+            # Each message is one of: SystemMessage, AssistantMessage,
+            # UserMessage, ResultMessage. We only care about assistant
+            # text output.
+            content = getattr(message, "content", None)
+            if not content:
+                continue
+            for block in content:
+                block_text = getattr(block, "text", None)
+                if block_text:
+                    text_buf.append(block_text)
+            # ResultMessage carries usage metrics on some SDK versions
+            usage = getattr(message, "usage", None)
+            if usage:
+                self._last_usage = {
+                    "input": getattr(usage, "input_tokens", 0) or 0,
+                    "output": getattr(usage, "output_tokens", 0) or 0,
+                }
+        return "".join(text_buf)
+
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: Optional[str] = None,
+        json_mode: bool = False,
+        **kwargs,
+    ) -> str:
+        import anyio  # required by claude-agent-sdk; safe to import alongside it
+
+        # Coax JSON output at the prompt level — the SDK has no native
+        # JSON-mode equivalent.
+        effective_prompt = prompt
+        if json_mode:
+            effective_prompt = (
+                f"{prompt}\n\n"
+                "Respond with valid JSON only. Do not include any commentary, "
+                "markdown fences, or text outside the JSON object."
+            )
+
+        # Block until the hourly window has capacity.
+        waited = self._rate_limiter.acquire()
+        if waited > 0:
+            logger.info("Claude Code call resumed after %.1fs rate-limit wait", waited)
+
+        return anyio.run(self._run_query, effective_prompt, system_prompt, json_mode)
+
+    def get_token_counts(self) -> Dict[str, int]:
+        return self._last_usage
+
+    def remaining_in_window(self) -> int:
+        """Diagnostic: how many calls left in the current rolling hour."""
+        return self._rate_limiter.remaining()
+
+
 class LocalClient(LLMClient):
     """Client for local models via Ollama."""
     
@@ -296,6 +423,7 @@ def get_llm_client(config: Optional[ModelConfig] = None) -> LLMClient:
         ModelProvider.GEMINI: GeminiClient,
         ModelProvider.OPENAI: OpenAIClient,
         ModelProvider.ANTHROPIC: AnthropicClient,
+        ModelProvider.CLAUDE_CODE: ClaudeCodeClient,
         ModelProvider.LOCAL: LocalClient,
     }
     

@@ -19,7 +19,12 @@ logger = logging.getLogger(__name__)
 
 # Default fallback chains per provider
 DEFAULT_FALLBACK_CHAINS = {
-    # Primary reviewer: Claude 4.7 Opus -> Claude 4.6 Sonnet -> Gemini Flash
+    # Claude Code (subscription-backed) -> API path -> Gemini Flash.
+    # If the hourly Max-plan quota is exhausted or the SDK errors, the
+    # pipeline falls through to per-token API calls.
+    "claude-code-opus-4-7": ["claude-opus-4-7", "gemini-flash-latest"],
+    "claude-code-sonnet-4-6": ["claude-sonnet-4-6", "gemini-flash-latest"],
+    # Primary reviewer (API): Claude 4.7 Opus -> Claude 4.6 Sonnet -> Gemini Flash
     "claude-opus-4-7": ["claude-sonnet-4-6", "gemini-flash-latest"],
     "claude-sonnet-4-6": ["claude-opus-4-7", "gemini-flash-latest"],
     "gemini-flash-latest": ["gemini-1.5-pro", "claude-sonnet-4-6"],

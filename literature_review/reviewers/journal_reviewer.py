@@ -305,6 +305,8 @@ class APIManager:
         from literature_review.config.model_config import (
             ModelProvider,
             get_model_config,
+            get_model_by_name,
+            set_model_config,
         )
 
         self.cache = {}
@@ -321,47 +323,68 @@ class APIManager:
         self.json_generation_config = None
         self.text_generation_config = None
 
-        try:
-            if self.provider == ModelProvider.GEMINI:
-                self._init_gemini_client()
-            else:
-                self._init_llm_client(active_config)
-            logger.info(
-                f"[SUCCESS] API client initialized for {active_config.display_name} "
-                f"(provider: {self.provider.value})"
-            )
-            safe_print(
-                f"✅ API client initialized: {active_config.display_name} "
-                f"({self.provider.value})"
-            )
-        except Exception as e:
-            logger.critical(
-                f"[ERROR] Failed to initialize API client for {active_config.display_name}: {e}"
-            )
-            safe_print(f"❌ Failed to initialize API client: {e}")
-            # If the active provider failed and a fallback is configured, try it.
-            if self.fallback_model_name:
-                logger.warning(
-                    f"Attempting fallback to {self.fallback_model_name} due to init failure"
+        # Walk the configured fallback chain on init failure. Each model
+        # config can declare a `fallback_model` (registry alias); we try
+        # the active model first, then each fallback in turn until one
+        # initialises or we run out (in which case we re-raise).
+        #
+        # Dedup on (provider, model_name) so Claude Code and API paths
+        # for the same underlying model are not considered duplicates.
+
+        def _key(cfg) -> Tuple[str, str]:
+            return (cfg.provider.value, cfg.model_name)
+
+        init_chain = [active_config]
+        seen = {_key(active_config)}
+        cursor = active_config
+        while cursor.fallback_model:
+            try:
+                fb_cfg = get_model_by_name(cursor.fallback_model)
+            except Exception:  # invalid alias — stop walking
+                break
+            if _key(fb_cfg) in seen:
+                break
+            init_chain.append(fb_cfg)
+            seen.add(_key(fb_cfg))
+            cursor = fb_cfg
+
+        last_error: Optional[BaseException] = None
+        last_idx = len(init_chain) - 1
+        for idx, cfg in enumerate(init_chain):
+            is_fallback = idx > 0
+            try:
+                set_model_config(cfg)
+                self.provider = cfg.provider
+                self.active_model_name = cfg.model_name
+                self.fallback_model_name = cfg.fallback_model
+                self._llm_client = None
+                self._gemini_client = None
+                if self.provider == ModelProvider.GEMINI:
+                    self._init_gemini_client()
+                else:
+                    self._init_llm_client(cfg)
+                label = "Fallback" if is_fallback else "API"
+                logger.info(
+                    f"[SUCCESS] {label} client initialized for {cfg.display_name} "
+                    f"(provider: {self.provider.value})"
                 )
-                safe_print(f"⚠️ Falling back to {self.fallback_model_name}")
-                try:
-                    from literature_review.config.model_config import set_model
-                    fb_config = set_model(self.fallback_model_name)
-                    self.provider = fb_config.provider
-                    self.active_model_name = fb_config.model_name
-                    self.fallback_model_name = fb_config.fallback_model
-                    if self.provider == ModelProvider.GEMINI:
-                        self._init_gemini_client()
-                    else:
-                        self._init_llm_client(fb_config)
-                    logger.info(f"[SUCCESS] Fallback client initialized: {fb_config.display_name}")
-                    safe_print(f"✅ Fallback client initialized: {fb_config.display_name}")
-                except Exception as fb_e:
-                    logger.critical(f"[ERROR] Fallback init also failed: {fb_e}")
-                    raise
-            else:
-                raise
+                safe_print(
+                    f"{'⚠️  Falling back to' if is_fallback else '✅ API client initialized:'} "
+                    f"{cfg.display_name} ({self.provider.value})"
+                )
+                break
+            except Exception as e:
+                last_error = e
+                logger.warning(
+                    f"[ATTEMPT FAILED] Could not initialize {cfg.display_name}: {e}"
+                )
+                if not is_fallback:
+                    safe_print(f"❌ Failed to initialize {cfg.display_name}: {e}")
+                if idx == last_idx:
+                    logger.critical(
+                        "[ERROR] No remaining fallbacks; raising last init error"
+                    )
+                    raise last_error from None
 
         try:
             self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
