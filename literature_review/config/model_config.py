@@ -220,7 +220,13 @@ class Models:
     
     @staticmethod
     def claude_opus_4_7() -> ModelConfig:
-        """Claude 4.7 Opus (1M context) - Primary reviewer model."""
+        """Claude 4.7 Opus (1M context) - Primary reviewer model.
+
+        Extended thinking is enabled per session-call policy
+        (feedback_top_tier_subagents.md, 2026-05-01). The API path uses the
+        native `thinking` parameter; the Claude Code path uses the
+        `ultrathink` prompt keyword. Both are wired in `llm_client.py`.
+        """
         return ModelConfig(
             provider=ModelProvider.ANTHROPIC,
             model_name="claude-opus-4-7",
@@ -231,6 +237,7 @@ class Models:
             input_cost_per_1k=0.015,
             output_cost_per_1k=0.075,
             supports_json_mode=False,  # Use prompt-level JSON instruction
+            supports_thinking_mode=True,  # extended thinking required by policy
             max_context_length=1_000_000,
             requests_per_minute=50,
             fallback_model="gemini-flash-latest",
@@ -249,6 +256,7 @@ class Models:
             input_cost_per_1k=0.003,
             output_cost_per_1k=0.015,
             supports_json_mode=False,
+            supports_thinking_mode=True,  # extended thinking required by policy
             max_context_length=1_000_000,
             requests_per_minute=60,
             fallback_model="gemini-flash-latest",
@@ -286,7 +294,12 @@ class Models:
 
     @staticmethod
     def claude_code_opus_4_7() -> ModelConfig:
-        """Claude 4.7 Opus via Claude Code (subscription-backed)."""
+        """Claude 4.7 Opus via Claude Code (subscription-backed).
+
+        Maximum reasoning is requested via the `ultrathink` prompt keyword
+        in ClaudeCodeClient.generate(); supports_thinking_mode is informational
+        here since the SDK doesn't expose a separate flag.
+        """
         return ModelConfig(
             provider=ModelProvider.CLAUDE_CODE,
             model_name="claude-opus-4-7",  # SDK-facing model name
@@ -297,6 +310,7 @@ class Models:
             input_cost_per_1k=0.0,  # subscription, not per-token
             output_cost_per_1k=0.0,
             supports_json_mode=False,  # prompt-instructed JSON
+            supports_thinking_mode=True,  # delivered via `ultrathink` prompt keyword
             max_context_length=1_000_000,
             requests_per_hour=18,
             fallback_model="claude-opus-4-7",  # fall back to API path if needed
@@ -315,6 +329,7 @@ class Models:
             input_cost_per_1k=0.0,
             output_cost_per_1k=0.0,
             supports_json_mode=False,
+            supports_thinking_mode=True,  # delivered via `ultrathink` prompt keyword
             max_context_length=1_000_000,
             requests_per_hour=24,
             fallback_model="claude-sonnet-4-6",

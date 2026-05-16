@@ -57,8 +57,16 @@ class GeminiClient(LLMClient):
         
         self.client = genai.Client(api_key=api_key)
         self._last_usage = {"input": 0, "output": 0}
-        
-        # Configure generation settings
+
+        # NOTE on thinking_budget=0:
+        # The session-call policy (feedback_top_tier_subagents.md) requires
+        # maximum-reasoning effort on the *primary* top-tier model (Opus 4.7).
+        # Gemini Flash is intentionally the cheap fallback tier — it only
+        # runs when Claude Code + Anthropic API are both unavailable. We
+        # deliberately keep thinking disabled here to preserve Flash's role
+        # as a fast, low-cost safety net rather than turning it into another
+        # high-effort path. If you want Gemini Pro with thinking enabled,
+        # switch via MODEL_NAME=gemini-pro and update gemini_pro() config.
         thinking_config = types.ThinkingConfig(thinking_budget=0)
         self.json_config = types.GenerateContentConfig(
             temperature=config.temperature,
@@ -190,25 +198,59 @@ class AnthropicClient(LLMClient):
         json_mode: bool = False,
         **kwargs
     ) -> str:
+        # Per session-call policy (feedback_top_tier_subagents.md, 2026-05-01):
+        # every Opus 4.7 dispatch MUST prepend the literal word `ultrathink`
+        # as the first line of the prompt. The Claude Code keyword maps to
+        # the API's extended-thinking feature, which we enable below for
+        # any model whose config declares supports_thinking_mode=True.
+        # See: ../memory/feedback_session_call_policy.md
+        user_message = f"ultrathink\n\n{prompt}"
+
         # Claude doesn't have native JSON mode; add instruction
         if json_mode:
-            prompt = f"{prompt}\n\nRespond with valid JSON only."
-        
-        response = self.client.messages.create(
-            model=self.config.model_name,
-            max_tokens=self.config.max_tokens,
-            system=system_prompt or "",
-            messages=[{"role": "user", "content": prompt}]
-        )
-        
+            user_message = f"{user_message}\n\nRespond with valid JSON only."
+
+        create_kwargs: Dict[str, Any] = {
+            "model": self.config.model_name,
+            "max_tokens": self.config.max_tokens,
+            "system": system_prompt or "",
+            "messages": [{"role": "user", "content": user_message}],
+        }
+
+        if getattr(self.config, "supports_thinking_mode", False):
+            # Anthropic extended-thinking contract:
+            #   - budget_tokens must be < max_tokens
+            #   - temperature must be 1.0 when thinking is enabled
+            # We allocate up to half of max_tokens to the thinking budget,
+            # capped at 8192 to leave generous room for the visible response.
+            budget = max(1024, min(8192, self.config.max_tokens // 2))
+            create_kwargs["thinking"] = {
+                "type": "enabled",
+                "budget_tokens": budget,
+            }
+            create_kwargs["temperature"] = 1.0  # required when thinking is on
+        else:
+            create_kwargs["temperature"] = self.config.temperature
+
+        response = self.client.messages.create(**create_kwargs)
+
         # Track usage
         self._last_usage = {
             "input": response.usage.input_tokens,
             "output": response.usage.output_tokens
         }
-        
+
+        # When thinking is enabled, the response contains both thinking and
+        # text blocks. We only return the visible-text portion to callers
+        # (the JSON parser, etc.) — thinking content is internal.
+        for block in response.content:
+            block_type = getattr(block, "type", None)
+            if block_type == "text" or hasattr(block, "text"):
+                if hasattr(block, "text"):
+                    return block.text
+        # Fallback: legacy shape with a single content[0]
         return response.content[0].text
-    
+
     def get_token_counts(self) -> Dict[str, int]:
         return self._last_usage
 
@@ -315,12 +357,19 @@ class ClaudeCodeClient(LLMClient):
     ) -> str:
         import anyio  # required by claude-agent-sdk; safe to import alongside it
 
+        # Per session-call policy (feedback_top_tier_subagents.md, 2026-05-01):
+        # every Opus 4.7 dispatch MUST prepend the literal word `ultrathink`
+        # as the first line of the prompt. This is the Claude Code operator
+        # keyword for maximum thinking-budget allocation; without it we ship
+        # the model at default reasoning, which violates the policy.
+        # See: ../memory/feedback_session_call_policy.md
+        effective_prompt = f"ultrathink\n\n{prompt}"
+
         # Coax JSON output at the prompt level — the SDK has no native
         # JSON-mode equivalent.
-        effective_prompt = prompt
         if json_mode:
             effective_prompt = (
-                f"{prompt}\n\n"
+                f"{effective_prompt}\n\n"
                 "Respond with valid JSON only. Do not include any commentary, "
                 "markdown fences, or text outside the JSON object."
             )

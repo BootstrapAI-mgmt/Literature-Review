@@ -401,6 +401,11 @@ class APIManager:
         if not api_key:
             raise ValueError("GEMINI_API_KEY environment variable not set")
         self._gemini_client = genai.Client(api_key=api_key)
+        # NOTE: thinking_budget=0 is intentional for the Gemini path.
+        # The session-call policy (feedback_top_tier_subagents.md /
+        # ../memory/feedback_session_call_policy.md) requires max-effort
+        # reasoning on the primary top-tier model (Claude Opus 4.7). Gemini
+        # Flash is the cheap fallback tier — keep it fast and inexpensive.
         thinking_config = types.ThinkingConfig(thinking_budget=0)
         self.json_generation_config = types.GenerateContentConfig(
             temperature=0.2,
