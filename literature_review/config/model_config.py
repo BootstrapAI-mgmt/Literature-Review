@@ -213,52 +213,73 @@ class Models:
         )
     
     @staticmethod
-    def claude_opus() -> ModelConfig:
-        """Claude 3 Opus - Anthropic's most capable."""
+    def claude_opus_4_7() -> ModelConfig:
+        """Claude 4.7 Opus (1M context) - Primary reviewer model."""
         return ModelConfig(
             provider=ModelProvider.ANTHROPIC,
-            model_name="claude-3-opus-20240229",
+            model_name="claude-opus-4-7",
             api_key_env="ANTHROPIC_API_KEY",
-            display_name="Claude 3 Opus",
+            display_name="Claude 4.7 Opus (1M)",
             temperature=0.2,
-            max_tokens=4096,
+            max_tokens=16384,
             input_cost_per_1k=0.015,
             output_cost_per_1k=0.075,
-            supports_json_mode=False,  # Uses XML-like format
-            max_context_length=200000
+            supports_json_mode=False,  # Use prompt-level JSON instruction
+            max_context_length=1_000_000,
+            requests_per_minute=50,
+            fallback_model="gemini-flash-latest",
         )
-    
+
     @staticmethod
-    def claude_sonnet() -> ModelConfig:
-        """Claude 3.5 Sonnet - Balanced performance/cost."""
+    def claude_sonnet_4_6() -> ModelConfig:
+        """Claude 4.6 Sonnet (1M context) - Secondary / lighter-task model."""
         return ModelConfig(
             provider=ModelProvider.ANTHROPIC,
-            model_name="claude-3-5-sonnet-20241022",
+            model_name="claude-sonnet-4-6",
             api_key_env="ANTHROPIC_API_KEY",
-            display_name="Claude 3.5 Sonnet",
+            display_name="Claude 4.6 Sonnet (1M)",
             temperature=0.2,
-            max_tokens=8192,
+            max_tokens=16384,
             input_cost_per_1k=0.003,
             output_cost_per_1k=0.015,
             supports_json_mode=False,
-            max_context_length=200000
+            max_context_length=1_000_000,
+            requests_per_minute=60,
+            fallback_model="gemini-flash-latest",
         )
-    
+
     @staticmethod
-    def claude_haiku() -> ModelConfig:
-        """Claude 3 Haiku - Fast and cheap."""
+    def claude_haiku_4_5() -> ModelConfig:
+        """Claude 4.5 Haiku - Fast and cheap."""
         return ModelConfig(
             provider=ModelProvider.ANTHROPIC,
-            model_name="claude-3-haiku-20240307",
+            model_name="claude-haiku-4-5-20251001",
             api_key_env="ANTHROPIC_API_KEY",
-            display_name="Claude 3 Haiku",
+            display_name="Claude 4.5 Haiku",
             temperature=0.2,
-            max_tokens=4096,
+            max_tokens=8192,
             input_cost_per_1k=0.00025,
             output_cost_per_1k=0.00125,
             supports_json_mode=False,
-            max_context_length=200000
+            max_context_length=200000,
+            fallback_model="gemini-flash-latest",
         )
+
+    # Legacy aliases (kept for backwards compatibility)
+    @staticmethod
+    def claude_opus() -> ModelConfig:
+        """Legacy alias -> Claude 4.7 Opus."""
+        return Models.claude_opus_4_7()
+
+    @staticmethod
+    def claude_sonnet() -> ModelConfig:
+        """Legacy alias -> Claude 4.6 Sonnet."""
+        return Models.claude_sonnet_4_6()
+
+    @staticmethod
+    def claude_haiku() -> ModelConfig:
+        """Legacy alias -> Claude 4.5 Haiku."""
+        return Models.claude_haiku_4_5()
     
     @staticmethod
     def ollama_llama() -> ModelConfig:
@@ -294,13 +315,21 @@ MODEL_REGISTRY: Dict[str, Callable[[], ModelConfig]] = {
     "gpt-4o": Models.gpt4o,
     "gpt-3.5-turbo": Models.gpt35_turbo,
     
-    # Anthropic models
+    # Anthropic models (current generation)
+    "claude-opus-4-7": Models.claude_opus_4_7,
+    "claude-opus-4.7": Models.claude_opus_4_7,
+    "claude-sonnet-4-6": Models.claude_sonnet_4_6,
+    "claude-sonnet-4.6": Models.claude_sonnet_4_6,
+    "claude-haiku-4-5-20251001": Models.claude_haiku_4_5,
+    "claude-haiku-4-5": Models.claude_haiku_4_5,
+
+    # Anthropic legacy aliases (map to current generation)
     "claude-3-opus": Models.claude_opus,
-    "claude-opus": Models.claude_opus,  # Alias
+    "claude-opus": Models.claude_opus,
     "claude-3.5-sonnet": Models.claude_sonnet,
-    "claude-sonnet": Models.claude_sonnet,  # Alias
+    "claude-sonnet": Models.claude_sonnet,
     "claude-3-haiku": Models.claude_haiku,
-    "claude-haiku": Models.claude_haiku,  # Alias
+    "claude-haiku": Models.claude_haiku,
     
     # Local models
     "llama3:8b": Models.ollama_llama,
@@ -346,17 +375,18 @@ def set_model_config(config: ModelConfig) -> None:
 def get_model_config() -> ModelConfig:
     """
     Get the current model configuration.
-    
+
     Resolution order:
     1. Explicitly set model (via set_model)
     2. MODEL_NAME environment variable
-    3. Default (gemini-flash-latest)
+    3. Default: Claude 4.7 Opus when ANTHROPIC_API_KEY is set,
+       otherwise Gemini Flash (fallback for environments without Anthropic creds)
     """
     global _current_model
-    
+
     if _current_model is not None:
         return _current_model
-    
+
     # Check environment variable
     env_model = os.environ.get("MODEL_NAME")
     if env_model:
@@ -366,9 +396,18 @@ def get_model_config() -> ModelConfig:
             return _current_model
         except ValueError as e:
             logger.warning(f"Invalid MODEL_NAME env var: {e}")
-    
-    # Default
-    _current_model = Models.gemini_flash()
+
+    # Default: prefer Claude 4.7 Opus when credentials are available
+    if os.environ.get("ANTHROPIC_API_KEY"):
+        _current_model = Models.claude_opus_4_7()
+        logger.info(f"Default model selected: {_current_model.display_name}")
+    else:
+        _current_model = Models.gemini_flash()
+        logger.info(
+            "ANTHROPIC_API_KEY not set; defaulting to %s. "
+            "Set ANTHROPIC_API_KEY to enable the Claude 4.7 Opus primary path.",
+            _current_model.display_name,
+        )
     return _current_model
 
 
