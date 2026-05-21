@@ -1,0 +1,247 @@
+{
+  "paper_id": "BIIMG-002",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:36Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "High Speed Compressed Sensing Reconstruction in Dynamic Parallel MRI Using Augmented Lagrangian and Parallel Processing",
+    "authors": [
+      "Cagdas Bilen",
+      "Yao Wang",
+      "Ivan Selesnick"
+    ],
+    "year": 2012,
+    "domain": "bioimaging",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "In this paper, we propose new Augmented Lagrangian based solutions to the compressed sensing reconstruction problem with analysis and synthesis prior formulations.",
+      "claim_text": "In this paper, we propose new Augmented Lagrangian based solutions to the compressed sensing reconstruction problem with analysis and synthesis prior formulations.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "We also propose a computational method which makes use of properties of the sampling pattern to significantly improve the speed of the reconstruction for the proposed algorithms in Cartesian sampled MRI.",
+      "claim_text": "We also propose a computational method which makes use of properties of the sampling pattern to significantly improve the speed of the reconstruction for the proposed algorithms in Cartesian sampled MRI.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "performance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "The proposed algorithms are shown to outperform earlier methods especially for the case of dynamic MRI for which the transfer function tends to be a very large matrix and significantly ill conditioned.",
+      "claim_text": "The proposed algorithms are shown to outperform earlier methods especially for the case of dynamic MRI for which the transfer function tends to be a very large matrix and significantly ill conditioned.",
+      "type": "comparative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "performance",
+        "hardware"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C4",
+      "text": "Magnetic Resonance Imaging (MRI) is one of the fields that the compressed sensing theory is well utilized to reduce the scan time significantly leading to faster imaging or higher resolution images.",
+      "claim_text": "Magnetic Resonance Imaging (MRI) is one of the fields that the compressed sensing theory is well utilized to reduce the scan time significantly leading to faster imaging or higher resolution images.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "It has been shown that a small fraction of the overall measurements are sufficient to reconstruct images with the combination of compressed sensing and parallel imaging.",
+      "claim_text": "It has been shown that a small fraction of the overall measurements are sufficient to reconstruct images with the combination of compressed sensing and parallel imaging.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "Various reconstruction algorithms has been proposed for compressed sensing, among which Augmented Lagrangian based methods have been shown to often perform better than others for many different applications.",
+      "claim_text": "Various reconstruction algorithms has been proposed for compressed sensing, among which Augmented Lagrangian based methods have been shown to often perform better than others for many different applications.",
+      "type": "comparative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "performance",
+        "scalability"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C7",
+      "text": "2 has not been evaluated for dynamic MRI reconstruction with temporal regularization, which lead to very large and severely ill-conditioned transfer functions.",
+      "claim_text": "2 has not been evaluated for dynamic MRI reconstruction with temporal regularization, which lead to very large and severely ill-conditioned transfer functions.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C8",
+      "text": "The equation in (1) can easily be expanded for 3D volumes instead of slices, but all the derivations in this paper will consider 2D slices for simplicity.",
+      "claim_text": "The equation in (1) can easily be expanded for 3D volumes instead of slices, but all the derivations in this paper will consider 2D slices for simplicity.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C9",
+      "text": "The constraint ∥y −HΨ′w∥2 2 ≤ǫ ensures consistency with the measurements and it is optimum for i.i.d.",
+      "claim_text": "The constraint ∥y −HΨ′w∥2 2 ≤ǫ ensures consistency with the measurements and it is optimum for i.i.d.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C10",
+      "text": "The minimization in (17) is non-convex and therefore practical methods do not guarantee convergence to global minimum.",
+      "claim_text": "The minimization in (17) is non-convex and therefore practical methods do not guarantee convergence to global minimum.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Validation limited to a single imaging cohort, raising generalisability concerns",
+      "severity": "high",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "No prospective clinical validation reported",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Limited robustness analysis under acquisition noise and motion artefacts",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Review of compressed sensing techniques for accelerated MRI reconstruction.",
+    "domain": "bioimaging",
+    "notes": "Replaced invalid arXiv ID 2001.03286 with verified 1203.4587"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

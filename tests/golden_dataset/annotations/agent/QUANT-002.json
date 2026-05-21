@@ -1,0 +1,251 @@
+{
+  "paper_id": "QUANT-002",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:36Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Deep Quantum Error Correction",
+    "authors": [
+      "Yoni Choukroun",
+      "Lior Wolf"
+    ],
+    "year": 2023,
+    "domain": "quantum",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "In this work, we efficiently train novel end-toend deep quantum error decoders.",
+      "claim_text": "In this work, we efficiently train novel end-toend deep quantum error decoders.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "efficiency",
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "The proposed method demonstrates the power of neural decoders for QECC by achieving state-of-the-art accuracy, outperforming for small distance topological codes, the existing end-to-end neural and classical decoders, which are often computationally prohibitive.",
+      "claim_text": "The proposed method demonstrates the power of neural decoders for QECC by achieving state-of-the-art accuracy, outperforming for small distance topological codes, the existing end-to-end neural and classical decoders, which are often computationally prohibitive.",
+      "type": "comparative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "accuracy",
+        "performance",
+        "efficiency"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C3",
+      "text": "Quantum error correction codes (QECC) are a key component for realizing the potential of quantum computing.",
+      "claim_text": "Quantum error correction codes (QECC) are a key component for realizing the potential of quantum computing.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "QECC, as its classical counterpart (ECC), enables the reduction of error rates, by distributing quantum logical information across redundant physical qubits, such that errors can be detected and corrected.",
+      "claim_text": "QECC, as its classical counterpart (ECC), enables the reduction of error rates, by distributing quantum logical information across redundant physical qubits, such that errors can be detected and corrected.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "accuracy",
+        "hardware",
+        "scalability"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "We resolve the quantum measurement collapse by augmenting syndrome decoding to predict an initial estimate of the system noise, which is then refined iteratively through a deep neural network.",
+      "claim_text": "We resolve the quantum measurement collapse by augmenting syndrome decoding to predict an initial estimate of the system noise, which is then refined iteratively through a deep neural network.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "robustness"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "The logical error rates calculated over finite fields are directly optimized via a differentiable objective, enabling efficient decoding under the constraints imposed by the code.",
+      "claim_text": "The logical error rates calculated over finite fields are directly optimized via a differentiable objective, enabling efficient decoding under the constraints imposed by the code.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "accuracy",
+        "efficiency"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C7",
+      "text": "Classical Error Correction Code A linear code C is defined by a binary generator matrix G of size k × n and a binary parity check matrix H of size (n −k) × n defined such that GHT = 0 over the order 2 Galois field GF(2).",
+      "claim_text": "Classical Error Correction Code A linear code C is defined by a binary generator matrix G of size k × n and a binary parity check matrix H of size (n −k) × n defined such that GHT = 0 over the order 2 Galois field GF(2).",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C8",
+      "text": "The input message m ∈{0, 1}k is encoded by G to a codeword x ∈C ⊂{0, 1}n satisfying Hx = 0 and transmitted via a symmetric (potentially binary) channel,e.g., an additive white Gaussian noise (AWGN) channel.",
+      "claim_text": "The input message m ∈{0, 1}k is encoded by G to a codeword x ∈C ⊂{0, 1}n satisfying Hx = 0 and transmitted via a symmetric (potentially binary) channel,e.g., an additive white Gaussian noise (AWGN) channel.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "hardware",
+        "robustness"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C9",
+      "text": "However, quantum information redundancy is possible through a logical state encoding |ψ⟩n of a given state |ψ⟩via quantum entanglement and a unitary operator U such that |ψ⟩n = U \u0000|ψ⟩⊗|0⟩⊗... |0⟩) \u0001.",
+      "claim_text": "However, quantum information redundancy is possible through a logical state encoding |ψ⟩n of a given state |ψ⟩via quantum entanglement and a unitary operator U such that |ψ⟩n = U \u0000|ψ⟩⊗|0⟩⊗... |0⟩) \u0001.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C10",
+      "text": "QECC from the ECC perspective Another way to represent stabilizer codes is to split the stabilizer Figure 1: Illustration of the (a) classical and (b) quantum ECC system.",
+      "claim_text": "QECC from the ECC perspective Another way to represent stabilizer codes is to split the stabilizer Figure 1: Illustration of the (a) classical and (b) quantum ECC system.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Error-correction results rely on a specific noise model; behaviour under realistic device noise not fully characterised",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Resource overheads (qubit count, gate depth) not benchmarked against alternative codes",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "No cross-hardware reproducibility analysis across different qubit modalities",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "End-to-end neural decoders for quantum error correction outperforming classical decoders.",
+    "domain": "quantum",
+    "notes": "Addresses faulty syndrome measurements"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

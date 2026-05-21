@@ -4,7 +4,11 @@
   "timestamp": "2026-01-14T14:10:00Z",
   "source": {
     "title": "Spiking Convolutional Neural Networks for Text Classification",
-    "authors": ["Changze Lv", "Jianhan Xu", "Xiaoqing Zheng"],
+    "authors": [
+      "Changze Lv",
+      "Jianhan Xu",
+      "Xiaoqing Zheng"
+    ],
     "venue": "ICLR 2023",
     "year": 2023,
     "pages": 17
@@ -14,19 +18,37 @@
       "claim_id": "C1",
       "text": "Converted SNNs achieve comparable results to DNN counterparts with much less energy consumption",
       "type": "comparative",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["accuracy", "efficiency"],
-      "verifiable": true
+      "pillar_mapping": [
+        "accuracy",
+        "efficiency"
+      ],
+      "verifiable": true,
+      "claim_text": "Converted SNNs achieve comparable results to DNN counterparts with much less energy consumption",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C2",
       "text": "SNNs are more robust to adversarial attacks than DNNs",
       "type": "comparative",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["robustness", "security"],
-      "verifiable": true
+      "pillar_mapping": [
+        "robustness",
+        "security"
+      ],
+      "verifiable": true,
+      "claim_text": "SNNs are more robust to adversarial attacks than DNNs",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C3",
@@ -34,10 +56,18 @@
       "type": "quantitative",
       "metric": "accuracy",
       "value": 77.41,
-      "evidence_location": {"page": 6, "section": "Results"},
-      "confidence": 0.90,
-      "pillar_mapping": ["accuracy"],
-      "verifiable": true
+      "evidence_location": {
+        "page": 6,
+        "section": "Results"
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": true,
+      "claim_text": "Achieved 77.41% accuracy on text classification benchmark",
+      "page_number": 6,
+      "section": "Results"
     },
     {
       "claim_id": "C4",
@@ -45,21 +75,37 @@
       "type": "quantitative",
       "metric": "accuracy",
       "value": 83.25,
-      "evidence_location": {"page": 6, "section": "Results"},
-      "confidence": 0.90,
-      "pillar_mapping": ["accuracy"],
-      "verifiable": true
+      "evidence_location": {
+        "page": 6,
+        "section": "Results"
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": true,
+      "claim_text": "Achieved 83.25% accuracy on SST-2 sentiment classification",
+      "page_number": 6,
+      "section": "Results"
     },
     {
       "claim_id": "C5",
       "text": "Achieved 94.00% accuracy on Subj dataset",
       "type": "quantitative",
       "metric": "accuracy",
-      "value": 94.00,
-      "evidence_location": {"page": 6, "section": "Results"},
-      "confidence": 0.90,
-      "pillar_mapping": ["accuracy"],
-      "verifiable": true
+      "value": 94.0,
+      "evidence_location": {
+        "page": 6,
+        "section": "Results"
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": true,
+      "claim_text": "Achieved 94.00% accuracy on Subj dataset",
+      "page_number": 6,
+      "section": "Results"
     },
     {
       "claim_id": "C6",
@@ -67,48 +113,90 @@
       "type": "quantitative",
       "metric": "accuracy",
       "value": 86.74,
-      "evidence_location": {"page": 6, "section": "Results"},
-      "confidence": 0.90,
-      "pillar_mapping": ["accuracy"],
-      "verifiable": true
+      "evidence_location": {
+        "page": 6,
+        "section": "Results"
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": true,
+      "claim_text": "Achieved 86.74% accuracy on Chinese sentiment dataset",
+      "page_number": 6,
+      "section": "Results"
     },
     {
       "claim_id": "C7",
       "text": "Propose conversion + fine-tuning two-step training method for SNNs",
       "type": "methodological",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["methodology", "novelty"],
-      "verifiable": true
+      "pillar_mapping": [
+        "methodology",
+        "novelty"
+      ],
+      "verifiable": true,
+      "claim_text": "Propose conversion + fine-tuning two-step training method for SNNs",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C8",
       "text": "Novel method to encode pre-trained word embeddings as spike trains",
       "type": "methodological",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["methodology", "novelty"],
-      "verifiable": true
+      "pillar_mapping": [
+        "methodology",
+        "novelty"
+      ],
+      "verifiable": true,
+      "claim_text": "Novel method to encode pre-trained word embeddings as spike trains",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C9",
       "text": "Method works for both English and Chinese text",
       "type": "qualitative",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["generalization"],
-      "verifiable": true
+      "pillar_mapping": [
+        "generalization"
+      ],
+      "verifiable": true,
+      "claim_text": "Method works for both English and Chinese text",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C10",
       "text": "GPT-3 consumes roughly 190,000 kWh to train while human brain uses only 20W",
       "type": "background",
       "citation": "Dhar 2020, Anthony et al. 2020, Cox & Dean 2014",
-      "evidence_location": {"page": 1, "section": "Introduction"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Introduction"
+      },
       "confidence": 0.85,
-      "pillar_mapping": ["efficiency"],
+      "pillar_mapping": [
+        "efficiency"
+      ],
       "verifiable": false,
-      "note": "Cited claim, not original contribution"
+      "note": "Cited claim, not original contribution",
+      "claim_text": "GPT-3 consumes roughly 190,000 kWh to train while human brain uses only 20W",
+      "page_number": 1,
+      "section": "Introduction"
     }
   ],
   "gaps": [
@@ -162,5 +250,6 @@
     "reproducibility": "medium",
     "novelty": "high",
     "overall_score": 8
-  }
+  },
+  "batch": "batch-1"
 }

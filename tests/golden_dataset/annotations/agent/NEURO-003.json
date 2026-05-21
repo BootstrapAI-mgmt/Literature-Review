@@ -4,7 +4,11 @@
   "timestamp": "2026-01-14T14:05:00Z",
   "source": {
     "title": "Expressivity of Spiking Neural Networks",
-    "authors": ["Manjot Singh", "Adalbert Fono", "Gitta Kutyniok"],
+    "authors": [
+      "Manjot Singh",
+      "Adalbert Fono",
+      "Gitta Kutyniok"
+    ],
     "venue": "JMLR",
     "year": 2023,
     "pages": 39
@@ -14,64 +18,125 @@
       "claim_id": "C1",
       "text": "Spiking neural networks with Spike Response Model realize piecewise linear mappings",
       "type": "theoretical",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["theory", "expressivity"],
-      "verifiable": true
+      "pillar_mapping": [
+        "theory",
+        "expressivity"
+      ],
+      "verifiable": true,
+      "claim_text": "Spiking neural networks with Spike Response Model realize piecewise linear mappings",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C2",
       "text": "SNNs can realize both continuous and discontinuous functions, unlike ReLU networks",
       "type": "theoretical",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["theory", "expressivity", "novelty"],
-      "verifiable": true
+      "pillar_mapping": [
+        "theory",
+        "expressivity",
+        "novelty"
+      ],
+      "verifiable": true,
+      "claim_text": "SNNs can realize both continuous and discontinuous functions, unlike ReLU networks",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C3",
       "text": "Provide complexity bounds on SNN size to emulate multi-layer ReLU networks",
       "type": "theoretical",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["theory", "complexity"],
-      "verifiable": true
+      "pillar_mapping": [
+        "theory",
+        "complexity"
+      ],
+      "verifiable": true,
+      "claim_text": "Provide complexity bounds on SNN size to emulate multi-layer ReLU networks",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C4",
       "text": "Establish complexity bounds in reverse direction for one-layer SNNs in continuous setting",
       "type": "theoretical",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["theory", "complexity"],
-      "verifiable": true
+      "pillar_mapping": [
+        "theory",
+        "complexity"
+      ],
+      "verifiable": true,
+      "claim_text": "Establish complexity bounds in reverse direction for one-layer SNNs in continuous setting",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C5",
       "text": "The firing mapping of an LSNN (Linear SNN) is piecewise linear (Theorem 9)",
       "type": "theoretical",
-      "evidence_location": {"page": 15, "section": "Theorem 9"},
+      "evidence_location": {
+        "page": 15,
+        "section": "Theorem 9"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["theory"],
-      "verifiable": true
+      "pillar_mapping": [
+        "theory"
+      ],
+      "verifiable": true,
+      "claim_text": "The firing mapping of an LSNN (Linear SNN) is piecewise linear (Theorem 9)",
+      "page_number": 15,
+      "section": "Theorem 9"
     },
     {
       "claim_id": "C6",
       "text": "For LSNN with only positive weights, the firing time function is increasing and concave (Proposition 10)",
       "type": "theoretical",
-      "evidence_location": {"page": 16, "section": "Proposition 10"},
+      "evidence_location": {
+        "page": 16,
+        "section": "Proposition 10"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["theory"],
-      "verifiable": true
+      "pillar_mapping": [
+        "theory"
+      ],
+      "verifiable": true,
+      "claim_text": "For LSNN with only positive weights, the firing time function is increasing and concave (Proposition 10)",
+      "page_number": 16,
+      "section": "Proposition 10"
     },
     {
       "claim_id": "C7",
       "text": "SNNs use temporal coding where precise timing of spikes matters",
       "type": "background",
-      "evidence_location": {"page": 1, "section": "Introduction"},
-      "confidence": 0.90,
-      "pillar_mapping": ["methodology"],
-      "verifiable": true
+      "evidence_location": {
+        "page": 1,
+        "section": "Introduction"
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "methodology"
+      ],
+      "verifiable": true,
+      "claim_text": "SNNs use temporal coding where precise timing of spikes matters",
+      "page_number": 1,
+      "section": "Introduction"
     }
   ],
   "gaps": [
@@ -125,5 +190,6 @@
     "reproducibility": "high",
     "novelty": "high",
     "overall_score": 8
-  }
+  },
+  "batch": "batch-1"
 }

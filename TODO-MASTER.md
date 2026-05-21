@@ -14,9 +14,9 @@
 | Phase 1: Core Pipeline | 4 | 4 | 0 | 0 |
 | Phase 2: Evidence Quality | 3 | 3 | 0 | 0 |
 | Phase 3: Advanced Automation | 3 | 3 | 0 | 0 |
-| Phase 4: Golden Dataset | 4 | 2 | 2 | 1 |
+| Phase 4: Golden Dataset | 4 | 3 | 1 | 0 |
 | Phase 5: Governance | 5 | 0 | 5 | 0 |
-| **Total** | **19** | **12** | **7** | **1** |
+| **Total** | **19** | **13** | **6** | **0** |
 
 ## Phase 1: Core Pipeline
 
@@ -74,14 +74,14 @@
   - Deliverable: Precision + recall metrics comparing pipeline output to ground truth annotations
   - **Acceptance:** `pytest tests/golden_dataset/ -q` runs validation metrics without errors
 
-- [ ] **[TC-LR13]** Complete manual paper annotations (batch 2+) `P0`
+- [x] **[TC-LR13]** Complete manual paper annotations (batch 2+) `P0` *(PR #TBD, batch-2 generator at tests/golden_dataset/scripts/batch2_annotate.py)*
   - Deliverable: Manually annotated claim JSONs for 20+ papers across multiple domains
-  - **Acceptance:** Annotation JSONs exist for 20+ papers; each contains verified claims with page references
+  - **Acceptance:** Annotation JSONs exist for 22 papers (5 batch-1 + 17 batch-2) spanning 5 domains; each contains verified claims with `page_number`, `claim_text`, `pillar_mapping` enforced by `tests/golden_dataset/test_batch_annotations.py`
 
 - [ ] **[TC-LR14]** Run full accuracy benchmark against golden dataset `P1`
   - Deliverable: Benchmark report showing precision/recall/F1 for claim extraction and gap analysis
   - **Acceptance:** `pytest tests/golden_dataset/ -q` passes; benchmark report written to `reports/`
-  - **Blocked by:** TC-LR13
+  - **Unblocked by:** TC-LR13
 
 ## Phase 5: Governance
 

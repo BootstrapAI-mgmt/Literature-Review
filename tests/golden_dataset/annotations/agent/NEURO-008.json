@@ -1,0 +1,177 @@
+{
+  "paper_id": "NEURO-008",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:36Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Training Spiking Neural Networks Using Lessons From Deep Learning",
+    "authors": [
+      "Jason Eshraghian",
+      "Max Ward"
+    ],
+    "year": 2021,
+    "domain": "neuromorphic",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "A series of companion interactive tutorials complementary to this paper using our Python package, snnTorch, are also made available.1 1Link to interactive tutorials: https://snntorch.readthedocs.io/en/latest/tutorials/index.html. arXiv:2109.12894v6 [cs.NE] 13 Aug 2023",
+      "claim_text": "A series of companion interactive tutorials complementary to this paper using our Python package, snnTorch, are also made available.1 1Link to interactive tutorials: https://snntorch.readthedocs.io/en/latest/tutorials/index.html. arXiv:2109.12894v6 [cs.NE] 13 Aug 2023",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "Some ideas are well accepted and commonly used amongst the neuromorphic engineering community, while others are presented or justified for the first time here.",
+      "claim_text": "Some ideas are well accepted and commonly used amongst the neuromorphic engineering community, while others are presented or justified for the first time here.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware",
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "The brain is the perfect place to look for inspiration to develop more efficient neural networks.",
+      "claim_text": "The brain is the perfect place to look for inspiration to develop more efficient neural networks.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "efficiency"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "The inner workings of our synapses and neurons provide a glimpse at what the future of deep learning might look like.",
+      "claim_text": "The inner workings of our synapses and neurons provide a glimpse at what the future of deep learning might look like.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "The fields of deep learning and spiking neural networks evolve very rapidly.",
+      "claim_text": "The fields of deep learning and spiking neural networks evolve very rapidly.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "We endeavour to treat this document as a ‘dynamic’ manuscript that will continue to be updated as the common practices in training SNNs also change.",
+      "claim_text": "We endeavour to treat this document as a ‘dynamic’ manuscript that will continue to be updated as the common practices in training SNNs also change.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "No deployment evaluation on commercial neuromorphic chips beyond the listed platform",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Energy-efficiency claims rely partly on simulation rather than direct hardware power measurement",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Limited comparison with the most recent event-driven SNN baselines",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Surrogate gradients and training techniques for SNNs adapted from deep learning.",
+    "domain": "neuromorphic",
+    "notes": "Practical tutorial with performance benchmarks"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

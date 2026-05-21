@@ -1,0 +1,248 @@
+{
+  "paper_id": "BIIMG-003",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:36Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "AAU-net: An Adaptive Attention U-net for Breast Lesions Segmentation in Ultrasound Images",
+    "authors": [
+      "Gongping Chen",
+      "Yu Dai",
+      "Jianxun Zhang",
+      "Moi Hoon Yap"
+    ],
+    "year": 2022,
+    "domain": "bioimaging",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Considering the complexity of ultrasound images, we develop an adaptive attention U-net (AAU-net) to segment breast lesions automatically and stably from ultrasound images.",
+      "claim_text": "Considering the complexity of ultrasound images, we develop an adaptive attention U-net (AAU-net) to segment breast lesions automatically and stably from ultrasound images.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "novelty",
+        "theory"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "Specifically, we introduce a hybrid adaptive attention module (HAAM), which mainly consists of a channel selfattention block and a spatial self-attention block, to replace the traditional convolution operation.",
+      "claim_text": "Specifically, we introduce a hybrid adaptive attention module (HAAM), which mainly consists of a channel selfattention block and a spatial self-attention block, to replace the traditional convolution operation.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "Various deep learning methods have been proposed to segment breast lesions from ultrasound images.",
+      "claim_text": "Various deep learning methods have been proposed to segment breast lesions from ultrasound images.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "scalability"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "However, similar intensity distributions, variable tumor morphologies and blurred boundaries present challenges for breast lesions segmentation, especially for malignant tumors with irregular shapes.",
+      "claim_text": "However, similar intensity distributions, variable tumor morphologies and blurred boundaries present challenges for breast lesions segmentation, especially for malignant tumors with irregular shapes.",
+      "type": "theoretical",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "theory"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C5",
+      "text": "Compared with the conventional convolution operation, the design of the hybrid adaptive attention module can help us capture more features under different receptive fields.",
+      "claim_text": "Compared with the conventional convolution operation, the design of the hybrid adaptive attention module can help us capture more features under different receptive fields.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "Different from existing attention mechanisms, the HAAM module can guide the network to adaptively select more robust representation in channel and space dimensions to cope with more complex breast lesions segmentation.",
+      "claim_text": "Different from existing attention mechanisms, the HAAM module can guide the network to adaptively select more robust representation in channel and space dimensions to cope with more complex breast lesions segmentation.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "robustness"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C7",
+      "text": "2 IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. xx, NO. x, 2022.",
+      "claim_text": "2 IEEE TRANSACTIONS ON MEDICAL IMAGING, VOL. xx, NO. x, 2022.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C8",
+      "text": "Since U-net uses 3 3  convolution operations, the attention mechanism can only be performed on the fixed receptive field, which limits the segmentation performance of the U-net variant network.",
+      "claim_text": "Since U-net uses 3 3  convolution operations, the attention mechanism can only be performed on the fixed receptive field, which limits the segmentation performance of the U-net variant network.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C9",
+      "text": "Specifically, we first compress the combined feature maps of 5 c h w F   and D c h w F   into a new feature map 2 1 1 G c F   of size 1 1  through a global average pooling (GAP) operation.",
+      "claim_text": "Specifically, we first compress the combined feature maps of 5 c h w F   and D c h w F   into a new feature map 2 1 1 G c F   of size 1 1  through a global average pooling (GAP) operation.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C10",
+      "text": "It can be seen from Fig. 3 that capturing receptive fields with different scales from input images can not only improve the adaptability of the network to different inputs, but also better characterize BUS images.",
+      "claim_text": "It can be seen from Fig. 3 that capturing receptive fields with different scales from input images can not only improve the adaptability of the network to different inputs, but also better characterize BUS images.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "performance",
+        "scalability"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Validation limited to a single imaging cohort, raising generalisability concerns",
+      "severity": "high",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "No prospective clinical validation reported",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Limited robustness analysis under acquisition noise and motion artefacts",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Comparison of ultrasound segmentation methods including deep learning.",
+    "domain": "bioimaging",
+    "notes": "Replaced invalid arXiv ID 2108.10340 with verified 2204.12077"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

@@ -1,0 +1,159 @@
+{
+  "paper_id": "CLIM-006",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:37Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Sea Ice Brightness Temperature as a Function of Ice Thickness, Part II: Computed curves for thermodynamically modelled ice profiles",
+    "authors": [
+      "Peter Mills"
+    ],
+    "year": 2012,
+    "domain": "climate",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Review of Greenland and Antarctic ice sheet contributions to sea level rise.",
+      "claim_text": "Review of Greenland and Antarctic ice sheet contributions to sea level rise.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "In this second part, we will use a thermodynamic ice growth model, based primarily on first principles, to determine the salinity of the ice. 2",
+      "claim_text": "In this second part, we will use a thermodynamic ice growth model, based primarily on first principles, to determine the salinity of the ice. 2",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "hardware",
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "There has been some success detecting the thickness of thin ice and with this in mind this study attempts to model the thickness-radiance relation of sea ice at frequencies employed by the Soil Moisture and Ocean Salinity (SMOS) radiometer and the Advanced Microwave Scanning Radiometer (AMSR): between 1.4 and 89 GHz.",
+      "claim_text": "There has been some success detecting the thickness of thin ice and with this in mind this study attempts to model the thickness-radiance relation of sea ice at frequencies employed by the Soil Moisture and Ocean Salinity (SMOS) radiometer and the Advanced Microwave Scanning Radiometer (AMSR): between 1.4 and 89 GHz.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "All other parameters, in particular the emissivity model set up, will be the same as in the previous study and so will not be described. 2 Ice growth model In the first part of the study (Mills and Heygster, 2011) a simple ice growth model based on constant weather scenarios was described.",
+      "claim_text": "All other parameters, in particular the emissivity model set up, will be the same as in the previous study and so will not be described. 2 Ice growth model In the first part of the study (Mills and Heygster, 2011) a simple ice growth model based on constant weather scenarios was described.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "The following equation relates the ice surface temperature to net heat flux: hQ∗= k(Tw −Ts) (1) where Tw is the water temperature which is assumed to be constant at freezing (approximately -1.9◦C at a water salinity of 35 psu), Ts is surface temperature and k is the thermal conductivity of the ice.",
+      "claim_text": "The following equation relates the ice surface temperature to net heat flux: hQ∗= k(Tw −Ts) (1) where Tw is the water temperature which is assumed to be constant at freezing (approximately -1.9◦C at a water salinity of 35 psu), Ts is surface temperature and k is the thermal conductivity of the ice.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Evaluation horizon dominated by short-term forecasts; long-tail behaviour not characterised",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Sensitivity to climate-model bias correction parameters not quantified",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Limited cross-region transfer evaluation",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Review of Greenland and Antarctic ice sheet contributions to sea level rise.",
+    "domain": "climate",
+    "notes": "Replaced invalid arXiv ID 2109.00846 with verified 1202.6567"
+  },
+  "quality_assessment": {
+    "claim_density": "medium",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

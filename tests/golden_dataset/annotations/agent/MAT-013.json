@@ -1,0 +1,228 @@
+{
+  "paper_id": "MAT-013",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:37Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Uniqueness theorem for the non-local ionization source in glow discharge and hollow cathode",
+    "authors": [
+      "Vladimir V. Gorin"
+    ],
+    "year": 2012,
+    "domain": "materials",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "The paper is devoted to the proof of the uniqueness theorem for solution of the equation for the nonlocal ionization source in a glow discharge and a hollow cathode in general 3D geometry.",
+      "claim_text": "The paper is devoted to the proof of the uniqueness theorem for solution of the equation for the nonlocal ionization source in a glow discharge and a hollow cathode in general 3D geometry.",
+      "type": "theoretical",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "theory"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C2",
+      "text": "The theorem is applied to wide class of electric field configurations, and to the walls of discharge volume, which have a property of incomplete absorption of the electrons.",
+      "claim_text": "The theorem is applied to wide class of electric field configurations, and to the walls of discharge volume, which have a property of incomplete absorption of the electrons.",
+      "type": "theoretical",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware",
+        "theory"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C3",
+      "text": "Cathode is regarded as interior singular source, which is placed arbitrarily close to the wall.",
+      "claim_text": "Cathode is regarded as interior singular source, which is placed arbitrarily close to the wall.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "During the proof of the theorem many of useful structure formulae are obtained.",
+      "claim_text": "During the proof of the theorem many of useful structure formulae are obtained.",
+      "type": "theoretical",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "theory"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C5",
+      "text": "Elements of the proof structure, which have arisen, are found to have physical sense.",
+      "claim_text": "Elements of the proof structure, which have arisen, are found to have physical sense.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "theory"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "It makes clear physical construction of non-local electron avalanche, which builds a source of ionization in glow discharge at low pressures.",
+      "claim_text": "It makes clear physical construction of non-local electron avalanche, which builds a source of ionization in glow discharge at low pressures.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C7",
+      "text": "Here ( ) r s is a density of ionization source, nj is an electron flow density from the cathode (really first summand gives a contribution only in the part of the boundary Ω ∂ of the spatial area Ω of the glow discharge, in which electrons are incoming from external source - a cathode), the definition of ( ) r r ′, 0 G see below.",
+      "claim_text": "Here ( ) r s is a density of ionization source, nj is an electron flow density from the cathode (really first summand gives a contribution only in the part of the boundary Ω ∂ of the spatial area Ω of the glow discharge, in which electrons are incoming from external source - a cathode), the definition of ( ) r r ′, 0 G see below.",
+      "type": "theoretical",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "novelty",
+        "theory"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C8",
+      "text": "Uniqueness theorem for the non-local ionization source in glow discharge and hollow cathode 2 and the electron and ion current density distributions in the cathode sheath of the plane capacitor at low current densities and not too low pressures.",
+      "claim_text": "Uniqueness theorem for the non-local ionization source in glow discharge and hollow cathode 2 and the electron and ion current density distributions in the cathode sheath of the plane capacitor at low current densities and not too low pressures.",
+      "type": "theoretical",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "theory"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C9",
+      "text": "In lemma 1 it is proved uniqueness of zero solution for homogeneous differential equation, which is generated",
+      "claim_text": "In lemma 1 it is proved uniqueness of zero solution for homogeneous differential equation, which is generated",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "theory"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Limited cell-to-cell variation analysis; results from a small specimen pool",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Long-term cycling / ageing behaviour not characterised",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Comparison restricted to a narrow chemistry family",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Uniqueness theorem for the non-local ionization source in glow discharge and hollow cathode",
+    "domain": "materials",
+    "notes": ""
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

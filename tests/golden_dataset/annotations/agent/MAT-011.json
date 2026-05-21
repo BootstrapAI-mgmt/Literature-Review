@@ -1,0 +1,144 @@
+{
+  "paper_id": "MAT-011",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:37Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Rarefied xenon flow in orificed hollow cathodes",
+    "authors": [
+      "Pierre-Yves C. R. Taunay",
+      "Willca Villafana",
+      "Sangeeta P. Vinoth",
+      "Igor Kaganovich"
+    ],
+    "year": 2024,
+    "domain": "materials",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Rarefied xenon flow in orificed hollow cathodes 2 a direct effect on the generation of high-energy ions when the cathode operates with a plasma.",
+      "claim_text": "Rarefied xenon flow in orificed hollow cathodes 2 a direct effect on the generation of high-energy ions when the cathode operates with a plasma.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "efficiency"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "The study of Cao et al.26 features both a PIC approach for the charged particles and the Direct Simulation Monte Carlo (DSMC) technique to solve for the neutral quantities (e.g., density).",
+      "claim_text": "The study of Cao et al.26 features both a PIC approach for the charged particles and the Direct Simulation Monte Carlo (DSMC) technique to solve for the neutral quantities (e.g., density).",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "Rarefied xenon flow in orificed hollow cathodes 3 computational expediency, the DSMC code is only applied to a truncated domain.",
+      "claim_text": "Rarefied xenon flow in orificed hollow cathodes 3 computational expediency, the DSMC code is only applied to a truncated domain.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "Physical domain and boundary conditions Figure 1 shows the physical domain representing a cathode equipped with an enclosed keeper, along with the relevant physical parameters.",
+      "claim_text": "Physical domain and boundary conditions Figure 1 shows the physical domain representing a cathode equipped with an enclosed keeper, along with the relevant physical parameters.",
+      "type": "theoretical",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "theory"
+      ],
+      "verifiable": true
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Limited cell-to-cell variation analysis; results from a small specimen pool",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Long-term cycling / ageing behaviour not characterised",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Comparison restricted to a narrow chemistry family",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Rarefied xenon flow in orificed hollow cathodes",
+    "domain": "materials",
+    "notes": ""
+  },
+  "quality_assessment": {
+    "claim_density": "medium",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

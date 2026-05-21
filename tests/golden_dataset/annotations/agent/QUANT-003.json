@@ -1,0 +1,161 @@
+{
+  "paper_id": "QUANT-003",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:36Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Optimized Measurement-Free and Fault-Tolerant Quantum Error Correction for Neutral Atoms",
+    "authors": [
+      "Stefano Veroni",
+      "Markus Müller",
+      "Giacomo Giudice"
+    ],
+    "year": 2024,
+    "domain": "quantum",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Fault-tolerant QEC schemes without measurements for neutral-atom quantum computers.",
+      "claim_text": "Fault-tolerant QEC schemes without measurements for neutral-atom quantum computers.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "In this work, we suggest an alternative scheme, which allows one to use fewer qubits and operations, as well as gates with support on fewer qubits (at most 3-qubit Toffoli-type gates), to achieve similar performances.",
+      "claim_text": "In this work, we suggest an alternative scheme, which allows one to use fewer qubits and operations, as well as gates with support on fewer qubits (at most 3-qubit Toffoli-type gates), to achieve similar performances.",
+      "type": "quantitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "performance",
+        "hardware"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C3",
+      "text": "Measurements require times of the order of 500 µs, without accounting for camera readout times and possible shuttling time of atoms to a dedicated readout zone.",
+      "claim_text": "Measurements require times of the order of 500 µs, without accounting for camera readout times and possible shuttling time of atoms to a dedicated readout zone.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "3 prevents that errors during the syndrome extraction lead to erroneous corrections, corrupting the logical state.",
+      "claim_text": "3 prevents that errors during the syndrome extraction lead to erroneous corrections, corrupting the logical state.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "The order in which the stabilizers are read out needs to be chosen carefully to satisfy certain constraints, as explained in Appendix A. 2.",
+      "claim_text": "The order in which the stabilizers are read out needs to be chosen carefully to satisfy certain constraints, as explained in Appendix A. 2.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "interpretability"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Error-correction results rely on a specific noise model; behaviour under realistic device noise not fully characterised",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Resource overheads (qubit count, gate depth) not benchmarked against alternative codes",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "No cross-hardware reproducibility analysis across different qubit modalities",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Fault-tolerant QEC schemes without measurements for neutral-atom quantum computers.",
+    "domain": "quantum",
+    "notes": "Resource-efficient implementations"
+  },
+  "quality_assessment": {
+    "claim_density": "medium",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

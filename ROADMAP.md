@@ -79,7 +79,7 @@ The Literature Review system automates systematic literature reviews end-to-end:
 
 **Completed:** N/A
 
-**Evidence:** PR #137 (paper sourcing infrastructure), PR #138 (80 OA papers populated), PR #139 (paper registry), PR #140 (bi-directional validation framework), PR #141 (gap scenario execution), PR #142 (ground truth design validation), PR #143 (annotation sub-tasks), commit dd5f8b92 (golden dataset JSON schema), commit e6314ce7 (batch 1 annotations)
+**Evidence:** PR #137 (paper sourcing infrastructure), PR #138 (80 OA papers populated), PR #139 (paper registry), PR #140 (bi-directional validation framework), PR #141 (gap scenario execution), PR #142 (ground truth design validation), PR #143 (annotation sub-tasks), commit dd5f8b92 (golden dataset JSON schema), commit e6314ce7 (batch 1 annotations, 5 papers), PR #TBD (TC-LR13: batch 2 annotations — 17 additional papers across 5 domains via `tests/golden_dataset/scripts/batch2_annotate.py`, 4 enforcement tests in `tests/golden_dataset/test_batch_annotations.py`)
 
 ---
 

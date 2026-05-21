@@ -1,0 +1,249 @@
+{
+  "paper_id": "CLIM-008",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:37Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Machine Learning for Climate Model Emulation",
+    "authors": [
+      "Laure Zanna",
+      "Thomas Bolton"
+    ],
+    "year": 2023,
+    "domain": "climate",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Specifically, ZeroNL2SQL outperforms the state-of-the-art PLMbased methods by 3.2% to 13% and exceeds LLM-based methods by 10% to 20% on execution accuracy.",
+      "claim_text": "Specifically, ZeroNL2SQL outperforms the state-of-the-art PLMbased methods by 3.2% to 13% and exceeds LLM-based methods by 10% to 20% on execution accuracy.",
+      "type": "quantitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "accuracy",
+        "performance"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C2",
+      "text": "Conference’17, July 2017, Washington, DC, USA © 2023 Association for Computing Machinery.",
+      "claim_text": "Conference’17, July 2017, Washington, DC, USA © 2023 Association for Computing Machinery.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "ACM ISBN 978-x-xxxx-xxxx-x/YY/MM...$15.00 https://doi.org/10.1145/nnnnnnn.nnnnnnn",
+      "claim_text": "ACM ISBN 978-x-xxxx-xxxx-x/YY/MM...$15.00 https://doi.org/10.1145/nnnnnnn.nnnnnnn",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "Comprehensive experiments show that ZeroNL2SQL can achieve the best zero-shot NL2SQL performance on real-world benchmarks.",
+      "claim_text": "Comprehensive experiments show that ZeroNL2SQL can achieve the best zero-shot NL2SQL performance on real-world benchmarks.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "performance",
+        "methodology"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "PLMs can perform well in schema alignment but struggle to achieve complex reasoning, while LLMs is superior in complex reasoning tasks but cannot achieve precise schema alignment.",
+      "claim_text": "PLMs can perform well in schema alignment but struggle to achieve complex reasoning, while LLMs is superior in complex reasoning tasks but cannot achieve precise schema alignment.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "performance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "In this paper, we propose a ZeroNL2SQL framework that combines the complementary advantages of PLMs and LLMs for supporting zero-shot NL2SQL.",
+      "claim_text": "In this paper, we propose a ZeroNL2SQL framework that combines the complementary advantages of PLMs and LLMs for supporting zero-shot NL2SQL.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C7",
+      "text": "Based on the above observation, we propose a framework ZeroNL2SQL that interleaves tunable PLMs and fixed LLMs to achieve zero-shot NL2SQL, effectively addressing all the three challenges in zero-shot NL2SQL, as shown in the last row of Figure 2.",
+      "claim_text": "Based on the above observation, we propose a framework ZeroNL2SQL that interleaves tunable PLMs and fixed LLMs to achieve zero-shot NL2SQL, effectively addressing all the three challenges in zero-shot NL2SQL, as shown in the last row of Figure 2.",
+      "type": "quantitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "performance",
+        "novelty"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C8",
+      "text": "Snippets of a Database 𝐷 Course id course teacher 001 math jordy wu.........",
+      "claim_text": "Snippets of a Database 𝐷 Course id course teacher 001 math jordy wu.........",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C9",
+      "text": "The experimental results show that ZeroNL2SQL can improve the average execution accuracy of ChatGPT on the NL2SQL tasks by 10% to 20%, and its performance surpasses the state-of-the-art specific PLM-based models (Exp-1 & Exp-2), as well as in-context learning methods (Exp-3).",
+      "claim_text": "The experimental results show that ZeroNL2SQL can improve the average execution accuracy of ChatGPT on the NL2SQL tasks by 10% to 20%, and its performance surpasses the state-of-the-art specific PLM-based models (Exp-1 & Exp-2), as well as in-context learning methods (Exp-3).",
+      "type": "quantitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "accuracy",
+        "performance",
+        "hardware"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C10",
+      "text": "We conduct comprehensive zero-shot NL2SQL evaluation on two benchmarks: Dr.Spider and KaggleDBQA, with a total of 18 test sets.",
+      "claim_text": "We conduct comprehensive zero-shot NL2SQL evaluation on two benchmarks: Dr.Spider and KaggleDBQA, with a total of 18 test sets.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "methodology"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Evaluation horizon dominated by short-term forecasts; long-tail behaviour not characterised",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Sensitivity to climate-model bias correction parameters not quantified",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Limited cross-region transfer evaluation",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Neural network emulators for climate model subgrid physics.",
+    "domain": "climate",
+    "notes": "Accelerated climate simulations"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}
