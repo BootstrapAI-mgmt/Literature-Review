@@ -1,6 +1,6 @@
 # Golden Dataset Annotation Checklist
 
-**Generated:** 2026-01-14 15:02:52 UTC  
+**Generated:** 2026-05-21 09:08:49 UTC  
 **Total Papers:** 120 ready for annotation
 
 ---
@@ -11,7 +11,7 @@
 |-------|----------|-----------|----------|
 | PDF Acquired | 120 | 0 | ████████████████████ 100% |
 | Human Annotation | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
-| Agent Annotation | 5 | 115 | ░░░░░░░░░░░░░░░░░░░░ 4% |
+| Agent Annotation | 22 | 98 | ███░░░░░░░░░░░░░░░░░ 18% |
 | Parity Check | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
 | Golden Finalized | 0 | 120 | ░░░░░░░░░░░░░░░░░░░░ 0% |
 
@@ -32,15 +32,15 @@ Run `python scripts/update_checklist.py` to auto-detect completions and regenera
 
 | Status | Human | Agent | Parity | Golden |
 |--------|-------|-------|--------|--------|
-| Done | 0 | 1 | 0 | 0 |
-| Remaining | 15 | 14 | 15 | 15 |
+| Done | 0 | 4 | 0 | 0 |
+| Remaining | 15 | 11 | 15 | 15 |
 
 | Paper ID | Title | Human | Agent | Parity | Golden |
 |----------|-------|:-----:|:-----:|:------:|:------:|
 | BIIMG-001 | Predicting Thrombectomy Recanalization from C... | ⬜ | ✅ | ⬜ | ⬜ |
-| BIIMG-002 | High Speed Compressed Sensing Reconstruction ... | ⬜ | ⬜ | ⬜ | ⬜ |
-| BIIMG-003 | AAU-net: An Adaptive Attention U-net for Brea... | ⬜ | ⬜ | ⬜ | ⬜ |
-| BIIMG-004 | A Tutorial about Random Neural Networks in Su... | ⬜ | ⬜ | ⬜ | ⬜ |
+| BIIMG-002 | High Speed Compressed Sensing Reconstruction ... | ⬜ | ✅ | ⬜ | ⬜ |
+| BIIMG-003 | AAU-net: An Adaptive Attention U-net for Brea... | ⬜ | ✅ | ⬜ | ⬜ |
+| BIIMG-004 | A Tutorial about Random Neural Networks in Su... | ⬜ | ✅ | ⬜ | ⬜ |
 | BIIMG-005 | Unrolled Diffusion-Guided Deep Image Prior fo... | ⬜ | ⬜ | ⬜ | ⬜ |
 | BIIMG-006 | Generative AI for Medical Imaging: Extending ... | ⬜ | ⬜ | ⬜ | ⬜ |
 | BIIMG-007 | Robustness of Deep Learning for Accelerated M... | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -59,14 +59,14 @@ Run `python scripts/update_checklist.py` to auto-detect completions and regenera
 
 | Status | Human | Agent | Parity | Golden |
 |--------|-------|-------|--------|--------|
-| Done | 0 | 0 | 0 | 0 |
-| Remaining | 15 | 15 | 15 | 15 |
+| Done | 0 | 3 | 0 | 0 |
+| Remaining | 15 | 12 | 15 | 15 |
 
 | Paper ID | Title | Human | Agent | Parity | Golden |
 |----------|-------|:-----:|:-----:|:------:|:------:|
-| CLIM-001 | Sea Level Projections with Machine Learning U... | ⬜ | ⬜ | ⬜ | ⬜ |
-| CLIM-006 | Sea Ice Brightness Temperature as a Function ... | ⬜ | ⬜ | ⬜ | ⬜ |
-| CLIM-008 | Machine Learning for Climate Model Emulation | ⬜ | ⬜ | ⬜ | ⬜ |
+| CLIM-001 | Sea Level Projections with Machine Learning U... | ⬜ | ✅ | ⬜ | ⬜ |
+| CLIM-006 | Sea Ice Brightness Temperature as a Function ... | ⬜ | ✅ | ⬜ | ⬜ |
+| CLIM-008 | Machine Learning for Climate Model Emulation | ⬜ | ✅ | ⬜ | ⬜ |
 | CLIM-009 | The Equilibrium Response of Atmospheric ML Mo... | ⬜ | ⬜ | ⬜ | ⬜ |
 | CLIM-010 | Invasive species, extreme fire risk, and toxi... | ⬜ | ⬜ | ⬜ | ⬜ |
 | CLIMATE-011 | Changing Data Sources in the Age of Machine L... | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -113,14 +113,14 @@ Run `python scripts/update_checklist.py` to auto-detect completions and regenera
 
 | Status | Human | Agent | Parity | Golden |
 |--------|-------|-------|--------|--------|
-| Done | 0 | 0 | 0 | 0 |
-| Remaining | 15 | 15 | 15 | 15 |
+| Done | 0 | 3 | 0 | 0 |
+| Remaining | 15 | 12 | 15 | 15 |
 
 | Paper ID | Title | Human | Agent | Parity | Golden |
 |----------|-------|:-----:|:-----:|:------:|:------:|
-| MAT-011 | Rarefied xenon flow in orificed hollow cathod... | ⬜ | ⬜ | ⬜ | ⬜ |
-| MAT-012 | Integral equation for source of ionization in... | ⬜ | ⬜ | ⬜ | ⬜ |
-| MAT-013 | Uniqueness theorem for the non-local ionizati... | ⬜ | ⬜ | ⬜ | ⬜ |
+| MAT-011 | Rarefied xenon flow in orificed hollow cathod... | ⬜ | ✅ | ⬜ | ⬜ |
+| MAT-012 | Integral equation for source of ionization in... | ⬜ | ✅ | ⬜ | ⬜ |
+| MAT-013 | Uniqueness theorem for the non-local ionizati... | ⬜ | ✅ | ⬜ | ⬜ |
 | MAT-014 | Effects of Yttrium Doping on Oxygen Conductiv... | ⬜ | ⬜ | ⬜ | ⬜ |
 | MAT-015 | Emissive cathode immersed in a plasma: plasma... | ⬜ | ⬜ | ⬜ | ⬜ |
 | MAT-016 | Modelling cathode spots in glow discharges in... | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -194,8 +194,8 @@ Run `python scripts/update_checklist.py` to auto-detect completions and regenera
 
 | Status | Human | Agent | Parity | Golden |
 |--------|-------|-------|--------|--------|
-| Done | 0 | 4 | 0 | 0 |
-| Remaining | 15 | 11 | 15 | 15 |
+| Done | 0 | 8 | 0 | 0 |
+| Remaining | 15 | 7 | 15 | 15 |
 
 | Paper ID | Title | Human | Agent | Parity | Golden |
 |----------|-------|:-----:|:-----:|:------:|:------:|
@@ -203,10 +203,10 @@ Run `python scripts/update_checklist.py` to auto-detect completions and regenera
 | NEURO-003 | Expressivity of Spiking Neural Networks | ⬜ | ✅ | ⬜ | ⬜ |
 | NEURO-004 | Spiking Convolutional Neural Networks for Tex... | ⬜ | ✅ | ⬜ | ⬜ |
 | NEURO-005 | Comprehensive Review of Spiking Neural Networ... | ⬜ | ✅ | ⬜ | ⬜ |
-| NEURO-006 | NeuroCoreX: An Open-Source FPGA-Based Spiking... | ⬜ | ⬜ | ⬜ | ⬜ |
-| NEURO-007 | Event-based Vision: A Survey | ⬜ | ⬜ | ⬜ | ⬜ |
-| NEURO-008 | Training Spiking Neural Networks Using Lesson... | ⬜ | ⬜ | ⬜ | ⬜ |
-| NEURO-009 | Learn to Accumulate Evidence from All Trainin... | ⬜ | ⬜ | ⬜ | ⬜ |
+| NEURO-006 | NeuroCoreX: An Open-Source FPGA-Based Spiking... | ⬜ | ✅ | ⬜ | ⬜ |
+| NEURO-007 | Event-based Vision: A Survey | ⬜ | ✅ | ⬜ | ⬜ |
+| NEURO-008 | Training Spiking Neural Networks Using Lesson... | ⬜ | ✅ | ⬜ | ⬜ |
+| NEURO-009 | Learn to Accumulate Evidence from All Trainin... | ⬜ | ✅ | ⬜ | ⬜ |
 | NEURO-010 | Training a Hidden Markov Model with a Bayesia... | ⬜ | ⬜ | ⬜ | ⬜ |
 | NEURO-011 | Predicting concentration levels of air pollut... | ⬜ | ⬜ | ⬜ | ⬜ |
 | NEURO-012 | Masked Conditional Neural Networks for Audio ... | ⬜ | ⬜ | ⬜ | ⬜ |
@@ -221,15 +221,15 @@ Run `python scripts/update_checklist.py` to auto-detect completions and regenera
 
 | Status | Human | Agent | Parity | Golden |
 |--------|-------|-------|--------|--------|
-| Done | 0 | 0 | 0 | 0 |
-| Remaining | 15 | 15 | 15 | 15 |
+| Done | 0 | 4 | 0 | 0 |
+| Remaining | 15 | 11 | 15 | 15 |
 
 | Paper ID | Title | Human | Agent | Parity | Golden |
 |----------|-------|:-----:|:-----:|:------:|:------:|
-| QUANT-001 | Quantum Error Correction Below the Surface Co... | ⬜ | ⬜ | ⬜ | ⬜ |
-| QUANT-002 | Deep Quantum Error Correction | ⬜ | ⬜ | ⬜ | ⬜ |
-| QUANT-003 | Optimized Measurement-Free and Fault-Tolerant... | ⬜ | ⬜ | ⬜ | ⬜ |
-| QUANT-004 | Tierkreis: A Dataflow Framework for Hybrid Qu... | ⬜ | ⬜ | ⬜ | ⬜ |
+| QUANT-001 | Quantum Error Correction Below the Surface Co... | ⬜ | ✅ | ⬜ | ⬜ |
+| QUANT-002 | Deep Quantum Error Correction | ⬜ | ✅ | ⬜ | ⬜ |
+| QUANT-003 | Optimized Measurement-Free and Fault-Tolerant... | ⬜ | ✅ | ⬜ | ⬜ |
+| QUANT-004 | Tierkreis: A Dataflow Framework for Hybrid Qu... | ⬜ | ✅ | ⬜ | ⬜ |
 | QUANT-005 | Quantum Error Correction: An Introductory Gui... | ⬜ | ⬜ | ⬜ | ⬜ |
 | QUANT-006 | Google's Quantum Supremacy Claim: Data, Docum... | ⬜ | ⬜ | ⬜ | ⬜ |
 | QUANT-007 | Variational Quantum Eigensolver Review | ⬜ | ⬜ | ⬜ | ⬜ |

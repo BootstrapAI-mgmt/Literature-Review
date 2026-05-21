@@ -1,0 +1,209 @@
+{
+  "paper_id": "MAT-012",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:37Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Integral equation for source of ionization in hollow cathode",
+    "authors": [
+      "Vladimir V. Gorin"
+    ],
+    "year": 2009,
+    "domain": "materials",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "A pendulum effect could be switched on or off, with consideration for the anode to be transparent or not for fast ionizing electrons.",
+      "claim_text": "A pendulum effect could be switched on or off, with consideration for the anode to be transparent or not for fast ionizing electrons.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "On the basis of a stationary kinetic equation for ionizing electrons an integral equation for a source of ionization is derived.",
+      "claim_text": "On the basis of a stationary kinetic equation for ionizing electrons an integral equation for a source of ionization is derived.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "To simulate the influence of pendulum effect in hollow cathode configuration on a current-voltage characteristic it is proposed to consider a plane glow discharge in onedimensional space configuration with two plane parallel cathodes and one plane anode in the middle.",
+      "claim_text": "To simulate the influence of pendulum effect in hollow cathode configuration on a current-voltage characteristic it is proposed to consider a plane glow discharge in onedimensional space configuration with two plane parallel cathodes and one plane anode in the middle.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "This equation can be used as a component in self-consistent problem for field equations to calculate a current-voltage characteristic and to show how it changes in both cases - in presence or absence of anode transparency.",
+      "claim_text": "This equation can be used as a component in self-consistent problem for field equations to calculate a current-voltage characteristic and to show how it changes in both cases - in presence or absence of anode transparency.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "We consider one-dimensional plane glow discharge with two plane parallel cathodes and one plane anode in the middle (see fig. 1).",
+      "claim_text": "We consider one-dimensional plane glow discharge with two plane parallel cathodes and one plane anode in the middle (see fig. 1).",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "The influence of these inelastic processes we describe with effective “force of friction”. 2.",
+      "claim_text": "The influence of these inelastic processes we describe with effective “force of friction”. 2.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C7",
+      "text": "Integral equation for source of ionization in hollow cathode 3 for positive time 0 ≥ t with initial point of trajectory in 0,, 0 0 < = + = v v v x x c or in 0,, 0 0 > = − = v v v x x c.",
+      "claim_text": "Integral equation for source of ionization in hollow cathode 3 for positive time 0 ≥ t with initial point of trajectory in 0,, 0 0 < = + = v v v x x c or in 0,, 0 0 > = − = v v v x x c.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C8",
+      "text": "As the system of order differential equations (1) is resolved with respect to its derivatives, right sides of the equations are defined everywhere, so trajectories do not cross each other and fill over all phase space.",
+      "claim_text": "As the system of order differential equations (1) is resolved with respect to its derivatives, right sides of the equations are defined everywhere, so trajectories do not cross each other and fill over all phase space.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Limited cell-to-cell variation analysis; results from a small specimen pool",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Long-term cycling / ageing behaviour not characterised",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Comparison restricted to a narrow chemistry family",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Integral equation for source of ionization in hollow cathode",
+    "domain": "materials",
+    "notes": ""
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

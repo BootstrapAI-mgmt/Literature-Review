@@ -1,0 +1,161 @@
+{
+  "paper_id": "QUANT-001",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:36Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Quantum Error Correction Below the Surface Code Threshold",
+    "authors": [
+      "Google Quantum AI"
+    ],
+    "year": 2024,
+    "domain": "quantum",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Demonstrates surface code memories operating below error-correction threshold on 101-qubit device.",
+      "claim_text": "Demonstrates surface code memories operating below error-correction threshold on 101-qubit device.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "Line: fit to simulation, Λsim = 2.25 ± 0.02. tional fidelities compared to our previously reported processors.",
+      "claim_text": "Line: fit to simulation, Λsim = 2.25 ± 0.02. tional fidelities compared to our previously reported processors.",
+      "type": "comparative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C3",
+      "text": "The qubits have a mean operating T1 of 68 µs and T2,CPMG of 89 µs, which we attribute to improved fabrication techniques, participation ratio engineering, and circuit parameter optimization.",
+      "claim_text": "The qubits have a mean operating T1 of 68 µs and T2,CPMG of 89 µs, which we attribute to improved fabrication techniques, participation ratio engineering, and circuit parameter optimization.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "performance",
+        "hardware",
+        "interpretability"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "In fact, our distance-7 logical qubit already has more than double the lifetime of its constituent physical qubits.",
+      "claim_text": "In fact, our distance-7 logical qubit already has more than double the lifetime of its constituent physical qubits.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "The distance-7 logical qubit lifetime is 291 ± 6 µs, exceeding the lifetimes of all the constituent physical qubits (median 85±7 µs, best 119±13 µs) by a factor of 2.4±0.3.",
+      "claim_text": "The distance-7 logical qubit lifetime is 291 ± 6 µs, exceeding the lifetimes of all the constituent physical qubits (median 85±7 µs, best 119±13 µs) by a factor of 2.4±0.3.",
+      "type": "comparative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "performance",
+        "hardware"
+      ],
+      "verifiable": true
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Error-correction results rely on a specific noise model; behaviour under realistic device noise not fully characterised",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Resource overheads (qubit count, gate depth) not benchmarked against alternative codes",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "No cross-hardware reproducibility analysis across different qubit modalities",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Demonstrates surface code memories operating below error-correction threshold on 101-qubit device.",
+    "domain": "quantum",
+    "notes": "Exponential suppression of logical error rates"
+  },
+  "quality_assessment": {
+    "claim_density": "medium",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

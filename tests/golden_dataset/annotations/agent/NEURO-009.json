@@ -1,0 +1,246 @@
+{
+  "paper_id": "NEURO-009",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:36Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Learn to Accumulate Evidence from All Training Samples: Theory and Practice",
+    "authors": [
+      "Deep Pandey",
+      "Qi Yu"
+    ],
+    "year": 2023,
+    "domain": "neuromorphic",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "This constraint often leads to inferior predictive performance compared to standard softmax models, making it challenging to extend them to many large-scale datasets.",
+      "claim_text": "This constraint often leads to inferior predictive performance compared to standard softmax models, making it challenging to extend them to many large-scale datasets.",
+      "type": "comparative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "methodology",
+        "scalability"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C2",
+      "text": "A deeper analysis of evidential activation functions based on our theoretical underpinning inspires the design of a novel regularizer that effectively alleviates this fundamental limitation.",
+      "claim_text": "A deeper analysis of evidential activation functions based on our theoretical underpinning inspires the design of a novel regularizer that effectively alleviates this fundamental limitation.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "Evidential deep learning, built upon belief theory and subjective logic, offers a principled and computationally efficient way to turn a deterministic neural network uncertainty-aware.",
+      "claim_text": "Evidential deep learning, built upon belief theory and subjective logic, offers a principled and computationally efficient way to turn a deterministic neural network uncertainty-aware.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "efficiency",
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "The resultant evidential models can quantify fine-grained uncertainty using the learned evidence.",
+      "claim_text": "The resultant evidential models can quantify fine-grained uncertainty using the learned evidence.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "To ensure theoretically sound evidential models, the evidence needs to be non-negative, which requires special activation functions for model training and inference.",
+      "claim_text": "To ensure theoretically sound evidential models, the evidence needs to be non-negative, which requires special activation functions for model training and inference.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "Extensive experiments over many challenging real-world datasets and settings confirm our theoretical findings and demonstrate the effectiveness of our proposed approach.",
+      "claim_text": "Extensive experiments over many challenging real-world datasets and settings confirm our theoretical findings and demonstrate the effectiveness of our proposed approach.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "methodology"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C7",
+      "text": "Learn to Accumulate Evidence from All Training Samples: Theory and Practice Figure 2.",
+      "claim_text": "Learn to Accumulate Evidence from All Training Samples: Theory and Practice Figure 2.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C8",
+      "text": "Such models are trained with the cross-entropy based loss. 2",
+      "claim_text": "Such models are trained with the cross-entropy based loss. 2",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C9",
+      "text": "Learn to Accumulate Evidence from All Training Samples: Theory and Practice For a given training sample (x, y), the loss is given by Lcross = − K X k=1 yk log(smk) (1) where smk is the softmax output.",
+      "claim_text": "Learn to Accumulate Evidence from All Training Samples: Theory and Practice For a given training sample (x, y), the loss is given by Lcross = − K X k=1 yk log(smk) (1) where smk is the softmax output.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C10",
+      "text": "To this end, three variants of evidential loss functions have been proposed : 1) Bayes risk with sum of squares loss, 2) Bayes risk with cross-entropy loss, and 3) Type II Maximum Likelihood loss.",
+      "claim_text": "To this end, three variants of evidential loss functions have been proposed : 1) Bayes risk with sum of squares loss, 2) Bayes risk with cross-entropy loss, and 3) Type II Maximum Likelihood loss.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "No deployment evaluation on commercial neuromorphic chips beyond the listed platform",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Energy-efficiency claims rely partly on simulation rather than direct hardware power measurement",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Limited comparison with the most recent event-driven SNN baselines",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "ANN-to-SNN conversion with performance guarantees on CIFAR and ImageNet.",
+    "domain": "neuromorphic",
+    "notes": "Replaced invalid arXiv ID 2303.04475 with verified 2306.11113"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

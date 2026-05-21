@@ -4,7 +4,10 @@
   "timestamp": "2026-01-14T14:15:00Z",
   "source": {
     "title": "A Comprehensive Review of Spiking Neural Networks: Interpretation, Optimization, Efficiency, and Best Practices",
-    "authors": ["Kai Malcolm", "Josue Casco-Rodriguez"],
+    "authors": [
+      "Kai Malcolm",
+      "Josue Casco-Rodriguez"
+    ],
     "venue": "Rice University Technical Report",
     "year": 2023,
     "pages": 16
@@ -16,70 +19,126 @@
       "type": "background",
       "value": 20,
       "unit": "watts",
-      "evidence_location": {"page": 1, "section": "Introduction"},
-      "confidence": 0.90,
-      "pillar_mapping": ["efficiency"],
+      "evidence_location": {
+        "page": 1,
+        "section": "Introduction"
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "efficiency"
+      ],
       "verifiable": false,
-      "note": "Well-known biological fact"
+      "note": "Well-known biological fact",
+      "claim_text": "Human brain consumes only 20W while performing perception, recognition, reasoning, control, and movement",
+      "page_number": 1,
+      "section": "Introduction"
     },
     {
       "claim_id": "C2",
       "text": "Top-performing language models can require over 300 kWh of power",
       "type": "background",
       "citation": "Patterson et al., 2021",
-      "evidence_location": {"page": 1, "section": "Introduction"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Introduction"
+      },
       "confidence": 0.85,
-      "pillar_mapping": ["efficiency"],
+      "pillar_mapping": [
+        "efficiency"
+      ],
       "verifiable": false,
-      "note": "Cited claim"
+      "note": "Cited claim",
+      "claim_text": "Top-performing language models can require over 300 kWh of power",
+      "page_number": 1,
+      "section": "Introduction"
     },
     {
       "claim_id": "C3",
       "text": "Human brain consists of nearly 100 billion neurons, each with up to 15,000 synapses",
       "type": "background",
-      "evidence_location": {"page": 1, "section": "Introduction"},
-      "confidence": 0.90,
-      "pillar_mapping": ["scale"],
+      "evidence_location": {
+        "page": 1,
+        "section": "Introduction"
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "scale"
+      ],
       "verifiable": false,
-      "note": "Well-known biological fact"
+      "note": "Well-known biological fact",
+      "claim_text": "Human brain consists of nearly 100 billion neurons, each with up to 15,000 synapses",
+      "page_number": 1,
+      "section": "Introduction"
     },
     {
       "claim_id": "C4",
       "text": "SNN field lacks clear benchmarks and tool sets",
       "type": "gap_identification",
       "citation": "Skatchkovsky et al., 2021",
-      "evidence_location": {"page": 1, "section": "Introduction"},
-      "confidence": 0.90,
-      "pillar_mapping": ["reproducibility"],
-      "verifiable": true
+      "evidence_location": {
+        "page": 1,
+        "section": "Introduction"
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "reproducibility"
+      ],
+      "verifiable": true,
+      "claim_text": "SNN field lacks clear benchmarks and tool sets",
+      "page_number": 1,
+      "section": "Introduction"
     },
     {
       "claim_id": "C5",
       "text": "Surrogate gradients are used as alternative to derivative of Heaviside step function during backpropagation",
       "type": "methodological",
       "citation": "Neftci et al., 2019",
-      "evidence_location": {"page": 5, "section": "Optimization"},
+      "evidence_location": {
+        "page": 5,
+        "section": "Optimization"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["methodology"],
-      "verifiable": true
+      "pillar_mapping": [
+        "methodology"
+      ],
+      "verifiable": true,
+      "claim_text": "Surrogate gradients are used as alternative to derivative of Heaviside step function during backpropagation",
+      "page_number": 5,
+      "section": "Optimization"
     },
     {
       "claim_id": "C6",
       "text": "STDP is unsupervised and originates from experimental observations of neural plasticity",
       "type": "background",
-      "evidence_location": {"page": 7, "section": "STDP"},
+      "evidence_location": {
+        "page": 7,
+        "section": "STDP"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["methodology"],
-      "verifiable": true
+      "pillar_mapping": [
+        "methodology"
+      ],
+      "verifiable": true,
+      "claim_text": "STDP is unsupervised and originates from experimental observations of neural plasticity",
+      "page_number": 7,
+      "section": "STDP"
     },
     {
       "claim_id": "C7",
       "text": "Review identifies and compares cutting-edge methods in SNN optimization, energy-efficiency, and evaluation",
       "type": "contribution",
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["survey"],
-      "verifiable": true
+      "pillar_mapping": [
+        "survey"
+      ],
+      "verifiable": true,
+      "claim_text": "Review identifies and compares cutting-edge methods in SNN optimization, energy-efficiency, and evaluation",
+      "page_number": 1,
+      "section": "Abstract"
     }
   ],
   "gaps": [
@@ -128,5 +187,6 @@
     "reproducibility": "high",
     "novelty": "low",
     "overall_score": 7
-  }
+  },
+  "batch": "batch-1"
 }

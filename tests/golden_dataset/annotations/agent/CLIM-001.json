@@ -1,0 +1,246 @@
+{
+  "paper_id": "CLIM-001",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:37Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "Sea Level Projections with Machine Learning Using Altimetry and Climate Models",
+    "authors": [
+      "Peter Uhe",
+      "Daniel Mitchell"
+    ],
+    "year": 2023,
+    "domain": "climate",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Satellite altimeter observations retrieved since 1993 show that the global mean sea level is rising at an unprecedented rate (3.4mm/year).",
+      "claim_text": "Satellite altimeter observations retrieved since 1993 show that the global mean sea level is rising at an unprecedented rate (3.4mm/year).",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "This work presents a machine learning framework that exploits both satellite observations and climate model simulations to generate sea level rise projections at a 2-degree resolution spatial grid, 30 years into the future.",
+      "claim_text": "This work presents a machine learning framework that exploits both satellite observations and climate model simulations to generate sea level rise projections at a 2-degree resolution spatial grid, 30 years into the future.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "We propose segmenting our spatial dataset into meaningful clusters and show that clustering helps to improve predictions of our ML model.",
+      "claim_text": "We propose segmenting our spatial dataset into meaningful clusters and show that clustering helps to improve predictions of our ML model.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "performance",
+        "novelty",
+        "methodology"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "With almost three decades of observations, we can now investigate the contributions of anthropogenic climate-change signals such as greenhouse gases, aerosols, and biomass burning in this rising sea level.",
+      "claim_text": "With almost three decades of observations, we can now investigate the contributions of anthropogenic climate-change signals such as greenhouse gases, aerosols, and biomass burning in this rising sea level.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "We use machine learning (ML) to investigate future patterns of sea level change.",
+      "claim_text": "We use machine learning (ML) to investigate future patterns of sea level change.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "To understand the extent of contributions from the climate-change signals, and to help in forecasting sea level change in the future, we turn to climate model simulations.",
+      "claim_text": "To understand the extent of contributions from the climate-change signals, and to help in forecasting sea level change in the future, we turn to climate model simulations.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C7",
+      "text": "Through our work, we show the potential of machine learning in producing these forecasts 30 years in advance and over all oceans at a reasonably good spatial resolution.",
+      "claim_text": "Through our work, we show the potential of machine learning in producing these forecasts 30 years in advance and over all oceans at a reasonably good spatial resolution.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C8",
+      "text": "Our goal is to generate sea level projections 30 years into the future and at a 2-degree spatial resolution utilizing the altimeter data as well as climate model simulations.",
+      "claim_text": "Our goal is to generate sea level projections 30 years into the future and at a 2-degree spatial resolution utilizing the altimeter data as well as climate model simulations.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C9",
+      "text": "This is expected as there is a lot more variability in the altimeter trend as compared to the climate models (Figure 1).",
+      "claim_text": "This is expected as there is a lot more variability in the altimeter trend as compared to the climate models (Figure 1).",
+      "type": "comparative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": true
+    },
+    {
+      "claim_id": "C10",
+      "text": "This way, we obtain a single trend map, for all the climate model ensembles and the altimeter (see Figure 1).",
+      "claim_text": "This way, we obtain a single trend map, for all the climate model ensembles and the altimeter (see Figure 1).",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Evaluation horizon dominated by short-term forecasts; long-tail behaviour not characterised",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Sensitivity to climate-model bias correction parameters not quantified",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Limited cross-region transfer evaluation",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "ML-based regional sea level prediction combining satellite data and climate models.",
+    "domain": "climate",
+    "notes": "30-year ahead projections"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

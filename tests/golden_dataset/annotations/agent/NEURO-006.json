@@ -1,0 +1,249 @@
+{
+  "paper_id": "NEURO-006",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:36Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "NeuroCoreX: An Open-Source FPGA-Based Spiking Neural Network Emulator with On-Chip Learning",
+    "authors": [
+      "Ashish Gautam",
+      "Prasanna Date",
+      "Shruti Kulkarni",
+      "Robert Patton"
+    ],
+    "year": 2025,
+    "domain": "neuromorphic",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "Their event-driven nature enables them to achieve high energy efficiency, particularly when deployed on neuromorphic hardware platforms.",
+      "claim_text": "Their event-driven nature enables them to achieve high energy efficiency, particularly when deployed on neuromorphic hardware platforms.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "performance",
+        "efficiency",
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "In this work, we introduce NeuroCoreX, an FPGAbased emulator designed for the flexible co-design and testing of SNNs.",
+      "claim_text": "In this work, we introduce NeuroCoreX, an FPGAbased emulator designed for the flexible co-design and testing of SNNs.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware",
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "Spiking Neural Networks (SNNs) are computational models inspired by the structure and dynamics of biological neuronal networks.",
+      "claim_text": "Spiking Neural Networks (SNNs) are computational models inspired by the structure and dynamics of biological neuronal networks.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "NeuroCoreX supports all-to-all connectivity, providing the capability to implement diverse network topologies without architectural restrictions.",
+      "claim_text": "NeuroCoreX supports all-to-all connectivity, providing the capability to implement diverse network topologies without architectural restrictions.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "It features a biologically motivated local learning mechanism based on Spike-Timing-Dependent Plasticity (STDP).",
+      "claim_text": "It features a biologically motivated local learning mechanism based on Spike-Timing-Dependent Plasticity (STDP).",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "The neuron model implemented within NeuroCoreX is the Leaky Integrate-and-Fire (LIF) model, with current-based synapses facilitating spike integration and transmission.",
+      "claim_text": "The neuron model implemented within NeuroCoreX is the Leaky Integrate-and-Fire (LIF) model, with current-based synapses facilitating spike integration and transmission.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C7",
+      "text": "In its current implementation, NeuroCoreX supports networks of up to N = 100 neurons with full all-to-all bidirectional connectivity using 10,000 synapses.",
+      "claim_text": "In its current implementation, NeuroCoreX supports networks of up to N = 100 neurons with full all-to-all bidirectional connectivity using 10,000 synapses.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C8",
+      "text": "In addition to recurrent connections, the system includes a separate set of 10,000 feedforward input synapses that serve as the interface for external stimuli.",
+      "claim_text": "In addition to recurrent connections, the system includes a separate set of 10,000 feedforward input synapses that serve as the interface for external stimuli.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C9",
+      "text": "FPGA platform NeuroCoreX is implemented on the Artix-7 FPGA, a costeffective and widely available platform that offers sufficient resources for neuromorphic prototyping.",
+      "claim_text": "FPGA platform NeuroCoreX is implemented on the Artix-7 FPGA, a costeffective and widely available platform that offers sufficient resources for neuromorphic prototyping.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C10",
+      "text": "The system operates with a maximum internal clock frequency of 100 MHz.",
+      "claim_text": "The system operates with a maximum internal clock frequency of 100 MHz.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "No deployment evaluation on commercial neuromorphic chips beyond the listed platform",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "Energy-efficiency claims rely partly on simulation rather than direct hardware power measurement",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Limited comparison with the most recent event-driven SNN baselines",
+      "severity": "low",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "Deep learning techniques adapted for spiking neural networks.",
+    "domain": "neuromorphic",
+    "notes": "Replaced invalid arXiv ID 2003.02944 with verified 2506.14138"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}

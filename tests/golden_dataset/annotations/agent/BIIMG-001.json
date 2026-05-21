@@ -5,7 +5,14 @@
   "source": {
     "arxiv_id": "2302.04143",
     "title": "Predicting Thrombectomy Recanalization from CT Imaging Using Deep Learning Models",
-    "authors": ["Haoyue Zhang", "Jennifer S. Polson", "Eric J. Yang", "Kambiz Nael", "William Speier", "Corey W. Arnold"],
+    "authors": [
+      "Haoyue Zhang",
+      "Jennifer S. Polson",
+      "Eric J. Yang",
+      "Kambiz Nael",
+      "William Speier",
+      "Corey W. Arnold"
+    ],
     "venue": "MIDL 2022",
     "year": 2022,
     "pages": 3
@@ -18,10 +25,19 @@
       "metric": "ROC-AUC",
       "value": 0.7733,
       "uncertainty": 0.039,
-      "evidence_location": {"page": 1, "section": "Abstract"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["accuracy", "performance"],
-      "verifiable": true
+      "pillar_mapping": [
+        "accuracy",
+        "performance"
+      ],
+      "verifiable": true,
+      "claim_text": "The proposed SCANet model achieved an average cross-validated ROC-AUC of 77.33 ± 3.9%",
+      "page_number": 1,
+      "section": "Abstract"
     },
     {
       "claim_id": "C2",
@@ -30,10 +46,19 @@
       "metric": "accuracy",
       "value": 0.7523,
       "uncertainty": 0.042,
-      "evidence_location": {"page": 3, "section": "Results", "table": 1},
+      "evidence_location": {
+        "page": 3,
+        "section": "Results",
+        "table": 1
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["accuracy"],
-      "verifiable": true
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": true,
+      "claim_text": "SCANet achieved accuracy of 75.23 ± 4.2%",
+      "page_number": 3,
+      "section": "Results"
     },
     {
       "claim_id": "C3",
@@ -42,22 +67,40 @@
       "metric": "precision",
       "value": 0.7424,
       "uncertainty": 0.145,
-      "evidence_location": {"page": 3, "section": "Results", "table": 1},
+      "evidence_location": {
+        "page": 3,
+        "section": "Results",
+        "table": 1
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["accuracy"],
-      "verifiable": true
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": true,
+      "claim_text": "SCANet achieved precision of 74.24 ± 14.5%",
+      "page_number": 3,
+      "section": "Results"
     },
     {
       "claim_id": "C4",
       "text": "SCANet achieved sensitivity of 82.50 ± 17.4%",
       "type": "quantitative",
       "metric": "sensitivity",
-      "value": 0.8250,
+      "value": 0.825,
       "uncertainty": 0.174,
-      "evidence_location": {"page": 3, "section": "Results", "table": 1},
+      "evidence_location": {
+        "page": 3,
+        "section": "Results",
+        "table": 1
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["accuracy"],
-      "verifiable": true
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": true,
+      "claim_text": "SCANet achieved sensitivity of 82.50 ± 17.4%",
+      "page_number": 3,
+      "section": "Results"
     },
     {
       "claim_id": "C5",
@@ -66,10 +109,19 @@
       "metric": "specificity",
       "value": 0.6905,
       "uncertainty": 0.215,
-      "evidence_location": {"page": 3, "section": "Results", "table": 1},
+      "evidence_location": {
+        "page": 3,
+        "section": "Results",
+        "table": 1
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["accuracy"],
-      "verifiable": true
+      "pillar_mapping": [
+        "accuracy"
+      ],
+      "verifiable": true,
+      "claim_text": "SCANet achieved specificity of 69.05 ± 21.5%",
+      "page_number": 3,
+      "section": "Results"
     },
     {
       "claim_id": "C6",
@@ -78,10 +130,20 @@
       "comparison_baseline": "Siddiqui et al. 2021",
       "baseline_value": 0.717,
       "improvement": 0.056,
-      "evidence_location": {"page": 3, "section": "Results", "table": 1},
-      "confidence": 0.90,
-      "pillar_mapping": ["performance", "novelty"],
-      "verifiable": true
+      "evidence_location": {
+        "page": 3,
+        "section": "Results",
+        "table": 1
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "performance",
+        "novelty"
+      ],
+      "verifiable": true,
+      "claim_text": "SCANet outperforms prior benchmark (Siddiqui et al.) which achieved ROC-AUC of 0.717",
+      "page_number": 3,
+      "section": "Results"
     },
     {
       "claim_id": "C7",
@@ -90,10 +152,20 @@
       "comparison_baseline": "Hilbert et al. 2019",
       "baseline_value": 0.65,
       "improvement": 0.123,
-      "evidence_location": {"page": 3, "section": "Results", "table": 1},
-      "confidence": 0.90,
-      "pillar_mapping": ["performance", "novelty"],
-      "verifiable": true
+      "evidence_location": {
+        "page": 3,
+        "section": "Results",
+        "table": 1
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "performance",
+        "novelty"
+      ],
+      "verifiable": true,
+      "claim_text": "SCANet outperforms Hilbert et al. model (ROC-AUC 0.65 ± 0.10) which requires manual clot segmentation",
+      "page_number": 3,
+      "section": "Results"
     },
     {
       "claim_id": "C8",
@@ -101,19 +173,36 @@
       "type": "quantitative",
       "metric": "dataset_size",
       "value": 177,
-      "evidence_location": {"page": 2, "section": "Data and Methods"},
+      "evidence_location": {
+        "page": 2,
+        "section": "Data and Methods"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["reproducibility", "methodology"],
-      "verifiable": true
+      "pillar_mapping": [
+        "reproducibility",
+        "methodology"
+      ],
+      "verifiable": true,
+      "claim_text": "The dataset comprised 177 patients after exclusions (254 eligible, 69 excluded for missing CT/CTA, 8 for unclear stroke location)",
+      "page_number": 2,
+      "section": "Data and Methods"
     },
     {
       "claim_id": "C9",
       "text": "The model was trained for 200 epochs with early stopping",
       "type": "methodological",
-      "evidence_location": {"page": 3, "section": "Methods"},
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["reproducibility"],
-      "verifiable": true
+      "pillar_mapping": [
+        "reproducibility"
+      ],
+      "verifiable": true,
+      "claim_text": "The model was trained for 200 epochs with early stopping",
+      "page_number": 3,
+      "section": "Methods"
     },
     {
       "claim_id": "C10",
@@ -124,41 +213,74 @@
         "batch_size": 12,
         "learning_rate": 0.0001
       },
-      "evidence_location": {"page": 3, "section": "Methods"},
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods"
+      },
       "confidence": 0.95,
-      "pillar_mapping": ["reproducibility"],
-      "verifiable": true
+      "pillar_mapping": [
+        "reproducibility"
+      ],
+      "verifiable": true,
+      "claim_text": "Training used Adam optimizer with weight decay, batch size of 12, and learning rate of 0.0001",
+      "page_number": 3,
+      "section": "Methods"
     },
     {
       "claim_id": "C11",
       "text": "Stroke is the fifth leading cause of death and the leading cause of long-term disability",
       "type": "background",
       "citation": "Tsao et al., 2022",
-      "evidence_location": {"page": 1, "section": "Introduction"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Introduction"
+      },
       "confidence": 0.85,
-      "pillar_mapping": ["relevance"],
+      "pillar_mapping": [
+        "relevance"
+      ],
       "verifiable": false,
-      "note": "Cited claim, not original contribution"
+      "note": "Cited claim, not original contribution",
+      "claim_text": "Stroke is the fifth leading cause of death and the leading cause of long-term disability",
+      "page_number": 1,
+      "section": "Introduction"
     },
     {
       "claim_id": "C12",
       "text": "Of the 795,000 new and recurrent strokes each year, acute ischemic stroke (AIS) accounts for 87% of cases",
       "type": "background",
       "citation": "Tsao et al., 2022",
-      "evidence_location": {"page": 1, "section": "Introduction"},
+      "evidence_location": {
+        "page": 1,
+        "section": "Introduction"
+      },
       "confidence": 0.85,
-      "pillar_mapping": ["relevance"],
+      "pillar_mapping": [
+        "relevance"
+      ],
       "verifiable": false,
-      "note": "Cited claim, not original contribution"
+      "note": "Cited claim, not original contribution",
+      "claim_text": "Of the 795,000 new and recurrent strokes each year, acute ischemic stroke (AIS) accounts for 87% of cases",
+      "page_number": 1,
+      "section": "Introduction"
     },
     {
       "claim_id": "C13",
       "text": "The proposed method is fully automated, not requiring manual segmentation",
       "type": "qualitative",
-      "evidence_location": {"page": 1, "section": "Abstract"},
-      "confidence": 0.90,
-      "pillar_mapping": ["novelty", "usability"],
-      "verifiable": true
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "confidence": 0.9,
+      "pillar_mapping": [
+        "novelty",
+        "usability"
+      ],
+      "verifiable": true,
+      "claim_text": "The proposed method is fully automated, not requiring manual segmentation",
+      "page_number": 1,
+      "section": "Abstract"
     }
   ],
   "gaps": [
@@ -166,7 +288,10 @@
       "gap_id": "G1",
       "description": "Small sample size (177 patients) limits robust validation",
       "severity": "high",
-      "location": {"page": 3, "section": "Results and Discussion"},
+      "location": {
+        "page": 3,
+        "section": "Results and Discussion"
+      },
       "acknowledged_by_authors": true,
       "quote": "The primary limitation of our study is the small sample size, which precludes more robust validation"
     },
@@ -174,7 +299,10 @@
       "gap_id": "G2",
       "description": "No multi-institutional validation - all data from single institution",
       "severity": "medium",
-      "location": {"page": 3, "section": "Results and Discussion"},
+      "location": {
+        "page": 3,
+        "section": "Results and Discussion"
+      },
       "acknowledged_by_authors": true,
       "quote": "A few future directions include experimenting on a larger dataset across several institutions"
     },
@@ -182,7 +310,10 @@
       "gap_id": "G3",
       "description": "No correlation with long-term clinical outcomes - only immediate treatment response measured",
       "severity": "medium",
-      "location": {"page": 3, "section": "Results and Discussion"},
+      "location": {
+        "page": 3,
+        "section": "Results and Discussion"
+      },
       "acknowledged_by_authors": true,
       "quote": "correlation of the immediate treatment response with long-term outcomes"
     },
@@ -190,21 +321,31 @@
       "gap_id": "G4",
       "description": "High variance in some metrics (e.g., specificity ±21.5%) suggests model instability",
       "severity": "medium",
-      "location": {"page": 3, "section": "Results", "table": 1},
+      "location": {
+        "page": 3,
+        "section": "Results",
+        "table": 1
+      },
       "acknowledged_by_authors": false
     },
     {
       "gap_id": "G5",
       "description": "No comparison with other transformer-based medical imaging models",
       "severity": "low",
-      "location": {"page": 3, "section": "Results"},
+      "location": {
+        "page": 3,
+        "section": "Results"
+      },
       "acknowledged_by_authors": false
     },
     {
       "gap_id": "G6",
       "description": "Preprocessing pipeline optimization needed for high-resolution CTA",
       "severity": "low",
-      "location": {"page": 3, "section": "Results and Discussion"},
+      "location": {
+        "page": 3,
+        "section": "Results and Discussion"
+      },
       "acknowledged_by_authors": true,
       "quote": "optimizing the preprocessing pipeline to more effectively preserve high resolution CTA"
     }
@@ -239,5 +380,6 @@
     "reproducibility": "low",
     "novelty": "medium",
     "overall_score": 7
-  }
+  },
+  "batch": "batch-1"
 }

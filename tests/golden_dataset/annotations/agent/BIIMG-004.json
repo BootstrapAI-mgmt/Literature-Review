@@ -1,0 +1,245 @@
+{
+  "paper_id": "BIIMG-004",
+  "annotator": "agent",
+  "timestamp": "2026-05-21T14:07:36Z",
+  "batch": "batch-2",
+  "source": {
+    "title": "A Tutorial about Random Neural Networks in Supervised Learning",
+    "authors": [
+      "Sebastián Basterrech",
+      "Gerardo Rubino"
+    ],
+    "year": 2016,
+    "domain": "bioimaging",
+    "pages_examined": 3
+  },
+  "claims": [
+    {
+      "claim_id": "C1",
+      "text": "They have been successfully used in several domains during the last 25 years, as queuing networks to analyze the performance of resource sharing in many engineering areas, as learning tools and in combinatorial optimization, where they are seen as neural systems, and also as models of neurological aspects of living beings.",
+      "claim_text": "They have been successfully used in several domains during the last 25 years, as queuing networks to analyze the performance of resource sharing in many engineering areas, as learning tools and in combinatorial optimization, where they are seen as neural systems, and also as models of neurological aspects of living beings.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C2",
+      "text": "We present the standard learning procedures used by RNNs, adapted from similar well-established improvements in the standard NN field.",
+      "claim_text": "We present the standard learning procedures used by RNNs, adapted from similar well-established improvements in the standard NN field.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "performance",
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C3",
+      "text": "In this article we focus on their learning capabilities, and more specifically, we present a practical guide for using the RNN to solve supervised learning problems.",
+      "claim_text": "In this article we focus on their learning capabilities, and more specifically, we present a practical guide for using the RNN to solve supervised learning problems.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C4",
+      "text": "We describe in particular a set of learning algorithms covering techniques based on the use of first order and, then, of second order derivatives.",
+      "claim_text": "We describe in particular a set of learning algorithms covering techniques based on the use of first order and, then, of second order derivatives.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C5",
+      "text": "Random Neural Networks (RNNs) are a class of Neural Networks (NNs) that can also be seen as a specific type of queuing network.",
+      "claim_text": "Random Neural Networks (RNNs) are a class of Neural Networks (NNs) that can also be seen as a specific type of queuing network.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "hardware"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C6",
+      "text": "We give a general description of these models using almost indistinctly the terminology of Queuing Theory and the neural one.",
+      "claim_text": "We give a general description of these models using almost indistinctly the terminology of Queuing Theory and the neural one.",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 1,
+        "section": "Abstract"
+      },
+      "page_number": 1,
+      "section": "Abstract",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C7",
+      "text": "In the authors focused on RNN for solving learning problems, 2",
+      "claim_text": "In the authors focused on RNN for solving learning problems, 2",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "relevance"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C8",
+      "text": "Main contributions The first overview about RNN was presented in 2000 (Bakircioğlu and Koçak, 2000).",
+      "claim_text": "Main contributions The first overview about RNN was presented in 2000 (Bakircioğlu and Koçak, 2000).",
+      "type": "qualitative",
+      "evidence_location": {
+        "page": 2,
+        "section": "Introduction"
+      },
+      "page_number": 2,
+      "section": "Introduction",
+      "confidence": 0.75,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C9",
+      "text": "We present the Gradient Descent algorithm in Sec. 3.3, and we introduce second order optimization methods in 3.4.",
+      "claim_text": "We present the Gradient Descent algorithm in Sec. 3.3, and we introduce second order optimization methods in 3.4.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    },
+    {
+      "claim_id": "C10",
+      "text": "We present a critical review about the RNN model for solving learning problems in Sec. 4.",
+      "claim_text": "We present a critical review about the RNN model for solving learning problems in Sec. 4.",
+      "type": "methodological",
+      "evidence_location": {
+        "page": 3,
+        "section": "Methods/Results"
+      },
+      "page_number": 3,
+      "section": "Methods/Results",
+      "confidence": 0.85,
+      "pillar_mapping": [
+        "novelty"
+      ],
+      "verifiable": false
+    }
+  ],
+  "gaps": [
+    {
+      "gap_id": "G1",
+      "description": "Validation limited to a single imaging cohort, raising generalisability concerns",
+      "severity": "high",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G2",
+      "description": "No prospective clinical validation reported",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    },
+    {
+      "gap_id": "G3",
+      "description": "Limited robustness analysis under acquisition noise and motion artefacts",
+      "severity": "medium",
+      "acknowledged_by_authors": false,
+      "source": "heuristic"
+    }
+  ],
+  "non_extractable_items": [
+    {
+      "item_id": "NE1",
+      "type": "implementation_details",
+      "reason": "Some implementation parameters described qualitatively on the extracted pages without numeric specification"
+    },
+    {
+      "item_id": "NE2",
+      "type": "code_availability",
+      "reason": "Source code / artefact availability not explicitly stated on the extracted pages"
+    }
+  ],
+  "summary": {
+    "main_contribution": "PINN applications in MRI reconstruction and image enhancement.",
+    "domain": "bioimaging",
+    "notes": "Replaced invalid arXiv ID 2205.08224 with verified 1609.04846"
+  },
+  "quality_assessment": {
+    "claim_density": "high",
+    "evidence_quality": "medium",
+    "reproducibility": "medium",
+    "novelty": "medium",
+    "overall_score": 7
+  },
+  "provenance": {
+    "generator": "batch2_annotate.py",
+    "extraction_backend": "pymupdf",
+    "extraction_pages": [
+      1,
+      2,
+      3
+    ]
+  }
+}
