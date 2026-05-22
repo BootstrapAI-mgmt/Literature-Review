@@ -6,6 +6,8 @@ pandas>=2.0.0
 numpy>=1.24.0
 google-generativeai>=0.3.0
 google-genai>=0.1.0
+anthropic>=0.40.0  # Claude 4.7 Opus / 4.6 Sonnet primary path
+claude-agent-sdk>=0.1.0  # Optional: subscription-backed Claude Code routing (MODEL_NAME=claude-code-opus-4-7)
 python-dotenv>=1.0.0
 pyyaml>=6.0.0
 

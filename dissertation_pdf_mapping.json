@@ -1,0 +1,928 @@
+{
+  "_scope_note": "filename -> paper mapping only. NOT a verbatim/citation-chain source. Dissertation citation log verification is owned by the dissertation's own pymupdf -> citation_log_gate pipeline.",
+  "scan_roots": [
+    "data\\raw",
+    "data\\processed",
+    "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw",
+    "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\processed"
+  ],
+  "total_pdfs_scanned": 1253,
+  "candidates": {
+    "debole2025": [
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\1-s2.0-S2772949425000026-main.pdf",
+        "score": 2.0,
+        "title": "Overview of emerging electronics technologies for artificial intelligence: A review",
+        "authors": [
+          "Materials Today Electronics 11 (2025) 100136",
+          "Peng Gao a, Muhammad Adnan b,c,*",
+          "a Communication",
+          "Information Engineering",
+          "Chongqing College of Mobile Communication",
+          "Chongqing 401520",
+          "PR China"
+        ],
+        "doi": "10.1016/j.mtelec.2025.100136",
+        "year": 2025,
+        "page_count": 21,
+        "reasons": [
+          "year 2025 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\2025.07.22.664908v1.full.pdf",
+        "score": 2.0,
+        "title": "Many-Two-One: Diverse Representations Across Visual Pathways Emerge from A Single Objective",
+        "authors": [
+          "Across Visual Pathways Emerge from A",
+          "Single Objective",
+          "Yingtian Tang1, , Abdulkadir Gokce1, , Khaled Jedoui Al-Karkari2, Daniel Yamins2, and Martin Schrimpf1,",
+          "divides visual processing into distinct \"what\"",
+          "\"where/how\" streams \u2013 however",
+          "their origin and"
+        ],
+        "doi": "10.1101/2025.07.22.664908",
+        "year": 2025,
+        "page_count": 27,
+        "reasons": [
+          "year 2025 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\2025.09.22.677855.full.pdf",
+        "score": 2.0,
+        "title": "Neuronal signatures of successful one-shot memory in mid-level visual cortex",
+        "authors": [
+          "Affiliation: Department of Neurobiology",
+          "Neuroscience Institute",
+          "University of Chicago,"
+        ],
+        "doi": "10.1101/2025.09.22.677855",
+        "year": 2025,
+        "page_count": 33,
+        "reasons": [
+          "year 2025 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\2503.19953v1.pdf",
+        "score": 2.0,
+        "title": "Self-Supervised Learning of Motion Concepts by Optimizing Counterfactuals",
+        "authors": [
+          "Stefan Stojanov*",
+          "David Wendt*",
+          "Seungwoo Kim*",
+          "Rahul Venkatesh*",
+          "Kevin Feigelis",
+          "Jiajun Wu",
+          "Stanford University"
+        ],
+        "doi": null,
+        "year": 2025,
+        "page_count": 16,
+        "reasons": [
+          "year 2025 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\80_Understanding_Human_Limits_.pdf",
+        "score": 2.0,
+        "title": "Understanding Human Limits in Pattern Recognition: A Computational Model of Sequential Reasoning in Rock, Paper, Scissors",
+        "authors": [
+          "Understanding Human Limits in Pattern Recognition: A Computational Model of",
+          "Sequential Reasoning in Rock, Paper, Scissors",
+          "Logan Cross1*, Erik Brockbank2*, Tobias Gerstenberg2, Judith E. Fan2, Daniel L. K. Yamins2, Nick Haber3"
+        ],
+        "doi": null,
+        "year": 2025,
+        "page_count": 17,
+        "reasons": [
+          "year 2025 exact match"
+        ]
+      }
+    ],
+    "khalighrazavi2014": [
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\1-s2.0-S0893608012003206-main.pdf",
+        "score": 2.0,
+        "title": "Adaptive filters and internal models: Multilevel description of cerebellar function",
+        "authors": [
+          "Neural Networks 47 (2013) 134\u2013149",
+          "Neural Networks",
+          "Adaptive filters",
+          "internal models: Multilevel description of cerebellar",
+          "John Porrill a, Paul Dean a,\u2217, Sean R. Anderson b",
+          "b Department of Automatic Control",
+          "Systems Engineering",
+          "Sheffield University",
+          "Sheffield",
+          "S1 3JD",
+          "Cerebellar function is increasingly discussed in terms of engineering schemes for motor control",
+          "signal",
+          "processing that involve internal models. To address the relation between the cerebellum",
+          "internal"
+        ],
+        "doi": "10.1016/j.neunet.2012.12.005",
+        "year": 2014,
+        "page_count": 16,
+        "reasons": [
+          "year 2014 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\frontiers2014_threestage_memory.pdf",
+        "score": 2.0,
+        "title": "Memory consolidation from seconds to weeks: a three-stage neural network model with autonomous reinstatement dynamics",
+        "authors": [
+          "Florian Fiebig 1,2 and Anders Lansner 1,3*",
+          "2 Institute for Adaptive",
+          "Neural Computation",
+          "School of Informatics",
+          "Edinburgh University",
+          "Edinburgh",
+          "Scotland",
+          "3 Department of Numerical Analysis",
+          "Computer Science",
+          "Stockholm University",
+          "Stockholm",
+          "Sweden",
+          "California Los Angeles, USA",
+          "Goren Gordon, Weizmann Institute",
+          "Emili Balaguer-Ballester,",
+          "Bournemouth University, UK",
+          "Anders Lansner, Department of"
+        ],
+        "doi": "10.3389/fncom.2014.00064",
+        "year": 2014,
+        "page_count": 17,
+        "reasons": [
+          "year 2014 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\horowitz2014_computing_energy.pdf",
+        "score": 2.0,
+        "title": "Computing's Energy Problem (and what we can do about it)",
+        "authors": [
+          "Mark Horowitz",
+          "Departments of Electrical Engineering",
+          "Computer Science,",
+          "Stanford University, Stanford, CA"
+        ],
+        "doi": null,
+        "year": 2014,
+        "page_count": 5,
+        "reasons": [
+          "year 2014 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\huys2014_mbmf.pdf",
+        "score": 2.0,
+        "title": "Reward-Based Learning, Model-Based and Model-Free",
+        "authors": [
+          "Reward-Based Learning",
+          "Model-Based",
+          "Model-Free",
+          "Quentin J. M. Huysa,b*",
+          "Anthony Cruickshankc",
+          "Peggy Seri\u00e8sc",
+          "aTranslational Neuromodeling Unit",
+          "Institute of Biomedical Engineering",
+          "ETH Z\u20acurich",
+          "University of Z\u20acurich",
+          "Z\u20acurich,",
+          "bDepartment of Psychiatry",
+          "Psychotherapy",
+          "Psychosomatics",
+          "Hospital of Psychiatry",
+          "University of Z\u20acurich",
+          "Z\u20acurich,",
+          "cInstitute of Adaptive",
+          "Neural Computation",
+          "University of Edinburgh",
+          "Edinburgh",
+          "such that actions take into account both immediate",
+          "delayed consequences. They fall into two",
+          "broad classes. Model-based approaches assume an explicit model of the environment",
+          "the agent.",
+          "The model describes the consequences of actions",
+          "the associated returns. From this",
+          "optimal",
+          "explicit knowledge of the dynamics of the environment or the consequences of actions",
+          "evaluate",
+          "Detailed Description"
+        ],
+        "doi": "10.1007/978-1-4614-7320-6_674-1",
+        "year": 2014,
+        "page_count": 10,
+        "reasons": [
+          "year 2014 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\oizumi2014_iit3.pdf",
+        "score": 2.0,
+        "title": "pcbi.1003588 1..25",
+        "authors": [
+          "Masafumi Oizumi1,2., Larissa Albantakis1., Giulio Tononi1*"
+        ],
+        "doi": "10.1371/journal.pcbi.1003588",
+        "year": 2014,
+        "page_count": 25,
+        "reasons": [
+          "year 2014 exact match"
+        ]
+      }
+    ],
+    "appuswamy2024": [
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\1-s2.0-S0896627324002794-main.pdf",
+        "score": 2.0,
+        "title": "A unifying framework for functional organization in early and higher ventral visual cortex",
+        "authors": [
+          "early",
+          "higher ventral visual cortex",
+          "d Single model predicts function",
+          "spatial structure in early",
+          "d Best model uses self-supervised learning",
+          "a scalable",
+          "Eshed Margalit, Hyodong Lee,",
+          "Dawn Finzi, James J. DiCarlo,",
+          "Kalanit Grill-Spector,"
+        ],
+        "doi": "10.1016/j.neuron.2024.04.018",
+        "year": 2024,
+        "page_count": 25,
+        "reasons": [
+          "year 2024 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\1301.3530v2.pdf",
+        "score": 2.0,
+        "title": "The Neural Representation Benchmark and its",
+        "authors": [
+          "The Neural Representation Benchmark and its",
+          "Evaluation on Brain",
+          "Machine",
+          "Department of Brain",
+          "Cognitive Sciences",
+          "Massachusetts Institute of Technology"
+        ],
+        "doi": null,
+        "year": 2024,
+        "page_count": 16,
+        "reasons": [
+          "year 2024 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\2023_Patent_US20240082534A1.pdf",
+        "score": 2.0,
+        "title": "US020240082534A120240314",
+        "authors": [
+          "Unknown Author"
+        ],
+        "doi": null,
+        "year": 2024,
+        "page_count": 51,
+        "reasons": [
+          "year 2024 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\2407.07086v2.pdf",
+        "score": 2.0,
+        "title": "Published as a conference paper at ICLR 2025",
+        "authors": [
+          "Logan Cross1\u2217",
+          "Violet Xiang2",
+          "Agam Bhatia1",
+          "Nick Haber3",
+          "Stanford University"
+        ],
+        "doi": null,
+        "year": 2024,
+        "page_count": 40,
+        "reasons": [
+          "year 2024 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\33_Inter_animal_transforms_as_.pdf",
+        "score": 2.0,
+        "title": "To appear at the ICLR 2024 Workshop on Representational Alignment (Re-Align)",
+        "authors": [
+          "Imran Thobani",
+          "Stanford University"
+        ],
+        "doi": null,
+        "year": 2024,
+        "page_count": 12,
+        "reasons": [
+          "year 2024 exact match"
+        ]
+      }
+    ],
+    "friston2005": [
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\bastos-canonical-microcircuits.pdf",
+        "score": 3.0,
+        "title": "Canonical microcircuits for predictive coding",
+        "authors": [
+          "Fries6,7",
+          "Karl J. Friston8",
+          "Germany. 7Donders Institute for Brain",
+          "Cognition",
+          "Behaviour",
+          "Radboud University Nijmegen,",
+          "University College London, Queen Square, London WC1N 3BG, UK.",
+          "microcircuitry",
+          "the functional logic of neuronal computations. We revisit the established idea"
+        ],
+        "doi": "10.1016/j.neuron.2012.10.038",
+        "year": 2013,
+        "page_count": 30,
+        "reasons": [
+          "author 'friston' in metadata"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Research-Papers\\ProQuest-Psychology\\Artificial_Musical_Minds_The_.pdf",
+        "score": 3.0,
+        "title": "Artificial Musical Minds: The Helmholtz Machine and Expressive Music Generation",
+        "authors": [
+          "Artificial Musical Minds: The Helmholtz Machine and Expressive Music Generation",
+          "Jingwei Liu",
+          "Professor Shlomo Dubnov, Chair",
+          "Professor Gert Cauwenberghs",
+          "Professor Sanjoy Dasgupta",
+          "Professor Karl Friston",
+          "Professor Miller Puckette"
+        ],
+        "doi": null,
+        "year": 2025,
+        "page_count": 106,
+        "reasons": [
+          "author 'friston' in metadata"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\daw2005_princeton.pdf",
+        "score": 2.0,
+        "title": "npgrj_nn_1560 1704..1711",
+        "authors": [
+          "A broad range of neural",
+          "behavioral data suggests that the brain contains multiple systems for behavioral choice",
+          "including",
+          "one associated with prefrontal cortex",
+          "another with dorsolateral striatum. However",
+          "such a surfeit of control raises an additional",
+          "simplicity against the \ufb02exible",
+          "statistically ef\ufb01cient use of experience. The trade-off is realized in a competition between the",
+          "dorsolateral striatal",
+          "prefrontal systems. We suggest a Bayesian principle of arbitration between them according to uncertainty,",
+          "of actions. Their differential",
+          "integrative roles are under active",
+          "examination",
+          "an important hypothesis is that subparts of these",
+          "regions subserve two largely distinct",
+          "parallel routes to action. Such"
+        ],
+        "doi": "10.1038/nn1560",
+        "year": 2005,
+        "page_count": 8,
+        "reasons": [
+          "year 2005 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\floyer-lea-matthews-2005-distinguishable-brain-activation-networks-for-short-and-long-term-motor-skill-learning.pdf",
+        "score": 2.0,
+        "title": "Distinguishable Brain Activation Networks for Short- and Long-Term Motor Skill Learning",
+        "authors": [
+          "Distinguishable Brain Activation Networks for Short- and Long-Term Motor",
+          "Skill Learning",
+          "A. Floyer-Lea and P. M. Matthews",
+          "Floyer-Lea",
+          "P. M. Matthews. Distinguishable brain activa-",
+          "tion networks for short-",
+          "long-term motor skill learning. J Neuro-",
+          "performance improves rapidly",
+          "subsequently by a long-term,"
+        ],
+        "doi": "10.1152/jn.00717.2004",
+        "year": 2005,
+        "page_count": 7,
+        "reasons": [
+          "year 2005 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Research-Papers\\dissertation-ch1-additions\\Lehericy_etal_2005_PNAS_BG_motor_sequence.pdf",
+        "score": 2.0,
+        "title": "Distinct basal ganglia territories are engaged in early",
+        "authors": [
+          "Kamil Ugurbil*, and Julien Doyon\u2021\u00b6",
+          "Institut National de la Sante\u00b4 et de la Recherche Me\u00b4dicale\u0001University of Paris 6, Centre Hospitalier Universitaire Pitie\u00b4-Salpe\u02c6trie`re, 75013 Paris, France; \u00a7Brain",
+          "Sciences Center, Veterans Affairs Medical Center, Minneapolis, MN 55417; and \u00b6Department of Psychology, Functional Neuroimaging Unit, University of",
+          "Edited by Leslie G. Ungerleider",
+          "National Institutes of Health",
+          "Bethesda",
+          "approved July 11",
+          "2005 (received for review April 4",
+          "2005)",
+          "MRI sessions were performed on days 1",
+          "28. In both"
+        ],
+        "doi": null,
+        "year": 2005,
+        "page_count": 6,
+        "reasons": [
+          "year 2005 exact match"
+        ]
+      }
+    ],
+    "kar2019": [
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Research-Papers\\EBSCO\\NOV-3\\EBSCO-FullText-11_03_2025 (64).pdf",
+        "score": 5.0,
+        "title": "Beyond core object recognition: Recurrent processes account for object recognition under occlusion",
+        "authors": [
+          "Karim Rajaei1, Yalda MohsenzadehID2, Reza EbrahimpourID1,3*, Seyed-Mahdi Khaligh-",
+          "Tehran",
+          "Iran",
+          "2 Computer Science",
+          "AI Lab (CSAIL)",
+          "Cambridge",
+          "Massachusetts",
+          "United States of",
+          "America",
+          "3 Cognitive Science Research Lab.",
+          "Department of Electrical",
+          "Computer Engineering",
+          "Shahid",
+          "Rajaee Teacher Training University, Tehran, Iran, 4 Department of Brain and Cognitive Sciences, Cell",
+          "Science Research Center, Royan Institute for Stem Cell Biology and Technology, ACECR, Tehran, Iran"
+        ],
+        "doi": "10.1371/journal.pcbi.1007001",
+        "year": 2019,
+        "page_count": 31,
+        "reasons": [
+          "author 'kar' in metadata",
+          "year 2019 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Research-Papers\\OpenAccess\\gk7764.pdf",
+        "score": 5.0,
+        "title": "Lift-the-\ufb02ap: what, where and when for",
+        "authors": [
+          "Lift-the-\ufb02ap: what",
+          "where",
+          "when for",
+          "Mengmi Zhang1",
+          "Claire Tseng2",
+          "Karla Montejo3",
+          "Joseph Kwon4",
+          "Gabriel Kreiman1"
+        ],
+        "doi": null,
+        "year": 2019,
+        "page_count": 17,
+        "reasons": [
+          "author 'kar' in metadata",
+          "year 2019 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\2023.KarDiCarlo_SMART_arXiv.pdf",
+        "score": 4.0,
+        "title": "The Quest for an",
+        "authors": [
+          "The Quest for an",
+          "Integrated Set of Neural",
+          "Mechanisms Underlying",
+          "Object Recognition in",
+          "Kohitij Kar1, and James J. DiCarlo2"
+        ],
+        "doi": null,
+        "year": 2023,
+        "page_count": 37,
+        "reasons": [
+          "author 'kar' in metadata",
+          "author 'kar' in filename"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\1807.00053v2.pdf",
+        "score": 3.75,
+        "title": "Task-Driven Convolutional Recurrent Models of the",
+        "authors": [
+          "Visual System",
+          "Aran Nayebi1,*, Daniel Bear2,*, Jonas Kubilius5,7,*, Kohitij Kar5, Surya Ganguli4,8, David",
+          "Sussillo8",
+          "James J. DiCarlo5,6",
+          "Daniel L. K. Yamins2,3,9",
+          "6Department of Brain",
+          "Cognitive Sciences",
+          "Cambridge",
+          "MA 02139",
+          "7Brain",
+          "Cognition",
+          "KU Leuven",
+          "Leuven",
+          "Belgium"
+        ],
+        "doi": null,
+        "year": 2018,
+        "page_count": 16,
+        "reasons": [
+          "author 'kar' in metadata",
+          "year 2018 within \u00b11 of 2019"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Research-Papers\\dissertation-ch1-additions\\Rhodes_etal_2018_FrontNeuro_sPyNNaker.pdf",
+        "score": 3.75,
+        "title": "sPyNNaker: A Software Package for Running PyNN Simulations on SpiNNaker",
+        "authors": [
+          "Gert Cauwenberghs,",
+          "United States",
+          "Sandia National Laboratories (SNL),",
+          "United States",
+          "Chris Karl,",
+          "Oliver Rhodes"
+        ],
+        "doi": "10.3389/fnins.2018.00816",
+        "year": 2018,
+        "page_count": 20,
+        "reasons": [
+          "author 'kar' in metadata",
+          "year 2018 within \u00b11 of 2019"
+        ]
+      }
+    ],
+    "kubilius2019": [
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\1807.00053v2.pdf",
+        "score": 3.75,
+        "title": "Task-Driven Convolutional Recurrent Models of the",
+        "authors": [
+          "Visual System",
+          "Aran Nayebi1,*, Daniel Bear2,*, Jonas Kubilius5,7,*, Kohitij Kar5, Surya Ganguli4,8, David",
+          "Sussillo8",
+          "James J. DiCarlo5,6",
+          "Daniel L. K. Yamins2,3,9",
+          "6Department of Brain",
+          "Cognitive Sciences",
+          "Cambridge",
+          "MA 02139",
+          "7Brain",
+          "Cognition",
+          "KU Leuven",
+          "Leuven",
+          "Belgium"
+        ],
+        "doi": null,
+        "year": 2018,
+        "page_count": 16,
+        "reasons": [
+          "author 'kubilius' in metadata",
+          "year 2018 within \u00b11 of 2019"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\schrimpf2020_brainscore_biorxiv_v2.pdf",
+        "score": 3.75,
+        "title": "Brain-Score: Which Artificial Neural Network for Object Recognition is most Brain-Like?",
+        "authors": [
+          "Object Recognition is most Brain-Like?",
+          "Martin Schrimpf*,1,2, Jonas Kubilius*,3,4, Ha Hong5, Najib J. Majaj6, Rishi Rajalingham1, Elias B. Issa7, Kohitij Kar1,3,",
+          "Pouya Bashivan1,3, Jonathan Prescott-Roy1, Franziska Geiger3, Kailyn Schmidt1, Daniel L. K. Yamins8,9, James J. DiCarlo1,2,3",
+          "1Department of Brain",
+          "Cognitive Sciences",
+          "Cambridge",
+          "MA 02139",
+          "2Center for Brains",
+          "Minds",
+          "Machines",
+          "Cambridge",
+          "MA 02139",
+          "4Brain",
+          "Cognition",
+          "KU Leuven",
+          "Leuven",
+          "Belgium"
+        ],
+        "doi": "10.1101/407007",
+        "year": 2020,
+        "page_count": 9,
+        "reasons": [
+          "author 'kubilius' in metadata",
+          "year 2020 within \u00b11 of 2019"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\NeurIPS-2019-brain-like-object-recognition-with-high-performing-shallow-recurrent-anns-Paper.pdf",
+        "score": 3.0,
+        "title": "Brain-Like Object Recognition with High-Performing Shallow Recurrent ANNs",
+        "authors": [
+          "Jonas Kubilius*,1,2, Martin Schrimpf *,1,3,4,",
+          "Kohitij Kar1,3,4, Rishi Rajalingham1, Ha Hong5, Najib J. Majaj6, Elias B. Issa7, Pouya",
+          "Daniel L. K. Yamins9,10",
+          "James J. DiCarlo1,3,4",
+          "2Brain",
+          "Cognition",
+          "KU Leuven",
+          "Leuven",
+          "Belgium",
+          "3Department of Brain",
+          "Cognitive Sciences",
+          "Cambridge",
+          "MA 02139",
+          "4Center for Brains",
+          "Minds",
+          "Machines",
+          "Cambridge",
+          "MA 02139"
+        ],
+        "doi": null,
+        "year": null,
+        "page_count": 12,
+        "reasons": [
+          "author 'kubilius' in metadata"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\1911.02385v1.pdf",
+        "score": 2.0,
+        "title": "SpiNNaker 2: A 10 Million Core Processor",
+        "authors": [
+          "System for Brain Simulation",
+          "Machine",
+          "Christian Mayr a,1, Sebastian Hppner a and Steve Furber b",
+          "a Chair of Highly-Parallel VLSI-Systems",
+          "Neuromorphic Circuits",
+          "Institute of Circuits"
+        ],
+        "doi": null,
+        "year": 2019,
+        "page_count": 4,
+        "reasons": [
+          "year 2019 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Aimone_Severa_Vineyard_2019_ICONS_Fugu.pdf",
+        "score": 2.0,
+        "title": "Composing neural algorithms with Fugu",
+        "authors": [
+          "James B. Aimone*, William Severa, Craig M. Vineyard"
+        ],
+        "doi": "10.1145/nnnnnnn.nnnnnnn",
+        "year": 2019,
+        "page_count": 8,
+        "reasons": [
+          "year 2019 exact match"
+        ]
+      }
+    ],
+    "parisi2019": [
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\1911.02385v1.pdf",
+        "score": 2.0,
+        "title": "SpiNNaker 2: A 10 Million Core Processor",
+        "authors": [
+          "System for Brain Simulation",
+          "Machine",
+          "Christian Mayr a,1, Sebastian Hppner a and Steve Furber b",
+          "a Chair of Highly-Parallel VLSI-Systems",
+          "Neuromorphic Circuits",
+          "Institute of Circuits"
+        ],
+        "doi": null,
+        "year": 2019,
+        "page_count": 4,
+        "reasons": [
+          "year 2019 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Aimone_Severa_Vineyard_2019_ICONS_Fugu.pdf",
+        "score": 2.0,
+        "title": "Composing neural algorithms with Fugu",
+        "authors": [
+          "James B. Aimone*, William Severa, Craig M. Vineyard"
+        ],
+        "doi": "10.1145/nnnnnnn.nnnnnnn",
+        "year": 2019,
+        "page_count": 8,
+        "reasons": [
+          "year 2019 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\arxiv2019_memory_simulations.pdf",
+        "score": 2.0,
+        "title": "Pre Test Excerpt",
+        "authors": [
+          "Neural-network models of memory consolidation",
+          "reconsolidation",
+          "Peter Helfer (peter.helfer@mail.mcgill.ca)"
+        ],
+        "doi": null,
+        "year": 2019,
+        "page_count": 6,
+        "reasons": [
+          "year 2019 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\brown2019_hot_consciousness.pdf",
+        "score": 2.0,
+        "title": "Understanding the Higher-Order Approach to Consciousness",
+        "authors": [
+          "Richard Brown,1 Hakwan Lau,2,3 and Joseph E. LeDoux4,5,6,*",
+          "by critics. Here",
+          "we clarify its position on several issues",
+          "distinguish it from",
+          "other views",
+          "such as the global workspace theory (GWT)",
+          "early sensory",
+          "position between GWT",
+          "early sensory views. We also clarify that most propo-",
+          "What Is HOT?"
+        ],
+        "doi": "10.1016/j.tics.2019.06.009",
+        "year": 2019,
+        "page_count": 15,
+        "reasons": [
+          "year 2019 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Research-Papers\\dissertation-ch1-additions\\Diedrichsen_etal_2019_Neuron_cerebellar_function.pdf",
+        "score": 2.0,
+        "title": "Universal Transform or Multiple Functionality? Understanding the Contribution of the Human Cerebellum across Task Domains.",
+        "authors": [
+          "Universal Transform or Multiple Functionality? Understanding",
+          "1.Brain",
+          "Mind Institute",
+          "Western University",
+          "N6A 5B7",
+          "London",
+          "ON N6A5B7",
+          "Canada",
+          "2.Department of Statistical",
+          "Actuarial Sciences",
+          "Western University",
+          "London",
+          "ON N6A5B7,"
+        ],
+        "doi": "10.1016/j.neuron.2019.04.021",
+        "year": 2019,
+        "page_count": 23,
+        "reasons": [
+          "year 2019 exact match"
+        ]
+      }
+    ],
+    "huys2016": [
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\huys2014_mbmf.pdf",
+        "score": 4.0,
+        "title": "Reward-Based Learning, Model-Based and Model-Free",
+        "authors": [
+          "Reward-Based Learning",
+          "Model-Based",
+          "Model-Free",
+          "Quentin J. M. Huysa,b*",
+          "Anthony Cruickshankc",
+          "Peggy Seri\u00e8sc",
+          "aTranslational Neuromodeling Unit",
+          "Institute of Biomedical Engineering",
+          "ETH Z\u20acurich",
+          "University of Z\u20acurich",
+          "Z\u20acurich,",
+          "bDepartment of Psychiatry",
+          "Psychotherapy",
+          "Psychosomatics",
+          "Hospital of Psychiatry",
+          "University of Z\u20acurich",
+          "Z\u20acurich,",
+          "cInstitute of Adaptive",
+          "Neural Computation",
+          "University of Edinburgh",
+          "Edinburgh",
+          "such that actions take into account both immediate",
+          "delayed consequences. They fall into two",
+          "broad classes. Model-based approaches assume an explicit model of the environment",
+          "the agent.",
+          "The model describes the consequences of actions",
+          "the associated returns. From this",
+          "optimal",
+          "explicit knowledge of the dynamics of the environment or the consequences of actions",
+          "evaluate",
+          "Detailed Description"
+        ],
+        "doi": "10.1007/978-1-4614-7320-6_674-1",
+        "year": 2014,
+        "page_count": 10,
+        "reasons": [
+          "author 'huys' in metadata",
+          "author 'huys' in filename"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\From_Human_to_Artificial_Cognition_and_B.pdf",
+        "score": 2.0,
+        "title": "From Human to Artificial Cognition and Back: New Perspectives on Cogni-",
+        "authors": [
+          "Accepted Manuscript",
+          "From Human to Artificial Cognition and Back: New Perspectives on Cogni-",
+          "Antonio Lieto, Daniele P. Radicioni",
+          "Cognitive Systems Research",
+          "Received Date:",
+          "Accepted Date:",
+          "Please cite this article as: Lieto",
+          "Radicioni",
+          "D.P.",
+          "From Human to Artificial Cognition",
+          "Back: New Perspectives"
+        ],
+        "doi": "10.1016/j.cogsys.2016.02.002",
+        "year": 2016,
+        "page_count": 8,
+        "reasons": [
+          "year 2016 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Grosmark Science 16 main+suppl.pdf",
+        "score": 2.0,
+        "title": "Diversity in neural firing dynamics",
+        "authors": [
+          "supports both rigid",
+          "learned",
+          "Andres D. Grosmark1,2",
+          "Gy\u00f6rgy Buzs\u00e1ki2,3*",
+          "limited change across sleep-experience-sleep",
+          "a slow-firing plastic subset. Slow-firing",
+          "their association with ripples",
+          "showed increased bursting",
+          "temporal coactivation",
+          "during postexperience sleep. Thus",
+          "slow-",
+          "fast-firing neurons",
+          "although forming a",
+          "continuous distribution",
+          "have different coding",
+          "plastic properties."
+        ],
+        "doi": null,
+        "year": 2016,
+        "page_count": 53,
+        "reasons": [
+          "year 2016 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\Learning_task_goals_interactively_with_v.pdf",
+        "score": 2.0,
+        "title": "This space is reserved for the Procedia header, do not use it",
+        "authors": [
+          "Learning Task Goals Interactively with Visual",
+          "James Kirk, Aaron Mininger, and John Laird"
+        ],
+        "doi": null,
+        "year": 2016,
+        "page_count": 14,
+        "reasons": [
+          "year 2016 exact match"
+        ]
+      },
+      {
+        "path": "C:\\Users\\jpcol\\Documents\\Literature-Review\\Literature-Review\\data\\raw\\nihms-470224.pdf",
+        "score": 2.0,
+        "title": "A functional and perceptual signature of the second visual area",
+        "authors": [
+          "A functional",
+          "perceptual signature of the second visual area",
+          "Jeremy Freeman*, Corey M. Ziemba*, David J. Heeger, Eero P. Simoncelli, and J. Anthony",
+          "Center for Neural Science",
+          "Department of Psychology",
+          "Howard Hughes Medical Institute,",
+          "New York University, New York, NY 10003, USA."
+        ],
+        "doi": "10.1038/nn.3402",
+        "year": 2016,
+        "page_count": 31,
+        "reasons": [
+          "year 2016 exact match"
+        ]
+      }
+    ]
+  }
+}

@@ -13,6 +13,10 @@ import re
 import difflib
 import pypdf
 import pdfplumber
+try:
+    import fitz  # PyMuPDF — primary PDF text + metadata extractor
+except ImportError:  # pragma: no cover
+    fitz = None
 import time
 import concurrent.futures
 import hashlib
@@ -288,41 +292,100 @@ def collect_papers_to_process(folder_path, reviewed_files):
     return files_to_process
 
 
-# --- 1. Initialize APIs and Models (Unchanged) ---
+# --- 1. Initialize APIs and Models ---
 class APIManager:
-    """Manages API calls with rate limiting, caching, and retry logic"""
+    """Manages API calls with rate limiting, caching, and retry logic.
+
+    Provider-aware: the active model (`get_model_config()`) decides which
+    backend to call. Anthropic / OpenAI / local providers go through the
+    `llm_client` abstraction; Gemini retains its direct `genai` path so the
+    `thinking_budget=0` optimisation is preserved.
+    """
     def __init__(self):
+        from literature_review.config.model_config import (
+            ModelProvider,
+            get_model_config,
+            get_model_by_name,
+            set_model_config,
+        )
+
         self.cache = {}
         self.last_call_time = 0
         self.calls_this_minute = 0
         self.minute_start = time.time()
-        try:
-            api_key = os.getenv('GEMINI_API_KEY')
-            if not api_key:
-                raise ValueError("GEMINI_API_KEY environment variable not set")
-            self.client = genai.Client(api_key=api_key)
-            thinking_config = types.ThinkingConfig(thinking_budget=0)
-            self.json_generation_config = types.GenerateContentConfig(
-                temperature=0.2,
-                top_p=1.0,
-                top_k=1,
-                max_output_tokens=16384,
-                response_mime_type="application/json",
-                thinking_config=thinking_config
-            )
-            self.text_generation_config = types.GenerateContentConfig(
-                temperature=0.2,
-                top_p=1.0,
-                top_k=1,
-                max_output_tokens=16384,
-                thinking_config=thinking_config
-            )
-            logger.info(f"[SUCCESS] Gemini Client (google-ai SDK) initialized (Thinking Disabled).")
-            safe_print(f"✅ Gemini Client initialized successfully (Thinking Disabled).")
-        except Exception as e:
-            logger.critical(f"[ERROR] Critical Error initializing Gemini Client: {e}")
-            safe_print(f"❌ Critical Error initializing Gemini Client: {e}")
-            raise
+
+        active_config = get_model_config()
+        self.provider = active_config.provider
+        self.active_model_name = active_config.model_name
+        self.fallback_model_name = active_config.fallback_model
+        self._llm_client = None  # Lazy-init for non-Gemini providers
+        self._gemini_client = None  # Lazy-init for Gemini provider
+        self.json_generation_config = None
+        self.text_generation_config = None
+
+        # Walk the configured fallback chain on init failure. Each model
+        # config can declare a `fallback_model` (registry alias); we try
+        # the active model first, then each fallback in turn until one
+        # initialises or we run out (in which case we re-raise).
+        #
+        # Dedup on (provider, model_name) so Claude Code and API paths
+        # for the same underlying model are not considered duplicates.
+
+        def _key(cfg) -> Tuple[str, str]:
+            return (cfg.provider.value, cfg.model_name)
+
+        init_chain = [active_config]
+        seen = {_key(active_config)}
+        cursor = active_config
+        while cursor.fallback_model:
+            try:
+                fb_cfg = get_model_by_name(cursor.fallback_model)
+            except Exception:  # invalid alias — stop walking
+                break
+            if _key(fb_cfg) in seen:
+                break
+            init_chain.append(fb_cfg)
+            seen.add(_key(fb_cfg))
+            cursor = fb_cfg
+
+        last_error: Optional[BaseException] = None
+        last_idx = len(init_chain) - 1
+        for idx, cfg in enumerate(init_chain):
+            is_fallback = idx > 0
+            try:
+                set_model_config(cfg)
+                self.provider = cfg.provider
+                self.active_model_name = cfg.model_name
+                self.fallback_model_name = cfg.fallback_model
+                self._llm_client = None
+                self._gemini_client = None
+                if self.provider == ModelProvider.GEMINI:
+                    self._init_gemini_client()
+                else:
+                    self._init_llm_client(cfg)
+                label = "Fallback" if is_fallback else "API"
+                logger.info(
+                    f"[SUCCESS] {label} client initialized for {cfg.display_name} "
+                    f"(provider: {self.provider.value})"
+                )
+                safe_print(
+                    f"{'⚠️  Falling back to' if is_fallback else '✅ API client initialized:'} "
+                    f"{cfg.display_name} ({self.provider.value})"
+                )
+                break
+            except Exception as e:
+                last_error = e
+                logger.warning(
+                    f"[ATTEMPT FAILED] Could not initialize {cfg.display_name}: {e}"
+                )
+                if not is_fallback:
+                    safe_print(f"❌ Failed to initialize {cfg.display_name}: {e}")
+                if idx == last_idx:
+                    logger.critical(
+                        "[ERROR] No remaining fallbacks; raising last init error"
+                    )
+                    raise last_error from None
+
         try:
             self.embedder = SentenceTransformer('all-MiniLM-L6-v2')
             logger.info("[SUCCESS] Sentence Transformer initialized.")
@@ -332,6 +395,46 @@ class APIManager:
             safe_print(f"⚠️ Could not initialize Sentence Transformer: {e}")
             self.embedder = None
 
+    def _init_gemini_client(self):
+        """Initialise the Gemini direct path (preserves thinking_budget=0)."""
+        api_key = os.getenv('GEMINI_API_KEY')
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY environment variable not set")
+        self._gemini_client = genai.Client(api_key=api_key)
+        # NOTE: thinking_budget=0 is intentional for the Gemini path.
+        # The session-call policy (feedback_top_tier_subagents.md /
+        # ../memory/feedback_session_call_policy.md) requires max-effort
+        # reasoning on the primary top-tier model (Claude Opus 4.7). Gemini
+        # Flash is the cheap fallback tier — keep it fast and inexpensive.
+        thinking_config = types.ThinkingConfig(thinking_budget=0)
+        self.json_generation_config = types.GenerateContentConfig(
+            temperature=0.2,
+            top_p=1.0,
+            top_k=1,
+            max_output_tokens=16384,
+            response_mime_type="application/json",
+            thinking_config=thinking_config,
+        )
+        self.text_generation_config = types.GenerateContentConfig(
+            temperature=0.2,
+            top_p=1.0,
+            top_k=1,
+            max_output_tokens=16384,
+            thinking_config=thinking_config,
+        )
+
+    def _init_llm_client(self, active_config):
+        """Initialise the unified llm_client for non-Gemini providers."""
+        from literature_review.utils.llm_client import get_llm_client
+        self._llm_client = get_llm_client(active_config)
+
+    # Backwards-compatible attribute access: legacy callers reference
+    # `api_manager.client` expecting the Gemini SDK object. Preserve that
+    # only when Gemini is active; otherwise expose the llm_client.
+    @property
+    def client(self):
+        return self._gemini_client if self._gemini_client is not None else self._llm_client
+
     def rate_limit(self):
         """Implement rate limiting using global limiter"""
         global_limiter.wait_for_quota()
@@ -340,15 +443,29 @@ class APIManager:
     API_REQUEST_TIMEOUT = 600
 
     def _make_api_request(self, prompt: str, is_json: bool) -> str:
-        """Internal method to make API request (used with timeout wrapper)."""
-        model_name = get_model_config().model_name
-        current_config_object = self.json_generation_config if is_json else self.text_generation_config
-        response = self.client.models.generate_content(
-            model=model_name,
-            contents=prompt,
-            config=current_config_object
-        )
-        return response.text
+        """Internal method to make API request (used with timeout wrapper).
+
+        Dispatches by provider: Gemini uses the direct `genai` client (with
+        thinking disabled); all other providers go through `llm_client`.
+        """
+        from literature_review.config.model_config import ModelProvider
+
+        if self.provider == ModelProvider.GEMINI and self._gemini_client is not None:
+            model_name = get_model_config().model_name
+            current_config_object = (
+                self.json_generation_config if is_json else self.text_generation_config
+            )
+            response = self._gemini_client.models.generate_content(
+                model=model_name,
+                contents=prompt,
+                config=current_config_object,
+            )
+            return response.text
+
+        # All other providers (Anthropic, OpenAI, local) via llm_client
+        if self._llm_client is None:
+            raise RuntimeError("No LLM client initialised")
+        return self._llm_client.generate(prompt=prompt, json_mode=is_json)
 
     def cached_api_call(self, prompt: str, use_cache: bool = True, is_json: bool = True) -> Optional[Any]:
         """Make API call with caching, validation, timeout, and retry logic.
@@ -501,6 +618,46 @@ class TextExtractor:
         return is_valid, indicators
 
     @staticmethod
+    def extract_with_pymupdf(filepath: str) -> Tuple[str, float]:
+        """Extract text using PyMuPDF (fitz) — primary extractor.
+
+        PyMuPDF is the dissertation's chosen extraction backend, so we use the
+        same library here to keep filename-to-content mapping consistent.
+        """
+        if fitz is None:
+            logger.warning("PyMuPDF (fitz) not installed; skipping pymupdf extraction")
+            return "", 0.0
+        text = ""
+        quality = 0.0
+        try:
+            doc = fitz.open(filepath)
+        except Exception as e:
+            logger.error(f"pymupdf failed to open {os.path.basename(filepath)}: {e}")
+            return "", 0.0
+        try:
+            page_count = len(doc)
+            if page_count == 0:
+                logger.warning(f"pymupdf found 0 pages in {os.path.basename(filepath)}")
+                return "", 0.0
+            extracted_chars = 0
+            for i, page in enumerate(doc):
+                try:
+                    page_text = page.get_text() or ""
+                    if page_text:
+                        text += page_text + "\n"
+                        extracted_chars += len(page_text)
+                except Exception as page_e:
+                    logger.warning(f"pymupdf error on page {i + 1}: {page_e}")
+            quality = min(extracted_chars / (page_count * 1500.0), 1.0)
+            logger.debug(f"pymupdf extracted ~{len(text)} chars, quality score: {quality:.2f}")
+            return text, quality
+        finally:
+            try:
+                doc.close()
+            except Exception:
+                pass
+
+    @staticmethod
     def extract_with_pypdf(filepath: str) -> Tuple[str, float]:
         """Extract text using pypdf"""
         text = ""
@@ -591,7 +748,15 @@ class TextExtractor:
             text, quality = cls.extract_from_html(filepath)
             method = "html_parser"
         elif file_ext == '.pdf':
-            methods_to_try = [("pdfplumber", cls.extract_with_pdfplumber), ("pypdf", cls.extract_with_pypdf)]
+            # Primary: pymupdf (matches dissertation's extraction backend).
+            # Fallbacks: pdfplumber, pypdf — only consulted if pymupdf yields
+            # less text. Highest-yield extractor wins, but pymupdf is tried first
+            # so its result is the baseline.
+            methods_to_try = [
+                ("pymupdf", cls.extract_with_pymupdf),
+                ("pdfplumber", cls.extract_with_pdfplumber),
+                ("pypdf", cls.extract_with_pypdf),
+            ]
             best_text, best_quality, best_method = "", 0.0, "none"
             for method_name, method_func in methods_to_try:
                 current_text, current_quality = method_func(filepath)
@@ -2000,7 +2165,7 @@ def process_batch(batch_files: List[Tuple[str, str]], api_manager: APIManager,
             papers_root = PAPERS_FOLDER
             rel_path = os.path.relpath(os.path.dirname(filepath), papers_root)
             domain_context = rel_path if rel_path != '.' else 'root'
-            
+
             metadata = PaperMetadata(
                 filename=filename,
                 filepath=filepath,
@@ -2009,6 +2174,22 @@ def process_batch(batch_files: List[Tuple[str, str]], api_manager: APIManager,
                 extraction_method=method,
                 timestamp=datetime.now().isoformat()
             )
+
+            # --- PDF metadata via pymupdf (filename -> paper mapping) ---
+            # Extracts title, authors, DOI, year, and page count using the
+            # same backend the dissertation uses. This metadata is attached
+            # to the review result so review_version_history.json carries a
+            # high-fidelity filename->paper mapping. Note: these summaries
+            # are NOT verbatim excerpts and must not be used for citation
+            # chain verification — that path is the dissertation's own
+            # pymupdf -> citation_log_gate pipeline.
+            pdf_metadata = {}
+            if filepath.lower().endswith('.pdf'):
+                try:
+                    from literature_review.metadata_extractor import EnhancedMetadataExtractor
+                    pdf_metadata = EnhancedMetadataExtractor().extract_metadata(filepath)
+                except Exception as md_e:
+                    logger.warning(f"pymupdf metadata extraction failed for {filename}: {md_e}")
 
             # The validation logic is now simplified. We trust the extraction more.
             if quality > 0.1: # If extraction had some success
@@ -2074,6 +2255,19 @@ def process_batch(batch_files: List[Tuple[str, str]], api_manager: APIManager,
                     result['SIMILAR_PAPERS'] = ["Error"]
                     result['CROSS_REFERENCES_COUNT'] = "-1"
                     result['MENTIONED_PAPERS'] = ["Error"]
+
+                if pdf_metadata:
+                    result['PDF_METADATA'] = {
+                        'filename': filename,
+                        'filepath': filepath,
+                        'title': pdf_metadata.get('title'),
+                        'authors': pdf_metadata.get('authors'),
+                        'doi': pdf_metadata.get('doi'),
+                        'year': pdf_metadata.get('year'),
+                        'page_count': pdf_metadata.get('page_count'),
+                        'extraction_backend': 'pymupdf',
+                        'extraction_confidence': pdf_metadata.get('confidence', {}),
+                    }
 
                 version_control.save_version(filename, result)
                 batch_journal_results.append(result)
